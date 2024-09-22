@@ -1,0 +1,94 @@
+// src\App.tsx
+
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import KTComponent from './metronic/core';
+import KTLayout from './metronic/app/layouts/demo1';
+import { useLocation } from 'react-router-dom';
+import Login from './pages/Login';
+import ProtectedRoute from './utils/ProtectedRoute';
+import MasterLayout from './pages/Master';
+import Dashboard from './pages/Dashboard';
+import Test from './pages/Test';
+import ProductMain from './pages/Product/ProductMain';
+import CreateProduct from './pages/Product/CreateProduct';
+import EditProduct from './pages/Product/EditProduct';
+import ProductCategory from './pages/Product/ProductCategory';
+import PackageMain from './pages/Product/Package/PackageMain';
+import CreatePackage from './pages/Product/Package/CreatePackage';
+import QuotationMain from './pages/Quotation/QuotationMain';
+import CreateQuotation from './pages/Quotation/CreateQuotation';
+
+interface ProtectedLayoutProps {
+  children: React.ReactNode;
+}
+
+const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
+  <ProtectedRoute>
+    <MasterLayout>{children}</MasterLayout>
+  </ProtectedRoute>
+);
+
+const routes = [
+  { path: '/login', element: <Login /> },
+  { path: '/', element: <Navigate to="/dashboard" replace /> },
+  { path: '/dashboard', element: <Dashboard /> },
+
+  /*--- TESt ---*/
+  { path: '/test', element: <Test /> },
+
+
+  /*--- PRODUCT ---*/
+  { path: '/products', element: <ProductMain /> },
+  // { path: '/products/:id', element: <Product /> },
+  { path: '/products/create', element: <CreateProduct /> },
+  { path: '/products/edit/:id', element: <EditProduct /> },
+  { path: '/products/category', element: <ProductCategory /> },
+
+
+  /*--- PACKAGES ---*/
+  { path: '/packages', element: <PackageMain /> },
+  // { path: '/packages/:id', element: <ProductEdit /> },
+  { path: '/packages/create', element: <CreatePackage /> },
+  // { path: '/packages/edit/:id', element: <ProductEdit /> },
+
+
+  /*--- QUOTATION ---*/
+  { path: '/quotations', element: <QuotationMain /> },
+  // { path: '/quotations/:id', element: <ProductEdit /> },
+  { path: '/quotations/create', element: <CreateQuotation /> },
+  // { path: '/quotations/edit/:id', element: <ProductEdit /> },
+];
+
+function App() {
+  return (
+    <Router>
+      <AppRoutes />
+    </Router>
+  );
+}
+
+function AppRoutes() {
+  const location = useLocation();
+
+  useEffect(() => {
+    KTComponent.init();
+    KTLayout.init();
+  }, [location]);
+
+  return (
+    <Routes>
+      {routes.map(({ path, element }) => (
+        <Route
+          key={path}
+          path={path}
+          element={
+            path === '/login' ? element : <ProtectedLayout>{element}</ProtectedLayout>
+          }
+        />
+      ))}
+    </Routes>
+  );
+}
+
+export default App;

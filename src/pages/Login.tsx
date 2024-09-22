@@ -1,0 +1,136 @@
+// src/components/LoginForm/LoginForm.tsx
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { userLogin } from '../services/auth';
+import KTLayout from '../metronic/app/layouts/demo1';
+import KTComponent from '../metronic/core';
+
+interface LoginForm {
+    email: string;
+    password: string;
+}
+
+const Login: React.FC = () => {
+    useEffect(() => {
+        KTComponent.init();
+        KTLayout.init();
+    }, []);
+    const [formData, setFormData] = useState<LoginForm>({ email: '', password: '' });
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate(); // React Router's useNavigate hook
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value
+        });
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        try {
+            const userData = await userLogin(formData.email, formData.password);
+            if (userData) {
+                navigate('/'); // Redirect to dashboard on successful userLogin
+            }
+        } catch (err) {
+            setError('Invalid userLogin credentials. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <>
+            <div className="absolute top-5 right-5">
+                <button className="btn btn-icon btn-light dark:hidden" data-theme-toggle="true" data-tooltip="#theme_mode_dark">
+                    <i className="ki-outline ki-sun">
+                    </i>
+                </button>
+                <button className="btn btn-icon btn-light hidden dark:flex" data-theme-toggle="true" data-tooltip="#theme_mode_light">
+                    <i className="ki-outline ki-moon">
+                    </i>
+                </button>
+                <div className="tooltip" id="theme_mode_light">
+                    Switch to Light mode
+                </div>
+                <div className="tooltip" id="theme_mode_dark">
+                    Switch to Dark mode
+                </div>
+            </div>
+            <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
+                <form className="card max-w-[370px] w-full p-10 gap-5" onSubmit={handleSubmit}>
+                    <div className="text-center mb-2.5">
+                        <h3 className="text-lg font-medium text-gray-900 leading-none mb-2.5">
+                            Sign in
+                        </h3>
+                    </div>
+                    {error && <p className="text-red-500">{error}</p>}
+                    <div className="flex flex-col gap-1">
+                        <label className="form-label font-normal text-gray-900">Email</label>
+                        <input
+                            className="input"
+                            placeholder="email@email.com"
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            tabIndex={1}
+                            required
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between gap-1">
+                            <label className="form-label font-normal text-gray-900">
+                                Password
+                            </label>
+                            <a className="text-2sm link shrink-0" href="/metronic/tailwind/demo1/authentication/classic/reset-password/enter-email/">
+                                Forgot Password?
+                            </a>
+                        </div>
+                        <div className="input" data-toggle-password="true">
+                            <input
+                                placeholder="Enter Password"
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                tabIndex={2}
+                                required
+                            />
+                            <button className="btn btn-icon" data-toggle-password-trigger="true" type="button">
+                                <i className="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
+                                </i>
+                                <i className="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block">
+                                </i>
+                            </button>
+                        </div>
+
+                    </div>
+                    <label className="checkbox-group">
+                        <input
+                            className="checkbox checkbox-sm"
+                            name="check" type="checkbox"
+                            value="1" />
+                        <span className="checkbox-label">Remember me</span>
+                    </label>
+                    <button
+                        className="btn btn-primary flex justify-center grow"
+                        type="submit"
+                        disabled={loading}>
+                        {loading ? 'Signing In...' : 'Sign In'}
+                    </button>
+                </form>
+            </div>
+        </>
+
+    );
+};
+
+export default Login;
