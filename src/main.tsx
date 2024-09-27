@@ -6,7 +6,5 @@ import "./index.css"; // If you have any global CSS
 const rootElement = document.getElementById("root") as HTMLElement;
 
 ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
-        <App />
-    </React.StrictMode>
+    <App />
 );

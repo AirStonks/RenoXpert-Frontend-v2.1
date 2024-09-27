@@ -1,17 +1,17 @@
 // src\components\Modals\IncludeProductModal.tsx
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { KTDataTable } from "../../metronic/core";
 import { Package, Product } from "../../types";
 import { fetchPackages } from "../../services/api";
 
-interface IncludePackageModalProps {
+interface IncludeOrderQuotationPackageModallProps {
     selectedPackages: Package[];
     updateSelectedPackages: (prodPackages: Package[]) => void;
     previousModalId?: string; // Make this optional
 }
 
-function IncludePackageModal({ selectedPackages, updateSelectedPackages, previousModalId }: IncludePackageModalProps) {
+function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPackages, previousModalId }: IncludeOrderQuotationPackageModallProps) {
 
     // const [selectedPackage, setSelectedPackage] = useState({
     //     id: 0,
@@ -34,7 +34,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
             const packageDescription = selectBtn.dataset.desc;
 
             // Retrieve the current selected prodPackages from localStorage
-            const storedPackages = localStorage.getItem('include_packages');
+            const storedPackages = localStorage.getItem('selected_quotation_packages');
             const selectedPackages = storedPackages ? JSON.parse(storedPackages) : [];
             const packagesData = localStorage.getItem('packages_data');
             
@@ -52,7 +52,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                 // If it is not selected, add it
                 const selectedPackage = JSON.parse(packagesData).find(prodPackage => prodPackage.id === Number(id));
 
-                selectedPackages.push({ 
+                selectedPackages.push({
                     id: Number(id),
                     name: packageName,
                     description: packageDescription,
@@ -68,7 +68,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
             }
 
             // Save the updated array back to localStorage
-            localStorage.setItem('include_packages', JSON.stringify(selectedPackages));
+            localStorage.setItem('selected_quotation_packages', JSON.stringify(selectedPackages));
 
             // TODO Update the prodPackage-list
             updateSelectedPackages(selectedPackages);
@@ -131,8 +131,8 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                 action: {
                     title: 'Action',
                     render: (item: string, data: Package) => {
-                        const selectedProductsString = localStorage.getItem('include_packages');
-                        const selectedPackages = selectedProductsString ? JSON.parse(selectedProductsString) : [];
+                        const selectedPackagesString = localStorage.getItem('selected_quotation_packages');
+                        const selectedPackages = selectedPackagesString ? JSON.parse(selectedPackagesString) : [];
 
                         const isSelected = selectedPackages.some((prodPackage: { id: number }) => prodPackage.id === data.id);
 
@@ -274,4 +274,4 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
     );
 }
 
-export default IncludePackageModal;
+export default IncludeOrderQuotationPackageModal;

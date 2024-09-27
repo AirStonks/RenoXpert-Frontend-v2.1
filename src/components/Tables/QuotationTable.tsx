@@ -1,10 +1,11 @@
+// src\components\Tables\QuotationTable.tsx
+
 import { useCallback, useEffect, useState } from 'react';
 import { KTDataTable, KTModal } from '../../metronic/core';
 import { Package } from '../../types';
-import PackageDetailModal from '../Modals/PackageDetailModal';
 import DeleteModal from '../Modals/DeleteModal';
-import { removePackage } from '../../services/api';
 import QuotationDetailModal from '../Modals/QuotationDetailModal';
+import { removeQuotation } from '../../services/api';
 
 function QuotationTable () {
     const [selectedQuotationId, setSelectedQuotationId] = useState<number | null>(null);
@@ -49,14 +50,14 @@ function QuotationTable () {
 
 
         detailModal.on('hidden', () => {
-            const modalEl = document.querySelector('#edit_package_modal') as HTMLElement;
+            const modalEl = document.querySelector('#edit_quotation_modal') as HTMLElement;
             const modal = KTModal.getInstance(modalEl);
 
             // Buffer for getting modal-open status
             setTimeout(() => {
                 if (modal.isOpen() == false && detailModal.isOpen() == false) {
                     setSelectedQuotationId(null);
-                    localStorage.removeItem('include_prod_selected_products');
+                    localStorage.removeItem('include_packages');
                 }
             }, 200);
 
@@ -108,7 +109,7 @@ function QuotationTable () {
                                 data-action="delete"
                                 data-id="${data.id}"
                                 data-name="${data.name}"
-                                data-modal-toggle="#delete_quotation_modal"
+                                data-modal-toggle="#delete_item_modal"
                             >
                                 <i class="ki-outline ki-trash"></i>
                             </button>
@@ -128,7 +129,19 @@ function QuotationTable () {
         return () => {
             document.querySelector('#quotation_table')?.removeEventListener('click', handleTableClick);
         };
+
     }, [initPackageTable, handleTableClick]);
+
+    const handleRefresh = async () => {
+        const element = document.querySelector('#quotation_table') as HTMLElement;
+
+        const quotationTable = KTDataTable.getInstance(element);
+
+        console.log('Element: ', element);
+        console.log('DataTable: ', quotationTable);
+
+        quotationTable.reload();
+    }
 
     return (
         <>
@@ -138,6 +151,14 @@ function QuotationTable () {
                         <h3 className="card-title font-medium text-lg">
                             Quotation List
                         </h3>
+                        <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
+                            <button
+                                className="btn btn-sm btn-primary text-white"
+                                onClick={handleRefresh}
+                            >
+                                Refresh
+                            </button>
+                        </div>
                     </div>
                     <div className="card-body">
                         <div data-datatable="true" id="quotation_table">
@@ -186,15 +207,15 @@ function QuotationTable () {
 
             <QuotationDetailModal quotationId={selectedQuotationId} onClose={handleCloseModal} />
 
-            {/* <DeleteModal
+            <DeleteModal
                 item={selectedQuotation}
-                modalTitle='Remove Package'
+                modalTitle='Remove Quotation'
                 modalPrompt='Are you sure to permanently remove this package:'
-                notifySuccess='Package Removed Successfully!'
-                notifyError='Package remove failed'
-                navigateUrl='/packages'
-                deleteFunction={removePackage}
-            /> */}
+                notifySuccess='Quotation Removed Successfully!'
+                notifyError='Quotation remove failed'
+                navigateUrl='/quotations'
+                deleteFunction={removeQuotation}
+            />
         </>
     );
 }

@@ -51,10 +51,11 @@ function DeleteModal({
                 const modal = KTModal.getInstance(modalEl);
                 modal.hide();
                 
-                navigate(navigateUrl || '/products'); // Navigate to the specified URL or default to /products
+                // navigate(navigateUrl || '/', { replace: true }); // Navigate to the specified URL or default to /products
+                navigate(0);
+                
             } else {
                 notify('error', notifyError || 'Error occurred during deletion.');
-                alert('Error: ' + (response?.message || 'Product removal failed.'));
             }
         } catch (error) {
             notify('error', notifyError || 'Error occurred during deletion.');

@@ -1,4 +1,4 @@
-// src/hooks/useFetchProduct.ts
+// src/hooks/useFetchProductCategory.ts
 
 import { useState, useEffect } from 'react';
 import { fetchProductCategory } from '../services/api';

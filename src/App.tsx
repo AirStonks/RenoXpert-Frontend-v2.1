@@ -1,7 +1,7 @@
 // src\App.tsx
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import KTComponent from './metronic/core';
 import KTLayout from './metronic/app/layouts/demo1';
 import { useLocation } from 'react-router-dom';
@@ -18,6 +18,13 @@ import PackageMain from './pages/Product/Package/PackageMain';
 import CreatePackage from './pages/Product/Package/CreatePackage';
 import QuotationMain from './pages/Quotation/QuotationMain';
 import CreateQuotation from './pages/Quotation/CreateQuotation';
+import EditQuotation from './pages/Quotation/EditQuotation';
+import Loading from './components/Loading';
+import ContactMain from './pages/Contact/ContactMain';
+import PropertyMain from './pages/Property/PropertyMain';
+import OrderMain from './pages/Order/OrderMain';
+import CreateOrder from './pages/Order/CreateOrder';
+import EditOrderQuotation from './pages/Order/EditOrderQuotation';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -57,7 +64,29 @@ const routes = [
   { path: '/quotations', element: <QuotationMain /> },
   // { path: '/quotations/:id', element: <ProductEdit /> },
   { path: '/quotations/create', element: <CreateQuotation /> },
-  // { path: '/quotations/edit/:id', element: <ProductEdit /> },
+  { path: '/quotations/edit/:id', element: <EditQuotation /> },
+
+
+  /*--- CONTACT ---*/
+  { path: '/contacts', element: <ContactMain /> },
+  // { path: '/contacts/:id', element: <ProductEdit /> },
+  // { path: '/contacts/create', element: <CreateQuotation /> },
+  // { path: '/contacts/edit/:id', element: <EditQuotation /> },
+
+
+  /*--- PROPERTY ---*/
+  { path: '/properties', element: <PropertyMain /> },
+  // { path: '/contacts/:id', element: <ProductEdit /> },
+  // { path: '/contacts/create', element: <CreateQuotation /> },
+  // { path: '/contacts/edit/:id', element: <EditQuotation /> },
+
+
+  /*--- ORDER ---*/
+  { path: '/orders', element: <OrderMain /> },
+  // { path: '/contacts/:id', element: <ProductEdit /> },
+  { path: '/orders/create', element: <CreateOrder /> },
+  { path: '/orders/quotation/edit/:id', element: <EditOrderQuotation /> },
+  // { path: '/contacts/edit/:id', element: <EditQuotation /> },
 ];
 
 function App() {
@@ -70,11 +99,19 @@ function App() {
 
 function AppRoutes() {
   const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
     KTComponent.init();
     KTLayout.init();
+
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
   }, [location]);
+
+  if (isAuthenticated === null) {
+    return <Loading />; // Show a loading indicator
+  }
 
   return (
     <Routes>
@@ -90,5 +127,7 @@ function AppRoutes() {
     </Routes>
   );
 }
+
+
 
 export default App;

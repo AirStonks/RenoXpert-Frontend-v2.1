@@ -1,7 +1,7 @@
 // src\pages\Product\CreateProduct.tsx
 
 import { useState, useEffect } from 'react';
-import Dropdown from '../../components/Dropdown/Dropdown';
+import Dropdown from '../../components/Forms/Dropdown/Dropdown';
 import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
 import KTLayout from '../../metronic/app/layouts/demo1';
 import KTComponent from '../../metronic/core';

@@ -1,14 +1,15 @@
-// src\pages\Product\ProductMain.tsx
+// src\pages\Quotation\QuotationMain.tsx
 
 import Button from '../../components/Buttons/Button';
-import QuotationTable from '../../components/Tables/QuotationTable ';
-import KTComponent from '../../metronic/core';
+import QuotationTable from '../../components/Tables/QuotationTable';
 import { useEffect } from 'react';
-// import ProductTable from '../../components/Tables/ProductTable';
 
 function QuotationMain() {
     useEffect(() => {
-        KTComponent.init();
+        // Cleanup function to clear localStorage on unmount
+        return () => {
+            localStorage.removeItem('include_packages');
+        };
     }, []);
 
     return (

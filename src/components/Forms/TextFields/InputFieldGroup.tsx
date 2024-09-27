@@ -2,7 +2,7 @@ import React from 'react';
 
 interface InputFieldGroupProps {
     fieldTitle: string;
-    description: string;
+    description?: string;
     placeholder?: string;
     type?: string;
     name: string;
@@ -13,7 +13,7 @@ interface InputFieldGroupProps {
 
 const InputFieldGroup: React.FC<InputFieldGroupProps> = ({
     fieldTitle,
-    description,
+    description = null,
     placeholder = "Text...",
     type = "text",
     name,
@@ -27,9 +27,13 @@ const InputFieldGroup: React.FC<InputFieldGroupProps> = ({
                 {fieldTitle}
             </label>
 
-            <span className="text-xs text-gray-600 tracking-wide mb-2">
-                {description}
-            </span>
+            {description
+                &&
+                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                    {description}
+                </span>
+            }
+
 
             <input
                 className={`input mb-2 ${error ? 'border-red-500' : ''}`}

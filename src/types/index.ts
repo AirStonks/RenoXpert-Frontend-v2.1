@@ -41,11 +41,48 @@ export interface Package {
 }
 
 export interface Quotation {
-    id?: number;
+    id?: string;
     name: string;
     description?: string;
     total_amount: number;
     valid_from?: string;
     valid_until?: string;
     metadata?: JSON;
+}
+
+export interface Contact {
+    id?: string,
+    name: string,
+    email?: string,
+    phone_no?: string,
+    alt_phone_no?: string,
+    race?: string,
+    gender?: string,
+    nationality?: string,
+    description?: string,
+}
+
+export interface Property {
+    id?: string,
+    name: string,
+    address?: string,
+    street?: string,
+    postcode?: string,
+    city?: string,
+    state?: string,
+    description?: string,
+}
+
+export interface Order {
+    id?: string,
+    order_no?: string,
+    contact_id?: string,
+    property_id?: string,
+    quotation_id?: string,
+    block?: string,
+    floor?: string,
+    unit_no?: string,
+    unit_name?: string,
+    description?: string,
+    metadata?: JSON,
 }

@@ -1,16 +1,23 @@
-// src\pages\Quotation\CreateQuotation.tsx
+// src\pages\Quotation\EditQuotation.tsx
 
 import { useEffect, useRef, useState } from 'react';
 import { toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
 import IncludePackageModal from '../../components/Modals/IncludePackageModal';
 import { Package, Product, Quotation } from '../../types';
-import { createQuotation } from '../../services/api';
+import { updateQuotation } from '../../services/api';
+import useFetchQuotation from '../../hook/useFetchQuotation';
+import Loading from '../../components/Loading';
 
-function CreateQuotation() {
+function EditQuotation() {
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
+    const quotationId = id ? parseInt(id, 10) : null;
+
+    const { quotationDetail, loading, error } = useFetchQuotation(quotationId);
+
     const [formData, setFormData] = useState({
         quotationName: '',
         quotationPrice: 0,
@@ -50,104 +57,59 @@ function CreateQuotation() {
 
     // PENDING
     const handleSubmit = async () => {
-        const storedPackages = localStorage.getItem('include_packages');
-        const parsedPackages = JSON.parse(storedPackages);
-        console.log(storedPackages);
-
-        // const metadata;
-        const newMetadata = parsedPackages.map((pkg: Package) => ({
-            id: pkg.id,
-            name: pkg.name,
-            description: pkg.description,
-            total_price: pkg.total_price,
-            products: pkg.products.map((product: Product) => (product))
-        }));
-
-        setFormData(prevState => {
-            const updatedState = {
-                ...prevState,
-                metadata: newMetadata
-            };
-            console.log('Updated FormData:', updatedState);
-            return updatedState;
-        });
-
-        const quotationData: Quotation = {
-            name: formData.quotationName,
-            description: formData.description,
-            total_amount: formData.quotationPrice,
-            metadata: newMetadata,
-        }
-
-        const response = await createQuotation(quotationData);
-
-        if (response?.success) {
-            notify('success', "Quotation Created Successfully!");
-            localStorage.removeItem('include_packages');
-            navigate('/quotations');
-            console.log(response);
-        } else {
-            console.log(response);
-            
-        }
-        
-        
-
         try {
-            console.log('FormData:', formData);
+            const storedPackages = localStorage.getItem('include_packages');
+            const parsedPackages = JSON.parse(storedPackages);
+            console.log(storedPackages);
 
+            // const metadata;
+            const newMetadata = parsedPackages.map((pkg: Package) => ({
+                id: pkg.id,
+                name: pkg.name,
+                description: pkg.description,
+                total_price: pkg.total_price,
+                products: pkg.products.map((product: Product) => (product))
+            }));
 
+            setFormData(prevState => {
+                const updatedState = {
+                    ...prevState,
+                    metadata: newMetadata
+                };
+                console.log('Updated FormData:', updatedState);
+                return updatedState;
+            });
 
+            const quotationData: Quotation = {
+                id: quotationDetail.id,
+                name: formData.quotationName,
+                description: formData.description,
+                total_amount: formData.quotationPrice,
+                metadata: newMetadata,
+            }
+
+            const response = await updateQuotation(quotationData);
+
+            if (response?.success) {
+                notify('success', "Quotation Updated Successfully!");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         } catch (error) {
-            console.error("Error submitting form data:", error);
+            if (error.response?.status === 422) {
+                // Extract validation errors from the response
+                const errors = error.response.data.data || {};
+                // Convert array of errors to a single error message for each field
+                const formattedErrors = Object.keys(errors).reduce((acc, key) => {
+                    acc[key] = errors[key].join(' '); // Join array of errors into a single string
+                    return acc;
+                }, {} as Record<string, string>);
+
+                setValidationErrors(formattedErrors);
+                notify('error', "Quotation edit unsuccessful. Check the errors below.");
+            } else {
+                console.error('Quotation edit failed:', error);
+            }
         }
-
-
-        // try {
-        //     let newProducts: Product[] = [];
-        //     if (storedPackages) {
-        //         const parsedPackages = JSON.parse(storedPackages);
-        //         newProducts = parsedPackages.map((item: any) => ({
-        //             id: item.id,
-        //             name: item.name,
-        //             quantity: item.quantity, // Adjusting the key to match the Product interface
-        //             price: parseFloat(item.price), // Ensure the price is a number
-        //             // Add other properties if necessary
-        //         }));
-        //     }
-
-
-        //     const packageData: Package = {
-        //         name: formData.packageName,
-        //         total_price: formData.packagePrice,
-        //         description: formData.description,
-        //         products: newProducts,
-        //     };
-
-        //     const response = await createPackage(packageData);
-
-        //     if (response?.success) {
-        //         notify('success', "Package Created Successfully!");
-        //         localStorage.removeItem('include_packages');
-        //         navigate('/packages');
-        //     }
-
-        // } catch (error) {
-        //     if (error.response?.status === 422) {
-        //         // Extract validation errors from the response
-        //         const errors = error.response.data.data || {};
-        //         // Convert array of errors to a single error message for each field
-        //         const formattedErrors = Object.keys(errors).reduce((acc, key) => {
-        //             acc[key] = errors[key].join(' '); // Join array of errors into a single string
-        //             return acc;
-        //         }, {} as Record<string, string>);
-
-        //         setValidationErrors(formattedErrors);
-        //         notify('error', "Product creation unsuccessful. Check the errors below.");
-        //     } else {
-        //         console.error('Product creation failed:', error);
-        //     }
-        // }
     };
 
     const openAddPackageModal = () => {
@@ -162,15 +124,23 @@ function CreateQuotation() {
     };
 
     useEffect(() => {
-        const storedPackages = localStorage.getItem('include_packages');
+        if (quotationDetail) {
 
-        if (storedPackages) {
-            setSelectedPackages(JSON.parse(storedPackages));
+            localStorage.setItem('include_packages', JSON.stringify(quotationDetail.metadata));
+            const storedPackages = localStorage.getItem('include_packages');
+
+            if (storedPackages) {
+                setSelectedPackages(JSON.parse(storedPackages));
+            }
+
+            setFormData({
+                quotationName: quotationDetail.name || '',
+                quotationPrice: quotationDetail.total_amount || 0,
+                description: quotationDetail.description || ''
+            });
         }
 
-        console.log('Updated FormData:', formData);
-
-    }, [formData]);
+    }, [quotationDetail]);
 
     const updateSelectedPackages = (packages) => {
         setSelectedPackages(packages);
@@ -217,7 +187,6 @@ function CreateQuotation() {
         });
     };
 
-
     const handleRemoveProduct = (packId: number, prodId: number) => {
         setSelectedPackages((prevPackages: Package[]) => {
 
@@ -250,6 +219,10 @@ function CreateQuotation() {
         });
     };
 
+    if (loading) return <Loading />;
+    if (error) return <div>{error}</div>;
+    if (!quotationDetail) return <div>Quotation not found</div>;
+
     return (
         <>
             <div className="flex justify-between items-center flex-wrap mb-6">
@@ -258,7 +231,7 @@ function CreateQuotation() {
                         <i className="ki-solid ki-arrow-left"></i>
                     </button>
                     <span className="text-2xl font-bold text-gray-900">
-                        Create New Quotation
+                        Update Quotation
                     </span>
                 </div>
             </div>
@@ -424,7 +397,7 @@ function CreateQuotation() {
                     className="btn btn-lg btn-primary"
                     onClick={handleSubmit} // Trigger form submission
                 >
-                    Create
+                    Edit
                 </button>
             </div>
 
@@ -436,4 +409,4 @@ function CreateQuotation() {
     );
 }
 
-export default CreateQuotation;
+export default EditQuotation;

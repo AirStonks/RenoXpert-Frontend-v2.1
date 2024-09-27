@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { Package, Product, ProductCategory, Quotation } from '../types';
+import { Contact, Package, Product, ProductCategory, Property, Quotation } from '../types';
 
 const API_URL = 'http://' + window.location.hostname + ':8000/api/';
 
@@ -49,7 +49,6 @@ export const createProduct = async (productData: Product) => {
     }
 };
 
-
 export const updateProduct = async (productData: Product) => {
     try {
         const response = await axios.put(API_URL + `products/${productData.id}`, productData, {
@@ -73,6 +72,17 @@ export const fetchProduct = async (productId: number) => {
     } catch (error) {
         handle401Error(error as AxiosError);
         throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const fetchProducts = async () => {
+    try {
+        const response = await axios.get(API_URL + 'products', {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
     }
 };
 
@@ -199,7 +209,6 @@ export const removePackage = async (packageId: number) => {
     }
 }
 
-
 export const createQuotation = async (quotationData: Quotation) => {
     try {
         const response = await axios.post(API_URL + 'quotations', quotationData, {
@@ -214,7 +223,6 @@ export const createQuotation = async (quotationData: Quotation) => {
     }
 };
 
-
 export const fetchQuotation = async (quotationId: number) => {
     try {
         const response = await axios.get(API_URL + `quotations/${quotationId}`, {
@@ -226,3 +234,190 @@ export const fetchQuotation = async (quotationId: number) => {
         throw error; // Ensure to throw the error if needed
     }
 };
+
+export const updateQuotation = async (quotationData: Quotation) => {
+    try {
+        const response = await axios.put(API_URL + `quotations/${quotationData.id}`, quotationData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchQuotations = async (searchTerm = '', length = 5) => {
+    try {
+        const response = await axios.get(API_URL + `quotations`, {
+            headers: getAuthHeaders(),
+            params: {
+                search: searchTerm,
+                size: length
+            }
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const removeQuotation = async (quotationId: number) => {
+    try {
+        const response = await axios.delete(API_URL + `quotations/${quotationId}`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const createContact = async (contactData: Contact) => {
+    try {
+        const response = await axios.post(API_URL + 'contacts', contactData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchContact = async (contactId: number) => {
+    try {
+        const response = await axios.get(API_URL + `contacts/${contactId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const fetchContacts = async (searchTerm = '', length = 5) => {
+    try {
+        const response = await axios.get(API_URL + `contacts`, {
+            headers: getAuthHeaders(),
+            params: {
+                search: searchTerm,
+                size: length
+            }
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const updateContact = async (contactData: Contact) => {
+    try {
+        const response = await axios.put(API_URL + `contacts/${contactData.id}`, contactData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const removeContact = async (contactId: number) => {
+    try {
+        const response = await axios.delete(API_URL + `contacts/${contactId}`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const createProperty = async (propertyData: Property) => {
+    try {
+        const response = await axios.post(API_URL + 'properties', propertyData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchProperty = async (propertyId: number) => {
+    try {
+        const response = await axios.get(API_URL + `properties/${propertyId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const fetchProperties = async (searchTerm = '', length = 5) => {
+    try {
+        const response = await axios.get(API_URL + `properties`, {
+            headers: getAuthHeaders(),
+            params: {
+                search: searchTerm,
+                size: length
+            }
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const updateProperty = async (propertyData: Property) => {
+    try {
+        const response = await axios.put(API_URL + `properties/${propertyData.id}`, propertyData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const removeProperty = async (propertyId: number) => {
+    try {
+        const response = await axios.delete(API_URL + `properties/${propertyId}`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}

@@ -65,6 +65,8 @@ function ProductTable() {
 
                         let color = 'bg-gray-500';
 
+                        console.log(data);
+                        
                         if (item === 'available') {
                             color = 'bg-success';
                         }
@@ -88,6 +90,12 @@ function ProductTable() {
                     createdCell(cell: HTMLElement) {
                         cell.classList.add('prod-name');
                     },
+                    render: (item: string, data: Product) => `
+                        <div class="flex flex-col">
+                            <span>${item}</span>
+                            <span class="text-xs text-slate-400">${data.description != null ? data.description : ''}</span>
+                        </div>
+                    `,
                 },
                 SKU: {
                     title: 'SKU',
@@ -103,10 +111,6 @@ function ProductTable() {
                     createdCell(cell: HTMLElement) {
                         cell.classList.add('capitalize');
                     },
-                },
-                description: {
-                    title: 'Description',
-                    render: (item: string) => item || `-`,
                 },
                 price: {
                     title: 'Price',
@@ -203,7 +207,7 @@ function ProductTable() {
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[320px] text-center" data-datatable-column="name">
+                                            <th className="w-[220px] text-center" data-datatable-column="name">
                                                 <span className="sort">
                                                     <span className="sort-label">Name</span>
                                                     <span className="sort-icon"></span>
@@ -215,31 +219,25 @@ function ProductTable() {
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[100px] text-center" data-datatable-column="category">
+                                            <th className="w-[120px] text-center" data-datatable-column="category">
                                                 <span className="sort">
                                                     <span className="sort-label">Category</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[100px] text-center" data-datatable-column="type">
+                                            <th className="w-[120px] text-center" data-datatable-column="type">
                                                 <span className="sort">
                                                     <span className="sort-label">Type</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[150px] text-center" data-datatable-column="description">
-                                                <span className="sort">
-                                                    <span className="sort-label">Description</span>
-                                                    <span className="sort-icon"></span>
-                                                </span>
-                                            </th>
-                                            <th className="w-[150px] text-center" data-datatable-column="price">
+                                            <th className="w-[120px] text-center" data-datatable-column="price">
                                                 <span className="sort">
                                                     <span className="sort-label">Price</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[110px] text-center" data-datatable-column="created_at">
+                                            <th className="w-[120px] text-center" data-datatable-column="created_at">
                                                 <span className="sort">
                                                     <span className="sort-label">Action</span>
                                                     <span className="sort-icon"></span>

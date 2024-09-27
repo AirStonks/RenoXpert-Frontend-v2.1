@@ -12,8 +12,8 @@ function Footer() {
                     <a className="hover:text-primary" href="">
                         FAQ
                     </a>
-                    <a className="hover:text-primary" href="">
-                        Developer
+                    <a className="hover:text-primary" href="https://keenthemes.com/metronic/tailwind/docs/">
+                        Metronic Doc
                     </a>
                     <a className="hover:text-primary" href="">
                         Feedback

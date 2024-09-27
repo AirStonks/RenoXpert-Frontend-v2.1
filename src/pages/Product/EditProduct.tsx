@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import useFetchProduct from '../../hook/useFetchProduct';
 import Loading from '../../components/Loading';
 import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
-import Dropdown from '../../components/Dropdown/Dropdown';
+import Dropdown from '../../components/Forms/Dropdown/Dropdown';
 import { Product, ProductCategory } from '../../types';
 import { removeProduct, updateProduct } from '../../services/api';
 import { Slide, toast } from 'react-toastify';
@@ -30,9 +30,6 @@ const EditProduct: React.FC = () => {
         price: '',
         status: ''
     });
-
-    console.log(product);
-
 
     const [selectedProduct, setSelectedProduct] = useState<{ id: number, name: string } | null>(null);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -72,6 +69,7 @@ const EditProduct: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
+        
         setFormData((prevData) => ({
             ...prevData,
             [name]: value
