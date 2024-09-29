@@ -1,4 +1,4 @@
-// src\pages\Order\EditOrderQuotation.tsx
+// src\pages\Order\EditNewOrderQuotation.tsx
 
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -10,12 +10,10 @@ import IncludeOrderQuotationPackageModal from "../../components/Modals/IncludeOr
 import IncludeQuotationProductModal from "../../components/Modals/IncludeQuotationProductModal";
 
 
-function EditOrderQuotation() {
+function EditNewOrderQuotation() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
-    const { quoteId } = useParams<{ quoteId: string }>();
-    const orderId = id ? parseInt(id, 10) : null;
-    const quotationId = quoteId ? parseInt(quoteId, 10) : null;
+    const quotationId = id ? parseInt(id, 10) : null;
 
     const { quotationDetail, loading, error } = useFetchQuotation(quotationId);
 
@@ -29,7 +27,7 @@ function EditOrderQuotation() {
 
     const handleBackClick = () => {
         localStorage.removeItem('selected_quotation_packages');
-        navigate('/orders/edit/' + orderId);
+        navigate('/orders/create');
     };
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -418,4 +416,4 @@ function EditOrderQuotation() {
     );
 }
 
-export default EditOrderQuotation;
+export default EditNewOrderQuotation;

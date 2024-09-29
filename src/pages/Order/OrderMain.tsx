@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import OrderTable from '../../components/Tables/OrderTable';
 // import CreatePropertyModal from '../../components/Modals/CreatePropertyModal';
 // import PropertyTable from '../../components/Tables/PropertyTable';
 
@@ -29,8 +30,8 @@ function OrderMain() {
                     </div>
                 </div>
 
-                {/* <PropertyTable  />
-                <CreatePropertyModal /> */}
+                <OrderTable  />
+                {/* <CreatePropertyModal /> */}
             </div>
         </>
     );

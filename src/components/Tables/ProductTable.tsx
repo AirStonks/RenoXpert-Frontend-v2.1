@@ -120,15 +120,33 @@ function ProductTable() {
                     title: 'Actions',
                     render: (item: number, data: Product) => `
                         <div class="flex justify-around gap-2">
-                            <button class="btn-edit btn btn-sm btn-icon btn-clear btn-light" data-tooltip="#edit_tooltip" data-action="edit" data-id="${item}">
+                            <button
+                                class="btn-edit btn btn-sm btn-icon btn-clear btn-light"
+                                data-tooltip="#edit_tooltip"
+                                data-action="edit"
+                                data-id="${item}
+                            >
                                 <i class="ki-outline ki-notepad-edit"></i>
                             </button>
 
-                            <button class="btn-delete btn btn-sm btn-icon btn-clear btn-light" data-tooltip="#remove_tooltip" data-action="delete" data-id="${item}" data-name="${data.name}" data-modal-toggle="#delete_item_modal">
+                            <button
+                                class="btn-delete btn btn-sm btn-icon btn-clear btn-light"
+                                data-tooltip="#remove_tooltip"
+                                data-action="delete"
+                                data-id="${item}"
+                                data-name="${data.name}"
+                                data-modal-toggle="#delete_item_modal
+                            >
                                 <i class="ki-outline ki-trash"></i>
                             </button>
 
-                            <button class="btn-delete btn btn-sm btn-icon btn-clear btn-light" data-tooltip="#other_tooltip" data-action="delete" data-id="${item}" data-name="${data.name}">
+                            <button
+                                class="btn-delete btn btn-sm btn-icon btn-clear btn-light"
+                                data-tooltip="#other_tooltip"
+                                data-action="delete"
+                                data-id="${item}"
+                                data-name="${data.name}"
+                            >
                                 <i class="ki-outline ki-mouse-square"></i>
                             </button>
                         </div>

@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { Contact, Package, Product, ProductCategory, Property, Quotation } from '../types';
+import { Contact, Order, Package, Product, ProductCategory, Property, Quotation } from '../types';
 
 const API_URL = 'http://' + window.location.hostname + ':8000/api/';
 
@@ -421,3 +421,43 @@ export const removeProperty = async (propertyId: number) => {
         throw error; // Ensure to throw the error if needed
     }
 }
+
+export const createOrder = async (orderData: Order) => {
+    try {
+        const response = await axios.post(API_URL + 'orders', orderData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchOrder = async (orderId: number) => {
+    try {
+        const response = await axios.get(API_URL + `orders/${orderId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const updateOrder = async (orderData: Order) => {
+    try {
+        const response = await axios.put(API_URL + `orders/${orderData.id}`, orderData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};

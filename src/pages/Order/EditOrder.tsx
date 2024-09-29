@@ -1,16 +1,21 @@
 // src\pages\Order\CreateOrder.tsx
 
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createOrder, fetchContact, fetchContacts, fetchProperties, fetchProperty, fetchQuotation, fetchQuotations } from '../../services/api';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createOrder, fetchContact, fetchContacts, fetchProperties, fetchProperty, fetchQuotation, fetchQuotations, updateOrder } from '../../services/api';
 import { Contact, Order, Property, Quotation } from '../../types';
 import { KTDropdown } from '../../metronic/core';
 import { Package } from '../../types/index';
 import { Link } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
+import useFetchOrder from '../../hook/useFetchOrder';
+import Loading from '../../components/Loading';
 
-function CreateOrder() {
+function EditOrder() {
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
+    const orderId = id ? parseInt(id, 10) : null;
+
     const [searchContactTerm, setSearchContactTerm] = useState('');
     const [searchPropertyTerm, setSearchPropertyTerm] = useState('');
     const [searchQuotationTerm, setSearchQuotationTerm] = useState('');
@@ -21,6 +26,9 @@ function CreateOrder() {
     const inputContactRef = useRef(null);
     const inputPropertyRef = useRef(null);
     const inputQuotationRef = useRef(null);
+
+    
+    const { orderDetail, loading, error } = useFetchOrder(orderId);
 
     const [formData, setFormData] = useState({
         contactId: '',
@@ -52,29 +60,50 @@ function CreateOrder() {
 
     useEffect(() => {
 
-        const sessionData = localStorage.getItem('create_order_data');
+        if (orderDetail) {           
 
-        if (sessionData) {
+            setFormData({
+                contactId: orderDetail.contact_id || '',
+                propertyId: orderDetail.property_id || '',
+                quotationId: orderDetail.latest_quotation.id || '',
+                block: orderDetail.block || '',
+                floor: orderDetail.floor || '',
+                unitNo: orderDetail.unit_no || '',
+                status: orderDetail.status || '',
+            });
 
-            const parsedSessionData = JSON.parse(sessionData);
-
-            setFormData(parsedSessionData);
-
-            if (parsedSessionData.contactId) {
-                handleSelectContactById(parsedSessionData.contactId);
+            const tmpEditOrder = {
+                contactId: orderDetail.contact_id || '',
+                propertyId: orderDetail.property_id || '',
+                quotationId: orderDetail.latest_quotation.id || '',
+                block: orderDetail.block || '',
+                floor: orderDetail.floor || '',
+                unitNo: orderDetail.unit_no || '',
+                status: orderDetail.status || '',
             }
 
-            if (parsedSessionData.propertyId) {
-                handleSelectPropertytById(parsedSessionData.propertyId);
+            localStorage.setItem('edit_order_data', JSON.stringify(tmpEditOrder));
+
+            if (!localStorage.getItem('include_packages')) {
+                localStorage.setItem('include_packages', JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)));
+            }
+            
+
+            if (orderDetail.contact_id) {
+                handleSelectContactById(Number(orderDetail.contact_id));
             }
 
-            if (parsedSessionData.quotationId) {
-                handleSelectQuotationtById(parsedSessionData.quotationId);
+            if (orderDetail.property_id) {
+                handleSelectPropertytById(Number(orderDetail.property_id));
+            }
+
+            if (orderDetail.latest_quotation.id) {
+                handleSelectQuotationtById(Number(orderDetail.latest_quotation.id));
             }
         }
 
         initDropdown();
-    }, []);
+    }, [orderDetail]);
 
     const initDropdown = async () => {
         const contractEl = document.querySelector('#contract_dropdown') as HTMLElement;
@@ -123,7 +152,7 @@ function CreateOrder() {
     }
 
     const handleBackClick = () => {
-        localStorage.removeItem('create_order_data');
+        localStorage.removeItem('edit_order_data');
         localStorage.removeItem('include_packages');
         localStorage.removeItem('selected_quotation_packages');
         navigate('/orders');
@@ -167,7 +196,7 @@ function CreateOrder() {
 
     const handleEditQuotation = () => {
         console.log(formData);
-        localStorage.setItem('create_order_data', JSON.stringify(formData));
+        localStorage.setItem('edit_order_data', JSON.stringify(formData));
     };
 
     const handleSelectContact = async (contact: Contact) => {
@@ -188,7 +217,7 @@ function CreateOrder() {
         setSelectedProperty(property);
         setSearchPropertyTerm('');
         setProperties([]);
-        localStorage.setItem('create_order_data', JSON.stringify(formData));
+        localStorage.setItem('edit_order_data', JSON.stringify(formData));
     };
 
     const handleSelectQuotation = async (quotation: Quotation) => {
@@ -263,6 +292,8 @@ function CreateOrder() {
                 localStorage.setItem('include_packages', JSON.stringify(data.data.metadata));
 
                 storedPackages = JSON.stringify(data.data.metadata);
+
+                
             }
 
             setSelectedPackages(JSON.parse(storedPackages));
@@ -290,6 +321,7 @@ function CreateOrder() {
 
     const handleSubmit = async () => {
         const newOrder: Order = {
+            id: orderDetail.id,
             contact_id: selectedContact.id,
             property_id: selectedProperty.id,
             quotation_id: selectedQuotation.id,
@@ -300,13 +332,10 @@ function CreateOrder() {
             metadata: JSON.parse(localStorage.getItem('include_packages')),
         }
 
-        console.log(newOrder);
-
-
-        const response = await createOrder(newOrder);
+        const response = await updateOrder(newOrder);
 
         if (response?.success) {
-            notify('success', "Order Created Successfully!");
+            notify('success', "Quotation Created Successfully!");
             navigate('/orders');
             console.log(response);
         } else {
@@ -319,6 +348,10 @@ function CreateOrder() {
         console.log(formData);
 
     }
+
+    if (loading) return <Loading />;
+    if (error) return <div>{error}</div>;
+    if (!orderDetail) return <div>Order not found</div>;
 
     return (
         <>
@@ -549,7 +582,7 @@ function CreateOrder() {
                                                 </div>
                                                 <div className="flex actions">
                                                     <Link
-                                                        to={'/orders/quotation/edit/' + selectedQuotation.id}
+                                                        to={'/orders/edit/' + orderId + '/quotation/edit/' + selectedQuotation.id}
                                                         className="btn btn-primary btn-lg"
                                                         data-id={selectedQuotation.id}
                                                         onClick={handleEditQuotation}
@@ -646,11 +679,11 @@ function CreateOrder() {
                     className="btn btn-lg btn-primary"
                     onClick={handleSubmit}
                 >
-                    Create
+                    Update
                 </button>
             </div>
         </>
     );
 }
 
-export default CreateOrder;
+export default EditOrder;

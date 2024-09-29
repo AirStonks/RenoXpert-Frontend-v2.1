@@ -77,12 +77,28 @@ export interface Order {
     id?: string,
     order_no?: string,
     contact_id?: string,
+    contact?: Contact,
     property_id?: string,
+    property?: Property,
     quotation_id?: string,
+    order_quotations?: OrderQuotation[],
+    latest_quotation?: OrderQuotation,
     block?: string,
     floor?: string,
     unit_no?: string,
     unit_name?: string,
+    total_amount?: number,
     description?: string,
+    status?: string,
+    metadata?: JSON,
+}
+
+export interface OrderQuotation {
+    id?: string,
+    order_id?: string,
+    order?: Order,
+    quotation_id?: string,
+    quotation?: Quotation,
+    version: number,
     metadata?: JSON,
 }

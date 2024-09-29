@@ -24,6 +24,8 @@ import ContactMain from './pages/Contact/ContactMain';
 import PropertyMain from './pages/Property/PropertyMain';
 import OrderMain from './pages/Order/OrderMain';
 import CreateOrder from './pages/Order/CreateOrder';
+import EditNewOrderQuotation from './pages/Order/EditNewOrderQuotation';
+import EditOrder from './pages/Order/EditOrder';
 import EditOrderQuotation from './pages/Order/EditOrderQuotation';
 
 interface ProtectedLayoutProps {
@@ -85,8 +87,9 @@ const routes = [
   { path: '/orders', element: <OrderMain /> },
   // { path: '/contacts/:id', element: <ProductEdit /> },
   { path: '/orders/create', element: <CreateOrder /> },
-  { path: '/orders/quotation/edit/:id', element: <EditOrderQuotation /> },
-  // { path: '/contacts/edit/:id', element: <EditQuotation /> },
+  { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation /> },
+  { path: '/orders/edit/:id', element: <EditOrder /> },
+  { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation /> },
 ];
 
 function App() {
