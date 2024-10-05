@@ -19,7 +19,9 @@ export interface Product {
     }
     type?: string;
     description?: string;
-    price?: number;
+    product_retail_price?: number;
+    product_cost_of_good_sold?: number;
+    product_excluded_price?: number;
     status?: string;
     premium_price?: number;
     created_at?: string;
@@ -101,4 +103,47 @@ export interface OrderQuotation {
     quotation?: Quotation,
     version: number,
     metadata?: JSON,
+}
+
+export interface Sale {
+    id?: string,
+    sales_no?: string,
+    order_id?: string,
+    order?: Order,
+    invoices?: Invoice[],
+    user_id?: string,
+    user?: string,
+    description?: string,
+    total_amount?: number,
+    remaining_amount?: number,
+    remaining_percentage?: number,
+    status?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface DiscountFee {
+    id?: string,
+    name?: string,
+    type?: string,
+    valueType?: string,
+    amount?: number,
+    percentage?: number,
+    status?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface Invoice {
+    id?: string,
+    sale_id?: string,
+    sale?: Sale,
+    invoice_no?: string,
+    percentage?: number,
+    amount?: number,
+    status?: string,
+    discountsData?: string | object;
+    feesData?: string | object;
+    created_at?: string,
+    updated_at?: string,
 }

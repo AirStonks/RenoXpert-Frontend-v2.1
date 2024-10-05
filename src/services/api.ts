@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { Contact, Order, Package, Product, ProductCategory, Property, Quotation } from '../types';
+import { Contact, DiscountFee, Invoice, Order, Package, Product, ProductCategory, Property, Quotation, Sale } from '../types';
 
 const API_URL = 'http://' + window.location.hostname + ':8000/api/';
 
@@ -459,5 +459,159 @@ export const updateOrder = async (orderData: Order) => {
         return response.data;
     } catch (error) {
         handle401Error(error as AxiosError);
+    }
+};
+
+export const removeOrder = async (orderId: number) => {
+    try {
+        const response = await axios.delete(API_URL + `orders/${orderId}`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const confirmOrder = async (orderId: number) => {
+    try {
+        const response = await axios.get(API_URL + `orders/${orderId}/confirm`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchSale = async (saleId: number) => {
+    try {
+        const response = await axios.get(API_URL + `sales/${saleId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const updateSale = async (saleData: Sale) => {
+    try {
+        const response = await axios.put(API_URL + `sales/${saleData.id}`, saleData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const createDiscountFee = async (discountFeeData: DiscountFee) => {
+    try {
+        const response = await axios.post(API_URL + 'discountFees', discountFeeData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchDiscountFee = async (discountFeeId: number) => {
+    try {
+        const response = await axios.get(API_URL + `discountFees/${discountFeeId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const fetchDiscountFees = async (searchTerm = '', length = 5, type = 'fee') => {
+    try {
+        const response = await axios.get(API_URL + 'discountFees', {
+            headers: getAuthHeaders(),
+            params: {
+                search: searchTerm,
+                size: length,
+                type: type
+            }
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const updateDiscountFee = async (discountFeeData: DiscountFee) => {
+    try {
+        const response = await axios.put(API_URL + `discountFees/${discountFeeData.id}`, discountFeeData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const removeDiscountFee = async (discountFeeId: number) => {
+    try {
+        const response = await axios.delete(API_URL + `discountFees/${discountFeeId}`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const createInvoice = async (invoiceData: Invoice) => {
+    try {
+        const response = await axios.post(API_URL + 'invoices', invoiceData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchInvoice = async (invoiceId: number) => {
+    try {
+        const response = await axios.get(API_URL + `invoices/${invoiceId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
     }
 };

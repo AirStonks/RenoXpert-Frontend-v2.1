@@ -11,7 +11,7 @@ interface QuotationDetailModalProps {
     orderId: number | null;
 }
 
-function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
+function SaleInvoicesModal({ orderId }: QuotationDetailModalProps) {
     const { orderDetail, loading, error } = useFetchOrder(orderId);
 
     useEffect(() => {
@@ -29,7 +29,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
     if (!orderId) return null; // Early return for null orderId
 
     const handleCloseModal = () => {
-        const modalEl = document.querySelector('#order_detail_modal') as HTMLElement;
+        const modalEl = document.querySelector('#sale_invoices_modal') as HTMLElement;
         const modal = KTModal.getInstance(modalEl);
 
         modal.hide();
@@ -307,11 +307,11 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
             <div
                 className="modal p-14"
                 data-modal="true"
-                id="order_detail_modal"
+                id="sale_invoices_modal"
                 aria-modal="true"
                 role="dialog"
             >
-                <div className="modal-content modal-center-y max-w-[1024px] h-[580px] max-h-[580px]">
+                <div className="modal-content modal-overlay">
                     <div className="modal-header py-4 px-5">
                         <span className="text-lg text-gray-900 font-bold">Order Detail</span>
                         <button
@@ -333,4 +333,4 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
     );
 }
 
-export default OrderDetailModal;
+export default SaleInvoicesModal;

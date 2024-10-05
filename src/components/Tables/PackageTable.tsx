@@ -21,8 +21,6 @@ function PackageTable() {
                 setSelectedPackageId(parseInt(id, 10));
             }
         } else if (deleteButton) {
-            console.log('yes');
-
             const id = deleteButton.dataset.id;
             const name = deleteButton.dataset.name;
 

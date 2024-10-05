@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createOrder, fetchContact, fetchContacts, fetchProperties, fetchProperty, fetchQuotation, fetchQuotations, updateOrder } from '../../services/api';
+import { fetchContact, fetchContacts, fetchProperties, fetchProperty, fetchQuotations, updateOrder } from '../../services/api';
 import { Contact, Order, Property, Quotation } from '../../types';
 import { KTDropdown } from '../../metronic/core';
 import { Package } from '../../types/index';
@@ -27,7 +27,7 @@ function EditOrder() {
     const inputPropertyRef = useRef(null);
     const inputQuotationRef = useRef(null);
 
-    
+
     const { orderDetail, loading, error } = useFetchOrder(orderId);
 
     const [formData, setFormData] = useState({
@@ -60,12 +60,12 @@ function EditOrder() {
 
     useEffect(() => {
 
-        if (orderDetail) {           
+        if (orderDetail) {
 
             setFormData({
                 contactId: orderDetail.contact_id || '',
                 propertyId: orderDetail.property_id || '',
-                quotationId: orderDetail.latest_quotation.id || '',
+                quotationId: orderDetail.latest_quotation.quotation_id || '',
                 block: orderDetail.block || '',
                 floor: orderDetail.floor || '',
                 unitNo: orderDetail.unit_no || '',
@@ -75,7 +75,7 @@ function EditOrder() {
             const tmpEditOrder = {
                 contactId: orderDetail.contact_id || '',
                 propertyId: orderDetail.property_id || '',
-                quotationId: orderDetail.latest_quotation.id || '',
+                quotationId: orderDetail.latest_quotation.quotation_id || '',
                 block: orderDetail.block || '',
                 floor: orderDetail.floor || '',
                 unitNo: orderDetail.unit_no || '',
@@ -87,7 +87,7 @@ function EditOrder() {
             if (!localStorage.getItem('include_packages')) {
                 localStorage.setItem('include_packages', JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)));
             }
-            
+
 
             if (orderDetail.contact_id) {
                 handleSelectContactById(Number(orderDetail.contact_id));
@@ -98,7 +98,7 @@ function EditOrder() {
             }
 
             if (orderDetail.latest_quotation.id) {
-                handleSelectQuotationtById(Number(orderDetail.latest_quotation.id));
+                handleSelectQuotationtById();
             }
         }
 
@@ -273,42 +273,27 @@ function EditOrder() {
         }
     };
 
-    const handleSelectQuotationtById = async (id: number) => {
-
+    const handleSelectQuotationtById = async () => {
         try {
-            const data = await fetchQuotation(id); // Assuming you have a similar fetch function
+            const latestQuotation = orderDetail.latest_quotation.quotation;
+            latestQuotation.metadata = orderDetail.latest_quotation.metadata;
 
-            setFormData((prev) => ({
-                ...prev,
-                quotationId: data.data.id,
-            }));
-            setSelectedQuotation(data.data);
-            setSearchQuotationTerm('');
-            setQuotations([]);
+            console.log('OrderDetail: ', orderDetail);
 
             let storedPackages = localStorage.getItem('include_packages');
 
             if (!storedPackages) {
-                localStorage.setItem('include_packages', JSON.stringify(data.data.metadata));
+                localStorage.setItem('include_packages', JSON.stringify(orderDetail.latest_quotation.metadata));
 
-                storedPackages = JSON.stringify(data.data.metadata);
-
-                
+                storedPackages = JSON.stringify(orderDetail.latest_quotation.metadata);
             }
 
+            setSelectedQuotation(latestQuotation);
             setSelectedPackages(JSON.parse(storedPackages));
 
         } catch (error) {
-            console.error('Error fetching properties:', error);
+            console.error('Error fetching latest quotation:', error);
         }
-
-        // setFormData((prev) => ({
-        //     ...prev,
-        //     quotationId: quotation.id,
-        // }));
-        // setSelectedQuotation(quotation);
-        // setSearchQuotationTerm('');
-        // setQuotations([]);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -332,6 +317,8 @@ function EditOrder() {
             metadata: JSON.parse(localStorage.getItem('include_packages')),
         }
 
+        console.log(newOrder);
+
         const response = await updateOrder(newOrder);
 
         if (response?.success) {
@@ -342,11 +329,6 @@ function EditOrder() {
             console.log(response);
 
         }
-    }
-
-    const testOutput = async () => {
-        console.log(formData);
-
     }
 
     if (loading) return <Loading />;
@@ -361,12 +343,9 @@ function EditOrder() {
                         <i className="ki-solid ki-arrow-left"></i>
                     </button>
                     <span className="text-2xl font-bold text-gray-900">
-                        New Order
+                        Revise Order
                     </span>
                     <span></span>
-                    <button className='btn btn-primary' onClick={testOutput}>
-                        Test
-                    </button>
                 </div>
             </div>
 
@@ -529,9 +508,32 @@ function EditOrder() {
 
                             <div className="flex flex-col gap-4">
                                 <div className="flex flex-col gap-2">
-                                    <span className="text-base font-semibold text-gray-900">
-                                        3. Select a Quotation
-                                    </span>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-base font-semibold text-gray-900">
+                                            3. Select a Quotation
+                                        </span>
+                                        <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                                            <button
+                                                className="dropdown-toggle btn btn-sm btn-outline btn-info btn-icon-xs">
+                                                Previous Version
+                                                <i className="ki-outline ki-down dropdown-open:hidden">
+                                                </i>
+                                                <i className="ki-outline ki-up hidden dropdown-open:block">
+                                                </i>
+                                            </button>
+                                            <div className="dropdown-content w-full max-w-48">
+                                                <div className="menu menu-default flex flex-col">
+                                                    {orderDetail.order_quotations.slice(1).map((orderQuotation, index) => (
+                                                        <div className="menu-item" key={index} data-id={orderQuotation.id}>
+                                                            <button className="menu-link">
+                                                                <span className="menu-title">Version {orderQuotation.version}</span>
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
                                         <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
                                             <span>Quotation</span>

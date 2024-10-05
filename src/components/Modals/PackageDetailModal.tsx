@@ -156,10 +156,10 @@ function PackageDetailModal({ packageId, onClose }: PackageDetailModalProps) {
                                                 </span>
                                             </td>
                                             <td>
-                                                RM {product.price.toFixed(2)}
+                                                RM {product.product_retail_price.toFixed(2)}
                                             </td>
                                             <td>
-                                                RM {(product.price * product.pivot.quantity).toFixed(2)}
+                                                RM {(product.product_retail_price * product.pivot.quantity).toFixed(2)}
                                             </td>
                                         </tr>
                                     ))}

@@ -2,18 +2,19 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { KTDataTable, KTModal } from '../../metronic/core';
-import { Order } from '../../types';
+import { Order, Sale } from '../../types';
 import { useNavigate } from 'react-router-dom';
-import OrderDetailModal from '../Modals/OrderDetailModal';
-import DeleteModal from '../Modals/DeleteModal';
-import { confirmOrder, removeOrder } from '../../services/api';
+// import OrderDetailModal from '../Modals/OrderDetailModal';
+// import DeleteModal from '../Modals/DeleteModal';
+import { confirmOrder } from '../../services/api';
 import { KTDataTableConfigInterface } from '../../metronic/core/components/datatable';
 import { Slide, toast } from 'react-toastify';
+import SaleInvoicesModal from '../Modals/SaleInvoicesModal';
 
-function OrderTable() {
+function SalesTable() {
     const navigate = useNavigate();
-    const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-    const [selectedOrder, setSelectedOrder] = useState<{ id: number, name: string } | null>(null);
+    const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
+    // const [selectedOrder, setSelectedOrder] = useState<{ id: number, name: string } | null>(null);
 
     let datatable;
     let element: HTMLElement;
@@ -67,9 +68,7 @@ function OrderTable() {
         } else if (viewButton) {
             const id = viewButton.dataset.id;
 
-            if (id) {
-                setSelectedOrderId(parseInt(id, 10));
-            }
+            navigate('/sales/' + id);
         } else if (confirmButton) {
             const id = confirmButton.dataset.id;
             console.log('ID: ', id);
@@ -95,8 +94,8 @@ function OrderTable() {
     }, []);
 
     const initContactTable = () => {
-        const apiUrl = 'http://' + window.location.hostname + ':8000/api/orders';
-        element = document.querySelector('#order_table') as HTMLElement;
+        const apiUrl = 'http://' + window.location.hostname + ':8000/api/sales';
+        element = document.querySelector('#sales_table') as HTMLElement;
         const token = localStorage.getItem('token');
 
         dataTableOptions = {
@@ -108,7 +107,7 @@ function OrderTable() {
             pageSize: 5,
             stateSave: false,
             columns: {
-                order_no: {
+                sales_no: {
                     title: 'Order No.',
                     render: (item: string, data: Order) => `
                         <div class="flex flex-col gap-1">
@@ -116,7 +115,6 @@ function OrderTable() {
                                 class="cursor-pointer text-orange-500"
                                 data-action="view"
                                 data-id=${data.id}
-                                data-modal-toggle="#order_detail_modal"
                             >
                                 ${item}
                             </a>
@@ -129,8 +127,8 @@ function OrderTable() {
                         <div class="flex flex-col gap-1">
                             <div class="flex items-center">
                                 <span class="badge badge-pill p-2 cursor-default
-                                    ${item === 'confirmed' ? 'badge-success' : ''} 
-                                    ${item === 'revoked' ? 'badge-danger' : ''} 
+                                    ${item === 'issued' ? 'badge-primary' : ''} 
+                                    ${item === 'closed' ? 'badge-success' : ''} 
                                     badge-outline"
                                 >
                                     ${item}
@@ -139,102 +137,108 @@ function OrderTable() {
                         </div>
                     `
                 },
-                contact: {
-                    title: 'Contact',
-                    render: (item: string, data: Order) => `
+                total_amount: {
+                    title: 'Total Amount',
+                    render: (item: number) => `
                         <div class="flex flex-col gap-1">
-                            <span>${data.contact.name}</span>
-                            <span class="text-xs text-slate-400">${data.contact.email}</span>
-                            <span class="text-xs text-slate-700">${data.contact.phone_no}</span>
+                            <span>RM ${item.toFixed(2)}</span>
                         </div>
                     `,
                 },
-                unit: {
-                    title: 'Unit',
-                    render: (item: string, data: Order) => `
+                paid_amount: {
+                    title: 'Paid Amount',
+                    render: (item: number, data: Sale) => `
                         <div class="flex flex-col gap-1">
-                            <span>${data.block}-${data.floor}-${data.unit_no}</span>
+                            <span>RM ${(data.total_amount - data.remaining_amount).toFixed(2)}</span>
                         </div>
                     `,
                 },
-                property: {
-                    title: 'Property',
-                    render: (item: string, data: Order) => `
+                remaining_amount: {
+                    title: 'Balance (Amount)',
+                    render: (item: number) => `
                         <div class="flex flex-col gap-1">
-                            <span>${data.property.name}</span>
+                            <span>RM ${item.toFixed(2)}</span>
                         </div>
                     `,
                 },
-                action: {
-                    title: 'Action',
-                    render: (item: string, data: Order) => {
-                        const isConfirmed = data.status === 'confirmed';
-                        const isRevoked = data.status === 'revoked';
+                remaining_percentage: {
+                    title: 'Balance (%)',
+                    render: (item: number) => `
+                        <div class="flex flex-col gap-1">
+                            <span>${item * 100}%</span>
+                        </div>
+                    `,
+                },
+                // action: {
+                //     title: 'Action',
+                //     render: (item: string, data: Order) => {
+                //         const isConfirmed = data.status === 'confirmed';
+                //         const isRevoked = data.status === 'revoked';
 
-                        return `
-                            <div class="flex justify-around gap-2">
-                                ${!isConfirmed && !isRevoked ? `
-                                    <button 
-                                        class="btn-confirm btn btn-sm btn-success"
-                                        data-tooltip="#confirm_tooltip"
-                                        data-action="confirm"
-                                        data-id="${data.id}"
-                                    >
-                                        Confirm
-                                    </button>
-                                    <button 
-                                        class="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                        data-tooltip="#edit_tooltip"
-                                        data-action="edit"
-                                        data-id="${data.id}"
-                                    >
-                                        <i class="ki-outline ki-notepad-edit"></i>
-                                    </button>
-                                    <button 
-                                        class="btn-delete btn btn-sm btn-icon btn-clear btn-light"
-                                        data-tooltip="#remove_tooltip"
-                                        data-action="delete"
-                                        data-id="${data.id}"
-                                        data-name="${data.order_no}"
-                                        data-modal-toggle="#delete_item_modal"
-                                    >
-                                        <i class="ki-outline ki-trash"></i>
-                                    </button>
-                                ` : ''}
+                //         return `
+                //             <div class="flex justify-around gap-2">
+                //                 ${!isConfirmed && !isRevoked ? `
+                //                     <button 
+                //                         class="btn-confirm btn btn-sm btn-success"
+                //                         data-tooltip="#confirm_tooltip"
+                //                         data-action="confirm"
+                //                         data-id="${data.id}"
+                //                     >
+                //                         Confirm
+                //                     </button>
+                //                     <button 
+                //                         class="btn-edit btn btn-sm btn-icon btn-clear btn-light"
+                //                         data-tooltip="#edit_tooltip"
+                //                         data-action="edit"
+                //                         data-id="${data.id}"
+                //                     >
+                //                         <i class="ki-outline ki-notepad-edit"></i>
+                //                     </button>
+                //                     <button 
+                //                         class="btn-delete btn btn-sm btn-icon btn-clear btn-light"
+                //                         data-tooltip="#remove_tooltip"
+                //                         data-action="delete"
+                //                         data-id="${data.id}"
+                //                         data-name="${data.order_no}"
+                //                         data-modal-toggle="#delete_item_modal"
+                //                     >
+                //                         <i class="ki-outline ki-trash"></i>
+                //                     </button>
+                //                 ` : ''}
                 
-                                ${isConfirmed ? `
-                                    <button 
-                                        class="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                        data-tooltip="#edit_tooltip"
-                                        data-action="edit"
-                                        data-id="${data.id}"
-                                    >
-                                        <i class="ki-outline ki-notepad-edit"></i>
-                                    </button>
-                                    <button 
-                                        class="btn-revoke btn btn-sm btn-danger"
-                                        data-tooltip="#revoke_tooltip"
-                                        data-action="revoke"
-                                        data-id="${data.id}"
-                                    >
-                                        Revoke
-                                    </button>
-                                ` : ''}
+                //                 ${isConfirmed ? `
+                //                     <button 
+                //                         class="btn-edit btn btn-sm btn-icon btn-clear btn-light"
+                //                         data-tooltip="#edit_tooltip"
+                //                         data-action="edit"
+                //                         data-id="${data.id}"
+                //                     >
+                //                         <i class="ki-outline ki-notepad-edit"></i>
+                //                     </button>
+                //                     <button 
+                //                         class="btn-revoke btn btn-sm btn-danger"
+                //                         data-tooltip="#revoke_tooltip"
+                //                         data-action="revoke"
+                //                         data-id="${data.id}"
+                //                     >
+                //                         Revoke
+                //                     </button>
+                //                 ` : ''}
                 
-                                ${isRevoked ? `
-                                    <button 
-                                        class="btn-regenerate btn btn-sm btn-warning"
-                                        data-tooltip="#regenerate_tooltip"
-                                        data-action="regenerate"
-                                        data-id="${data.id}"
-                                    >
-                                        Regenerate Order
-                                    </button>
-                                ` : ''}
-                            </div>
-                        `;
-                    }
-                }
+                //                 ${isRevoked ? `
+                //                     <button 
+                //                         class="btn-regenerate btn btn-sm btn-warning"
+                //                         data-tooltip="#regenerate_tooltip"
+                //                         data-action="regenerate"
+                //                         data-id="${data.id}"
+                //                     >
+                //                         Regenerate Order
+                //                     </button>
+                //                 ` : ''}
+                //             </div>
+                //         `;
+                //     }
+                // }
 
             },
         };
@@ -271,9 +275,9 @@ function OrderTable() {
         // KTDataTable.getInstance(datatableEl).reload();
     }
 
-    const handleCloseModal = async () => {
-        setSelectedOrderId(null);
-    };
+    // const handleCloseModal = async () => {
+    //     setSelectedOrderId(null);
+    // };
 
     return (
         <>
@@ -281,7 +285,7 @@ function OrderTable() {
                 <div className="card card-grid min-w-full">
                     <div className="card-header flex-wrap gap-2">
                         <h3 className="card-title font-medium text-lg">
-                            Contact List
+                            Sales List
                         </h3>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button
@@ -293,14 +297,14 @@ function OrderTable() {
                         </div>
                     </div>
                     <div className="card-body">
-                        <div data-datatable="true" id="order_table">
+                        <div data-datatable="true" id="sales_table">
                             <div className="scrollable-x-auto">
                                 <table className="table table-auto align-middle text-gray-700 font-medium text-sm" data-datatable-table="true">
                                     <thead>
                                         <tr>
-                                            <th className="w-[100px]" data-datatable-column="order_no">
+                                            <th className="w-[100px]" data-datatable-column="sales_no">
                                                 <span className="sort">
-                                                    <span className="sort-label">Order No.</span>
+                                                    <span className="sort-label">Sales No.</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
@@ -310,21 +314,27 @@ function OrderTable() {
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[120px]" data-datatable-column="contact">
+                                            <th className="w-[120px]" data-datatable-column="total_amount">
                                                 <span className="sort">
-                                                    <span className="sort-label">Contact</span>
+                                                    <span className="sort-label">Total Amount</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[80px]" data-datatable-column="unit">
+                                            <th className="w-[80px]" data-datatable-column="remaining_amount">
                                                 <span className="sort">
-                                                    <span className="sort-label">Unit</span>
+                                                    <span className="sort-label">Paid Amount</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[150px]" data-datatable-column="property">
+                                            <th className="w-[80px]" data-datatable-column="remaining_amount">
                                                 <span className="sort">
-                                                    <span className="sort-label">Property</span>
+                                                    <span className="sort-label">Balance (Amount)</span>
+                                                    <span className="sort-icon"></span>
+                                                </span>
+                                            </th>
+                                            <th className="w-[150px]" data-datatable-column="remaining_percentage">
+                                                <span className="sort">
+                                                    <span className="sort-label">Balance (%)</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
@@ -354,9 +364,9 @@ function OrderTable() {
                 </div>
             </div>
 
-            <OrderDetailModal orderId={selectedOrderId} onClose={handleCloseModal} />
+            <SaleInvoicesModal orderId={1}/>
 
-            <DeleteModal
+            {/* <DeleteModal
                 item={selectedOrder}
                 modalTitle='Remove Order'
                 modalPrompt='Are you sure to permanently remove this order:'
@@ -364,9 +374,9 @@ function OrderTable() {
                 notifyError='Order remove failed'
                 navigateUrl='/orders'
                 deleteFunction={removeOrder}
-            />
+            /> */}
         </>
     );
 }
 
-export default OrderTable;
+export default SalesTable;

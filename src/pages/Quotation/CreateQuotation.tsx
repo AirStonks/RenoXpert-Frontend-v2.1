@@ -21,6 +21,7 @@ function CreateQuotation() {
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [selectedPackages, setSelectedPackages] = useState([]);
+    const [totalAmount, setTotalAmount] = useState<number>(0);
 
     const handleBackClick = () => {
         localStorage.removeItem('include_packages');
@@ -88,10 +89,8 @@ function CreateQuotation() {
             console.log(response);
         } else {
             console.log(response);
-            
+
         }
-        
-        
 
         try {
             console.log('FormData:', formData);
@@ -101,53 +100,6 @@ function CreateQuotation() {
         } catch (error) {
             console.error("Error submitting form data:", error);
         }
-
-
-        // try {
-        //     let newProducts: Product[] = [];
-        //     if (storedPackages) {
-        //         const parsedPackages = JSON.parse(storedPackages);
-        //         newProducts = parsedPackages.map((item: any) => ({
-        //             id: item.id,
-        //             name: item.name,
-        //             quantity: item.quantity, // Adjusting the key to match the Product interface
-        //             price: parseFloat(item.price), // Ensure the price is a number
-        //             // Add other properties if necessary
-        //         }));
-        //     }
-
-
-        //     const packageData: Package = {
-        //         name: formData.packageName,
-        //         total_price: formData.packagePrice,
-        //         description: formData.description,
-        //         products: newProducts,
-        //     };
-
-        //     const response = await createPackage(packageData);
-
-        //     if (response?.success) {
-        //         notify('success', "Package Created Successfully!");
-        //         localStorage.removeItem('include_packages');
-        //         navigate('/packages');
-        //     }
-
-        // } catch (error) {
-        //     if (error.response?.status === 422) {
-        //         // Extract validation errors from the response
-        //         const errors = error.response.data.data || {};
-        //         // Convert array of errors to a single error message for each field
-        //         const formattedErrors = Object.keys(errors).reduce((acc, key) => {
-        //             acc[key] = errors[key].join(' '); // Join array of errors into a single string
-        //             return acc;
-        //         }, {} as Record<string, string>);
-
-        //         setValidationErrors(formattedErrors);
-        //         notify('error', "Product creation unsuccessful. Check the errors below.");
-        //     } else {
-        //         console.error('Product creation failed:', error);
-        //     }
-        // }
     };
 
     const openAddPackageModal = () => {
@@ -168,15 +120,31 @@ function CreateQuotation() {
             setSelectedPackages(JSON.parse(storedPackages));
         }
 
-        console.log('Updated FormData:', formData);
-
-    }, [formData]);
+        setFormData(prevData => ({
+            ...prevData,
+            quotationPrice: totalAmount, // Sync quotationPrice with totalAmount
+        }));
+    
+    }, [totalAmount]);
 
     const updateSelectedPackages = (packages) => {
-        setSelectedPackages(packages);
-        localStorage.setItem('include_packages', JSON.stringify(packages));
+        const updatedPackages = packages.map((prodPackage: Package) => {
+            const totalPrice = prodPackage.products.reduce((sum, product) => {
+                return sum + product.product_retail_price * product.pivot.quantity;
+            }, 0);
+    
+            return {
+                ...prodPackage,
+                total_price: totalPrice // Calculate total price
+            };
+        });
+    
+        setSelectedPackages(updatedPackages);
+        const newTotalAmount = calculateTotalAmount(updatedPackages);
+        setTotalAmount(newTotalAmount); // Update totalAmount
+        updateLocalStorage(updatedPackages);
     };
-
+    
     const updateLocalStorage = (packages) => {
         localStorage.setItem('include_packages', JSON.stringify(packages));
     };
@@ -191,7 +159,6 @@ function CreateQuotation() {
                                 ? product.pivot.quantity + 1
                                 : Math.max(1, product.pivot.quantity - 1);
 
-                            // Return the updated product with new quantity
                             return {
                                 ...product,
                                 pivot: {
@@ -203,52 +170,71 @@ function CreateQuotation() {
                         return product; // Return the original product if not matched
                     });
 
-                    // Return the updated package with modified products
+                    const newTotalPrice = updatedProducts.reduce((sum, product) => {
+                        return sum + product.product_retail_price * product.pivot.quantity;
+                    }, 0);
+
                     return {
                         ...prodPackage,
-                        products: updatedProducts
+                        products: updatedProducts,
+                        total_price: newTotalPrice // Update total price
                     };
                 }
                 return prodPackage; // Return the original package if not matched
             });
 
-            updateLocalStorage(updatedPackages); // Update localStorage
-            return updatedPackages; // Return the updated packages
-        });
-    };
-
-
-    const handleRemoveProduct = (packId: number, prodId: number) => {
-        setSelectedPackages((prevPackages: Package[]) => {
-
-            const updatedPackages = prevPackages.map((prodPackage: Package) => {
-                if (prodPackage.id === packId) {
-                    // Filter out the product with the matching prodId
-                    const updatedProducts = prodPackage.products.filter((product: Product) => product.id !== prodId);
-
-                    // Return a new package object with the updated products
-                    return {
-                        ...prodPackage,
-                        products: updatedProducts
-                    };
-                }
-                return prodPackage; // Return the original package if not matched
-            });
-
-            updateLocalStorage(updatedPackages); // Update localStorage
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+            updateLocalStorage(updatedPackages);
             return updatedPackages;
         });
     };
+
+    const handleRemoveProduct = (packId: number, prodId: number) => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage: Package) => {
+                if (prodPackage.id === packId) {
+                    const updatedProducts = prodPackage.products.filter((product: Product) => product.id !== prodId);
+
+                    const newTotalPrice = updatedProducts.reduce((sum, product) => {
+                        return sum + product.product_retail_price * product.pivot.quantity;
+                    }, 0);
+
+                    return {
+                        ...prodPackage,
+                        products: updatedProducts,
+                        total_price: newTotalPrice // Update total price
+                    };
+                }
+                return prodPackage; // Return the original package if not matched
+            });
+
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+            updateLocalStorage(updatedPackages);
+            return updatedPackages;
+        });
+    };
+
 
     const handleRemovePackage = (packId: number) => {
         setSelectedPackages((prevPackages: Package[]) => {
             // Filter out the package with the matching packId
             const updatedPackages = prevPackages.filter((prodPackage: Package) => prodPackage.id !== packId);
-
+    
+            // Calculate new total amount after removing the package
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+    
             updateLocalStorage(updatedPackages); // Update localStorage
             return updatedPackages;
         });
     };
+
+    const calculateTotalAmount = (packages: Package[]) => {
+        return packages.reduce((sum, pkg) => sum + pkg.total_price, 0);
+    };
+
 
     return (
         <>
@@ -280,17 +266,6 @@ function CreateQuotation() {
                                 error={validationErrors.name}
                             />
 
-                            {/* Price */}
-                            <InputFieldGroup
-                                fieldTitle="Quotation Price"
-                                description="A prodPackage name is required and recommended to be unique."
-                                placeholder="Total Price"
-                                name="quotationPrice"
-                                value={formData.quotationPrice}
-                                onChange={handleChange}
-                                error={validationErrors.price}
-                            />
-
                             {/* Description */}
                             <InputFieldGroup
                                 fieldTitle="Description"
@@ -301,6 +276,24 @@ function CreateQuotation() {
                                 onChange={handleChange}
                                 error={validationErrors.description}
                             />
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-body">
+                            <div className="flex flex-col">
+                                <label className='mb-2 text-sm font-medium text-gray-900'>
+                                    Quotation Total Amount
+                                </label>
+
+                                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                    The total amount will be reflected based on selected products/packages and quantity.
+                                </span>
+
+                                <span className="text-lg font-medium text-gray-900">
+                                    RM {totalAmount.toFixed(2)}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -388,10 +381,10 @@ function CreateQuotation() {
                                                                         </button>
                                                                     </td>
                                                                     <td>
-                                                                        RM {product.price.toFixed(2)}
+                                                                        RM {product.product_retail_price.toFixed(2)}
                                                                     </td>
                                                                     <td>
-                                                                        RM {(product.price * product.pivot.quantity).toFixed(2)}
+                                                                        RM {(product.product_retail_price * product.pivot.quantity).toFixed(2)}
                                                                     </td>
                                                                     <td className='text-center'>
                                                                         <button

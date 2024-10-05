@@ -59,32 +59,32 @@ function ProductTable() {
             pageSize: 5,
             stateSave: false,
             columns: {
-                status: {
-                    title: 'Status',
-                    render: (item: string, data: Product) => {
+                // status: {
+                //     title: 'Status',
+                //     render: (item: string, data: Product) => {
 
-                        let color = 'bg-gray-500';
+                //         let color = 'bg-gray-500';
 
-                        console.log(data);
+                //         console.log(data);
                         
-                        if (item === 'available') {
-                            color = 'bg-success';
-                        }
+                //         if (item === 'available') {
+                //             color = 'bg-success';
+                //         }
 
-                        return `
-                            <div class="p-1" data-tooltip="#status_tooltip_${data.id}">
-                                <span class="badge badge-dot size-2 ${color} ${item}">
-                                </span>
-                            </div>
-                            <div class="tooltip capitalize shadow-default transition-opacity duration-300" id="status_tooltip_${data.id}">
-                                ${item}
-                            </div>
-                        `;
-                    },
-                    createdCell(cell: HTMLElement) {
-                        cell.classList.add('text-center');
-                    },
-                },
+                //         return `
+                //             <div class="p-1" data-tooltip="#status_tooltip_${data.id}">
+                //                 <span class="badge badge-dot size-2 ${color} ${item}">
+                //                 </span>
+                //             </div>
+                //             <div class="tooltip capitalize shadow-default transition-opacity duration-300" id="status_tooltip_${data.id}">
+                //                 ${item}
+                //             </div>
+                //         `;
+                //     },
+                //     createdCell(cell: HTMLElement) {
+                //         cell.classList.add('text-center');
+                //     },
+                // },
                 name: {
                     title: 'Name',
                     createdCell(cell: HTMLElement) {
@@ -112,8 +112,16 @@ function ProductTable() {
                         cell.classList.add('capitalize');
                     },
                 },
-                price: {
-                    title: 'Price',
+                product_retail_price: {
+                    title: 'Retail Price',
+                    render: (item: number) => `RM ${item.toFixed(2)}`, // Format as currency
+                },
+                product_cost_of_good_sold: {
+                    title: 'Cost of Good Sold',
+                    render: (item: number) => `RM ${item.toFixed(2)}`, // Format as currency
+                },
+                product_excluded_price: {
+                    title: 'Excluded Price',
                     render: (item: number) => `RM ${item.toFixed(2)}`, // Format as currency
                 },
                 id: {
@@ -124,7 +132,7 @@ function ProductTable() {
                                 class="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                                 data-tooltip="#edit_tooltip"
                                 data-action="edit"
-                                data-id="${item}
+                                data-id="${item}"
                             >
                                 <i class="ki-outline ki-notepad-edit"></i>
                             </button>
@@ -135,7 +143,7 @@ function ProductTable() {
                                 data-action="delete"
                                 data-id="${item}"
                                 data-name="${data.name}"
-                                data-modal-toggle="#delete_item_modal
+                                data-modal-toggle="#delete_item_modal"
                             >
                                 <i class="ki-outline ki-trash"></i>
                             </button>
@@ -219,13 +227,7 @@ function ProductTable() {
                                 <table className="table table-auto align-middle text-gray-700 font-medium text-sm" data-datatable-table="true">
                                     <thead>
                                         <tr>
-                                            <th className="w-[50px] text-center" data-datatable-column="status">
-                                                <span className="sort">
-                                                    <span className="sort-label">Status</span>
-                                                    <span className="sort-icon"></span>
-                                                </span>
-                                            </th>
-                                            <th className="w-[220px] text-center" data-datatable-column="name">
+                                            <th className="w-[300px] text-center" data-datatable-column="name">
                                                 <span className="sort">
                                                     <span className="sort-label">Name</span>
                                                     <span className="sort-icon"></span>
@@ -251,7 +253,19 @@ function ProductTable() {
                                             </th>
                                             <th className="w-[120px] text-center" data-datatable-column="price">
                                                 <span className="sort">
-                                                    <span className="sort-label">Price</span>
+                                                    <span className="sort-label">Retail Price</span>
+                                                    <span className="sort-icon"></span>
+                                                </span>
+                                            </th>
+                                            <th className="w-[120px] text-center" data-datatable-column="price">
+                                                <span className="sort">
+                                                    <span className="sort-label">Cost of Good Sold</span>
+                                                    <span className="sort-icon"></span>
+                                                </span>
+                                            </th>
+                                            <th className="w-[120px] text-center" data-datatable-column="price">
+                                                <span className="sort">
+                                                    <span className="sort-label">Excluded Price</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>

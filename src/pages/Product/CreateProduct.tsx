@@ -23,7 +23,9 @@ function CreateProduct() {
         type: 'service',
         description: '',
         category: '1',
-        price: '',
+        product_retail_price: '',
+        product_cost_of_good_sold: '',
+        product_excluded_price: '',
         status: 'available'
     });
 
@@ -67,7 +69,9 @@ function CreateProduct() {
                 category: formData.category,
                 type: formData.type,
                 description: formData.description,
-                price: parseFloat(formData.price),
+                product_retail_price: parseFloat(formData.product_retail_price),
+                product_cost_of_good_sold: parseFloat(formData.product_cost_of_good_sold),
+                product_excluded_price: parseFloat(formData.product_excluded_price),
                 status: formData.status,
             };
 
@@ -118,10 +122,10 @@ function CreateProduct() {
                     </span>
                 </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-8 mb-8">
                 <div className="left-column flex flex-col flex-[2] gap-8">
-                    
+
                     {/* Image */}
                     {/* <div className="card relative">
                         <div className="comming-soon-overlay rounded-xl absolute flex items-center justify-center inset-0 bg-black bg-opacity-60 pointer-events-none">
@@ -256,16 +260,40 @@ function CreateProduct() {
                                 {/* Header */}
                                 <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Pricing</h1>
 
-                                {/* Price */}
+                                {/* Retail Price */}
                                 <InputFieldGroup
-                                    fieldTitle="Price"
-                                    description="Set a base price for the product"
-                                    placeholder="Price"
+                                    fieldTitle="Retail Price"
+                                    description="This is the price at which the product will be sold to customers"
+                                    placeholder="Retail Price"
                                     type="number"
-                                    name="price"
-                                    value={formData.price}
+                                    name="product_retail_price"
+                                    value={formData.product_retail_price}
                                     onChange={handleChange}
-                                    error={validationErrors.price}
+                                    error={validationErrors.product_retail_price}
+                                />
+
+                                {/* Cost of Good */}
+                                <InputFieldGroup
+                                    fieldTitle="Cost of Good Sold"
+                                    description="This includes all costs directly tied to the production of the product"
+                                    placeholder="Cost of Good Sold"
+                                    type="number"
+                                    name="product_cost_of_good_sold"
+                                    value={formData.product_cost_of_good_sold}
+                                    onChange={handleChange}
+                                    error={validationErrors.product_cost_of_good_sold}
+                                />
+
+                                {/* Excluded Price */}
+                                <InputFieldGroup
+                                    fieldTitle="Excluded Price"
+                                    description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
+                                    placeholder="Excluded Price"
+                                    type="number"
+                                    name="product_excluded_price"
+                                    value={formData.product_excluded_price}
+                                    onChange={handleChange}
+                                    error={validationErrors.product_excluded_price}
                                 />
                             </div>
                         </div>

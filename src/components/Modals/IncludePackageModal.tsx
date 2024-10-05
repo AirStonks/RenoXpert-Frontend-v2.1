@@ -67,6 +67,9 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                 selectBtn.innerText = 'Remove';
             }
 
+            console.log(selectedPackages);
+            
+
             // Save the updated array back to localStorage
             localStorage.setItem('include_packages', JSON.stringify(selectedPackages));
 

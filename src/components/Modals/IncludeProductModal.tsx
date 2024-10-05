@@ -7,10 +7,16 @@ import { Product } from "../../types";
 interface IncludeProductModalProps {
     selectedProducts: Product[];
     updateSelectedProducts: (products: Product[]) => void;
+    updateTotalPrice: (price: number, operator: string) => void;
     previousModalId?: string; // Make this optional
 }
 
-function IncludeProductModal({ selectedProducts, updateSelectedProducts, previousModalId }: IncludeProductModalProps) {
+function IncludeProductModal({
+    selectedProducts,
+    updateSelectedProducts,
+    updateTotalPrice,
+    previousModalId
+}: IncludeProductModalProps) {
 
 
     const handleTableClick = useCallback((event: MouseEvent) => {
@@ -35,17 +41,20 @@ function IncludeProductModal({ selectedProducts, updateSelectedProducts, previou
             if (productIndex > -1) {
                 // If it is selected, remove it
                 selectedProducts.splice(productIndex, 1);
-                // Change button to "Select"
                 selectBtn.dataset.action = 'select';
-                selectBtn.className = 'btn btn-primary btn-sm'; // Update class
+                selectBtn.className = 'btn btn-primary btn-sm';
                 selectBtn.innerText = 'Select';
+            
+                updateTotalPrice(productPrice, '-');
             } else {
-                // If it is not selected, add it with name and price
+                // If it is not selected, add it
                 selectedProducts.push({ id: Number(id), name: productName, quantity: 1, price: productPrice, description: productDescription });
-                // Change button to "Remove"
                 selectBtn.dataset.action = 'remove';
-                selectBtn.className = 'btn btn-danger btn-sm'; // Update class
+                selectBtn.className = 'btn btn-danger btn-sm';
                 selectBtn.innerText = 'Remove';
+            
+                updateTotalPrice(productPrice, '+');
+
             }
 
             // Save the updated array back to localStorage
@@ -98,8 +107,8 @@ function IncludeProductModal({ selectedProducts, updateSelectedProducts, previou
                 category: {
                     title: 'Category',
                 },
-                price: {
-                    title: 'Price',
+                product_retail_price: {
+                    title: 'Retail Price',
                     render: (item: number) => `RM ${item.toFixed(2)}`, // Format as currency
                 },
                 action: {
@@ -121,7 +130,7 @@ function IncludeProductModal({ selectedProducts, updateSelectedProducts, previou
                                     data-action="${action}"
                                     data-id="${data.id}"
                                     data-name="${data.name}"
-                                    data-price="${data.price}"
+                                    data-price="${data.product_retail_price}"
                                     data-desc="${data.description}"
                                 >
                                     ${buttonText}
@@ -213,7 +222,7 @@ function IncludeProductModal({ selectedProducts, updateSelectedProducts, previou
                                         <th className="min-w-[120px] text-center">
                                             <span className="sort">
                                                 <span className="sort-label">
-                                                    Price
+                                                    Retail Price
                                                 </span>
                                             </span>
                                         </th>

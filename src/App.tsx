@@ -27,6 +27,9 @@ import CreateOrder from './pages/Order/CreateOrder';
 import EditNewOrderQuotation from './pages/Order/EditNewOrderQuotation';
 import EditOrder from './pages/Order/EditOrder';
 import EditOrderQuotation from './pages/Order/EditOrderQuotation';
+import SalesMain from './pages/Sales/SalesMain';
+import SaleDetail from './pages/Sales/SaleDetail';
+import DiscountFeeMain from './pages/DiscountFee/DiscountFeeMain';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -90,6 +93,16 @@ const routes = [
   { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation /> },
   { path: '/orders/edit/:id', element: <EditOrder /> },
   { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation /> },
+
+  
+  /*--- SALES ---*/
+  { path: '/sales', element: <SalesMain /> },
+  { path: '/sales/:id', element: <SaleDetail /> },
+
+  
+  /*--- DISCOUNT AND FEE ---*/
+  { path: '/discountFee', element: <DiscountFeeMain /> },
+  // { path: '/discountFee/create', element: <CreateDiscountFee /> },
 ];
 
 function App() {

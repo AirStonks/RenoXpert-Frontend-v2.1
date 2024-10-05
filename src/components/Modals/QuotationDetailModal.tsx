@@ -168,10 +168,10 @@ function QuotationDetailModal({ quotationId, onClose }: QuotationDetailModalProp
                                                                     </span>
                                                                 </td>
                                                                 <td>
-                                                                    RM {product.price.toFixed(2)}
+                                                                    RM {product.product_retail_price.toFixed(2)}
                                                                 </td>
                                                                 <td>
-                                                                    RM {(product.price * product.pivot.quantity).toFixed(2)}
+                                                                    RM {(product.product_retail_price * product.pivot.quantity).toFixed(2)}
                                                                 </td>
                                                             </tr>
                                                         ))}
@@ -214,7 +214,7 @@ function QuotationDetailModal({ quotationId, onClose }: QuotationDetailModalProp
             >
                 <div className="modal-content modal-center-y max-w-[1024px] h-[580px] max-h-[580px]">
                     <div className="modal-header py-4 px-5">
-                        <span className="text-lg text-gray-900 font-bold">Package Detail</span>
+                        <span className="text-lg text-gray-900 font-bold">Quotation Detail</span>
                         <button
                             className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
                             aria-label="Close"

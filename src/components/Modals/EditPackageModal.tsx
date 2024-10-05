@@ -22,6 +22,7 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
     });
 
     const [selectedProducts, setSelectedProducts] = useState([]);
+    const [totalPrice, setTotalPrice] = useState<number>(0);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -86,7 +87,7 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
 
         } catch (error) {
             console.error('Error:', error);
-            
+
             // if (error.response?.status === 422) {
             //     // Extract validation errors from the response
             //     const errors = error.response.data.data || {};
@@ -132,8 +133,10 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
             if (storedProducts) {
                 setSelectedProducts(JSON.parse(storedProducts));
             }
+
+            setTotalPrice(packageDetail.total_price);
         }
-    }, [packageDetail]);
+    }, [packageDetail, setTotalPrice]);
 
     const updateSelectedProducts = (products) => {
         setSelectedProducts(products);
@@ -144,11 +147,32 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
         localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
+    const updateTotalPrice = (price: number, operator: string) => {
+
+        setTotalPrice(prevTotal => {
+            switch (operator) {
+                case '+':
+                    return prevTotal + price;
+                case '-':
+                    return prevTotal - price;
+                default:
+                    throw new Error('Invalid operator');
+            }
+        });
+    };
+
     const adjustQuantity = (id: number, action: 'increase' | 'decrease') => {
         setSelectedProducts((prevProducts) => {
             const updatedProducts = prevProducts.map((product) => {
                 if (product.id === id) {
                     const newQty = action === 'increase' ? product.quantity + 1 : Math.max(1, product.quantity - 1);
+                    console.log(newQty);
+                    const operator = action === 'increase' ? '+' : '-';
+
+                    if (product.quantity > 1 || action === 'increase') {
+                        updateTotalPrice(product.price, operator);
+                    }
+
                     return { ...product, quantity: newQty };
                 }
                 return product;
@@ -158,9 +182,14 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
         });
     };
 
-    const handleRemoveProduct = (id: number) => {
+    const handleRemoveProduct = (id: string) => {
         setSelectedProducts((prevProducts) => {
             const updatedProducts = prevProducts.filter(product => product.id !== id);
+            const removedProduct = prevProducts.find(product => product.id === id);
+            if (removedProduct) {
+                // Update total price based on the removed product
+                updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
+            }
             updateLocalStorage(updatedProducts); // Update localStorage
             return updatedProducts;
         });
@@ -172,14 +201,16 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
 
         // Set the localStorage for exists package
         packageDetail.products.map((product) => {
-            selectedProducts.push({ id: product.id, name: packageDetail.name, quantity: product.pivot.quantity, price: product.price, description: product.description });
+            selectedProducts.push({ id: product.id, name: product.name, quantity: product.pivot.quantity, price: product.product_retail_price, description: product.description });
         });
 
         localStorage.setItem('include_prod_selected_products', JSON.stringify(selectedProducts));
     }
-    
+
 
     if (!packageDetail) return null; // Early return for null packageId
+
+    console.log(selectedProducts);
 
     return (
         <>
@@ -197,8 +228,8 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
                     <div className="modal-body p-5 pb-5 scrollable">
                         <div className="flex flex-wrap gap-8 mb-8">
 
-                            <div className="left-column flex flex-col flex-[3] gap-8">
-                                <div className="card">
+                            <div className="left-column flex flex-col flex-[3]">
+                                <div className="card mb-4">
                                     <div className="card-body">
                                         <h2 className='text-xl mb-4 font-semibold text-gray-900'>Package Detail</h2>
 
@@ -213,17 +244,6 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
                                         // error={validationErrors.name}
                                         />
 
-                                        {/* Price */}
-                                        <InputFieldGroup
-                                            fieldTitle="Package Total Price"
-                                            description="A product name is required and recommended to be unique."
-                                            placeholder="Total Price"
-                                            name="packagePrice"
-                                            value={formData.packagePrice.toString()}
-                                            onChange={handleChange}
-                                        // error={validationErrors.price}
-                                        />
-
                                         {/* Description */}
                                         <InputFieldGroup
                                             fieldTitle="Description"
@@ -234,6 +254,24 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
                                             onChange={handleChange}
                                         // error={validationErrors.description}
                                         />
+                                    </div>
+                                </div>
+
+                                <div className="card">
+                                    <div className="card-body">
+                                        <div className="flex flex-col">
+                                            <label className='mb-2 text-sm font-medium text-gray-900'>
+                                                Package Total Price
+                                            </label>
+
+                                            <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                                The total price will be reflected based on selected products and quantity.
+                                            </span>
+
+                                            <span className="text-lg font-medium text-gray-900">
+                                                RM {totalPrice}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -260,7 +298,7 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
                                                             <tr>
                                                                 <th className='w-[150px]'>Product</th>
                                                                 <th className='w-[100px] text-center'>Quantity</th>
-                                                                <th className='w-[100px]'>Unit Price</th>
+                                                                <th className='w-[100px]'>Retail Price</th>
                                                                 <th className='w-[100px]'>Total Price</th>
                                                                 <th className='w-[80px] text-center'>Action</th>
                                                             </tr>
@@ -335,6 +373,7 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
             <IncludeProductModal
                 selectedProducts={selectedProducts}
                 updateSelectedProducts={updateSelectedProducts}
+                updateTotalPrice={updateTotalPrice}
                 previousModalId="edit_package_modal"
             />
         </>

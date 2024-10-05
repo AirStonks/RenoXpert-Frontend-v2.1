@@ -26,6 +26,7 @@ function CreateOrder() {
         contactId: '',
         propertyId: '',
         quotationId: '',
+        totalAmount: '',
         block: '',
         floor: '',
         unitNo: '',
@@ -293,6 +294,7 @@ function CreateOrder() {
             contact_id: selectedContact.id,
             property_id: selectedProperty.id,
             quotation_id: selectedQuotation.id,
+            total_amount: selectedQuotation.total_amount,
             block: formData.block,
             floor: formData.floor,
             unit_no: formData.unitNo,
@@ -307,8 +309,10 @@ function CreateOrder() {
 
         if (response?.success) {
             notify('success', "Order Created Successfully!");
+            localStorage.removeItem('create_order_data');
+            localStorage.removeItem('include_packages');
+            localStorage.removeItem('selected_quotation_packages');
             navigate('/orders');
-            console.log(response);
         } else {
             console.log(response);
 

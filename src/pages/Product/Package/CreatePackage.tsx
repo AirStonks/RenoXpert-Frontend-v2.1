@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { toast, Slide } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import InputFieldGroup from '../../../components/Forms/TextFields/InputFieldGroup';
 import IncludeProductModal from '../../../components/Modals/IncludeProductModal';
@@ -20,6 +19,7 @@ function CreatePackage() {
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [selectedProducts, setSelectedProducts] = useState([]);
+    const [totalPrice, setTotalPrice] = useState<number>(0);
 
     const handleBackClick = () => {
         localStorage.removeItem('include_prod_selected_products');
@@ -50,7 +50,6 @@ function CreatePackage() {
     const handleSubmit = async () => {
         const storedProducts = localStorage.getItem('include_prod_selected_products');
 
-        let addProducts: Product[] = [];
 
         console.log(storedProducts);
 
@@ -62,7 +61,7 @@ function CreatePackage() {
                     id: item.id,
                     name: item.name,
                     quantity: item.quantity, // Adjusting the key to match the Product interface
-                    price: parseFloat(item.price), // Ensure the price is a number
+                    product_retail_price: parseFloat(item.product_retail_price), // Ensure the price is a number
                     // Add other properties if necessary
                 }));
             }
@@ -117,24 +116,48 @@ function CreatePackage() {
     useEffect(() => {
         const storedProducts = localStorage.getItem('include_prod_selected_products');
         if (storedProducts) {
-            setSelectedProducts(JSON.parse(storedProducts));
+            const parsedProducts = JSON.parse(storedProducts);
+            setSelectedProducts(parsedProducts);
+            const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+            setTotalPrice(initialTotalPrice);
         }
     }, []);
 
-    const updateSelectedProducts = (products) => {
+    const updateSelectedProducts = (products: Product[]) => {
         setSelectedProducts(products);
         localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
-    const updateLocalStorage = (products) => {
+    const updateLocalStorage = (products: Product[]) => {
         localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
-    const adjustQuantity = (id: string, action: 'increase' | 'decrease') => {
+    const updateTotalPrice = (price: number, operator: string) => {
+        
+        setTotalPrice(prevTotal => {
+            switch (operator) {
+                case '+':
+                    return prevTotal + price;
+                case '-':
+                    return prevTotal - price;
+                default:
+                    throw new Error('Invalid operator');
+            }
+        });
+    };
+    
+
+    const adjustQuantity = (id: number, action: 'increase' | 'decrease') => {        
         setSelectedProducts((prevProducts) => {
             const updatedProducts = prevProducts.map((product) => {
-                if (product.id === id) {
+                if (product.id == id) {
                     const newQty = action === 'increase' ? product.quantity + 1 : Math.max(1, product.quantity - 1);
+                    const operator = action === 'increase' ? '+' : '-';
+
+                    if (product.quantity > 1 || action === 'increase') {
+                        updateTotalPrice(product.price, operator);
+                    }
+
                     return { ...product, quantity: newQty };
                 }
                 return product;
@@ -144,13 +167,19 @@ function CreatePackage() {
         });
     };
 
-    const handleRemoveProduct = (id: string) => {
+    const handleRemoveProduct = (id: number) => {
         setSelectedProducts((prevProducts) => {
             const updatedProducts = prevProducts.filter(product => product.id !== id);
+            const removedProduct = prevProducts.find(product => product.id === id);
+            if (removedProduct) {
+                // Update total price based on the removed product
+                updateTotalPrice(removedProduct.quantity * removedProduct.quantity, '-');
+            }
             updateLocalStorage(updatedProducts); // Update localStorage
             return updatedProducts;
         });
     };
+
 
     return (
         <>
@@ -166,7 +195,7 @@ function CreatePackage() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="left-column flex flex-col flex-[3] gap-8">
+                <div className="left-column flex flex-col flex-[3] gap-4">
                     <div className="card">
                         <div className="card-body">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Package Detail</h2>
@@ -182,17 +211,6 @@ function CreatePackage() {
                                 error={validationErrors.name}
                             />
 
-                            {/* Price */}
-                            <InputFieldGroup
-                                fieldTitle="Package Total Price"
-                                description="A product name is required and recommended to be unique."
-                                placeholder="Total Price"
-                                name="packagePrice"
-                                value={formData.packagePrice}
-                                onChange={handleChange}
-                                error={validationErrors.price}
-                            />
-
                             {/* Description */}
                             <InputFieldGroup
                                 fieldTitle="Description"
@@ -203,6 +221,24 @@ function CreatePackage() {
                                 onChange={handleChange}
                                 error={validationErrors.description}
                             />
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-body">
+                            <div className="flex flex-col">
+                                <label className='mb-2 text-sm font-medium text-gray-900'>
+                                    Package Total Price
+                                </label>
+
+                                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                    The total price will be reflected based on selected products and quantity.
+                                </span>
+
+                                <span className="text-lg font-medium text-gray-900">
+                                    RM {totalPrice}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -229,7 +265,7 @@ function CreatePackage() {
                                                 <tr>
                                                     <th className='w-[150px]'>Product</th>
                                                     <th className='w-[100px] text-center'>Quantity</th>
-                                                    <th className='w-[100px]'>Unit Price</th>
+                                                    <th className='w-[100px]'>Retail Price</th>
                                                     <th className='w-[100px]'>Total Price</th>
                                                     <th className='w-[80px] text-center'>Action</th>
                                                 </tr>
@@ -261,10 +297,10 @@ function CreatePackage() {
                                                             </button>
                                                         </td>
                                                         <td>
-                                                            RM {parseFloat(product.price).toFixed(2)}
+                                                            RM {product.price.toFixed(2)}
                                                         </td>
                                                         <td>
-                                                            RM {(parseFloat(product.price) * product.quantity).toFixed(2)}
+                                                            RM {(product.price * product.quantity).toFixed(2)}
                                                         </td>
                                                         <td className='text-center'>
                                                             <button
@@ -303,6 +339,7 @@ function CreatePackage() {
             <IncludeProductModal
                 selectedProducts={selectedProducts}
                 updateSelectedProducts={updateSelectedProducts}
+                updateTotalPrice={updateTotalPrice}
             />
         </>
     );
