@@ -2,14 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { toast, Slide } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import InputFieldGroup from '../../../components/Forms/TextFields/InputFieldGroup';
 import IncludeProductModal from '../../../components/Modals/IncludeProductModal';
 import { Package, Product } from '../../../types';
-import { createPackage } from '../../../services/api';
+import { createPackage, updatePackage } from '../../../services/api';
+import useFetchPackage from '../../../hook/useFetchPackage';
+import Loading from '../../../components/Loading';
 
-function CreatePackage() {
+function EditPackage() {
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
+    const packageId = id ? parseInt(id, 10) : null;
+    
+    const { packageDetail, loading, error } = useFetchPackage(packageId);
+
     const [formData, setFormData] = useState({
         packageName: '',
         packagePrice: 0,
@@ -63,7 +70,6 @@ function CreatePackage() {
             return updatedProducts;
         });
     };
-    
 
     const handleSubmit = async () => {
         const storedProducts = localStorage.getItem('include_prod_selected_products');
@@ -76,24 +82,25 @@ function CreatePackage() {
                     id: item.id,
                     name: item.name,
                     quantity: item.quantity,
-                    visibility: item.visibility,
-                    product_retail_price: parseFloat(item.product_retail_price),
+                    visibility: item.visibility, // Adjusting the key to match the Product interface
+                    product_retail_price: parseFloat(item.product_retail_price), // Ensure the price is a number
+                    // Add other properties if necessary
                 }));
             }
 
+
             const packageData: Package = {
+                id: packageDetail.id,
                 name: formData.packageName,
                 total_price: formData.packagePrice,
                 description: formData.description,
                 products: newProducts,
             };
 
-            console.log(packageData);
-
-            const response = await createPackage(packageData);
+            const response = await updatePackage(packageData);
 
             if (response?.success) {
-                notify('success', "Package Created Successfully!");
+                notify('success', "Package Updated Successfully!");
                 localStorage.removeItem('include_prod_selected_products');
                 navigate('/packages');
             }
@@ -128,6 +135,32 @@ function CreatePackage() {
     };
 
     useEffect(() => {
+        
+        if (packageDetail) {
+
+            setFormData((prev) => ({
+                ...prev,
+                packageName: packageDetail.name,
+                description: packageDetail.description
+            }));
+
+            const selectedProducts = [];
+
+            packageDetail.products.forEach(({ id, name, pivot, product_retail_price, description }) => {
+                selectedProducts.push({ 
+                    id,
+                    name,
+                    quantity: pivot.quantity,
+                    visibility: pivot.visibility,
+                    price: product_retail_price,
+                    description 
+                });
+            });
+
+            localStorage.setItem('include_prod_selected_products', JSON.stringify(selectedProducts));
+            
+            updateSelectedProducts(selectedProducts);
+        }
         const storedProducts = localStorage.getItem('include_prod_selected_products');
         if (storedProducts) {
             const parsedProducts = JSON.parse(storedProducts);
@@ -135,7 +168,7 @@ function CreatePackage() {
             const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
             setTotalPrice(initialTotalPrice);
         }
-    }, []);
+    }, [packageDetail]);
 
     const updateSelectedProducts = (products: Product[]) => {
         setSelectedProducts(products);
@@ -159,6 +192,7 @@ function CreatePackage() {
             }
         });
     };
+
 
     const adjustQuantity = (id: number, action: 'increase' | 'decrease') => {
         setSelectedProducts((prevProducts) => {
@@ -193,6 +227,10 @@ function CreatePackage() {
         });
     };
 
+    if (loading) return <Loading />;
+    if (error) return <div>{error}</div>;
+    if (!packageDetail) return <div>Package not found</div>;
+
     return (
         <>
             <div className="flex justify-between items-center flex-wrap mb-6">
@@ -201,7 +239,7 @@ function CreatePackage() {
                         <i className="ki-solid ki-arrow-left"></i>
                     </button>
                     <span className="text-2xl font-bold text-gray-900">
-                        Create New Package
+                        Edit Package
                     </span>
                 </div>
             </div>
@@ -282,7 +320,7 @@ function CreatePackage() {
                                                     <th className='w-[60px] text-center'>Visibility</th>
                                                     <th className='w-[60px] text-center'>Action</th>
                                                 </tr>
-                                            </thead>
+                                            </thead>    
                                             <tbody>
                                                 {selectedProducts.map((product) => (
                                                     <tr key={product.id}>
@@ -354,7 +392,7 @@ function CreatePackage() {
                     className="btn btn-lg btn-primary"
                     onClick={handleSubmit} // Trigger form submission
                 >
-                    Create
+                    Update
                 </button>
             </div>
 
@@ -367,4 +405,4 @@ function CreatePackage() {
     );
 }
 
-export default CreatePackage;
+export default EditPackage;

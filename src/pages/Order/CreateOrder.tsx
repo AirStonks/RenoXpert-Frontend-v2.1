@@ -319,11 +319,6 @@ function CreateOrder() {
         }
     }
 
-    const testOutput = async () => {
-        console.log(formData);
-
-    }
-
     return (
         <>
             <div className="flex justify-between items-center flex-wrap mb-6">
@@ -334,309 +329,319 @@ function CreateOrder() {
                     <span className="text-2xl font-bold text-gray-900">
                         New Order
                     </span>
-                    <span></span>
-                    <button className='btn btn-primary' onClick={testOutput}>
-                        Test
-                    </button>
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-8 mb-8">
-                <div className="left-column flex flex-col flex-[3] gap-8">
-                    <div className="card">
-                        <div className="card-body">
-                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Order</h2>
+            <div className="flex flex-col flex-wrap gap-8 mb-8">
+                <div className="card">
+                    <div className="card-body">
+                        <h2 className='text-xl mb-4 font-semibold text-gray-900'>Order</h2>
+                        <div className="flex gap-8">
                             {/* Contact */}
-                            <div className="flex flex-col gap-4">
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-base font-semibold text-gray-900">
-                                        1. Select a Contact
-                                    </span>
-                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="contract_dropdown">
-                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
-                                            <span>Contact</span>
-                                            <i className="ki-filled ki-down"></i>
-                                        </button>
-                                        <div className="dropdown-content w-full max-w-80">
-                                            <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                                <label className="input input-sm">
-                                                    <i className="ki-filled ki-magnifier"></i>
-                                                    <input
-                                                        ref={inputContactRef}
-                                                        placeholder="Search contact"
-                                                        type="text"
-                                                        value={searchContactTerm}
-                                                        onChange={handleSearchContact}
-                                                    />
-                                                </label>
-                                            </div>
-                                            <div className="menu menu-default flex flex-col w-full">
-                                                {contacts.map((contact, index) => (
-                                                    <div className="menu-item" key={index} data-id={contact.id}>
-                                                        <button
-                                                            className="menu-link"
-                                                            onClick={() => handleSelectContact(contact)}
-                                                        >
-                                                            <span className="menu-title">{contact.name}</span>
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
+                            <div className="flex flex-col flex-1 gap-2">
+                                <span className="text-base font-semibold text-gray-900">
+                                    1. Select a Contact
+                                </span>
+                                <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="contract_dropdown">
+                                    <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                        <span>Contact</span>
+                                        <i className="ki-filled ki-down"></i>
+                                    </button>
+                                    <div className="dropdown-content w-full max-w-80">
+                                        <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                            <label className="input input-sm">
+                                                <i className="ki-filled ki-magnifier"></i>
+                                                <input
+                                                    ref={inputContactRef}
+                                                    placeholder="Search contact"
+                                                    type="text"
+                                                    value={searchContactTerm}
+                                                    onChange={handleSearchContact}
+                                                />
+                                            </label>
                                         </div>
-                                    </div>
-                                    {selectedContact && (
-                                        <div className="card mb-4">
-                                            <div className="card-body">
-                                                <div className="flex flex-col gap-1 text-gray-900">
-                                                    <span className='text-sm font-semibold'>{selectedContact.name}</span>
-                                                    <span className='text-sm font-normal text-slate-400'>{selectedContact.email}</span>
-                                                    <span className='text-sm font-normal'>{selectedContact.phone_no}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-base font-semibold text-gray-900">
-                                        2. Select a Property
-                                    </span>
-                                    <div className="dropdow" data-dropdown="true" data-dropdown-trigger="click" id='property_dropdown'>
-                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
-                                            <span>Property</span>
-                                            <i className="ki-filled ki-down"></i>
-                                        </button>
-                                        <div className="dropdown-content w-full max-w-80">
-                                            <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                                <label className="input input-sm">
-                                                    <i className="ki-filled ki-magnifier"></i>
-                                                    <input
-                                                        ref={inputPropertyRef}
-                                                        placeholder="Search property"
-                                                        type="text"
-                                                        value={searchPropertyTerm}
-                                                        onChange={handleSearchProperty}
-                                                    />
-                                                </label>
-                                            </div>
-                                            <div className="menu menu-default flex flex-col w-full">
-                                                {properties.map((property, index) => (
-                                                    <div className="menu-item" key={index} data-id={property.id}>
-                                                        <button
-                                                            className="menu-link"
-                                                            onClick={() => handleSelectProperty(property)}
-                                                        >
-                                                            <span className="menu-title">{property.name}</span>
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {selectedProperty && (
-                                        <>
-                                            <div className="card mb-4">
-                                                <div className="card-body">
-                                                    <div className="flex flex-col gap-1 text-gray-900">
-                                                        <span className='text-sm font-semibold text-gray-900'>{selectedProperty.name}</span>
-                                                        <span className='text-sm font-normal text-slate-400'>
-                                                            {[
-                                                                selectedProperty.address,
-                                                                selectedProperty.street,
-                                                                selectedProperty.postcode,
-                                                                selectedProperty.city,
-                                                                selectedProperty.state
-                                                            ].filter(Boolean).join(', ')}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <span className='text-sm font-semibold text-gray-900'>
-                                                Block
-                                            </span>
-
-                                            <input
-                                                className='input mb-2'
-                                                type='text'
-                                                name='block'
-                                                value={formData.block}
-                                                onChange={handleChange}
-                                            />
-
-                                            <span className='text-sm font-semibold text-gray-900'>
-                                                Floor
-                                            </span>
-
-                                            <input
-                                                className='input mb-2'
-                                                type='text'
-                                                name='floor'
-                                                value={formData.floor || ''}
-                                                onChange={handleChange}
-                                            />
-
-                                            <span className='text-sm font-semibold text-gray-900'>
-                                                Unit No
-                                            </span>
-
-                                            <input
-                                                className='input mb-2'
-                                                type='text'
-                                                name='unitNo'
-                                                value={formData.unitNo}
-                                                onChange={handleChange}
-                                            />
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className='flex flex-col right-column flex-[6] gap-8'>
-                    <div className="card">
-                        <div className="card-body">
-                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Quotation</h2>
-
-                            <div className="flex flex-col gap-4">
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-base font-semibold text-gray-900">
-                                        3. Select a Quotation
-                                    </span>
-                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
-                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
-                                            <span>Quotation</span>
-                                            <i className="ki-filled ki-down"></i>
-                                        </button>
-                                        <div className="dropdown-content w-full max-w-2xl">
-                                            <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                                <label className="input input-sm">
-                                                    <i className="ki-filled ki-magnifier"></i>
-                                                    <input
-                                                        ref={inputQuotationRef}
-                                                        placeholder="Search quotation"
-                                                        type="text"
-                                                        value={searchQuotationTerm}
-                                                        onChange={handleSearchQuotation}
-                                                    />
-                                                </label>
-                                            </div>
-                                            <div className="menu menu-default flex flex-col">
-                                                {quotations.map((quotation, index) => (
-                                                    <div className="menu-item" key={index} data-id={quotation.id}>
-                                                        <button
-                                                            className="menu-link"
-                                                            onClick={() => handleSelectQuotation(quotation)}
-                                                        >
-                                                            <span className="menu-title">{quotation.name}</span>
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {selectedQuotation && (
-                                    <div className="flex flex-col gap-4">
-                                        <div className="card">
-                                            <div className="card-body quotation-info flex justify-between items-center gap-4">
-                                                <div className="flex flex-col">
-                                                    <span className='text-lg font-semibold text-gray-900'>
-                                                        {selectedQuotation.name}
-                                                    </span>
-                                                    <span className="text-base font-normal text-gray-800">
-                                                        Price: RM {selectedQuotation.total_amount.toFixed(2)}
-                                                    </span>
-                                                    <span className="text-base font-normal text-slate-400">
-                                                        {selectedQuotation.description}
-                                                    </span>
-                                                </div>
-                                                <div className="flex actions">
-                                                    <Link
-                                                        to={'/orders/quotation/edit/' + selectedQuotation.id}
-                                                        className="btn btn-primary btn-lg"
-                                                        data-id={selectedQuotation.id}
-                                                        onClick={handleEditQuotation}
+                                        <div className="menu menu-default flex flex-col w-full">
+                                            {contacts.map((contact, index) => (
+                                                <div className="menu-item" key={index} data-id={contact.id}>
+                                                    <button
+                                                        className="menu-link"
+                                                        onClick={() => handleSelectContact(contact)}
                                                     >
-                                                        Edit Quotation
-                                                    </Link>
+                                                        <span className="menu-title">{contact.name}</span>
+                                                    </button>
                                                 </div>
-                                            </div>
+                                            ))}
                                         </div>
-                                        <div className="card">
-                                            <div className="card-body">
-                                                <div className="text-base font-semibold text-gray-900 mb-2">
-                                                    Packages:
-                                                </div>
-                                                <div className="flex flex-col gap-5" data-accordion="true" data-accordion-expand-all="true">
-                                                    {selectedPackages.map((prodPackage: Package) => (
-                                                        <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
-                                                            <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
-                                                                <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
-                                                                    <div className="flex flex-col items-start">
-                                                                        <span className="text-base text-gray-900 font-medium">
-                                                                            {prodPackage.name}
-                                                                        </span>
-                                                                        <span className='text-base text-slate-700'>
-                                                                            RM {prodPackage.total_price.toFixed(2)}
-                                                                        </span>
-                                                                        <span className='text-sm text-slate-400'>
-                                                                            {prodPackage.description}
-                                                                        </span>
-                                                                    </div>
-                                                                    <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
-                                                                    </i>
-                                                                    <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
-                                                                    </i>
-                                                                </button>
-                                                                <div className="accordion-content active  border-t" id={"package_content_" + prodPackage.id.toString()}>
-                                                                    <div className="product-list flex flex-col">
-                                                                        <table className="table align-middle text-gray-700 font-medium text-sm">
-                                                                            <thead>
-                                                                                <tr>
-                                                                                    <th className='w-[150px]'>Product</th>
-                                                                                    <th className='w-[100px] text-center'>Quantity</th>
-                                                                                    <th className='w-[100px]'>Unit Price</th>
-                                                                                    <th className='w-[100px]'>Total Price</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                {prodPackage.products.map((product) => (
-                                                                                    <tr
-                                                                                        key={product.id}
-                                                                                    >
-                                                                                        <td>
-                                                                                            <div className="flex flex-col">
-                                                                                                <span>{product.name}</span>
-                                                                                                <span className="text-xs text-slate-400">{product.description}</span>
-                                                                                            </div>
-                                                                                        </td>
-                                                                                        <td className='text-center text-lg'>
-                                                                                            <span className="mx-2 text-base">
-                                                                                                {product.pivot.quantity}
-                                                                                            </span>
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            RM {product.price.toFixed(2)}
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            RM {(product.price * product.pivot.quantity).toFixed(2)}
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                ))}
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                    </div>
+                                </div>
+                                {selectedContact && (
+                                    <div className="card mb-4">
+                                        <div className="card-body">
+                                            <div className="flex flex-col gap-1 text-gray-900">
+                                                <span className='text-sm font-semibold'>{selectedContact.name}</span>
+                                                <span className='text-sm font-normal text-slate-400'>{selectedContact.email}</span>
+                                                <span className='text-sm font-normal'>{selectedContact.phone_no}</span>
                                             </div>
                                         </div>
                                     </div>
                                 )}
                             </div>
+                            <div className="flex flex-col flex-1 gap-2">
+                                <span className="text-base font-semibold text-gray-900">
+                                    2. Select a Property
+                                </span>
+                                <div className="dropdow" data-dropdown="true" data-dropdown-trigger="click" id='property_dropdown'>
+                                    <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                        <span>Property</span>
+                                        <i className="ki-filled ki-down"></i>
+                                    </button>
+                                    <div className="dropdown-content w-full max-w-80">
+                                        <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                            <label className="input input-sm">
+                                                <i className="ki-filled ki-magnifier"></i>
+                                                <input
+                                                    ref={inputPropertyRef}
+                                                    placeholder="Search property"
+                                                    type="text"
+                                                    value={searchPropertyTerm}
+                                                    onChange={handleSearchProperty}
+                                                />
+                                            </label>
+                                        </div>
+                                        <div className="menu menu-default flex flex-col w-full">
+                                            {properties.map((property, index) => (
+                                                <div className="menu-item" key={index} data-id={property.id}>
+                                                    <button
+                                                        className="menu-link"
+                                                        onClick={() => handleSelectProperty(property)}
+                                                    >
+                                                        <span className="menu-title">{property.name}</span>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                {selectedProperty && (
+                                    <>
+                                        <div className="card mb-4">
+                                            <div className="card-body">
+                                                <div className="flex flex-col gap-1 text-gray-900">
+                                                    <span className='text-sm font-semibold text-gray-900'>{selectedProperty.name}</span>
+                                                    <span className='text-sm font-normal text-slate-400'>
+                                                        {[
+                                                            selectedProperty.address,
+                                                            selectedProperty.street,
+                                                            selectedProperty.postcode,
+                                                            selectedProperty.city,
+                                                            selectedProperty.state
+                                                        ].filter(Boolean).join(', ')}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <span className='text-sm font-semibold text-gray-900'>
+                                            Block
+                                        </span>
+
+                                        <input
+                                            className='input mb-2'
+                                            type='text'
+                                            name='block'
+                                            value={formData.block}
+                                            onChange={handleChange}
+                                        />
+
+                                        <span className='text-sm font-semibold text-gray-900'>
+                                            Floor
+                                        </span>
+
+                                        <input
+                                            className='input mb-2'
+                                            type='text'
+                                            name='floor'
+                                            value={formData.floor || ''}
+                                            onChange={handleChange}
+                                        />
+
+                                        <span className='text-sm font-semibold text-gray-900'>
+                                            Unit No
+                                        </span>
+
+                                        <input
+                                            className='input mb-2'
+                                            type='text'
+                                            name='unitNo'
+                                            value={formData.unitNo}
+                                            onChange={handleChange}
+                                        />
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="card">
+                    <div className="card-body">
+                        <h2 className='text-xl mb-4 font-semibold text-gray-900'>Quotation</h2>
+
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-2">
+                                <span className="text-base font-semibold text-gray-900">
+                                    3. Select a Quotation
+                                </span>
+                                <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
+                                    <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                        <span>Quotation</span>
+                                        <i className="ki-filled ki-down"></i>
+                                    </button>
+                                    <div className="dropdown-content w-full max-w-2xl">
+                                        <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                            <label className="input input-sm">
+                                                <i className="ki-filled ki-magnifier"></i>
+                                                <input
+                                                    ref={inputQuotationRef}
+                                                    placeholder="Search quotation"
+                                                    type="text"
+                                                    value={searchQuotationTerm}
+                                                    onChange={handleSearchQuotation}
+                                                />
+                                            </label>
+                                        </div>
+                                        <div className="menu menu-default flex flex-col">
+                                            {quotations.map((quotation, index) => (
+                                                <div className="menu-item" key={index} data-id={quotation.id}>
+                                                    <button
+                                                        className="menu-link"
+                                                        onClick={() => handleSelectQuotation(quotation)}
+                                                    >
+                                                        <span className="menu-title">{quotation.name}</span>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {selectedQuotation && (
+                                <div className="flex flex-col gap-4">
+                                    <div className="card">
+                                        <div className="card-body quotation-info flex justify-between items-center gap-4">
+                                            <div className="flex flex-col">
+                                                <span className='text-lg font-semibold text-gray-900'>
+                                                    {selectedQuotation.name}
+                                                </span>
+                                                <span className="text-base font-normal text-gray-800">
+                                                    Price: RM {selectedQuotation.total_amount.toFixed(2)}
+                                                </span>
+                                                <span className="text-base font-normal text-slate-400">
+                                                    {selectedQuotation.description}
+                                                </span>
+                                            </div>
+                                            <div className="flex actions">
+                                                <Link
+                                                    to={'/orders/quotation/edit/' + selectedQuotation.id}
+                                                    className="btn btn-primary btn-lg"
+                                                    data-id={selectedQuotation.id}
+                                                    onClick={handleEditQuotation}
+                                                >
+                                                    Edit Quotation
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="card">
+                                        <div className="card-body">
+                                            <div className="text-base font-semibold text-gray-900 mb-2">
+                                                Packages:
+                                            </div>
+                                            <div className="flex flex-col gap-5" data-accordion="true" data-accordion-expand-all="true">
+                                                {selectedPackages.map((prodPackage: Package) => (
+                                                    <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
+                                                        <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
+                                                            <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
+                                                                <div className="flex flex-col items-start">
+                                                                    <span className="text-base text-gray-900 font-medium">
+                                                                        {prodPackage.name}
+                                                                    </span>
+                                                                    <span className='text-base text-slate-700'>
+                                                                        RM {prodPackage.total_price.toFixed(2)}
+                                                                    </span>
+                                                                    <span className='text-sm text-slate-400'>
+                                                                        {prodPackage.description}
+                                                                    </span>
+                                                                </div>
+                                                                <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
+                                                                </i>
+                                                                <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
+                                                                </i>
+                                                            </button>
+                                                            <div className="accordion-content active  border-t" id={"package_content_" + prodPackage.id.toString()}>
+                                                                <div className="product-list flex flex-col">
+                                                                    <table className="table align-middle text-gray-700 font-medium text-sm">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th className='w-[250px]'>Product</th>
+                                                                                <th className='w-[100px] text-center'>Quantity</th>
+                                                                                <th className='w-[100px] text-center'>Unit Price</th>
+                                                                                <th className='w-[100px] text-center'>Discount</th>
+                                                                                <th className='w-[100px] text-center'>Total Price</th>
+                                                                                <th className='w-[100px] text-center'>Include Product</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {prodPackage.products.map((product) => (
+                                                                                <tr
+                                                                                    key={product.id}
+                                                                                >
+                                                                                    <td>
+                                                                                        <div className="flex flex-col">
+                                                                                            <span>{product.name}</span>
+                                                                                            <span className="text-xs text-slate-400">{product.description}</span>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className='text-center text-lg'>
+                                                                                        <span className="mx-2 text-base">
+                                                                                            {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                                        </span>
+                                                                                    </td>
+                                                                                    <td className="text-center">
+                                                                                        RM {product.product_retail_price.toFixed(2)}
+                                                                                    </td>
+                                                                                    <td className='text-center'>
+                                                                                        {!product.pivot.included
+                                                                                            ? `- RM ${product.product_excluded_price.toFixed(2)}`
+                                                                                            : null}
+                                                                                    </td>
+                                                                                    <td className="text-center">
+                                                                                        {!product.pivot.included
+                                                                                            ? null
+                                                                                            : `RM ${(product.product_retail_price * product.pivot.quantity).toFixed(2)}`}
+                                                                                    </td>
+                                                                                    <td className='text-center'>
+                                                                                        <label className="switch flex justify-center">
+                                                                                            <input
+                                                                                                name="included"
+                                                                                                type="checkbox"
+                                                                                                checked={product.pivot.included}
+                                                                                            />
+                                                                                        </label>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

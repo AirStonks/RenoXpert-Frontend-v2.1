@@ -25,6 +25,8 @@ function CreateQuotation() {
 
     const handleBackClick = () => {
         localStorage.removeItem('include_packages');
+        localStorage.removeItem('packages_data');
+        localStorage.removeItem('packages_table');
         navigate('/quotations');
     };
 
@@ -47,6 +49,37 @@ function CreateQuotation() {
             ...prevData,
             [name]: value,
         }));
+    };
+
+    const handleVisibilityToggle = (id: number) => {
+        setSelectedPackages((prevPackages) => {
+            const updatedPackages = prevPackages.map((prodPackage) => {
+                // Check if the package has the product to toggle
+                const updatedProducts = prodPackage.products.map((product) => {
+                    if (product.id === id) {
+                        // Toggle the visibility of the product
+                        return { ...product, pivot: { ...product.pivot, visibility: !product.pivot.visibility } };
+                    }
+                    return product; // Return the original product if not matched
+                });
+    
+                // Calculate the new total price based on the updated products
+                const newTotalPrice = updatedProducts.reduce((sum, product) => {
+                    return sum + (product.product_retail_price * product.pivot.quantity);
+                }, 0);
+    
+                return {
+                    ...prodPackage,
+                    products: updatedProducts,
+                    total_price: newTotalPrice // Update total price for the package
+                };
+            });
+    
+            // Update localStorage with the new state
+            updateLocalStorage(updatedPackages);
+            
+            return updatedPackages; // Return the updated packages
+        });
     };
 
     // PENDING
@@ -124,7 +157,7 @@ function CreateQuotation() {
             ...prevData,
             quotationPrice: totalAmount, // Sync quotationPrice with totalAmount
         }));
-    
+
     }, [totalAmount]);
 
     const updateSelectedPackages = (packages) => {
@@ -132,19 +165,19 @@ function CreateQuotation() {
             const totalPrice = prodPackage.products.reduce((sum, product) => {
                 return sum + product.product_retail_price * product.pivot.quantity;
             }, 0);
-    
+
             return {
                 ...prodPackage,
                 total_price: totalPrice // Calculate total price
             };
         });
-    
+
         setSelectedPackages(updatedPackages);
         const newTotalAmount = calculateTotalAmount(updatedPackages);
         setTotalAmount(newTotalAmount); // Update totalAmount
         updateLocalStorage(updatedPackages);
     };
-    
+
     const updateLocalStorage = (packages) => {
         localStorage.setItem('include_packages', JSON.stringify(packages));
     };
@@ -221,11 +254,11 @@ function CreateQuotation() {
         setSelectedPackages((prevPackages: Package[]) => {
             // Filter out the package with the matching packId
             const updatedPackages = prevPackages.filter((prodPackage: Package) => prodPackage.id !== packId);
-    
+
             // Calculate new total amount after removing the package
             const newTotalAmount = calculateTotalAmount(updatedPackages);
             setTotalAmount(newTotalAmount); // Update totalAmount
-    
+
             updateLocalStorage(updatedPackages); // Update localStorage
             return updatedPackages;
         });
@@ -344,11 +377,12 @@ function CreateQuotation() {
                                                     <table className="table align-middle text-gray-700 font-medium text-sm">
                                                         <thead>
                                                             <tr>
-                                                                <th className='w-[150px]'>Product</th>
+                                                                <th className='w-[250px]'>Product</th>
                                                                 <th className='w-[100px] text-center'>Quantity</th>
-                                                                <th className='w-[100px]'>Unit Price</th>
-                                                                <th className='w-[100px]'>Total Price</th>
-                                                                <th className='w-[80px] text-center'>Action</th>
+                                                                <th className='w-[120px] text-center'>Retail Price</th>
+                                                                <th className='w-[120px] text-center'>Total Price</th>
+                                                                <th className='w-[60px] text-center'>Visibility</th>
+                                                                <th className='w-[60px] text-center'>Action</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -385,6 +419,16 @@ function CreateQuotation() {
                                                                     </td>
                                                                     <td>
                                                                         RM {(product.product_retail_price * product.pivot.quantity).toFixed(2)}
+                                                                    </td>
+                                                                    <td className='text-center'>
+                                                                        <label className="switch flex justify-center">
+                                                                            <input
+                                                                                name="visibility"
+                                                                                type="checkbox"
+                                                                                checked={product.pivot.visibility}
+                                                                                onChange={() => handleVisibilityToggle(product.id)}
+                                                                            />
+                                                                        </label>
                                                                     </td>
                                                                     <td className='text-center'>
                                                                         <button

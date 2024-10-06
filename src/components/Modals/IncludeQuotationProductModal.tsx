@@ -178,7 +178,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages }: IncludeQuotati
                 category: {
                     title: 'Category',
                 },
-                price: {
+                product_retail_price: {
                     title: 'Price',
                     render: (item: number) => `RM ${item.toFixed(2)}`, // Format as currency
                 },
@@ -190,6 +190,8 @@ function IncludeQuotationProductModal({ updateSelectedPackages }: IncludeQuotati
                         const selectedProducts = selectedProductsString ? JSON.parse(selectedProductsString) : [];
 
                         const isSelected = selectedProducts.some((product: { id: number }) => product.id === data.id);
+                        console.log(selectedProducts);
+                        
 
                         const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
                         const action = isSelected ? 'remove' : 'select';

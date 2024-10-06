@@ -66,8 +66,6 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                 selectBtn.className = 'btn btn-danger btn-sm'; // Update class
                 selectBtn.innerText = 'Remove';
             }
-
-            console.log(selectedPackages);
             
 
             // Save the updated array back to localStorage

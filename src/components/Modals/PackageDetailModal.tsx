@@ -3,15 +3,14 @@
 import React, { useEffect } from "react";
 import useFetchPackage from "../../hook/useFetchPackage";
 import Loading from "../Loading";
-import EditPackageModal from "./EditPackageModal";
+import { Link } from "react-router-dom";
 import { KTModal } from "../../metronic/core";
 
 interface PackageDetailModalProps {
     packageId: number | null;
-    onClose: () => void; // Add this prop
 }
 
-function PackageDetailModal({ packageId, onClose }: PackageDetailModalProps) {
+function PackageDetailModal({ packageId }: PackageDetailModalProps) {
     const { packageDetail, loading, error } = useFetchPackage(packageId);
 
     useEffect(() => {
@@ -19,8 +18,11 @@ function PackageDetailModal({ packageId, onClose }: PackageDetailModalProps) {
     }, [packageId]);
 
     const handleClose = () => {
-        onClose(); // Call the passed function to reset packageId
-    };
+        const modalEl = document.querySelector('#package_detail_modal') as HTMLElement;
+        const modal = KTModal.getInstance(modalEl);
+
+        modal.toggle();
+    }
 
     if (!packageId) return null; // Early return for null packageId
 
@@ -33,8 +35,6 @@ function PackageDetailModal({ packageId, onClose }: PackageDetailModalProps) {
     } else if (!packageDetail) {
         content = <div>Product Category not found</div>;
     } else {
-        const modalEl = document.querySelector('#package_detail_modal') as HTMLElement;
-        const modal = KTModal.getInstance(modalEl);
 
         content = (
             <div className="flex flex-wrap gap-8 mb-8">
@@ -45,15 +45,15 @@ function PackageDetailModal({ packageId, onClose }: PackageDetailModalProps) {
                                 General Info
                             </h3>
 
-                            <button
+                            <Link
+                                to={'/packages/edit/' + packageId}
                                 className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                                 data-tooltip="#edit_tooltip"
                                 data-action="edit"
-                                data-id={packageId}
-                                data-modal-toggle="#edit_package_modal"
+                                onClick={handleClose}
                             >
                                 <i className="ki-outline ki-notepad-edit"></i>
-                            </button>
+                            </Link>
                         </div>
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
@@ -121,22 +121,23 @@ function PackageDetailModal({ packageId, onClose }: PackageDetailModalProps) {
                                 Products
                             </h3>
 
-                            <button
+                            <Link
+                                to={'/packages/edit/' + packageId}
                                 className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                                 data-tooltip="#edit_tooltip"
                                 data-action="edit"
-                                data-id={packageId}
-                                data-modal-toggle="#edit_package_modal"
+                                onClick={handleClose}
                             >
                                 <i className="ki-outline ki-notepad-edit"></i>
-                            </button>
+                            </Link>
                         </div>
                         <div className="card-table pb-3.5">
                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                 <thead>
                                     <tr>
-                                        <th className='w-[150px]'>Product</th>
-                                        <th className='w-[100px] text-center'>Quantity</th>
+                                        <th className='w-[250px]'>Product</th>
+                                        <th className='w-[50px] text-center'>Quantity</th>
+                                        <th className='w-[100px] text-center'>Visibility</th>
                                         <th className='w-[100px]'>Unit Price</th>
                                         <th className='w-[100px]'>Total Price</th>
                                     </tr>
@@ -156,6 +157,15 @@ function PackageDetailModal({ packageId, onClose }: PackageDetailModalProps) {
                                                 </span>
                                             </td>
                                             <td>
+                                                <label className="switch flex justify-center">
+                                                    <input
+                                                        name="visibility"
+                                                        type="checkbox"
+                                                        checked={product.pivot.visibility}
+                                                    />
+                                                </label>
+                                            </td>
+                                            <td>
                                                 RM {product.product_retail_price.toFixed(2)}
                                             </td>
                                             <td>
@@ -171,14 +181,6 @@ function PackageDetailModal({ packageId, onClose }: PackageDetailModalProps) {
                 </div>
             </div>
         );
-
-        modal.on('hide', (detail) => {
-            // detail.cancel = true;
-            console.log('layer 1');
-            
-            handleClose();
-        });
-
     }
 
     return (
@@ -190,7 +192,7 @@ function PackageDetailModal({ packageId, onClose }: PackageDetailModalProps) {
                 aria-modal="true"
                 role="dialog"
             >
-                <div className="modal-content modal-center-y max-w-[1024px] h-[580px] max-h-[580px] scrollable">
+                <div className="modal-content modal-center-y max-w-7xl h-4/5 max-h-[80%] scrollable">
                     <div className="modal-header py-4 px-5">
                         <span className="text-lg text-gray-900 font-bold">Package Detail</span>
                         <button
@@ -201,13 +203,11 @@ function PackageDetailModal({ packageId, onClose }: PackageDetailModalProps) {
                             <i className="ki-filled ki-cross"></i>
                         </button>
                     </div>
-                    <div className="modal-body p-5">
+                    <div className="modal-body p-5 scrollable">
                         {content}
                     </div>
                 </div>
             </div>
-
-            <EditPackageModal packageDetail={packageDetail} />
         </>
     );
 }

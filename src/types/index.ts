@@ -15,7 +15,10 @@ export interface Product {
     category_id?: number;
     category?: string | number;
     pivot?: { 
-        quantity: number
+        visibility: boolean;
+        quantity: number;
+        included: boolean;
+        isOriginal: boolean;
     }
     type?: string;
     description?: string;

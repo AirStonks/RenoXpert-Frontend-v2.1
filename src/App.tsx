@@ -30,6 +30,7 @@ import EditOrderQuotation from './pages/Order/EditOrderQuotation';
 import SalesMain from './pages/Sales/SalesMain';
 import SaleDetail from './pages/Sales/SaleDetail';
 import DiscountFeeMain from './pages/DiscountFee/DiscountFeeMain';
+import EditPackage from './pages/Product/Package/EditPackage';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -52,7 +53,6 @@ const routes = [
 
   /*--- PRODUCT ---*/
   { path: '/products', element: <ProductMain /> },
-  // { path: '/products/:id', element: <Product /> },
   { path: '/products/create', element: <CreateProduct /> },
   { path: '/products/edit/:id', element: <EditProduct /> },
   { path: '/products/category', element: <ProductCategory /> },
@@ -60,49 +60,41 @@ const routes = [
 
   /*--- PACKAGES ---*/
   { path: '/packages', element: <PackageMain /> },
-  // { path: '/packages/:id', element: <ProductEdit /> },
   { path: '/packages/create', element: <CreatePackage /> },
-  // { path: '/packages/edit/:id', element: <ProductEdit /> },
+  { path: '/packages/edit/:id', element: <EditPackage /> },
 
 
   /*--- QUOTATION ---*/
   { path: '/quotations', element: <QuotationMain /> },
-  // { path: '/quotations/:id', element: <ProductEdit /> },
   { path: '/quotations/create', element: <CreateQuotation /> },
   { path: '/quotations/edit/:id', element: <EditQuotation /> },
 
 
   /*--- CONTACT ---*/
   { path: '/contacts', element: <ContactMain /> },
-  // { path: '/contacts/:id', element: <ProductEdit /> },
-  // { path: '/contacts/create', element: <CreateQuotation /> },
-  // { path: '/contacts/edit/:id', element: <EditQuotation /> },
 
 
   /*--- PROPERTY ---*/
   { path: '/properties', element: <PropertyMain /> },
-  // { path: '/contacts/:id', element: <ProductEdit /> },
-  // { path: '/contacts/create', element: <CreateQuotation /> },
-  // { path: '/contacts/edit/:id', element: <EditQuotation /> },
 
 
   /*--- ORDER ---*/
   { path: '/orders', element: <OrderMain /> },
-  // { path: '/contacts/:id', element: <ProductEdit /> },
   { path: '/orders/create', element: <CreateOrder /> },
+  // { path: '/orders/create/preview', element: <PreviewCreateOrder /> },
   { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation /> },
   { path: '/orders/edit/:id', element: <EditOrder /> },
+  // { path: '/orders/edit/:id/preview', element: <PreviewEditOrder /> },
   { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation /> },
 
-  
+
   /*--- SALES ---*/
   { path: '/sales', element: <SalesMain /> },
   { path: '/sales/:id', element: <SaleDetail /> },
 
-  
+
   /*--- DISCOUNT AND FEE ---*/
   { path: '/discountFee', element: <DiscountFeeMain /> },
-  // { path: '/discountFee/create', element: <CreateDiscountFee /> },
 ];
 
 function App() {

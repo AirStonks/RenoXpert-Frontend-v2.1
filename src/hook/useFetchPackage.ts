@@ -5,14 +5,14 @@ import { fetchPackage } from '../services/api';
 import { Package } from '../types';
 
 const useFetchPackage = (packageId: number | null) => {
-    const [packageDetail, setProduct] = useState<Package | null>(null);
+    const [packageDetail, setPackage] = useState<Package | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (packageId === null) {
             setLoading(false); // No need to load if packageId is null
-            setProduct(null);
+            setPackage(null);
             setError(null);
             return; // Exit early
         }
@@ -20,7 +20,7 @@ const useFetchPackage = (packageId: number | null) => {
         setLoading(true);
         fetchPackage(packageId)
             .then((data) => {
-                setProduct(data.data);
+                setPackage(data.data);
                 setLoading(false);
             })
             .catch(() => {

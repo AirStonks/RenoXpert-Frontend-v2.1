@@ -254,36 +254,54 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                                                 <table className="table align-middle text-gray-700 font-medium text-sm">
                                                                     <thead>
                                                                         <tr>
-                                                                            <th className='w-[150px]'>Product</th>
+                                                                            <th className='w-[250px]'>Product</th>
                                                                             <th className='w-[100px] text-center'>Quantity</th>
-                                                                            <th className='w-[100px]'>Unit Price</th>
-                                                                            <th className='w-[100px]'>Total Price</th>
+                                                                            <th className='w-[100px] text-center'>Unit Price</th>
+                                                                            <th className='w-[100px] text-center'>Discount</th>
+                                                                            <th className='w-[100px] text-center'>Total Price</th>
+                                                                            <th className='w-[100px] text-center'>Include Product</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        {prodPackage.products.map((product) => (
-                                                                            <tr
-                                                                                key={product.id}
-                                                                            >
-                                                                                <td>
-                                                                                    <div className="flex flex-col">
-                                                                                        <span>{product.name}</span>
-                                                                                        <span className="text-xs text-slate-400">{product.description}</span>
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td className='text-center text-lg'>
-                                                                                    <span className="mx-2 text-base">
-                                                                                        {product.pivot.quantity}
-                                                                                    </span>
-                                                                                </td>
-                                                                                <td>
-                                                                                    RM {product.price.toFixed(2)}
-                                                                                </td>
-                                                                                <td>
-                                                                                    RM {(product.price * product.pivot.quantity).toFixed(2)}
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))}
+                                                                            {prodPackage.products.map((product) => (
+                                                                                <tr
+                                                                                    key={product.id}
+                                                                                >
+                                                                                    <td>
+                                                                                        <div className="flex flex-col">
+                                                                                            <span>{product.name}</span>
+                                                                                            <span className="text-xs text-slate-400">{product.description}</span>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className='text-center text-lg'>
+                                                                                        <span className="mx-2 text-base">
+                                                                                            {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                                        </span>
+                                                                                    </td>
+                                                                                    <td className="text-center">
+                                                                                        RM {product.product_retail_price.toFixed(2)}
+                                                                                    </td>
+                                                                                    <td className='text-center'>
+                                                                                        {!product.pivot.included
+                                                                                            ? `- RM ${product.product_excluded_price.toFixed(2)}`
+                                                                                            : null}
+                                                                                    </td>
+                                                                                    <td className="text-center">
+                                                                                        {!product.pivot.included
+                                                                                            ? null
+                                                                                            : `RM ${(product.product_retail_price * product.pivot.quantity).toFixed(2)}`}
+                                                                                    </td>
+                                                                                    <td className='text-center'>
+                                                                                        <label className="switch flex justify-center">
+                                                                                            <input
+                                                                                                name="included"
+                                                                                                type="checkbox"
+                                                                                                checked={product.pivot.included}
+                                                                                            />
+                                                                                        </label>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))}
                                                                     </tbody>
                                                                 </table>
                                                             </div>
@@ -311,7 +329,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                 aria-modal="true"
                 role="dialog"
             >
-                <div className="modal-content modal-center-y max-w-[1024px] h-[580px] max-h-[580px]">
+                <div className="modal-content modal-center-y max-w-7xl h-[580px] max-h-[580px]">
                     <div className="modal-header py-4 px-5">
                         <span className="text-lg text-gray-900 font-bold">Order Detail</span>
                         <button

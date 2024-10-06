@@ -212,7 +212,7 @@ function QuotationDetailModal({ quotationId, onClose }: QuotationDetailModalProp
                 aria-modal="true"
                 role="dialog"
             >
-                <div className="modal-content modal-center-y max-w-[1024px] h-[580px] max-h-[580px]">
+                <div className="modal-content modal-center-y max-w-7xl h-[580px] max-h-[580px]">
                     <div className="modal-header py-4 px-5">
                         <span className="text-lg text-gray-900 font-bold">Quotation Detail</span>
                         <button

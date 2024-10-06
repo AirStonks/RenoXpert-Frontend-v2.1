@@ -48,7 +48,7 @@ function IncludeProductModal({
                 updateTotalPrice(productPrice, '-');
             } else {
                 // If it is not selected, add it
-                selectedProducts.push({ id: Number(id), name: productName, quantity: 1, price: productPrice, description: productDescription });
+                selectedProducts.push({ id: Number(id), name: productName, quantity: 1, visibility: true, price: productPrice, description: productDescription });
                 selectBtn.dataset.action = 'remove';
                 selectBtn.className = 'btn btn-danger btn-sm';
                 selectBtn.innerText = 'Remove';
