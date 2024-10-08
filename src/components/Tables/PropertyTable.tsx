@@ -146,7 +146,7 @@ function PropertyTable() {
                 <div className="card card-grid min-w-full">
                     <div className="card-header flex-wrap gap-2">
                         <h3 className="card-title font-medium text-lg">
-                            Contact List
+                            Property List
                         </h3>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button

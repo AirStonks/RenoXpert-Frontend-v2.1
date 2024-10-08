@@ -114,7 +114,7 @@ export const fetchProductCategory = async () => {
 
 export const addProductCategory = async (categoryData: ProductCategory) => {
     console.log('lol');
-    
+
     try {
         const response = await axios.post(API_URL + 'product/category', categoryData, {
             headers: {
@@ -485,7 +485,7 @@ export const confirmOrder = async (orderId: number) => {
                 'Content-Type': 'application/json',
             }
         });
-        
+
         return response.data;
     } catch (error) {
         handle401Error(error as AxiosError);
@@ -615,3 +615,39 @@ export const fetchInvoice = async (invoiceId: number) => {
         throw error; // Ensure to throw the error if needed
     }
 };
+
+export const fetchPublicInvoice = async (invoiceId: number) => {
+    try {
+        const response = await axios.get(API_URL + `invoices/public/view/${invoiceId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const changeInvoiceLinkStatus = async (invoiceId: number, status: string) => {
+    try {
+        const response = await axios.put(API_URL + `invoices/${invoiceId}/link/status/${status}`, {}, {
+            headers: getAuthHeaders(),
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+
+};
+
+
+export const makePaymentIntent = async (invoiceId: number) => {
+    try {
+        const response = await axios.get(API_URL + `payex/paymentIntent/invoice/${invoiceId}`);
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}

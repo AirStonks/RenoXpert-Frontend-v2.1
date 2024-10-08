@@ -1,4 +1,6 @@
-import React, { ReactNode, useEffect } from 'react';
+// src\pages\Master\MasterLayout.tsx
+
+import { ReactNode, useEffect } from 'react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
@@ -36,6 +38,3 @@ function MasterLayout({ children }: MasterLayoutProps) {
 }
 
 export default MasterLayout;
-
-// Container size
-// mx-auto px-10

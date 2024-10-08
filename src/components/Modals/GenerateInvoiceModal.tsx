@@ -144,7 +144,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
         if (response?.success) {
             notify('success', "Payment Invoice Generated Successfully!");
 
-            handleUpdateSale(response);
+            handleUpdateSale(response.data.sale);
 
             // Close Modal
             const modalEl = document.querySelector('#generate_invoice_modal') as HTMLElement;
@@ -183,7 +183,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                         </button>
                     </div>
                     <div className="modal-body pb-5 scrollable-y">
-                        <div className="flex gap-4 mb-8">
+                        <div className="flex gap-4 mb-4">
                             <div className="card">
                                 <div className="card-body">
                                     <table className="table-auto">
@@ -261,6 +261,15 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                         }
                                     </div>
 
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex mb-4">
+                            <div className="card w-full">
+                                <div className="card-body">
+                                    <span className="text-md text-gray-600 font-semibold">
+                                        Due date policies (4 generation): [ 14 days, 21 days, 1 Month (and Subsequence) ]
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -408,9 +417,9 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                         <span className="text-base text-gray-900 font-normal">Current % Rate: {formData.percentage * 100}%</span>
                                         <span className="text-base text-gray-900 font-normal">
                                             Balance (Payment) after generated: RM {
-                                                (saleDetail.total_amount - (saleDetail.total_amount - saleDetail.remaining_amount) -  (saleDetail.total_amount * formData.percentage) - totalDiscounts) < 0
+                                                (saleDetail.total_amount - (saleDetail.total_amount - saleDetail.remaining_amount) - (saleDetail.total_amount * formData.percentage) - totalDiscounts) < 0
                                                     ? 0
-                                                    : (saleDetail.total_amount - (saleDetail.total_amount - saleDetail.remaining_amount) -  (saleDetail.total_amount * formData.percentage) - totalDiscounts).toFixed(2)
+                                                    : (saleDetail.total_amount - (saleDetail.total_amount - saleDetail.remaining_amount) - (saleDetail.total_amount * formData.percentage) - totalDiscounts).toFixed(2)
                                             }
                                         </span>
 

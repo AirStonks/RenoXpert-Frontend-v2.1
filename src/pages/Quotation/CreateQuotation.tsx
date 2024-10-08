@@ -8,6 +8,7 @@ import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
 import IncludePackageModal from '../../components/Modals/IncludePackageModal';
 import { Package, Product, Quotation } from '../../types';
 import { createQuotation } from '../../services/api';
+import IncludeQuotationProductModal from '../../components/Modals/IncludeQuotationProductModal';
 
 function CreateQuotation() {
     const navigate = useNavigate();
@@ -62,22 +63,22 @@ function CreateQuotation() {
                     }
                     return product; // Return the original product if not matched
                 });
-    
+
                 // Calculate the new total price based on the updated products
                 const newTotalPrice = updatedProducts.reduce((sum, product) => {
                     return sum + (product.product_retail_price * product.pivot.quantity);
                 }, 0);
-    
+
                 return {
                     ...prodPackage,
                     products: updatedProducts,
                     total_price: newTotalPrice // Update total price for the package
                 };
             });
-    
+
             // Update localStorage with the new state
             updateLocalStorage(updatedPackages);
-            
+
             return updatedPackages; // Return the updated packages
         });
     };
@@ -122,14 +123,10 @@ function CreateQuotation() {
             console.log(response);
         } else {
             console.log(response);
-
         }
 
         try {
             console.log('FormData:', formData);
-
-
-
         } catch (error) {
             console.error("Error submitting form data:", error);
         }
@@ -143,6 +140,44 @@ function CreateQuotation() {
             if (datatable) {
                 datatable.reload();
             }
+        }
+    };
+
+    const openAddProductModal = (event) => {
+
+        // Get selected package id
+        const id = event.currentTarget.getAttribute('data-id');
+
+        const includePackages = localStorage.getItem('include_packages');
+        const packages = JSON.parse(includePackages);
+
+        const selectedPackage = packages.find(pkg => pkg.id === Number(id));
+
+        if (selectedPackage) {
+
+            const selectedProducts = selectedPackage.products.map(product => ({
+                id: product.id,
+                name: product.name,
+                quantity: product.pivot.quantity,
+                price: product.price,
+                description: product.description || "N/A" // Using "N/A" for null descriptions
+            }));
+
+            localStorage.setItem('selected_quotation_packages', includePackages);
+            localStorage.setItem('quotation:selected_package_id', JSON.stringify(selectedPackage.id))
+            localStorage.setItem('include_quotation_pack_prods', JSON.stringify(selectedProducts))
+
+            const datatableEl = document.querySelector('#products_table') as HTMLElement;
+            if (datatableEl) {
+                const datatable = (datatableEl as any).instance;
+
+                if (datatable) {
+                    datatable.reload();
+                }
+            }
+
+        } else {
+            console.log('Package not found');
         }
     };
 
@@ -283,7 +318,7 @@ function CreateQuotation() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="left-column flex flex-col flex-[3] gap-8">
+                <div className="flex flex-col flex-[3] gap-8">
                     <div className="card">
                         <div className="card-body">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Package Detail</h2>
@@ -331,7 +366,7 @@ function CreateQuotation() {
                     </div>
                 </div>
 
-                <div className='flex flex-col right-column flex-[6] gap-8'>
+                <div className='flex flex-col right-column flex-[7] gap-8'>
                     <div className="card">
                         <div className="card-body">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Packages</h2>
@@ -373,6 +408,16 @@ function CreateQuotation() {
                                                 </i>
                                             </button>
                                             <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
+                                                <div className="flex justify-end my-2 mr-3">
+                                                    <button
+                                                        className="btn btn-primary"
+                                                        data-id={prodPackage.id}
+                                                        data-modal-toggle='#include_pack_prod_modal'
+                                                        onClick={openAddProductModal}
+                                                    >
+                                                        Add Product
+                                                    </button>
+                                                </div>
                                                 <div className="product-list flex flex-col">
                                                     <table className="table align-middle text-gray-700 font-medium text-sm">
                                                         <thead>
@@ -468,6 +513,12 @@ function CreateQuotation() {
             <IncludePackageModal
                 selectedPackages={selectedPackages}
                 updateSelectedPackages={updateSelectedPackages}
+            />
+            
+
+            <IncludeQuotationProductModal
+                updateSelectedPackages={updateSelectedPackages}
+                isFromOrderQuotation={false}
             />
         </>
     );

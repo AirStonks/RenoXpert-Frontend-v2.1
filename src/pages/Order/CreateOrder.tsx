@@ -26,7 +26,7 @@ function CreateOrder() {
         contactId: '',
         propertyId: '',
         quotationId: '',
-        totalAmount: '',
+        totalAmount: 0,
         block: '',
         floor: '',
         unitNo: '',
@@ -71,6 +71,13 @@ function CreateOrder() {
 
             if (parsedSessionData.quotationId) {
                 handleSelectQuotationtById(parsedSessionData.quotationId);
+            }
+
+            if (parsedSessionData.totalAmount) {
+                setFormData((prev) => ({
+                    ...prev,
+                    totalAmount: parsedSessionData.totalAmount,
+                }));
             }
         }
 
@@ -196,6 +203,7 @@ function CreateOrder() {
         setFormData((prev) => ({
             ...prev,
             quotationId: quotation.id,
+            totalAmount: quotation.total_amount,
         }));
         setSelectedQuotation(quotation);
         setSearchQuotationTerm('');
@@ -294,7 +302,7 @@ function CreateOrder() {
             contact_id: selectedContact.id,
             property_id: selectedProperty.id,
             quotation_id: selectedQuotation.id,
-            total_amount: selectedQuotation.total_amount,
+            total_amount: formData.totalAmount,
             block: formData.block,
             floor: formData.floor,
             unit_no: formData.unitNo,
@@ -533,7 +541,7 @@ function CreateOrder() {
                                                     {selectedQuotation.name}
                                                 </span>
                                                 <span className="text-base font-normal text-gray-800">
-                                                    Price: RM {selectedQuotation.total_amount.toFixed(2)}
+                                                    Price: RM {formData.totalAmount ? formData.totalAmount.toFixed(2) : selectedQuotation.total_amount.toFixed(2)}
                                                 </span>
                                                 <span className="text-base font-normal text-slate-400">
                                                     {selectedQuotation.description}
@@ -625,6 +633,7 @@ function CreateOrder() {
                                                                                                 name="included"
                                                                                                 type="checkbox"
                                                                                                 checked={product.pivot.included}
+                                                                                                readOnly
                                                                                             />
                                                                                         </label>
                                                                                     </td>

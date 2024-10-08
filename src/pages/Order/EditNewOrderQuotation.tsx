@@ -23,7 +23,7 @@ function EditNewOrderQuotation() {
     const [selectedPackages, setSelectedPackages] = useState([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [selectedPackageId, setSelectedPackageId] = useState<number>();
-    const [selectedProduct, setSelectedProduct] = useState([]);
+    const [totalAmount, setTotalAmount] = useState<number>(0);
 
     const handleBackClick = () => {
         localStorage.removeItem('selected_quotation_packages');
@@ -71,13 +71,59 @@ function EditNewOrderQuotation() {
                 };
             });
 
-            // Update localStorage with the new state
+            setSelectedPackages(updatedPackages);
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
             updateLocalStorage(updatedPackages);
 
             return updatedPackages; // Return the updated packages
         });
     };
 
+    // const handleRemoveItem = (id: number) => {
+    //     setSelectedPackages((prevPackages) => {
+    //         const updatedPackages = prevPackages.map((prodPackage) => {
+
+    //             let totalPrice = prodPackage.total_price;
+
+    //             // Check if the package has the product to toggle
+    //             const updatedProducts = prodPackage.products.map((product) => {
+    //                 if (product.id === id) {
+    //                     // Toggle the include of the product
+    //                     const newIncludedStatus = !product.pivot.included;
+    //                     const newQuantity = 1;
+
+    //                     // Update the pivot based on new status
+    //                     const updatedPivot = { ...product.pivot, quantity: newQuantity, included: newIncludedStatus };
+
+    //                     if (newIncludedStatus) {
+    //                         totalPrice += (product.product_excluded_price);
+    //                     } else {
+    //                         totalPrice -= (product.product_retail_price * (product.pivot.quantity - 1)) + product.product_excluded_price;
+    //                     }
+
+    //                     return {
+    //                         ...product,
+    //                         pivot: updatedPivot,
+    //                     };
+    //                 }
+    //                 return product; // Return the original product if not matched
+    //             });
+    //             console.log('total: ', totalPrice);
+
+    //             return {
+    //                 ...prodPackage,
+    //                 products: updatedProducts,
+    //                 total_price: totalPrice, // Update total price for the package
+    //             };
+    //         });
+
+    //         // Update localStorage with the new state
+    //         updateLocalStorage(updatedPackages);
+
+    //         return updatedPackages; // Return the updated packages
+    //     });
+    // };
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -96,6 +142,21 @@ function EditNewOrderQuotation() {
     const handleSubmit = async () => {
         try {
             const storedPackages = localStorage.getItem('selected_quotation_packages');
+            const orderData = localStorage.getItem('create_order_data');
+
+            if (orderData) {
+                // Parse the JSON string into an object
+                const orderObject = JSON.parse(orderData);
+
+                // Update the totalAmount value
+                orderObject.totalAmount = totalAmount;
+
+                // Convert the object back to a JSON string
+                const updatedOrderData = JSON.stringify(orderObject);
+
+                // Save the updated data back to localStorage
+                localStorage.setItem('create_order_data', updatedOrderData);
+            }
 
             localStorage.setItem('include_packages', storedPackages);
 
@@ -157,7 +218,7 @@ function EditNewOrderQuotation() {
         }
     };
 
-    const openAddProducteModal = (event) => {
+    const openAddProductModal = (event) => {
 
         // Get selected package id
         const id = event.currentTarget.getAttribute('data-id');
@@ -199,6 +260,7 @@ function EditNewOrderQuotation() {
 
     useEffect(() => {
         const includePackages = localStorage.getItem('include_packages');
+        const orderData = localStorage.getItem('create_order_data');
 
         if (includePackages) {
             setSelectedPackages(JSON.parse(includePackages));
@@ -209,12 +271,41 @@ function EditNewOrderQuotation() {
             setSelectedPackages(JSON.parse(packages));
             localStorage.setItem('selected_quotation_packages', packages);
         }
+
+        if (orderData) {
+            // Parse the JSON string into an object
+            const orderObject = JSON.parse(orderData);
+
+            setTotalAmount(orderObject.totalAmount);
+        }
+
+        // if (quotationDetail) {  // Check if quotationDetail is not null
+        //     setTotalAmount(quotationDetail.total_amount);
+        // }
     }, [quotationDetail]);
 
 
+
     const updateSelectedPackages = (packages) => {
-        setSelectedPackages(packages);
-        localStorage.setItem('selected_quotation_packages', JSON.stringify(packages));
+        const updatedPackages = packages.map((prodPackage: Package) => {
+            const totalPrice = prodPackage.products.reduce((sum, product) => {
+                if (product.pivot.included) {
+                    return sum + product.product_retail_price * product.pivot.quantity;
+                } else {
+                    return sum + (product.product_retail_price - product.product_excluded_price);
+                }
+            }, 0);
+
+            return {
+                ...prodPackage,
+                total_price: totalPrice // Calculate total price
+            };
+        });
+
+        setSelectedPackages(updatedPackages);
+        const newTotalAmount = calculateTotalAmount(updatedPackages);
+        setTotalAmount(newTotalAmount); // Update totalAmount
+        updateLocalStorage(updatedPackages);
     };
 
     // const updateSelectedProducts = (products) => {
@@ -230,21 +321,12 @@ function EditNewOrderQuotation() {
         setSelectedPackages((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage) => {
                 if (prodPackage.id === packId) {
-                    let newTotalPrice = prodPackage.total_price; // Start with the current total price
-
                     const updatedProducts = prodPackage.products.map((product) => {
                         if (product.id === prodId) {
                             const newQty = action === 'increase'
                                 ? product.pivot.quantity + 1
                                 : Math.max(1, product.pivot.quantity - 1);
 
-                            // Calculate the price change based on the product's retail price
-                            const priceDifference = (newQty - product.pivot.quantity) * product.product_retail_price;
-
-                            // Update the total price
-                            newTotalPrice += priceDifference;
-
-                            // Return the updated product with the new quantity
                             return {
                                 ...product,
                                 pivot: {
@@ -256,52 +338,75 @@ function EditNewOrderQuotation() {
                         return product; // Return the original product if not matched
                     });
 
-                    // Return the updated package with modified products and new total price
+                    const newTotalPrice = updatedProducts.reduce((sum, product) => {
+                        return sum + product.product_retail_price * product.pivot.quantity;
+                    }, 0);
+
                     return {
                         ...prodPackage,
                         products: updatedProducts,
-                        total_price: newTotalPrice // Update the total price here
+                        total_price: newTotalPrice // Update total price
                     };
                 }
                 return prodPackage; // Return the original package if not matched
             });
 
-            updateLocalStorage(updatedPackages); // Update localStorage
-            return updatedPackages; // Return the updated packages
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+            updateLocalStorage(updatedPackages);
+            return updatedPackages;
         });
     };
 
 
-    // const handleRemoveProduct = (packId: number, prodId: number) => {
-    //     setSelectedPackages((prevPackages: Package[]) => {
+    const handleRemoveProduct = (packId: number, prodId: number) => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage: Package) => {
+                if (prodPackage.id === packId) {
+                    const updatedProducts = prodPackage.products.filter((product: Product) => product.id !== prodId);
 
-    //         const updatedPackages = prevPackages.map((prodPackage: Package) => {
-    //             if (prodPackage.id === packId) {
-    //                 // Filter out the product with the matching prodId
-    //                 const updatedProducts = prodPackage.products.filter((product: Product) => product.id !== prodId);
+                    const newTotalPrice = updatedProducts.reduce((sum, product) => {
+                        if (product.pivot.included) {
+                            return sum + product.product_retail_price * product.pivot.quantity;
+                        } else {
+                            return sum + (product.product_retail_price - product.product_excluded_price);
+                        }
+                    }, 0);
+                    
+                    console.log(newTotalPrice);
 
-    //                 // Return a new package object with the updated products
-    //                 return {
-    //                     ...prodPackage,
-    //                     products: updatedProducts
-    //                 };
-    //             }
-    //             return prodPackage; // Return the original package if not matched
-    //         });
+                    return {
+                        ...prodPackage,
+                        products: updatedProducts,
+                        total_price: newTotalPrice // Update total price
+                    };
+                }
+                return prodPackage; // Return the original package if not matched
+            });
 
-    //         updateLocalStorage(updatedPackages); // Update localStorage
-    //         return updatedPackages;
-    //     });
-    // };
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+            updateLocalStorage(updatedPackages);
+            return updatedPackages;
+        });
+    };
 
     const handleRemovePackage = (packId: number) => {
         setSelectedPackages((prevPackages: Package[]) => {
             // Filter out the package with the matching packId
             const updatedPackages = prevPackages.filter((prodPackage: Package) => prodPackage.id !== packId);
 
+            // Calculate new total amount after removing the package
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+
             updateLocalStorage(updatedPackages); // Update localStorage
             return updatedPackages;
         });
+    };
+
+    const calculateTotalAmount = (packages: Package[]) => {
+        return packages.reduce((sum, pkg) => sum + pkg.total_price, 0);
     };
 
     if (loading) return <Loading />;
@@ -328,7 +433,7 @@ function EditNewOrderQuotation() {
                             Quotation: {quotationDetail.name}
                         </span>
                         <span className="text-xl text-gray-900 font-semibold">
-                            Total Amount: RM {quotationDetail.total_amount.toFixed(2)}
+                            Total Amount: RM {totalAmount.toFixed(2)}
                         </span>
                     </div>
                 </div>
@@ -381,7 +486,7 @@ function EditNewOrderQuotation() {
                                                     className="btn btn-primary"
                                                     data-id={prodPackage.id}
                                                     data-modal-toggle='#include_pack_prod_modal'
-                                                    onClick={openAddProducteModal}
+                                                    onClick={openAddProductModal}
                                                 >
                                                     Add Product
                                                 </button>
@@ -443,14 +548,26 @@ function EditNewOrderQuotation() {
                                                                         : `RM ${(product.product_retail_price * product.pivot.quantity).toFixed(2)}`}
                                                                 </td>
                                                                 <td className='text-center'>
-                                                                    <label className="switch flex justify-center">
-                                                                        <input
-                                                                            name="included"
-                                                                            type="checkbox"
-                                                                            checked={product.pivot.included}
-                                                                            onChange={() => handleIncludeToggle(product.id)}
-                                                                        />
-                                                                    </label>
+                                                                    {product.pivot.isOriginal ?
+                                                                        <label className="switch flex justify-center">
+                                                                            <input
+                                                                                name="included"
+                                                                                type="checkbox"
+                                                                                checked={product.pivot.included}
+                                                                                onChange={() => handleIncludeToggle(product.id)}
+                                                                            />
+                                                                        </label>
+                                                                        :
+                                                                        <button
+                                                                            className="btn-revoke btn btn-sm btn-danger"
+                                                                            data-tooltip="#remove_tooltip"
+                                                                            data-action="remove"
+                                                                            data-id={product.id}
+                                                                            onClick={() => handleRemoveProduct(prodPackage.id, product.id)}
+                                                                        >
+                                                                            Remove
+                                                                        </button>
+                                                                    }
                                                                 </td>
                                                             </tr>
                                                         ))}
@@ -485,6 +602,7 @@ function EditNewOrderQuotation() {
 
             <IncludeQuotationProductModal
                 updateSelectedPackages={updateSelectedPackages}
+                isFromOrderQuotation={true}
             />
         </>
     );

@@ -124,7 +124,7 @@ function CreateProduct() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="left-column flex flex-col flex-[2] gap-8">
+                <div className="flex flex-col flex-auto gap-8">
 
                     {/* Image */}
                     {/* <div className="card relative">

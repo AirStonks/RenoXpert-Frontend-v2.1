@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Loading from "../Loading";
 import { KTAccordion, KTModal } from "../../metronic/core";
-import { OrderQuotation, Package } from "../../types";
+import { Package, Quotation } from "../../types";
 import { Link } from "react-router-dom";
 import useFetchOrder from "../../hook/useFetchOrder";
 
@@ -18,7 +18,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
         KTAccordion.init();
 
         if (orderDetail) {
-            // console.log(JSON.parse(JSON.stringify(orderDetail.latest_quotation)));
+            console.log(JSON.parse(JSON.stringify(orderDetail.total_amount)));
 
             // selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation));
             // setSelectedPackages(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)));
@@ -48,7 +48,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
         console.log(orderDetail);
 
 
-        const selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation)) as OrderQuotation;
+        const selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation)) as Quotation;
         const selectedPackages = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))) as Package[];
 
         console.log(selectedQuotation);
@@ -212,13 +212,13 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                     <div className="card-body quotation-info flex justify-between items-center gap-4">
                                         <div className="flex flex-col">
                                             <span className='text-lg font-semibold text-gray-900'>
-                                                {selectedQuotation.quotation.name}
+                                                {selectedQuotation.name}
                                             </span>
                                             <span className="text-base font-normal text-gray-800">
-                                                Price: RM {selectedQuotation.quotation.total_amount.toFixed(2)}
+                                                Price: RM {selectedQuotation.total_amount.toFixed(2)}
                                             </span>
                                             <span className="text-base font-normal text-slate-400">
-                                                {selectedQuotation.quotation.description}
+                                                {selectedQuotation.description}
                                             </span>
                                         </div>
                                     </div>
@@ -297,6 +297,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                                                                                 name="included"
                                                                                                 type="checkbox"
                                                                                                 checked={product.pivot.included}
+                                                                                                readOnly
                                                                                             />
                                                                                         </label>
                                                                                     </td>

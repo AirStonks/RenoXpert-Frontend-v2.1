@@ -162,7 +162,7 @@ const EditProduct: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="left-column flex flex-col flex-[2] gap-8">
+                <div className="left-column flex flex-col flex-auto gap-8">
                     {/* Image */}
                     {/* <div className="card relative">
                         <div className="comming-soon-overlay rounded-xl absolute flex items-center justify-center inset-0 bg-black bg-opacity-60 pointer-events-none">

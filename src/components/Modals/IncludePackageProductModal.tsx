@@ -1,16 +1,15 @@
 // src\components\Modals\IncludeQuotationProductModal.tsx
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { Package, Product } from "../../types";
 import { fetchProduct, fetchProducts } from "../../services/api";
 import { KTDataTable } from "../../metronic/core";
 
-interface IncludeQuotationProductModalProps {
+interface IncludePackageProductModalProps {
     updateSelectedPackages: (prodPackages: Package[]) => void;
-    isFromOrderQuotation: boolean;
 }
 
-function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuotation }: IncludeQuotationProductModalProps) {
+function IncludePackageProductModal({ updateSelectedPackages }: IncludePackageProductModalProps) {
 
     useEffect(() => {
         getProducts();
@@ -39,6 +38,8 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
             const product = productResponse.data;
 
             if (productIndex > -1) {
+                console.log('no');
+
                 // Remove selected product
                 selectedProducts.splice(productIndex, 1);
                 selectBtn.dataset.action = 'select';
@@ -96,9 +97,6 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                         package_id: packId,
                         product_id: prodId,
                         quantity: 1,
-                        included: true,
-                        visibility: true,
-                        isOriginal: !isFromOrderQuotation,
                     };
                     
                     // Get selected quotation packages from localStorage
@@ -139,7 +137,6 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
             // console.log(JSON.stringify(selectedProducts));
 
             const selectedPackages = localStorage.getItem('selected_quotation_packages');
-
             
             updateSelectedPackages(JSON.parse(selectedPackages));
             
@@ -188,29 +185,18 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                 action: {
                     title: 'Action',
                     render: (item: string, data: Product) => {
-                        const selectedProductsString = localStorage.getItem('selected_quotation_packages');
+                        const selectedProductsString = localStorage.getItem('include_quotation_pack_prods');
                         const selectedPackageId = localStorage.getItem('quotation:selected_package_id');
+                        const selectedProducts = selectedProductsString ? JSON.parse(selectedProductsString) : [];
+
+                        const isSelected = selectedProducts.some((product: { id: number }) => product.id === data.id);
+                        console.log(selectedProducts);
                         
-                        // Parse selected products from localStorage
-                        const selectedProducts: Product[] = selectedProductsString ? JSON.parse(selectedProductsString)[0].products : [];
-                        
-                        // Check if the current product is selected
-                        const isSelected = selectedProducts.some(product => product.id === data.id);
-                        
-                        // Check if the product is original and should not display the button
-                        if (isFromOrderQuotation) {
-                            const isOriginal = selectedProducts.some(product => product.id === data.id && product.pivot.isOriginal);
-                            if (isOriginal) {
-                                return ''; // Return an empty string if the product is original
-                            }
-                        }
-                    
-                        // Determine button classes and text based on selection state
+
                         const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
                         const action = isSelected ? 'remove' : 'select';
                         const buttonText = isSelected ? 'Remove' : 'Select';
-                    
-                        // Render the button
+
                         return `
                             <div class="flex justify-around gap-2">
                                 <button 
@@ -219,7 +205,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                     data-packId="${selectedPackageId}"
                                     data-id="${data.id}"
                                     data-name="${data.name}"
-                                    data-price="${data.product_retail_price}"
+                                    data-price="${data.price}"
                                     data-desc="${data.description}"
                                 >
                                     ${buttonText}
@@ -339,4 +325,4 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
     );
 }
 
-export default IncludeQuotationProductModal;
+export default IncludePackageProductModal;

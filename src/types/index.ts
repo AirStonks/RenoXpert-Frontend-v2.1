@@ -96,6 +96,8 @@ export interface Order {
     description?: string,
     status?: string,
     metadata?: JSON,
+    created_at?: string,
+    updated_at?: string,
 }
 
 export interface OrderQuotation {
@@ -145,8 +147,11 @@ export interface Invoice {
     percentage?: number,
     amount?: number,
     status?: string,
+    link_status?: string,
+    version?: number;
     discountsData?: string | object;
     feesData?: string | object;
+    due_date?: string;
     created_at?: string,
     updated_at?: string,
 }

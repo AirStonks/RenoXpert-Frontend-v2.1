@@ -5,7 +5,7 @@ import useFetchSale from "../../hook/useFetchSale";
 import Loading from "../../components/Loading";
 import GenerateInvoiceModal from "../../components/Modals/GenerateInvoiceModal";
 import { Sale } from "../../types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import InvoiceDetailModal from "../../components/Modals/InvoiceDetailModal";
 
 function SaleDetail() {
@@ -16,19 +16,25 @@ function SaleDetail() {
     const { saleDetail, loading, error } = useFetchSale(saleId);
 
     const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(null);
+    const [sale, setSale] = useState<Sale | null>(null);
+
+    useEffect(() => {
+        if (saleDetail) {
+            setSale(saleDetail);
+        }
+    }, [saleDetail]);
 
     const handleBackClick = () => {
         navigate('/sales');
     };
 
     const handleUpdateSale = (updatedSale: Sale) => {
-        console.log(updatedSale);
-
+        setSale(updatedSale);
     }
 
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
-    if (!saleDetail) return <div>An unexpected error occured</div>;
+    if (!sale) return <div>An unexpected error occured</div>;
 
     return (
         <>
@@ -42,7 +48,7 @@ function SaleDetail() {
                     </span>
                 </div>
                 <div className="flex">
-                    {saleDetail.remaining_amount > 0 && saleDetail.remaining_percentage > 0 && (
+                    {sale.remaining_amount > 0 && sale.remaining_percentage > 0 && (
                         <button
                             className="btn btn-primary flex gap-2 items-center"
                             data-modal-toggle="#generate_invoice_modal"
@@ -66,7 +72,7 @@ function SaleDetail() {
                                                 Sale No.:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
-                                                {saleDetail.sales_no}
+                                                {sale.sales_no}
                                             </td>
                                         </tr>
                                         <tr>
@@ -74,7 +80,7 @@ function SaleDetail() {
                                                 Order No.:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
-                                                {saleDetail.order.order_no}
+                                                {sale.order.order_no}
                                             </td>
                                         </tr>
                                         <tr>
@@ -82,7 +88,7 @@ function SaleDetail() {
                                                 Issued Date:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
-                                                {saleDetail.created_at}
+                                                {sale.created_at}
                                             </td>
                                         </tr>
                                         <tr>
@@ -91,11 +97,11 @@ function SaleDetail() {
                                             </td>
                                             <td className="text-sm text-gray-900">
                                                 <span className={`badge badge-pill cursor-default
-                                                ${saleDetail.status === 'issued' ? 'badge-primary' : ''} 
-                                                ${saleDetail.status === 'closed' ? 'badge-success' : ''} 
+                                                ${sale.status === 'issued' ? 'badge-primary' : ''} 
+                                                ${sale.status === 'closed' ? 'badge-success' : ''} 
                                                 badge-outline`}
                                                 >
-                                                    {saleDetail.status}
+                                                    {sale.status}
                                                 </span>
                                             </td>
                                         </tr>
@@ -118,10 +124,10 @@ function SaleDetail() {
                         <div className="card">
                             <div className="card-body">
                                 <div className="flex flex-col">
-                                    <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (saleDetail.remaining_percentage * 100)}% Payment Progress</span>
+                                    <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (sale.remaining_percentage * 100)}% Payment Progress</span>
                                     <div className="progress progress-success mb-4">
                                         <div className="progress-bar" style={{
-                                            width: `${100 - (saleDetail.remaining_percentage * 100)}%`,
+                                            width: `${100 - (sale.remaining_percentage * 100)}%`,
                                             height: '12px'
                                         }}>
                                         </div>
@@ -131,7 +137,7 @@ function SaleDetail() {
                                     <div className="card min-w-48">
                                         <div className="card-body flex flex-col justify-center items-center">
                                             <div className="amnt text-gray-900 text-lg font-semibold mb-2">
-                                                RM {saleDetail.total_amount.toFixed(2)}
+                                                RM {sale.total_amount.toFixed(2)}
                                             </div>
                                             <span className="text-gray-900 text-base">
                                                 Total Amount
@@ -141,7 +147,7 @@ function SaleDetail() {
                                     <div className="card min-w-48">
                                         <div className="card-body flex flex-col justify-center items-center">
                                             <div className="amnt text-gray-900 text-lg font-semibold mb-2">
-                                                RM {saleDetail.remaining_amount.toFixed(2)}
+                                                RM {sale.remaining_amount.toFixed(2)}
                                             </div>
                                             <span className="text-gray-900 text-base">
                                                 Balance (Amount)
@@ -162,22 +168,69 @@ function SaleDetail() {
                 <div className="flex flex-col">
                     <div className="card">
                         <div className="card-body">
-                            <h2 className="text-gray-900 text-lg font-medium">
+                            <h2 className="text-gray-900 text-lg font-medium mb-4">
                                 Payment Invoices
                             </h2>
 
                             <div className="flex flex-col gap-4">
-                                {saleDetail.invoices.map((invoice, index) => (
+                                {sale.invoices.map((invoice, index) => (
                                     <div
                                         key={index}
                                         className="card cursor-pointer"
                                         data-modal-toggle="#payment_invoice_modal"
                                         onClick={() => setSelectedInvoiceId(Number(invoice.id))}
                                     >
-                                        <div className="card-body">
-                                            <h3 className="text-gray-900 text-base font-medium">
-                                                {invoice.invoice_no}
-                                            </h3>
+                                        <div className="card-body flex justify-between items-center">
+                                            <div className="flex items-center gap-4">
+                                                <div className="relative size-[50px] shrink-0">
+                                                    <svg className="w-full h-full stroke-info-clarity fill-info-light" fill="none" height="48" viewBox="0 0 44 48" width="44" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill="#EFF6FF">
+                                                        </path>
+                                                        <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke="#1B84FF" strokeOpacity="0.2">
+                                                        </path>
+                                                    </svg>
+                                                    <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
+                                                        <i className="ki-outline ki-document text-1.5xl ps-px text-info"></i>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col gap-1">
+                                                    <h3 className="text-gray-900 text-sm font-medium">
+                                                        {invoice.invoice_no}
+                                                    </h3>
+
+                                                    <div className="flex gap-14">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs text-gray-600">
+                                                                Amount:
+                                                            </span>
+                                                            <span className="text-sm text-gray-900 font-medium">
+                                                                RM {invoice.amount.toFixed(2)}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs text-gray-600">
+                                                                Due Date:
+                                                            </span>
+                                                            <span className="text-sm text-gray-900 font-medium">
+                                                                {invoice.due_date
+                                                                    ? new Date(invoice.due_date).toLocaleDateString('en-GB', {
+                                                                        day: 'numeric',
+                                                                        month: 'long',
+                                                                        year: 'numeric'
+                                                                    })
+                                                                    : 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="status">
+                                                <span className="badge badge-pill badge-outline gap-1 items-center">
+                                                    <span className="badge badge-dot size-1.5 badge-dark"></span>
+                                                    Pending
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -189,7 +242,7 @@ function SaleDetail() {
             </div>
 
             <GenerateInvoiceModal
-                saleDetail={saleDetail}
+                saleDetail={sale}
                 handleUpdateSale={handleUpdateSale}
             />
 

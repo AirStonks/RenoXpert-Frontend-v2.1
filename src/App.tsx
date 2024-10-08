@@ -9,7 +9,6 @@ import Login from './pages/Login';
 import ProtectedRoute from './utils/ProtectedRoute';
 import MasterLayout from './pages/Master';
 import Dashboard from './pages/Dashboard';
-import Test from './pages/Test';
 import ProductMain from './pages/Product/ProductMain';
 import CreateProduct from './pages/Product/CreateProduct';
 import EditProduct from './pages/Product/EditProduct';
@@ -31,6 +30,8 @@ import SalesMain from './pages/Sales/SalesMain';
 import SaleDetail from './pages/Sales/SaleDetail';
 import DiscountFeeMain from './pages/DiscountFee/DiscountFeeMain';
 import EditPackage from './pages/Product/Package/EditPackage';
+import ViewQuotation from './pages/OwnerPages/ViewQuotation';
+import Test from './pages/Test';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -43,58 +44,51 @@ const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
 );
 
 const routes = [
-  { path: '/login', element: <Login /> },
-  { path: '/', element: <Navigate to="/dashboard" replace /> },
-  { path: '/dashboard', element: <Dashboard /> },
+  { path: '/login', element: <Login />, layout: null },
+  { path: '/', element: <Navigate to="/dashboard" replace />, layout: ProtectedLayout },
+  { path: '/dashboard', element: <Dashboard />, layout: ProtectedLayout },
 
-  /*--- TESt ---*/
-  { path: '/test', element: <Test /> },
-
+  /*--- TEST ---*/
+  { path: '/test', element: <Test />, layout: null },
+  
+  /*--- QUOTATION VIEW ---*/
+  { path: '/invoice/:id/view', element: <ViewQuotation />, layout: null },
 
   /*--- PRODUCT ---*/
-  { path: '/products', element: <ProductMain /> },
-  { path: '/products/create', element: <CreateProduct /> },
-  { path: '/products/edit/:id', element: <EditProduct /> },
-  { path: '/products/category', element: <ProductCategory /> },
-
+  { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
+  { path: '/products/create', element: <CreateProduct />, layout: ProtectedLayout },
+  { path: '/products/edit/:id', element: <EditProduct />, layout: ProtectedLayout },
+  { path: '/products/category', element: <ProductCategory />, layout: ProtectedLayout },
 
   /*--- PACKAGES ---*/
-  { path: '/packages', element: <PackageMain /> },
-  { path: '/packages/create', element: <CreatePackage /> },
-  { path: '/packages/edit/:id', element: <EditPackage /> },
-
+  { path: '/packages', element: <PackageMain />, layout: ProtectedLayout },
+  { path: '/packages/create', element: <CreatePackage />, layout: ProtectedLayout },
+  { path: '/packages/edit/:id', element: <EditPackage />, layout: ProtectedLayout },
 
   /*--- QUOTATION ---*/
-  { path: '/quotations', element: <QuotationMain /> },
-  { path: '/quotations/create', element: <CreateQuotation /> },
-  { path: '/quotations/edit/:id', element: <EditQuotation /> },
-
+  { path: '/quotations', element: <QuotationMain />, layout: ProtectedLayout },
+  { path: '/quotations/create', element: <CreateQuotation />, layout: ProtectedLayout },
+  { path: '/quotations/edit/:id', element: <EditQuotation />, layout: ProtectedLayout },
 
   /*--- CONTACT ---*/
-  { path: '/contacts', element: <ContactMain /> },
-
+  { path: '/contacts', element: <ContactMain />, layout: ProtectedLayout },
 
   /*--- PROPERTY ---*/
-  { path: '/properties', element: <PropertyMain /> },
-
+  { path: '/properties', element: <PropertyMain />, layout: ProtectedLayout },
 
   /*--- ORDER ---*/
-  { path: '/orders', element: <OrderMain /> },
-  { path: '/orders/create', element: <CreateOrder /> },
-  // { path: '/orders/create/preview', element: <PreviewCreateOrder /> },
-  { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation /> },
-  { path: '/orders/edit/:id', element: <EditOrder /> },
-  // { path: '/orders/edit/:id/preview', element: <PreviewEditOrder /> },
-  { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation /> },
-
+  { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },
+  { path: '/orders/create', element: <CreateOrder />, layout: ProtectedLayout },
+  { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation />, layout: ProtectedLayout },
+  { path: '/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },
+  { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation />, layout: ProtectedLayout },
 
   /*--- SALES ---*/
-  { path: '/sales', element: <SalesMain /> },
-  { path: '/sales/:id', element: <SaleDetail /> },
-
+  { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },
+  { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
 
   /*--- DISCOUNT AND FEE ---*/
-  { path: '/discountFee', element: <DiscountFeeMain /> },
+  { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
 ];
 
 function App() {
@@ -123,19 +117,19 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {routes.map(({ path, element }) => (
+      {routes.map(({ path, element, layout: Layout = ProtectedLayout }) => (
         <Route
           key={path}
           path={path}
           element={
-            path === '/login' ? element : <ProtectedLayout>{element}</ProtectedLayout>
+            path === '/login' || Layout === null 
+              ? element 
+              : <Layout>{element}</Layout>
           }
         />
       ))}
     </Routes>
   );
 }
-
-
 
 export default App;
