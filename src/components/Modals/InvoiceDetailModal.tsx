@@ -126,6 +126,14 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                         <td className="text-sm text-gray-900 font-medium pb-3">{invoice.version}</td>
                                     </tr>
                                     <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Status:</td>
+                                        <td className="text-sm text-gray-900 font-medium pb-3">
+                                            <span className={`badge badge-pill badge-outline gap-1 items-center ${invoice.status === 'paid' ? 'badge-success' : ''}`}>
+                                                {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Discounts:</td>
                                         <td className="text-sm text-gray-900 pb-3 font-medium">
                                             {discounts.length > 0 ? (
@@ -198,27 +206,35 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                         </div>
                         <div className="card-body flex flex-col gap-2">
                             <div className="grid gap-5">
-                                <div className="flex justify-between gap-3">
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="flex items-center justify-center size-7.5 shrink-0 bg-gray-100 rounded-lg border border-gray-300">
-                                            <i className="ki-filled ki-cheque text-base text-gray-600">
-                                            </i>
+                                {invoice.payments.map((payment) => (
+                                    <div className="flex justify-between gap-3">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="flex items-center justify-center size-7.5 shrink-0 bg-gray-100 rounded-lg border border-gray-300">
+                                                <i className="ki-filled ki-cheque text-base text-gray-600">
+                                                </i>
+                                            </div>
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="text-2sm font-medium text-gray-900 cursor-pointer hover:text-primary mb-px">
+                                                    {payment.reference_no}
+                                                </span>
+                                                <span className="text-2xs text-gray-700">
+                                                    {payment.created_at
+                                                        ? new Date(payment.created_at).toLocaleDateString('en-GB', {
+                                                            day: 'numeric',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : 'N/A'}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-2sm font-medium text-gray-900 cursor-pointer hover:text-primary mb-px">
-                                                INV-2023-001
-                                            </span>
-                                            <span className="text-2xs text-gray-700">
-                                                15 Nov, 2023
+                                        <div className="flex items-center gap-2.5">
+                                            <span className="text-sm text-gray-800">
+                                                RM {payment.amount.toFixed(2)}
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2.5">
-                                        <span className="text-sm text-gray-800">
-                                            RM 500.00
-                                        </span>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>

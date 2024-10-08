@@ -105,7 +105,10 @@ export interface OrderQuotation {
     order_id?: string,
     order?: Order,
     quotation_id?: string,
+    quotation_name?: string,
     quotation?: Quotation,
+    total_amount?: number,
+    description?: string,
     version: number,
     metadata?: JSON,
 }
@@ -143,6 +146,7 @@ export interface Invoice {
     id?: string,
     sale_id?: string,
     sale?: Sale,
+    payments?: Payment[],
     invoice_no?: string,
     percentage?: number,
     amount?: number,
@@ -152,6 +156,19 @@ export interface Invoice {
     discountsData?: string | object;
     feesData?: string | object;
     due_date?: string;
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface Payment {
+    id?: string,
+    invoice_id?: string,
+    reference_no?: string,
+    amount?: number,
+    payment_method?: string,
+    currency?: string,
+    description?: string,
+    status?: string,
     created_at?: string,
     updated_at?: string,
 }

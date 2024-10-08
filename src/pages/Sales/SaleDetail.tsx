@@ -226,9 +226,9 @@ function SaleDetail() {
                                                 </div>
                                             </div>
                                             <div className="status">
-                                                <span className="badge badge-pill badge-outline gap-1 items-center">
-                                                    <span className="badge badge-dot size-1.5 badge-dark"></span>
-                                                    Pending
+                                                <span className={`badge badge-pill badge-outline gap-1 items-center ${invoice.status === 'paid' ? 'badge-success' : ''}`}>
+                                                    <span className={`badge badge-dot size-1.5 ${invoice.status === 'paid' ? 'badge-success' : 'badge-dark'}`}></span>
+                                                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
                                                 </span>
                                             </div>
                                         </div>

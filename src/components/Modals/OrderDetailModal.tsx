@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Loading from "../Loading";
 import { KTAccordion, KTModal } from "../../metronic/core";
-import { Package, Quotation } from "../../types";
+import { OrderQuotation, Package } from "../../types";
 import { Link } from "react-router-dom";
 import useFetchOrder from "../../hook/useFetchOrder";
 
@@ -48,7 +48,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
         console.log(orderDetail);
 
 
-        const selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation)) as Quotation;
+        const selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation)) as OrderQuotation;
         const selectedPackages = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))) as Package[];
 
         console.log(selectedQuotation);
@@ -212,7 +212,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                     <div className="card-body quotation-info flex justify-between items-center gap-4">
                                         <div className="flex flex-col">
                                             <span className='text-lg font-semibold text-gray-900'>
-                                                {selectedQuotation.name}
+                                                {selectedQuotation.quotation_name}
                                             </span>
                                             <span className="text-base font-normal text-gray-800">
                                                 Price: RM {selectedQuotation.total_amount.toFixed(2)}

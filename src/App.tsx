@@ -32,6 +32,8 @@ import DiscountFeeMain from './pages/DiscountFee/DiscountFeeMain';
 import EditPackage from './pages/Product/Package/EditPackage';
 import ViewQuotation from './pages/OwnerPages/ViewQuotation';
 import Test from './pages/Test';
+import PaymentSuccess from './pages/OwnerPages/PaymentSuccess';
+import PaymentError from './pages/OwnerPages/PaymentError';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -53,6 +55,8 @@ const routes = [
   
   /*--- QUOTATION VIEW ---*/
   { path: '/invoice/:id/view', element: <ViewQuotation />, layout: null },
+  { path: '/invoice/:id/payment/success', element: <PaymentSuccess />, layout: null },
+  { path: '/invoice/:id/payment/error', element: <PaymentError />, layout: null },
 
   /*--- PRODUCT ---*/
   { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
