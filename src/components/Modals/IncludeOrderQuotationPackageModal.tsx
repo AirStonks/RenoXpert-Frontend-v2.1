@@ -126,7 +126,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                 },
                 total_price: {
                     title: 'Price',
-                    render: (item: number) => `RM ${item.toFixed(2)}`, // Format as currency
+                    render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
                 },
                 action: {
                     title: 'Action',

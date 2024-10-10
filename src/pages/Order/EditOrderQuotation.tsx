@@ -328,7 +328,7 @@ function EditOrderQuotation() {
                             Quotation: {quotationDetail.name}
                         </span>
                         <span className="text-xl text-gray-900 font-semibold">
-                            Total Amount: RM {quotationDetail.total_amount.toFixed(2)}
+                            Total Amount: RM {quotationDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                 </div>
@@ -364,7 +364,7 @@ function EditOrderQuotation() {
                                                     {prodPackage.name}
                                                 </span>
                                                 <span className='text-base text-slate-700'>
-                                                    RM {prodPackage.total_price.toFixed(2)}
+                                                    RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </span>
                                                 <span className='text-sm text-slate-400'>
                                                     {prodPackage.description}
@@ -430,17 +430,17 @@ function EditOrderQuotation() {
                                                                     </button>
                                                                 </td>
                                                                 <td className="text-center">
-                                                                    RM {product.product_retail_price.toFixed(2)}
+                                                                    RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </td>
                                                                 <td className='text-center'>
                                                                     {!product.pivot.included
-                                                                        ? `- RM ${product.product_excluded_price.toFixed(2)}`
+                                                                        ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                         : null}
                                                                 </td>
                                                                 <td className="text-center">
                                                                     {!product.pivot.included
                                                                         ? null
-                                                                        : `RM ${(product.product_retail_price * product.pivot.quantity).toFixed(2)}`}
+                                                                        : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </td>
                                                                 <td className='text-center'>
                                                                     <label className="switch flex justify-center">

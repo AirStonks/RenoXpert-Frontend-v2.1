@@ -201,7 +201,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Total Amount:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    RM {saleDetail.total_amount.toFixed(2)}
+                                                    RM {saleDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -209,7 +209,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Balance (Amount):
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    RM {saleDetail.remaining_amount.toFixed(2)}
+                                                    RM {saleDetail.remaining_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -360,7 +360,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                         Fee Name: {fee.name}
                                                     </span>
                                                     <span className="text-base text-gray-900 mb-1">
-                                                        Fee Charge: {fee.valueType === 'percentage' ? `${fee.value * 100}% (RM ${((saleDetail.total_amount * formData.percentage) * fee.value).toFixed(2)})` : `RM ${fee.value}`}
+                                                        Fee Charge: {fee.valueType === 'percentage' ? `${fee.value * 100}% (RM ${((saleDetail.total_amount * formData.percentage) * fee.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})` : `RM ${fee.value}`}
                                                     </span>
                                                 </div>
                                                 <div className="flex">
@@ -389,7 +389,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                         Discount Type: {discount.valueType}
                                                     </span>
                                                     <span className="text-base text-gray-900 mb-1">
-                                                        Discount Value: {discount.valueType === 'percentage' ? `${discount.value * 100}% (RM ${((saleDetail.total_amount * formData.percentage) * discount.value).toFixed(2)})` : `RM ${discount.value}`}
+                                                        Discount Value: {discount.valueType === 'percentage' ? `${discount.value * 100}% (RM ${((saleDetail.total_amount * formData.percentage) * discount.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})` : `RM ${discount.value}`}
                                                     </span>
                                                 </div>
                                                 <div className="flex">
@@ -411,21 +411,72 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                             <h2 className="text-lg text-gray-900 font-semibold">Summary</h2>
                             <div className="card mb-4">
                                 <div className="card-body">
-                                    <div className="flex flex-col gap-2">
-                                        <span className="text-base text-gray-900 font-normal">Total Fees: RM {totalFees.toFixed(2)}</span>
-                                        <span className="text-base text-gray-900 font-normal">Total Discount: RM {totalDiscounts.toFixed(2)}</span>
-                                        <span className="text-base text-gray-900 font-normal">Current % Rate: {formData.percentage * 100}%</span>
-                                        <span className="text-base text-gray-900 font-normal">
-                                            Balance (Payment) after generated: RM {
-                                                (saleDetail.total_amount - (saleDetail.total_amount - saleDetail.remaining_amount) - (saleDetail.total_amount * formData.percentage) - totalDiscounts) < 0
-                                                    ? 0
-                                                    : (saleDetail.total_amount - (saleDetail.total_amount - saleDetail.remaining_amount) - (saleDetail.total_amount * formData.percentage) - totalDiscounts).toFixed(2)
-                                            }
-                                        </span>
 
-                                        <span className="text-base text-gray-900 font-normal">Balance (%) after generated: {(saleDetail.remaining_percentage * 100) - (formData.percentage * 100)}%</span>
-                                        <span className="text-lg text-gray-900 font-semibold">Bill amount: RM {((saleDetail.total_amount * formData.percentage) + totalFees - totalDiscounts).toFixed(2)}</span>
-                                    </div>
+                                    <table className="table-auto">
+                                        <tbody>
+
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Bill amount (Before Fee and Discount):
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    RM {(saleDetail.total_amount * formData.percentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Total Fees:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    RM {totalFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Total Discount:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    RM {totalDiscounts.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Current % Rate:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {formData.percentage * 100}%
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Balance (Payment) after generated:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    RM {
+                                                        (saleDetail.total_amount - (saleDetail.total_amount - saleDetail.remaining_amount) - (saleDetail.total_amount * formData.percentage) - totalDiscounts) < 0
+                                                            ? 0
+                                                            : (saleDetail.total_amount - (saleDetail.total_amount - saleDetail.remaining_amount) - (saleDetail.total_amount * formData.percentage) - totalDiscounts).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Balance (%) after generated:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {(saleDetail.remaining_percentage * 100) - (formData.percentage * 100)}%
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-lg text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Bill amount:
+                                                </td>
+                                                <td className="text-lg text-gray-900 pb-3 font-semibold">
+                                                    RM {((saleDetail.total_amount * formData.percentage) + totalFees - totalDiscounts).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
 

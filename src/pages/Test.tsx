@@ -1,9 +1,15 @@
-import { makePaymentIntent } from "../services/api";
+import { makePaymentIntent, testSms } from "../services/api";
 
 function Test() {
 
     const handleGetToken = async () => {
-        const res = await makePaymentIntent()
+        const res = await makePaymentIntent();
+
+        console.log(res);
+    }
+
+    const handleSms = async () => {
+        const res = await testSms();
 
         console.log(res);
     }
@@ -15,6 +21,13 @@ function Test() {
                 onClick={handleGetToken}
             >
                 Test Payex Get Token
+            </button>
+
+            <button 
+                className="btn btn-info"
+                onClick={handleSms}    
+            >
+                Test SMS
             </button>
         </>
     );

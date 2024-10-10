@@ -163,7 +163,7 @@ export interface Invoice {
 export interface Payment {
     id?: string,
     invoice_id?: string,
-    reference_no?: string,
+    transaction_no?: string,
     amount?: number,
     payment_method?: string,
     currency?: string,

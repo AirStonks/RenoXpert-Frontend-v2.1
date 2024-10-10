@@ -346,7 +346,7 @@ function EditQuotation() {
                                 </span>
 
                                 <span className="text-lg font-medium text-gray-900">
-                                    RM {totalAmount.toFixed(2)}
+                                    RM {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </div>
                         </div>
@@ -383,7 +383,7 @@ function EditQuotation() {
                                                         {prodPackage.name}
                                                     </span>
                                                     <span className='text-base text-slate-700'>
-                                                        RM {prodPackage.total_price.toFixed(2)}
+                                                        RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </span>
                                                     <span className='text-sm text-slate-400'>
                                                         {prodPackage.description}
@@ -437,10 +437,10 @@ function EditQuotation() {
                                                                         </button>
                                                                     </td>
                                                                     <td>
-                                                                        RM {product.product_retail_price.toFixed(2)}
+                                                                        RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </td>
                                                                     <td>
-                                                                        RM {(product.product_retail_price * product.pivot.quantity).toFixed(2)}
+                                                                        RM {(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </td>
                                                                     <td className='text-center'>
                                                                         <label className="switch flex justify-center">

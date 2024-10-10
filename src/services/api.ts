@@ -160,7 +160,10 @@ export const createPackage = async (packageData: Package) => {
 export const fetchPackages = async () => {
     try {
         const response = await axios.get(API_URL + 'packages', {
-            headers: getAuthHeaders()
+            headers: getAuthHeaders(),
+            params: {
+                size: 150
+            }
         });
         return response.data;
     } catch (error) {
@@ -646,6 +649,18 @@ export const makePaymentIntent = async (invoiceId: number) => {
     try {
         const response = await axios.get(API_URL + `payex/paymentIntent/invoice/${invoiceId}`);
         return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+
+export const testSms = async () => {
+    try {
+        const response = await axios.get('https://www.isms.com.my/isms_send_all_id.php?un=roomzasia&pwd=FGk@A2kwuUewkYu&dstno=601136647745&msg=Hello%20World&type=1&sendid=601118882881&agreedterm=YES');
+
+        return response;
     } catch (error) {
         handle401Error(error as AxiosError);
         throw error; // Ensure to throw the error if needed

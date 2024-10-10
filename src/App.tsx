@@ -34,6 +34,7 @@ import ViewQuotation from './pages/OwnerPages/ViewQuotation';
 import Test from './pages/Test';
 import PaymentSuccess from './pages/OwnerPages/PaymentSuccess';
 import PaymentError from './pages/OwnerPages/PaymentError';
+import OrderDetail from './pages/Order/OrderDetail';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -57,6 +58,9 @@ const routes = [
   { path: '/invoice/:id/view', element: <ViewQuotation />, layout: null },
   { path: '/invoice/:id/payment/success', element: <PaymentSuccess />, layout: null },
   { path: '/invoice/:id/payment/error', element: <PaymentError />, layout: null },
+
+  
+  { path: '/success/test', element: <PaymentSuccess />, layout: null },
 
   /*--- PRODUCT ---*/
   { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
@@ -82,6 +86,7 @@ const routes = [
 
   /*--- ORDER ---*/
   { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },
+  { path: '/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
   { path: '/orders/create', element: <CreateOrder />, layout: ProtectedLayout },
   { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation />, layout: ProtectedLayout },
   { path: '/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },

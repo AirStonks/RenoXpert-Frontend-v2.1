@@ -114,15 +114,15 @@ function ProductTable() {
                 },
                 product_retail_price: {
                     title: 'Retail Price',
-                    render: (item: number) => `RM ${item.toFixed(2)}`, // Format as currency
+                    render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
                 },
                 product_cost_of_good_sold: {
                     title: 'Cost of Good Sold',
-                    render: (item: number) => `RM ${item.toFixed(2)}`, // Format as currency
+                    render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
                 },
                 product_excluded_price: {
                     title: 'Excluded Price',
-                    render: (item: number) => `RM ${item.toFixed(2)}`, // Format as currency
+                    render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
                 },
                 id: {
                     title: 'Actions',

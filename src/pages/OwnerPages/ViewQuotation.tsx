@@ -1,11 +1,12 @@
 // src\pages\OwnerPages\ViewQuotation.tsx
 
-import { useEffect } from "react"
+import React, { useEffect } from "react"
 import KTComponent from '../../metronic/core';
 import { useParams } from "react-router-dom";
 import Loading from "../../components/Loading";
 import useFetchPublicInvoice from "../../hook/useFetchPublicInvoice";
 import { makePaymentIntent } from "../../services/api";
+import { Package, Product } from "../../types";
 
 function ViewQuotation() {
     // const navigate = useNavigate();
@@ -19,17 +20,9 @@ function ViewQuotation() {
         KTComponent.init();
     });
 
-    const formatDate = (dateString: string): string => {
-        const date = new Date(dateString);
-        const day = String(date.getUTCDate()).padStart(2, '0');
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-based
-        const year = date.getUTCFullYear();
-        return `${day}/${month}/${year}`;
-    };
-
     const handlePaymentIntent = async () => {
         const response = await makePaymentIntent(Number(invoiceDetail.id));
-    
+
         // Check if the response is successful
         if (response.status === "00" && response.result.length > 0) {
             // Get the url value from the first result
@@ -39,7 +32,7 @@ function ViewQuotation() {
             console.error('Payment failed:', response.message);
         }
     };
-    
+
 
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
@@ -52,6 +45,9 @@ function ViewQuotation() {
             </div>
         </div>
     );
+
+    const packages = JSON.parse(JSON.parse(JSON.stringify(invoiceDetail.sale.order.latest_quotation.metadata)));
+
 
     return (
         <main className="grow content pt-5" id="content" role="content">
@@ -76,7 +72,6 @@ function ViewQuotation() {
                                 </button>
                             </div>
                             <div className="" id="tab_1_1">
-
                                 <table className="table-auto">
                                     <tbody>
                                         <tr>
@@ -100,16 +95,16 @@ function ViewQuotation() {
                                                 Issued Date:
                                             </td>
                                             <td className="text-sm text-gray-900 font-medium pb-3">
-                                                {formatDate(invoiceDetail.sale.order.created_at)}
+                                                {invoiceDetail.sale.order.created_at}
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td className="text-sm text-gray-600 pe-4 lg:pe-8 font-semibold">
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
                                                 Status:
                                             </td>
                                             <td className="text-sm text-gray-900 font-medium pb-3">
-                                                <span className="badge badge-pill cursor-default badge-success badge-outline">
-                                                    Yes
+                                                <span className={`badge badge-pill cursor-default badge-outline ${invoiceDetail.status === 'paid' ? 'badge-success' : ''}`}>
+                                                    {invoiceDetail.status.charAt(0).toUpperCase() + invoiceDetail.status.slice(1)}
                                                 </span>
                                             </td>
                                         </tr>
@@ -125,23 +120,72 @@ function ViewQuotation() {
                                 </table>
                             </div>
                             <div className="hidden" id="tab_1_2">
-                                <span className="text-sm">Quotation content</span>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full border-collapse">
+                                        <thead className="bg-gray-100">
+                                            <tr>
+                                                <th className="p-2 text-center hidden md:table-cell">No.</th>
+                                                <th className="p-2 text-left">Description</th>
+                                                <th className="p-2 text-center hidden md:table-cell">Quantity</th>
+                                                <th className="p-2 text-center">Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {packages.map((quotationPackage: Package, index: number) => (
+                                                <React.Fragment key={index}>
+                                                    <tr className="bg-slate-50 border-b">
+                                                        <td className="p-2 text-center hidden text-xs md:table-cell">{index + 1}</td>
+                                                        <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
+                                                        <td className="p-2 text-center hidden text-xs md:table-cell"></td>
+                                                        <td className="p-2 text-center text-xs">
+                                                            RM {quotationPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                    </tr>
+                                                    {quotationPackage.products.map((product: Product, prodIndex: number) => (
+                                                        // Check if product.pivot.visibility is true
+                                                        product.pivot.visibility ? (
+                                                            <tr key={prodIndex} className="border-b text-xs">
+                                                                <td className="p-2 hidden md:table-cell"></td>
+                                                                <td className="p-2 ">
+                                                                    {product.name}
+                                                                </td>
+                                                                <td className="p-2 text-center">
+                                                                    {product.pivot.quantity}
+                                                                </td>
+                                                                <td className="p-2 hidden md:table-cell"></td>
+                                                            </tr>
+                                                        ) : (
+                                                            ""
+                                                        )
+                                                    ))}
+                                                </React.Fragment>
+                                            ))}
+                                            <tr className="font-medium">
+                                                <td className="p-2 hidden md:table-cell" colSpan={2}></td>
+                                                <td className="p-2 text-center">Total:</td>
+                                                <td className="p-2 text-center">
+                                                    RM {invoiceDetail.sale.order.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2">
-                    <button
-                        className="btn btn-lg btn-primary rounded-3xl shadow-lg"
-                        onClick={handlePaymentIntent}
-                    >
-                        Make Payment
-                    </button>
+                    {invoiceDetail.status !== 'paid' && (
+                        <button
+                            className="btn btn-lg btn-primary rounded-3xl shadow-lg"
+                            onClick={handlePaymentIntent}
+                        >
+                            Make Payment
+                        </button>
+                    )}
                 </div>
             </div>
-
-
         </main>
     )
 }

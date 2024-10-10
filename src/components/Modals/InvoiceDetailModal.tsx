@@ -93,7 +93,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
     } else if (!invoice) {
         content = <div>Invoice not found</div>;
     } else {
-        const discounts = JSON.parse(JSON.parse(JSON.stringify(invoiceDetail.discountsData)));
+        // const discounts = JSON.parse(JSON.parse(JSON.stringify(invoiceDetail.discountsData)));
 
         content = (
             <div className="flex flex-wrap gap-4">
@@ -133,13 +133,13 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                             </span>
                                         </td>
                                     </tr>
-                                    <tr>
+                                    {/* <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Discounts:</td>
                                         <td className="text-sm text-gray-900 pb-3 font-medium">
                                             {discounts.length > 0 ? (
                                                 discounts.map((discount, index) => {
                                                     const discountValue = discount.valueType === "percentage"
-                                                        ? `${(discount.value * 100).toFixed(2)}%`
+                                                        ? `${(discount.value * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
                                                         : `RM ${discount.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
                                                     return <div key={index}>{discountValue}</div>;
@@ -148,7 +148,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                                 <span>No Discounts</span>
                                             )}
                                         </td>
-                                    </tr>
+                                    </tr> */}
                                 </tbody>
                             </table>
                         </div>
@@ -215,7 +215,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                             </div>
                                             <div className="flex flex-col gap-0.5">
                                                 <span className="text-2sm font-medium text-gray-900 cursor-pointer hover:text-primary mb-px">
-                                                    {payment.reference_no}
+                                                    {payment.transaction_no}
                                                 </span>
                                                 <span className="text-2xs text-gray-700">
                                                     {payment.created_at
@@ -230,7 +230,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                         </div>
                                         <div className="flex items-center gap-2.5">
                                             <span className="text-sm text-gray-800">
-                                                RM {payment.amount.toFixed(2)}
+                                                RM {payment.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
                                         </div>
                                     </div>

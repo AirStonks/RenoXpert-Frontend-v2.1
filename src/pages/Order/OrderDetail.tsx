@@ -1,60 +1,56 @@
-// src\components\Modals\OrderDetailModal.tsx
+// src\pages\Order\OrderDetailPage.tsx
 
 import { useEffect } from "react";
-import Loading from "../Loading";
-import { KTAccordion, KTModal } from "../../metronic/core";
-import { OrderQuotation, Package } from "../../types";
-import { Link } from "react-router-dom";
+import Loading from "../../components/Loading";
 import useFetchOrder from "../../hook/useFetchOrder";
+import { KTAccordion } from "../../metronic/core";
+import { OrderQuotation, Package } from "../../types";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-interface QuotationDetailModalProps {
-    orderId: number | null;
-}
+function OrderDetail() {
+    const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
+    const orderId = id ? parseInt(id, 10) : null;
 
-function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
     const { orderDetail, loading, error } = useFetchOrder(orderId);
 
     useEffect(() => {
         KTAccordion.init();
 
-        if (orderDetail) {
-            console.log(JSON.parse(JSON.stringify(orderDetail.total_amount)));
-
-            // selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation));
-            // setSelectedPackages(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)));
-        }
+        // if (orderDetail) {
+        //     console.log(JSON.parse(JSON.stringify(orderDetail.total_amount)));
+        // }
 
     }, [orderDetail]);
 
     if (!orderId) return null; // Early return for null orderId
 
-    const handleCloseModal = () => {
-        const modalEl = document.querySelector('#order_detail_modal') as HTMLElement;
-        const modal = KTModal.getInstance(modalEl);
+    const handleBackClick = () => {
+        navigate('/orders');
+    };
 
-        modal.hide();
-    }
+    if (loading) return <Loading />;
+    if (error) return <div>{error}</div>;
+    if (!orderDetail) return <div>Order not found</div>;
 
-    let content;
+    // console.log(orderDetail);
+    const selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation)) as OrderQuotation;
+    const selectedPackages = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))) as Package[];
+    // console.log(selectedQuotation);
 
-    if (loading) {
-        content = <Loading />;
-    } else if (error) {
-        content = <div className="text-red-600">Something went wrong: {error}</div>;
-    } else if (!orderDetail) {
-        content = <div>Order not found</div>;
-    } else {
+    return (
+        <>
+            <div className="flex justify-between items-center flex-wrap mb-6">
+                <div className="flex gap-4 items-center">
+                    <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
+                        <i className="ki-solid ki-arrow-left"></i>
+                    </button>
+                    <span className="text-2xl font-bold text-gray-900">
+                        Order Detail
+                    </span>
+                </div>
+            </div>
 
-        console.log(orderDetail);
-
-
-        const selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation)) as OrderQuotation;
-        const selectedPackages = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))) as Package[];
-
-        console.log(selectedQuotation);
-
-
-        content = (
             <div className="flex flex-wrap gap-8 mb-8">
                 <div className="left-column flex flex-col flex-[3] gap-8">
                     <div className="card">
@@ -69,7 +65,6 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                 data-tooltip="#edit_tooltip"
                                 data-action="edit"
                                 data-id={orderId}
-                                onClick={handleCloseModal}
                             >
                                 <i className="ki-outline ki-notepad-edit"></i>
                             </Link>
@@ -105,6 +100,53 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                             >
                                                 {orderDetail.status}
                                             </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Link Management
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Link Status:</td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            <select
+                                                className="select select-sm max-w-24"
+                                                // value={invoice.link_status}
+                                                // onChange={(e) => handleChangeLinkStatus(e.target.value)} // Pass the new status here
+                                            >
+                                                <option value="active">Active</option>
+                                                <option value="inactive">Inactive</option>
+                                                <option value="deactivate">Deactivate</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Link:</td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            <div className="input w-auto">
+                                                <input
+                                                    className="w-auto cursor-pointer"
+                                                    id="clipboard_1_target"
+                                                    placeholder="Copy to clipboard"
+                                                    type="text"
+                                                    // value={`http://${window.location.hostname}:5173/invoice/${invoiceDetail.id}/view`}
+                                                    // onClick={() => { window.open(`http://${window.location.hostname}:5173/invoice/${invoiceDetail.id}/view`, '_blank'); }}
+                                                    readOnly
+                                                />
+                                                <button className="btn btn-icon" id="clipboard_1_button">
+                                                    <i className="ki-outline ki-copy"></i>
+                                                </button>
+                                            </div>
+
                                         </td>
                                     </tr>
                                 </tbody>
@@ -200,7 +242,6 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                 data-tooltip="#edit_tooltip"
                                 data-action="edit"
                                 data-id={orderId}
-                                onClick={handleCloseModal}
                             >
                                 <i className="ki-outline ki-notepad-edit"></i>
                             </Link>
@@ -263,46 +304,46 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                            {prodPackage.products.map((product) => (
-                                                                                <tr
-                                                                                    key={product.id}
-                                                                                >
-                                                                                    <td>
-                                                                                        <div className="flex flex-col">
-                                                                                            <span>{product.name}</span>
-                                                                                            <span className="text-xs text-slate-400">{product.description}</span>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className='text-center text-lg'>
-                                                                                        <span className="mx-2 text-base">
-                                                                                            {product.pivot.included ? product.pivot.quantity : '0'}
-                                                                                        </span>
-                                                                                    </td>
-                                                                                    <td className="text-center">
-                                                                                        RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                                    </td>
-                                                                                    <td className='text-center'>
-                                                                                        {!product.pivot.included
-                                                                                            ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                                            : null}
-                                                                                    </td>
-                                                                                    <td className="text-center">
-                                                                                        {!product.pivot.included
-                                                                                            ? null
-                                                                                            : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                                    </td>
-                                                                                    <td className='text-center'>
-                                                                                        <label className="switch flex justify-center">
-                                                                                            <input
-                                                                                                name="included"
-                                                                                                type="checkbox"
-                                                                                                checked={product.pivot.included}
-                                                                                                readOnly
-                                                                                            />
-                                                                                        </label>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            ))}
+                                                                        {prodPackage.products.map((product) => (
+                                                                            <tr
+                                                                                key={product.id}
+                                                                            >
+                                                                                <td>
+                                                                                    <div className="flex flex-col">
+                                                                                        <span>{product.name}</span>
+                                                                                        <span className="text-xs text-slate-400">{product.description}</span>
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td className='text-center text-lg'>
+                                                                                    <span className="mx-2 text-base">
+                                                                                        {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="text-center">
+                                                                                    RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                </td>
+                                                                                <td className='text-center'>
+                                                                                    {!product.pivot.included
+                                                                                        ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                                        : null}
+                                                                                </td>
+                                                                                <td className="text-center">
+                                                                                    {!product.pivot.included
+                                                                                        ? null
+                                                                                        : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                </td>
+                                                                                <td className='text-center'>
+                                                                                    <label className="switch flex justify-center">
+                                                                                        <input
+                                                                                            name="included"
+                                                                                            type="checkbox"
+                                                                                            checked={product.pivot.included}
+                                                                                            readOnly
+                                                                                        />
+                                                                                    </label>
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
                                                                     </tbody>
                                                                 </table>
                                                             </div>
@@ -318,38 +359,8 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                     </div>
                 </div>
             </div>
-        );
-    }
-
-    return (
-        <>
-            <div
-                className="modal p-14"
-                data-modal="true"
-                id="order_detail_modal"
-                aria-modal="true"
-                role="dialog"
-            >
-                <div className="modal-content modal-center-y max-w-7xl h-[580px] max-h-[580px]">
-                    <div className="modal-header py-4 px-5">
-                        <span className="text-lg text-gray-900 font-bold">Order Detail</span>
-                        <button
-                            className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
-                            aria-label="Close"
-                            data-modal-dismiss="true"
-                        >
-                            <i className="ki-filled ki-cross"></i>
-                        </button>
-                    </div>
-                    <div className="modal-body p-5 scrollable">
-                        {content}
-                    </div>
-                </div>
-            </div>
-
-            {/* <EditPackageModal orderDetail={orderDetail} /> */}
         </>
-    );
+    )
 }
 
-export default OrderDetailModal;
+export default OrderDetail;

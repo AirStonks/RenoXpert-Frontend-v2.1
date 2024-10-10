@@ -166,10 +166,10 @@ function PackageDetailModal({ packageId }: PackageDetailModalProps) {
                                                 </label>
                                             </td>
                                             <td>
-                                                RM {product.product_retail_price.toFixed(2)}
+                                                RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                             <td>
-                                                RM {(product.product_retail_price * product.pivot.quantity).toFixed(2)}
+                                                RM {(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                         </tr>
                                     ))}

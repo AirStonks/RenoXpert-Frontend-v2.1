@@ -59,7 +59,7 @@ function Table() {
                                             <input className="checkbox checkbox-sm" data-datatable-row-check="true" type="checkbox" value={item.id} />
                                         </td>
                                         <td>{item.cust_name}</td>
-                                        <td>${item.order_amount.toFixed(2)}</td>
+                                        <td>${item.order_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                         <td>{new Date(item.order_date).toLocaleDateString()}</td>
                                         <td>{item.status}</td>
                                     </tr>

@@ -215,7 +215,7 @@ function SaleInvoicesModal({ orderId }: QuotationDetailModalProps) {
                                                 {selectedQuotation.quotation.name}
                                             </span>
                                             <span className="text-base font-normal text-gray-800">
-                                                Price: RM {selectedQuotation.quotation.total_amount.toFixed(2)}
+                                                Price: RM {selectedQuotation.quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
                                             <span className="text-base font-normal text-slate-400">
                                                 {selectedQuotation.quotation.description}
@@ -238,7 +238,7 @@ function SaleInvoicesModal({ orderId }: QuotationDetailModalProps) {
                                                                     {prodPackage.name}
                                                                 </span>
                                                                 <span className='text-base text-slate-700'>
-                                                                    RM {prodPackage.total_price.toFixed(2)}
+                                                                    RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </span>
                                                                 <span className='text-sm text-slate-400'>
                                                                     {prodPackage.description}
@@ -277,10 +277,10 @@ function SaleInvoicesModal({ orderId }: QuotationDetailModalProps) {
                                                                                     </span>
                                                                                 </td>
                                                                                 <td>
-                                                                                    RM {product.product_retail_price.toFixed(2)}
+                                                                                    RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                                 </td>
                                                                                 <td>
-                                                                                    RM {(product.product_retail_price * product.pivot.quantity).toFixed(2)}
+                                                                                    RM {(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                                 </td>
                                                                             </tr>
                                                                         ))}

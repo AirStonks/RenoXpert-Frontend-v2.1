@@ -67,9 +67,7 @@ function OrderTable() {
         } else if (viewButton) {
             const id = viewButton.dataset.id;
 
-            if (id) {
-                setSelectedOrderId(parseInt(id, 10));
-            }
+            navigate('/orders/' + id);
         } else if (confirmButton) {
             const id = confirmButton.dataset.id;
             console.log('ID: ', id);
@@ -116,7 +114,6 @@ function OrderTable() {
                                 class="cursor-pointer text-orange-500"
                                 data-action="view"
                                 data-id=${data.id}
-                                data-modal-toggle="#order_detail_modal"
                             >
                                 ${item}
                             </a>

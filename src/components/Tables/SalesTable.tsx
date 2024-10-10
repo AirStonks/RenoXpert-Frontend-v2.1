@@ -128,7 +128,8 @@ function SalesTable() {
                             <div class="flex items-center">
                                 <span class="badge badge-pill p-2 cursor-default
                                     ${item === 'issued' ? 'badge-primary' : ''} 
-                                    ${item === 'closed' ? 'badge-success' : ''} 
+                                    ${item === 'partial-paid' ? 'badge-info' : ''} 
+                                    ${item === 'fully-paid' ? 'badge-success' : ''} 
                                     badge-outline"
                                 >
                                     ${item}
@@ -141,7 +142,7 @@ function SalesTable() {
                     title: 'Total Amount',
                     render: (item: number) => `
                         <div class="flex flex-col gap-1">
-                            <span>RM ${item.toFixed(2)}</span>
+                            <span>RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     `,
                 },
@@ -149,7 +150,7 @@ function SalesTable() {
                     title: 'Paid Amount',
                     render: (item: number, data: Sale) => `
                         <div class="flex flex-col gap-1">
-                            <span>RM ${(data.total_amount - data.remaining_amount).toFixed(2)}</span>
+                            <span>RM ${(data.total_amount - data.remaining_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     `,
                 },
@@ -157,7 +158,7 @@ function SalesTable() {
                     title: 'Balance (Amount)',
                     render: (item: number) => `
                         <div class="flex flex-col gap-1">
-                            <span>RM ${item.toFixed(2)}</span>
+                            <span>RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     `,
                 },

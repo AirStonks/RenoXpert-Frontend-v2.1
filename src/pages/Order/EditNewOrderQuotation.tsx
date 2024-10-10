@@ -372,7 +372,7 @@ function EditNewOrderQuotation() {
                             return sum + (product.product_retail_price - product.product_excluded_price);
                         }
                     }, 0);
-                    
+
                     console.log(newTotalPrice);
 
                     return {
@@ -433,7 +433,7 @@ function EditNewOrderQuotation() {
                             Quotation: {quotationDetail.name}
                         </span>
                         <span className="text-xl text-gray-900 font-semibold">
-                            Total Amount: RM {totalAmount.toFixed(2)}
+                            Total Amount: RM {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                 </div>
@@ -469,7 +469,7 @@ function EditNewOrderQuotation() {
                                                     {prodPackage.name}
                                                 </span>
                                                 <span className='text-base text-slate-700'>
-                                                    RM {prodPackage.total_price.toFixed(2)}
+                                                    RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </span>
                                                 <span className='text-sm text-slate-400'>
                                                     {prodPackage.description}
@@ -515,48 +515,58 @@ function EditNewOrderQuotation() {
                                                                     </div>
                                                                 </td>
                                                                 <td className='text-center text-lg'>
-                                                                    <button
-                                                                        ref={qtyBtnRef}
-                                                                        data-action='decrease'
-                                                                        onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'decrease') : null}
-                                                                        disabled={!product.pivot.included}
-                                                                    >
-                                                                        <i className="ki-solid ki-minus-squared"></i>
-                                                                    </button>
-                                                                    <span className="mx-2 text-base">
-                                                                        {product.pivot.included ? product.pivot.quantity : '0'}
-                                                                    </span>
-                                                                    <button
-                                                                        data-action='increase'
-                                                                        onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'increase') : null}
-                                                                        disabled={!product.pivot.included}
-                                                                    >
-                                                                        <i className="ki-solid ki-plus-squared"></i>
-                                                                    </button>
+                                                                    {product.pivot.visibility ?
+                                                                        <>
+                                                                            <button
+                                                                                ref={qtyBtnRef}
+                                                                                data-action='decrease'
+                                                                                onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'decrease') : null}
+                                                                                disabled={!product.pivot.included}
+                                                                            >
+                                                                                <i className="ki-solid ki-minus-squared"></i>
+                                                                            </button>
+                                                                            <span className="mx-2 text-base">
+                                                                                {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                            </span>
+                                                                            <button
+                                                                                data-action='increase'
+                                                                                onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'increase') : null}
+                                                                                disabled={!product.pivot.included}
+                                                                            >
+                                                                                <i className="ki-solid ki-plus-squared"></i>
+                                                                            </button>
+                                                                        </>
+                                                                        :
+                                                                        ""
+                                                                    }
+
                                                                 </td>
                                                                 <td className="text-center">
-                                                                    RM {product.product_retail_price.toFixed(2)}
+                                                                    RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </td>
                                                                 <td className='text-center'>
                                                                     {!product.pivot.included
-                                                                        ? `- RM ${product.product_excluded_price.toFixed(2)}`
+                                                                        ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                         : null}
                                                                 </td>
                                                                 <td className="text-center">
                                                                     {!product.pivot.included
                                                                         ? null
-                                                                        : `RM ${(product.product_retail_price * product.pivot.quantity).toFixed(2)}`}
+                                                                        : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </td>
                                                                 <td className='text-center'>
                                                                     {product.pivot.isOriginal ?
-                                                                        <label className="switch flex justify-center">
-                                                                            <input
-                                                                                name="included"
-                                                                                type="checkbox"
-                                                                                checked={product.pivot.included}
-                                                                                onChange={() => handleIncludeToggle(product.id)}
-                                                                            />
-                                                                        </label>
+                                                                        product.pivot.visibility ?
+                                                                            <label className="switch flex justify-center">
+                                                                                <input
+                                                                                    name="included"
+                                                                                    type="checkbox"
+                                                                                    checked={product.pivot.included}
+                                                                                    onChange={() => handleIncludeToggle(product.id)}
+                                                                                />
+                                                                            </label>
+                                                                            :
+                                                                            <i className="ki-solid ki-eye-slash text-2xl"></i>
                                                                         :
                                                                         <button
                                                                             className="btn-revoke btn btn-sm btn-danger"

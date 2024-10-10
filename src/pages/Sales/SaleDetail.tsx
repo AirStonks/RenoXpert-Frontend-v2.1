@@ -98,7 +98,8 @@ function SaleDetail() {
                                             <td className="text-sm text-gray-900">
                                                 <span className={`badge badge-pill cursor-default
                                                 ${sale.status === 'issued' ? 'badge-primary' : ''} 
-                                                ${sale.status === 'closed' ? 'badge-success' : ''} 
+                                                ${sale.status === 'partial-paid' ? 'badge-info' : ''} 
+                                                ${sale.status === 'fully-paid' ? 'badge-success' : ''} 
                                                 badge-outline`}
                                                 >
                                                     {sale.status}
@@ -137,7 +138,7 @@ function SaleDetail() {
                                     <div className="card min-w-48">
                                         <div className="card-body flex flex-col justify-center items-center">
                                             <div className="amnt text-gray-900 text-lg font-semibold mb-2">
-                                                RM {sale.total_amount.toFixed(2)}
+                                                RM {sale.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </div>
                                             <span className="text-gray-900 text-base">
                                                 Total Amount
@@ -147,7 +148,7 @@ function SaleDetail() {
                                     <div className="card min-w-48">
                                         <div className="card-body flex flex-col justify-center items-center">
                                             <div className="amnt text-gray-900 text-lg font-semibold mb-2">
-                                                RM {sale.remaining_amount.toFixed(2)}
+                                                RM {sale.remaining_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </div>
                                             <span className="text-gray-900 text-base">
                                                 Balance (Amount)
@@ -205,7 +206,7 @@ function SaleDetail() {
                                                                 Amount:
                                                             </span>
                                                             <span className="text-sm text-gray-900 font-medium">
-                                                                RM {invoice.amount.toFixed(2)}
+                                                                RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </span>
                                                         </div>
                                                         <div className="flex flex-col">

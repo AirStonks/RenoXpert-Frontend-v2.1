@@ -310,10 +310,10 @@ function CreatePackage() {
                                                             </button>
                                                         </td>
                                                         <td>
-                                                            RM {product.price.toFixed(2)}
+                                                            RM {product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </td>
                                                         <td>
-                                                            RM {(product.price * product.quantity).toFixed(2)}
+                                                            RM {(product.price * product.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </td>
                                                         <td className='text-center'>
                                                             <label className="switch flex justify-center">
