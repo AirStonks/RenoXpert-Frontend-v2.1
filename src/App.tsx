@@ -53,7 +53,7 @@ const routes = [
 
   /*--- TEST ---*/
   { path: '/test', element: <Test />, layout: null },
-  
+
   /*--- QUOTATION VIEW ---*/
   { path: '/invoice/:id/view', element: <ViewQuotation />, layout: null },
   { path: '/invoice/:id/payment/success', element: <PaymentSuccess />, layout: null },
