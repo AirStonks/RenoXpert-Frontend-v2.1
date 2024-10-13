@@ -9,6 +9,7 @@ import DeleteModal from '../Modals/DeleteModal';
 import { confirmOrder, removeOrder } from '../../services/api';
 import { KTDataTableConfigInterface } from '../../metronic/core/components/datatable';
 import { Slide, toast } from 'react-toastify';
+import ClipboardJS from 'clipboard';
 
 function OrderTable() {
     const navigate = useNavigate();
@@ -170,15 +171,13 @@ function OrderTable() {
 
                         return `
                             <div class="flex justify-around gap-2">
-                                ${!isConfirmed && !isRevoked ? `
-                                    <button 
-                                        class="btn-confirm btn btn-sm btn-success"
-                                        data-tooltip="#confirm_tooltip"
-                                        data-action="confirm"
-                                        data-id="${data.id}"
+                                    <button
+                                        class="btn btn-sm btn-outline btn-info copy-link"
+                                        data-clipboard-text="${location.protocol}//${window.location.host}/order/overview/id/${data.id}"
                                     >
-                                        Confirm
+                                        Copy Link
                                     </button>
+                                ${!isConfirmed && !isRevoked ? `
                                     <button 
                                         class="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                                         data-tooltip="#edit_tooltip"
@@ -243,8 +242,17 @@ function OrderTable() {
         if (element) {
             element.addEventListener('click', handleTableClick);
 
+            // Initialize ClipboardJS
+            const clipboard = new ClipboardJS('.copy-link');
+
+            clipboard.on('success', function (e) {
+                notify('success', 'Copied to clipboard!');
+                e.clearSelection();
+            });
+
             return () => {
                 element.removeEventListener('click', handleTableClick);
+                clipboard.destroy();
             };
         }
     }

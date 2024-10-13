@@ -1,106 +1,115 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
-import { SessionManager } from '../../services/SessionManager';
-import Loading from '../../components/Loading';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Order } from '../../types/index';
+import Loading from '../../components/Loading';
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = `http://${window.location.hostname}:8000/api/`;
 
+const getAuthHeaders = () => ({
+    Authorization: `Bearer ${localStorage.getItem('guest_token')}`
+});
 
 const OrderOverview: React.FC = () => {
+    const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const [orderDetails, setOrderDetails] = useState<Order | null>(null);
-    const [otpRequired, setOtpRequired] = useState(false);
-    const [mobile, setMobile] = useState('');
-    const [otp, setOtp] = useState('');
+    const [activeTab, setActiveTab] = useState('tab_1_1');
 
     useEffect(() => {
-        fetchOrderDetails();
-
-        // verifyCredential
-            // if verified
-                // fetchOrderDetail
-            // else
-                // redirect to verifi OTP page
-
+        fetchOrderHead();
     }, []);
 
-    const verifyCredential = async () => {
-        // mobile = window.session.getItem('mobile')
-        
-        // verify otp
-    }
-
-    const fetchOrderDetails = async () => {
+    const fetchOrderHead = async () => {
         try {
-            const response = await axios.get(`${API_URL}/order/public/view/${id}`);
-            if (response.data.status === 'otp_required') {
-                setOtpRequired(true);
-                setMobile(response.data.mobile);
+            const headRes = await axios.get(`${API_URL}order/public/view/${id}/head`);
+            if (headRes.data.status === 'success') {
+                console.log('RESPONSE: ', headRes.data);
+                fetchOrderDetails(headRes.data);
             } else {
-                setOrderDetails(response.data.data);
+                console.log('Order Not Found');
             }
         } catch (error) {
             console.error('Error fetching order details:', error);
         }
     };
 
-    const handleOtpRequest = async () => {
+    const fetchOrderDetails = async (headRes: any) => {
         try {
-            await axios.post(`${API_URL}/sms-otp/request`, { mobile });
-            // Show OTP input field
-        } catch (error) {
-            console.error('Error requesting OTP:', error);
-        }
-    };
-
-    const handleOtpVerify = async () => {
-        try {
-            const response = await axios.post(`${API_URL}/sms-otp/verify`, {
-                mobile,
-                otp_code: otp,
-                order_id: id
+            const response = await axios.get(`${API_URL}order/public/view/${id}`, {
+                headers: getAuthHeaders()
             });
-            if (response.data.status === 'verified') {
-                SessionManager.setSessionToken(response.data.session_token);
-                setOtpRequired(false);
-                fetchOrderDetails();
+
+            if (response.data.status === 'unauthenticated' || response.data.status === 'invalid_auth') {
+                navigate('/otp/verify', { state: response.data });
+            } else {
+                setOrderDetails(response.data.data);
             }
         } catch (error) {
-            console.error('Error verifying OTP:', error);
+            if (error.response?.status === 401) {
+                navigate('/otp/verify', { state: headRes });
+            } else {
+                console.error('Error fetching order details:', error);
+            }
         }
     };
 
-    if (otpRequired) {
-        return (
-            <div>
-                <h2>OTP Verification Required</h2>
-                <button onClick={handleOtpRequest}>Request OTP</button>
-                <input
-                    type="text"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    placeholder="Enter OTP"
-                />
-                <button onClick={handleOtpVerify}>Verify OTP</button>
-            </div>
-        );
-    }
-
-    if (!orderDetails) {
-        return <Loading />;
-    }
+    if (!orderDetails) return <Loading />;
 
     return (
-        <div>
-            {orderDetails.id}
-            <div className="card">
-                <div className="card-body">
-                    {orderDetails.order_no}
+        <main className="grow content pt-5" id="content" role="content">
+            <div className="container-fluid relative" id="content_container">
+                <div className="flex flex-col flex-wrap gap-6 pb-28 justify-center items-center">
+                    <img className="default-logo min-h-[22px] h-[52px] max-w-none" src="/app/RenoExpert_logo-01.svg" alt="RenoExpert Logo" />
+
+                    <div className="card flex-auto w-full max-w-4xl">
+                        <div className="card-header flex justify-between">
+                            <span className="text-lg font-semibold">Order Agreement</span>
+                            <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
+                                <i className="ki-filled ki-printer"></i>
+                            </button>
+                        </div>
+                        <div className="card-body pt-2">
+                            <div className="tabs mb-5">
+                                <button 
+                                    className={`tab ${activeTab === 'tab_1_1' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('tab_1_1')}
+                                >
+                                    Terms and Condition
+                                </button>
+                                <button 
+                                    className={`tab ${activeTab === 'tab_1_2' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('tab_1_2')}
+                                >
+                                    Order Detail
+                                </button>
+                                <button 
+                                    className={`tab ${activeTab === 'tab_1_3' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('tab_1_3')}
+                                >
+                                    Quotation
+                                </button>
+                            </div>
+                            <div className={activeTab === 'tab_1_1' ? '' : 'hidden'} id="tab_1_1">
+                                Terms and Conditions content
+                            </div>
+                            <div className={activeTab === 'tab_1_2' ? '' : 'hidden'} id="tab_1_2">
+                                Order Detail content
+                            </div>
+                            <div className={activeTab === 'tab_1_3' ? '' : 'hidden'} id="tab_1_3">
+                                Quotation content
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2">
+                    <button className="btn btn-lg btn-primary rounded-3xl shadow-lg">
+                        Confirm
+                    </button>
                 </div>
             </div>
-        </div>
+        </main>
     );
 };
 

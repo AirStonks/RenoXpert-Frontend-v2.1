@@ -13,7 +13,6 @@ function ViewQuotation() {
     const { id } = useParams<{ id: string }>();
     const invoiceId = id ? parseInt(id, 10) : null;
 
-
     const { invoiceDetail, loading, error } = useFetchPublicInvoice(invoiceId);
 
     useEffect(() => {
@@ -33,7 +32,6 @@ function ViewQuotation() {
         }
     };
 
-
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!invoiceDetail) return <div>An unexpected error occured</div>;
@@ -47,7 +45,6 @@ function ViewQuotation() {
     );
 
     const packages = JSON.parse(JSON.parse(JSON.stringify(invoiceDetail.sale.order.latest_quotation.metadata)));
-
 
     return (
         <main className="grow content pt-5" id="content" role="content">

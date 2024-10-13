@@ -35,6 +35,8 @@ import Test from './pages/Test';
 import PaymentSuccess from './pages/OwnerPages/PaymentSuccess';
 import PaymentError from './pages/OwnerPages/PaymentError';
 import OrderDetail from './pages/Order/OrderDetail';
+import OrderOverview from './pages/OwnerPages/OrderOverview';
+import OTPVerifyPage from './pages/OTPVerifyPage';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -53,13 +55,15 @@ const routes = [
 
   /*--- TEST ---*/
   { path: '/test', element: <Test />, layout: null },
+  { path: '/order/overview/id/:id', element: <OrderOverview />, layout: null },
+  { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
+  
 
   /*--- QUOTATION VIEW ---*/
   { path: '/invoice/:id/view', element: <ViewQuotation />, layout: null },
   { path: '/invoice/:id/payment/success', element: <PaymentSuccess />, layout: null },
   { path: '/invoice/:id/payment/error', element: <PaymentError />, layout: null },
 
-  
   { path: '/success/test', element: <PaymentSuccess />, layout: null },
 
   /*--- PRODUCT ---*/
