@@ -72,7 +72,7 @@ function IncludeProductModal({
     }, []);
 
     const initProdTable = () => {
-        const apiUrl = 'http://' + window.location.hostname + ':8000/api/products';
+        const apiUrl = 'https://api.renoxpert.my/api/products';
         const datatableEl = document.querySelector('#products_table') as HTMLElement;
         const token = localStorage.getItem('token');
 
