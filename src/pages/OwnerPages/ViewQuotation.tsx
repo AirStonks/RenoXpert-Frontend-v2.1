@@ -149,7 +149,11 @@ function ViewQuotation() {
                                                                 <td className="p-2 text-center">
                                                                     {product.pivot.quantity}
                                                                 </td>
-                                                                <td className="p-2 hidden md:table-cell"></td>
+                                                                <td className="p-2 text-center hidden md:table-cell">
+                                                                    {!product.pivot.included
+                                                                        ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                        : null}
+                                                                </td>
                                                             </tr>
                                                         ) : (
                                                             ""

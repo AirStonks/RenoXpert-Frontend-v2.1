@@ -7,6 +7,7 @@ import Sidebar from '../../components/Sidebar';
 import KTLayout from '../../metronic/app/layouts/demo1';
 import KTComponent from '../../metronic/core';
 import { ToastContainer } from 'react-toastify';
+import { UserProvider } from '../../context/UserContext'; // Adjust the path if necessary
 
 interface MasterLayoutProps {
     children: ReactNode;
@@ -19,7 +20,7 @@ function MasterLayout({ children }: MasterLayoutProps) {
     }, []);
 
     return (
-        <>
+        <UserProvider>
             <div className="flex grow">
                 <Sidebar />
                 <div className="wrapper flex grow flex-col">
@@ -33,7 +34,7 @@ function MasterLayout({ children }: MasterLayoutProps) {
                     <Footer />
                 </div>
             </div>
-        </>
+        </UserProvider>
     );
 }
 

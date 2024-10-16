@@ -8,6 +8,17 @@ export interface FormValues {
     rememberMe: boolean;
 }
 
+export interface User {
+    id?: number;
+    name?: string;
+    email?: string;
+    phone_no?: string;
+    type?: string;
+    password?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface Product {
     id?: number;
     name: string;

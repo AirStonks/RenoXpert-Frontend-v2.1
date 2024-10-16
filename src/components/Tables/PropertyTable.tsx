@@ -73,11 +73,22 @@ function PropertyTable() {
                 },
                 address: {
                     title: 'Address',
-                    render: (item: string, data: Property) => `
-                        <div class="flex flex-col gap-1">
-                            <span>${data.address}, ${data.street}, ${data.postcode}, ${data.city}, ${data.state}</span>
-                        </div>
-                    `,
+                    render: (item: string, data: Property) => {
+                        const addressParts = [
+                            data.address,
+                            data.street,
+                            data.postcode,
+                            data.city,
+                            data.state
+                        ].filter(part => part !== null && part !== '');
+                    
+                        return `
+                            <div class="flex flex-col gap-1">
+                                <span>${addressParts.join(', ')}</span>
+                            </div>
+                        `;
+                    },
+                    
                 },
                 action: {
                     title: 'Action',

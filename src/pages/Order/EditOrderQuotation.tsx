@@ -27,6 +27,8 @@ function EditOrderQuotation() {
     const [selectedPackageId, setSelectedPackageId] = useState<number>();
     const [selectedProduct, setSelectedProduct] = useState([]);
 
+    const [totalAmount, setTotalAmount] = useState<number>(0);
+
     const handleBackClick = () => {
         localStorage.removeItem('selected_quotation_packages');
         navigate('/orders/edit/' + orderId);
@@ -73,7 +75,9 @@ function EditOrderQuotation() {
                 };
             });
 
-            // Update localStorage with the new state
+            setSelectedPackages(updatedPackages);
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
             updateLocalStorage(updatedPackages);
 
             return updatedPackages; // Return the updated packages
@@ -158,7 +162,7 @@ function EditOrderQuotation() {
         }
     };
 
-    const openAddProducteModal = (event) => {
+    const openAddProductModal = (event) => {
 
         // Get selected package id
         const id = event.currentTarget.getAttribute('data-id');
@@ -200,6 +204,7 @@ function EditOrderQuotation() {
 
     useEffect(() => {
         const includePackages = localStorage.getItem('include_packages');
+        const orderData = localStorage.getItem('create_order_data');
 
         if (includePackages) {
             setSelectedPackages(JSON.parse(includePackages));
@@ -210,12 +215,40 @@ function EditOrderQuotation() {
             setSelectedPackages(JSON.parse(packages));
             localStorage.setItem('selected_quotation_packages', packages);
         }
+
+        if (orderData) {
+            // Parse the JSON string into an object
+            const orderObject = JSON.parse(orderData);
+
+            setTotalAmount(orderObject.totalAmount);
+        }
+
+        // if (quotationDetail) {  // Check if quotationDetail is not null
+        //     setTotalAmount(quotationDetail.total_amount);
+        // }
     }, [quotationDetail]);
 
 
     const updateSelectedPackages = (packages) => {
-        setSelectedPackages(packages);
-        localStorage.setItem('selected_quotation_packages', JSON.stringify(packages));
+        const updatedPackages = packages.map((prodPackage: Package) => {
+            const totalPrice = prodPackage.products.reduce((sum, product) => {
+                if (product.pivot.included) {
+                    return sum + product.product_retail_price * product.pivot.quantity;
+                } else {
+                    return sum + (product.product_retail_price - product.product_excluded_price);
+                }
+            }, 0);
+
+            return {
+                ...prodPackage,
+                total_price: totalPrice // Calculate total price
+            };
+        });
+
+        setSelectedPackages(updatedPackages);
+        const newTotalAmount = calculateTotalAmount(updatedPackages);
+        setTotalAmount(newTotalAmount); // Update totalAmount
+        updateLocalStorage(updatedPackages);
     };
 
     // const updateSelectedProducts = (products) => {
@@ -231,21 +264,12 @@ function EditOrderQuotation() {
         setSelectedPackages((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage) => {
                 if (prodPackage.id === packId) {
-                    let newTotalPrice = prodPackage.total_price; // Start with the current total price
-
                     const updatedProducts = prodPackage.products.map((product) => {
                         if (product.id === prodId) {
                             const newQty = action === 'increase'
                                 ? product.pivot.quantity + 1
                                 : Math.max(1, product.pivot.quantity - 1);
 
-                            // Calculate the price change based on the product's retail price
-                            const priceDifference = (newQty - product.pivot.quantity) * product.product_retail_price;
-
-                            // Update the total price
-                            newTotalPrice += priceDifference;
-
-                            // Return the updated product with the new quantity
                             return {
                                 ...product,
                                 pivot: {
@@ -257,51 +281,75 @@ function EditOrderQuotation() {
                         return product; // Return the original product if not matched
                     });
 
-                    // Return the updated package with modified products and new total price
+                    const newTotalPrice = updatedProducts.reduce((sum, product) => {
+                        return sum + product.product_retail_price * product.pivot.quantity;
+                    }, 0);
+
                     return {
                         ...prodPackage,
                         products: updatedProducts,
-                        total_price: newTotalPrice // Update the total price here
+                        total_price: newTotalPrice // Update total price
                     };
                 }
                 return prodPackage; // Return the original package if not matched
             });
 
-            updateLocalStorage(updatedPackages); // Update localStorage
-            return updatedPackages; // Return the updated packages
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+            updateLocalStorage(updatedPackages);
+            return updatedPackages;
         });
     };
 
-    // const handleRemoveProduct = (packId: number, prodId: number) => {
-    //     setSelectedPackages((prevPackages: Package[]) => {
 
-    //         const updatedPackages = prevPackages.map((prodPackage: Package) => {
-    //             if (prodPackage.id === packId) {
-    //                 // Filter out the product with the matching prodId
-    //                 const updatedProducts = prodPackage.products.filter((product: Product) => product.id !== prodId);
+    const handleRemoveProduct = (packId: number, prodId: number) => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage: Package) => {
+                if (prodPackage.id === packId) {
+                    const updatedProducts = prodPackage.products.filter((product: Product) => product.id !== prodId);
 
-    //                 // Return a new package object with the updated products
-    //                 return {
-    //                     ...prodPackage,
-    //                     products: updatedProducts
-    //                 };
-    //             }
-    //             return prodPackage; // Return the original package if not matched
-    //         });
+                    const newTotalPrice = updatedProducts.reduce((sum, product) => {
+                        if (product.pivot.included) {
+                            return sum + product.product_retail_price * product.pivot.quantity;
+                        } else {
+                            return sum + (product.product_retail_price - product.product_excluded_price);
+                        }
+                    }, 0);
 
-    //         updateLocalStorage(updatedPackages); // Update localStorage
-    //         return updatedPackages;
-    //     });
-    // };
+                    console.log(newTotalPrice);
+
+                    return {
+                        ...prodPackage,
+                        products: updatedProducts,
+                        total_price: newTotalPrice // Update total price
+                    };
+                }
+                return prodPackage; // Return the original package if not matched
+            });
+
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+            updateLocalStorage(updatedPackages);
+            return updatedPackages;
+        });
+    };
 
     const handleRemovePackage = (packId: number) => {
         setSelectedPackages((prevPackages: Package[]) => {
             // Filter out the package with the matching packId
             const updatedPackages = prevPackages.filter((prodPackage: Package) => prodPackage.id !== packId);
 
+            // Calculate new total amount after removing the package
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+
             updateLocalStorage(updatedPackages); // Update localStorage
             return updatedPackages;
         });
+    };
+
+    const calculateTotalAmount = (packages: Package[]) => {
+        return packages.reduce((sum, pkg) => sum + pkg.total_price, 0);
     };
 
     if (loading) return <Loading />;
@@ -328,7 +376,7 @@ function EditOrderQuotation() {
                             Quotation: {quotationDetail.name}
                         </span>
                         <span className="text-xl text-gray-900 font-semibold">
-                            Total Amount: RM {quotationDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            Total Amount: RM {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                 </div>
@@ -381,7 +429,7 @@ function EditOrderQuotation() {
                                                     className="btn btn-primary"
                                                     data-id={prodPackage.id}
                                                     data-modal-toggle='#include_pack_prod_modal'
-                                                    onClick={openAddProducteModal}
+                                                    onClick={openAddProductModal}
                                                 >
                                                     Add Product
                                                 </button>
@@ -410,24 +458,31 @@ function EditOrderQuotation() {
                                                                     </div>
                                                                 </td>
                                                                 <td className='text-center text-lg'>
-                                                                    <button
-                                                                        ref={qtyBtnRef}
-                                                                        data-action='decrease'
-                                                                        onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'decrease') : null}
-                                                                        disabled={!product.pivot.included}
-                                                                    >
-                                                                        <i className="ki-solid ki-minus-squared"></i>
-                                                                    </button>
-                                                                    <span className="mx-2 text-base">
-                                                                        {product.pivot.included ? product.pivot.quantity : '0'}
-                                                                    </span>
-                                                                    <button
-                                                                        data-action='increase'
-                                                                        onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'increase') : null}
-                                                                        disabled={!product.pivot.included}
-                                                                    >
-                                                                        <i className="ki-solid ki-plus-squared"></i>
-                                                                    </button>
+                                                                    {product.pivot.visibility ?
+                                                                        <>
+                                                                            <button
+                                                                                ref={qtyBtnRef}
+                                                                                data-action='decrease'
+                                                                                onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'decrease') : null}
+                                                                                disabled={!product.pivot.included}
+                                                                            >
+                                                                                <i className="ki-solid ki-minus-squared"></i>
+                                                                            </button>
+                                                                            <span className="mx-2 text-base">
+                                                                                {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                            </span>
+                                                                            <button
+                                                                                data-action='increase'
+                                                                                onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'increase') : null}
+                                                                                disabled={!product.pivot.included}
+                                                                            >
+                                                                                <i className="ki-solid ki-plus-squared"></i>
+                                                                            </button>
+                                                                        </>
+                                                                        :
+                                                                        ""
+                                                                    }
+
                                                                 </td>
                                                                 <td className="text-center">
                                                                     RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -443,14 +498,29 @@ function EditOrderQuotation() {
                                                                         : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </td>
                                                                 <td className='text-center'>
-                                                                    <label className="switch flex justify-center">
-                                                                        <input
-                                                                            name="included"
-                                                                            type="checkbox"
-                                                                            checked={product.pivot.included}
-                                                                            onChange={() => handleIncludeToggle(product.id)}
-                                                                        />
-                                                                    </label>
+                                                                    {product.pivot.isOriginal ?
+                                                                        product.pivot.visibility ?
+                                                                            <label className="switch flex justify-center">
+                                                                                <input
+                                                                                    name="included"
+                                                                                    type="checkbox"
+                                                                                    checked={product.pivot.included}
+                                                                                    onChange={() => handleIncludeToggle(product.id)}
+                                                                                />
+                                                                            </label>
+                                                                            :
+                                                                            <i className="ki-solid ki-eye-slash text-2xl"></i>
+                                                                        :
+                                                                        <button
+                                                                            className="btn-revoke btn btn-sm btn-danger"
+                                                                            data-tooltip="#remove_tooltip"
+                                                                            data-action="remove"
+                                                                            data-id={product.id}
+                                                                            onClick={() => handleRemoveProduct(prodPackage.id, product.id)}
+                                                                        >
+                                                                            Remove
+                                                                        </button>
+                                                                    }
                                                                 </td>
                                                             </tr>
                                                         ))}
@@ -485,6 +555,7 @@ function EditOrderQuotation() {
 
             <IncludeQuotationProductModal
                 updateSelectedPackages={updateSelectedPackages}
+                isFromOrderQuotation={true}
             />
         </>
     );

@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { Contact, DiscountFee, Invoice, Order, Package, Product, ProductCategory, Property, Quotation, Sale } from '../types';
+import { Contact, DiscountFee, Invoice, Order, Package, Product, ProductCategory, Property, Quotation, Sale, User } from '../types';
 
 const API_URL = 'http://' + window.location.hostname + ':8000/api/';
 
@@ -23,6 +23,20 @@ export const user = async () => {
         handle401Error(error as AxiosError);
     }
 };
+
+export const addUser = async (userData: User) => {
+    try {
+        const response = await axios.post(API_URL + 'users', userData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
 
 export const fetchData = async () => {
     try {

@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { userLogin } from '../services/auth';
-import KTLayout from '../metronic/app/layouts/demo1';
 import KTComponent from '../metronic/core';
 
 interface LoginForm {
@@ -14,7 +13,6 @@ interface LoginForm {
 const Login: React.FC = () => {
     useEffect(() => {
         KTComponent.init();
-        KTLayout.init();
     }, []);
     const [formData, setFormData] = useState<LoginForm>({ email: '', password: '' });
     const [error, setError] = useState<string | null>(null);

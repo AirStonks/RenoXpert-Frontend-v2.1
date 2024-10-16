@@ -1,10 +1,10 @@
-// src/hooks/useFetchOrder.ts
+// src/hooks/useFetchOwnerOrder.ts
 
 import { useState, useEffect } from 'react';
-import { fetchOrder } from '../services/api';
+import { fetchOwnerOrder } from '../services/ownerApi';
 import { Order } from '../types';
 
-const useFetchOrder = (orderId: number | null) => {
+const useFetchOwnerOrder = (orderId: number | null) => {
     const [orderDetail, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -18,7 +18,7 @@ const useFetchOrder = (orderId: number | null) => {
         }
 
         setLoading(true);
-        fetchOrder(orderId)
+        fetchOwnerOrder(orderId)
             .then((data) => {
                 setOrder(data.data);
                 setLoading(false);
@@ -32,4 +32,4 @@ const useFetchOrder = (orderId: number | null) => {
     return { orderDetail, loading, error };
 };
 
-export default useFetchOrder;
+export default useFetchOwnerOrder;

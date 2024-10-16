@@ -124,7 +124,7 @@ function CreateProduct() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="flex flex-col flex-auto gap-8">
+                <div className="flex flex-col flex-[2] gap-8">
 
                     {/* Image */}
                     {/* <div className="card relative">
@@ -149,10 +149,10 @@ function CreateProduct() {
                         <div className="card-body">
                             <div className="flex flex-col">
                                 {/* Header */}
-                                <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Status</h1>
+                                <h1 className='text-xl mb-4 font-semibold text-gray-900'>Status</h1>
 
                                 {/* Status Dropdown */}
-                                <div className="flex flex-col mb-8">
+                                <div className="flex flex-col">
                                     <Dropdown
                                         options={[
                                             { value: "available", label: "Available" },
@@ -169,6 +169,31 @@ function CreateProduct() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Internal Remark */}
+                    <div className="card bg-amber-50">
+                        <div className="card-body">
+                            <div className="flex flex-col">
+                                {/* Header */}
+                                <h1 className='text-xl mb-4 font-semibold text-gray-900'>Internal Remark</h1>
+
+                                {/* Status Dropdown */}
+                                <div className="flex flex-col">
+                                    <textarea 
+                                        className='textarea mb-2'
+                                        name="internal_remark"
+                                        id="internal_remark"
+                                        rows={6}
+                                    >
+
+                                    </textarea>
+                                    <span className="text-xs text-gray-600 tracking-wide">
+                                        <span className="text-red-500">*</span> Note down the remark for internal reference. (Not public)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div className='flex flex-col right-column flex-[5] gap-8'>
                     {/* General */}
@@ -176,7 +201,7 @@ function CreateProduct() {
                         <div className="card-body">
                             <div className="flex flex-col">
                                 {/* Header */}
-                                <h1 className='text-2xl mb-4 font-semibold text-gray-900'>General</h1>
+                                <h1 className='text-xl mb-4 font-semibold text-gray-900'>General</h1>
 
                                 {/* Product Name */}
                                 <InputFieldGroup

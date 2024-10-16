@@ -1,6 +1,13 @@
 import { Link } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
+import Loading from './Loading';
 
 function Sidebar() {
+  const { user, loading, error } = useUser();
+
+  if (loading) return <Loading />;
+  if (error) return <div>Error: {error}</div>;
+
   return <div
     className="sidebar dark:bg-coal-600 bg-light border-r border-r-gray-200 dark:border-r-coal-100 fixed top-0 bottom-0 z-20 hidden lg:flex flex-col items-stretch shrink-0"
     data-drawer="true"
@@ -349,7 +356,7 @@ function Sidebar() {
                 <i className="ki-filled ki-percentage"></i>
               </span>
               <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
-              Fees and Discounts
+                Fees and Discounts
               </span>
               <span className="menu-arrow text-gray-400 w-[20px] shrink-0 justify-end ml-1 mr-[-10px]">
                 <i className="ki-filled ki-plus text-2xs menu-item-show:hidden"></i>
@@ -617,22 +624,32 @@ function Sidebar() {
               Miscellaneous
             </span>
           </div>
-          <div className="menu-item">
-            <div
-              className="menu-label gap-[10px] pl-[10px] pr-[10px] py-[6px] border border-transparent"
-              tabIndex={0}
-            >
-              <span className="menu-icon items-start w-[20px] text-gray-500 dark:text-gray-400">
-                <i className="ki-filled ki-users text-lg"></i>
-              </span>
-              <span className="menu-title text-sm font-semibold text-gray-700">
-                Users
-              </span>
-              <span className="menu-badge mr-[-10px]">
-                <span className="badge badge-xs">Soon</span>
-              </span>
-            </div>
-          </div>
+          {user.type === 'admin' || user.type === 'super-admin' ?
+            <>
+              <div className="menu-item">
+                <Link to="/users" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
+                  <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
+                    <i className="ki-filled ki-users text-lg"></i>
+                  </span>
+                  <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
+                    Users
+                  </span>
+                </Link>
+              </div>
+              <div className="menu-item">
+                <Link to="/roles" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
+                  <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
+                    <i className="ki-filled ki-security-user text-lg"></i>
+                  </span>
+                  <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
+                    Roles
+                  </span>
+                </Link>
+              </div>
+            </>
+            :
+            ''
+          }
           <div className="menu-item">
             <Link to="/test" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
               <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">

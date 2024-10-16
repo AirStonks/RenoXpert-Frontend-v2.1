@@ -2,13 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Slide, toast, ToastContainer } from "react-toastify";
+import { confirmOrder } from "../services/api";
 
 const API_URL = 'http://' + window.location.hostname + ':8000/api/';
 
-const OTPVerifyPage: React.FC<{ mobile: string }> = ({ mobile }) => {
+const OTPConfirmOrder: React.FC = () => {
+    const location = useLocation();
     const navigate = useNavigate();
+    const { state } = location;
 
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [error, setError] = useState<string | null>(null);
@@ -29,6 +32,7 @@ const OTPVerifyPage: React.FC<{ mobile: string }> = ({ mobile }) => {
     };
 
     useEffect(() => {
+        console.log(state);
 
         // Start countdown
         const timer = setInterval(() => {
@@ -43,7 +47,7 @@ const OTPVerifyPage: React.FC<{ mobile: string }> = ({ mobile }) => {
         }, 1000);
 
         return () => clearInterval(timer); // Clean up on component unmount
-    }, []);
+    }, [state]);
 
     const handleChange = (index: number, value: string) => {
         const newOtp = [...otp];
@@ -91,17 +95,22 @@ const OTPVerifyPage: React.FC<{ mobile: string }> = ({ mobile }) => {
 
         try {
             const requestBody = {
-                mobile: mobile,
+                mobile: state.mobile,
                 otp_code: code
             };
 
-            const response = await axios.post(`${API_URL}sms-otp/verify/login`, requestBody); // Add your API endpoint here
+            const response = await axios.post(`${API_URL}sms-otp/verify`, requestBody); // Add your API endpoint here
 
             console.log(response);
 
             if (response.data.status === 'verified') {
-                localStorage.setItem('o_token', response.data.o_token);
-                navigate(`/owner/home`);
+                const response = await confirmOrder(Number(state.orderId));
+
+                if (response?.success) {
+                    notify('success', 'Status updated.');
+
+                    navigate(`/owner/order/overview/id/${state.orderId}`);
+                }
             } else {
                 console.log('Invalid');
             }
@@ -112,7 +121,7 @@ const OTPVerifyPage: React.FC<{ mobile: string }> = ({ mobile }) => {
 
     const handleResend = async () => {
         try {
-            const response = await axios.post(`${API_URL}sms-otp/request/${mobile}`);
+            const response = await axios.post(`${API_URL}sms-otp/request/${state.mobile}`);
 
             if (response.data.status === 'success') {
                 notify('success', 'OTP has been sent to the mobile no.');
@@ -156,12 +165,10 @@ const OTPVerifyPage: React.FC<{ mobile: string }> = ({ mobile }) => {
                         <img src='/public/media/illustrations/34.svg' className="dark:hidden h-20 mb-2" alt="" />
                         <img src='/media/illustrations/34-dark.svg' className="light:hidden h-20 mb-2" alt="" />
 
-                        <div className="text-center mb-2">
+                        <div className="text-center mb-1">
                             <h3 className="text-lg font-medium text-gray-900 mb-5">Verify your phone</h3>
                             <div className="flex flex-col">
-                                <span className="text-2sm text-gray-700 mb-1.5">Enter the verification code we sent to</span>
-                                {/* <a href="#" className="text-sm font-medium text-gray-900">****** {state.mobileLast}</a> */}
-                                <span className="text-sm font-medium text-gray-900">{mobile}</span>
+                                <span className="text-2sm text-gray-700 mb-1.5">Enter the verification code we sent to associated phone number</span>
                             </div>
                         </div>
 
@@ -208,4 +215,4 @@ const OTPVerifyPage: React.FC<{ mobile: string }> = ({ mobile }) => {
     );
 };
 
-export default OTPVerifyPage;
+export default OTPConfirmOrder;

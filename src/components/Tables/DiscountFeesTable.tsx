@@ -1,16 +1,12 @@
 // src\components\Tables\OrderTable.tsx
 
-import { useCallback, useEffect, useState } from 'react';
-import { KTDataTable, KTModal } from '../../metronic/core';
-import { DiscountFee, Order, Sale } from '../../types';
-import { useNavigate } from 'react-router-dom';
-import { confirmOrder } from '../../services/api';
+import { useEffect } from 'react';
+import { KTDataTable } from '../../metronic/core';
+import { DiscountFee } from '../../types';
 import { KTDataTableConfigInterface } from '../../metronic/core/components/datatable';
 import { Slide, toast } from 'react-toastify';
-import SaleInvoicesModal from '../Modals/SaleInvoicesModal';
 
 function DiscountFeesTable() {
-    const navigate = useNavigate();
     // const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
     // const [selectedOrder, setSelectedOrder] = useState<{ id: number, name: string } | null>(null);
 

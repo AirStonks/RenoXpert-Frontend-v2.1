@@ -173,11 +173,19 @@ function OrderTable() {
                             <div class="flex justify-around gap-2">
                                     <button
                                         class="btn btn-sm btn-outline btn-info copy-link"
-                                        data-clipboard-text="${location.protocol}//${window.location.host}/order/overview/id/${data.id}"
+                                        data-clipboard-text="${location.protocol}//${window.location.host}/owner/order/overview/id/${data.id}"
                                     >
                                         Copy Link
                                     </button>
                                 ${!isConfirmed && !isRevoked ? `
+                                    <button 
+                                        class="btn-confirm btn btn-xs btn-success"
+                                        data-tooltip="#confirm_tooltip"
+                                        data-action="confirm"
+                                        data-id="${data.id}"
+                                    >
+                                        C
+                                    </button>
                                     <button 
                                         class="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                                         data-tooltip="#edit_tooltip"

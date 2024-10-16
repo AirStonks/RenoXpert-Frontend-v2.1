@@ -1,35 +1,13 @@
-import React, { useEffect, useState } from 'react';
 import LogoutButton from './Buttons/LogoutButton';
-import { user } from '../services/api'; // Adjust the path as necessary
+import { useUser } from '../context/UserContext';
+import Loading from './Loading';
 
 function Header() {
-  const [userData, setUserData] = useState<{ name: string; email: string } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await user();
-        if (data) {
-          setUserData(data);
-        } else {
-          setError('Failed to load user data');
-        }
-      } catch (error) {
-        setError('An error occurred while fetching user data');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { user, loading, error } = useUser();
 
-    fetchData();
-  }, []);
-
-  if (loading) return '';
-  if (error) return <div>{error}</div>;
-
-  if (!userData) return <div>No user data available</div>;
+  if (loading) return <Loading />;
+  if (error) return <div>Error: {error}</div>;
 
   return <header
     className="header fixed top-0 z-10 left-0 right-0 flex items-stretch shrink-0 bg-[#fefefe] dark:bg-coal-500"
@@ -1668,13 +1646,13 @@ function Header() {
                   />
                   <div className="flex flex-col gap-1.5">
                     <span className="text-sm text-gray-800 font-semibold leading-none">
-                      {userData.name}
+                      {user.name}
                     </span>
                     <a
                       className="text-xs text-gray-600 hover:text-primary font-medium leading-none"
                       href="html/demo1/account/home/get-started.html"
                     >
-                      {userData.email}
+                      {user.email}
                     </a>
                   </div>
                 </div>

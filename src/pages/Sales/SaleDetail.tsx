@@ -7,6 +7,7 @@ import GenerateInvoiceModal from "../../components/Modals/GenerateInvoiceModal";
 import { Sale } from "../../types";
 import { useEffect, useState } from "react";
 import InvoiceDetailModal from "../../components/Modals/InvoiceDetailModal";
+import CreateAddonInvoiceModal from "../../components/Modals/CreateAddonInvoiceModal";
 
 function SaleDetail() {
     const navigate = useNavigate();
@@ -46,17 +47,6 @@ function SaleDetail() {
                     <span className="text-2xl font-bold text-gray-900">
                         Sale Detail
                     </span>
-                </div>
-                <div className="flex">
-                    {sale.remaining_amount > 0 && sale.remaining_percentage > 0 && (
-                        <button
-                            className="btn btn-primary flex gap-2 items-center"
-                            data-modal-toggle="#generate_invoice_modal"
-                        >
-                            <i className="ki-filled ki-document text-lg"></i>
-                            Generate Invoice
-                        </button>
-                    )}
                 </div>
             </div>
 
@@ -166,76 +156,114 @@ function SaleDetail() {
                     </div>
                 </div >
 
-                <div className="flex flex-col">
-                    <div className="card">
-                        <div className="card-body">
-                            <h2 className="text-gray-900 text-lg font-medium mb-4">
+                <div className="flex gap-8">
+                    <div className="flex flex-col flex-1">
+                        <div className="flex justify-between items-center flex-wrap mb-4">
+                            <span className="flex text-gray-900 text-lg font-medium">
                                 Payment Invoices
-                            </h2>
+                            </span>
 
-                            <div className="flex flex-col gap-4">
-                                {sale.invoices.map((invoice, index) => (
-                                    <div
-                                        key={index}
-                                        className="card cursor-pointer"
-                                        data-modal-toggle="#payment_invoice_modal"
-                                        onClick={() => setSelectedInvoiceId(Number(invoice.id))}
+                            <div className="flex gap-4">
+                                <button
+                                    className="btn btn-xs btn-info flex gap-2 items-center disabled"
+                                    data-modal-toggle="#create-addon-inv-modal"
+                                >
+                                    <i className="ki-outline ki-plus-squared"></i>
+                                    Addon Invoice
+                                </button>
+                                {sale.remaining_amount > 0 && sale.remaining_percentage > 0 && (
+                                    <button
+                                        className="btn btn-xs btn-primary flex gap-2 items-center"
+                                        data-modal-toggle="#generate_invoice_modal"
                                     >
-                                        <div className="card-body flex justify-between items-center">
-                                            <div className="flex items-center gap-4">
-                                                <div className="relative size-[50px] shrink-0">
-                                                    <svg className="w-full h-full stroke-info-clarity fill-info-light" fill="none" height="48" viewBox="0 0 44 48" width="44" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill="#EFF6FF">
-                                                        </path>
-                                                        <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke="#1B84FF" strokeOpacity="0.2">
-                                                        </path>
-                                                    </svg>
-                                                    <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
-                                                        <i className="ki-outline ki-document text-1.5xl ps-px text-info"></i>
-                                                    </div>
-                                                </div>
+                                        <i className="ki-filled ki-document text-lg"></i>
+                                        Generate Invoice
+                                    </button>
+                                )}
+                            </div>
+                        </div>
 
-                                                <div className="flex flex-col gap-1">
-                                                    <h3 className="text-gray-900 text-sm font-medium">
-                                                        {invoice.invoice_no}
-                                                    </h3>
-
-                                                    <div className="flex gap-14">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs text-gray-600">
-                                                                Amount:
-                                                            </span>
-                                                            <span className="text-sm text-gray-900 font-medium">
-                                                                RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs text-gray-600">
-                                                                Due Date:
-                                                            </span>
-                                                            <span className="text-sm text-gray-900 font-medium">
-                                                                {invoice.due_date
-                                                                    ? new Date(invoice.due_date).toLocaleDateString('en-GB', {
-                                                                        day: 'numeric',
-                                                                        month: 'long',
-                                                                        year: 'numeric'
-                                                                    })
-                                                                    : 'N/A'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
+                        <div className="flex flex-col gap-4">
+                            {sale.invoices.map((invoice, index) => (
+                                <div
+                                    key={index}
+                                    className="card cursor-pointer"
+                                    data-modal-toggle="#payment_invoice_modal"
+                                    onClick={() => setSelectedInvoiceId(Number(invoice.id))}
+                                >
+                                    <div className="card-body flex justify-between items-center">
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative size-[50px] shrink-0">
+                                                <svg className="w-full h-full stroke-info-clarity fill-info-light" fill="none" height="48" viewBox="0 0 44 48" width="44" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill="#EFF6FF">
+                                                    </path>
+                                                    <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke="#1B84FF" strokeOpacity="0.2">
+                                                    </path>
+                                                </svg>
+                                                <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
+                                                    <i className="ki-outline ki-document text-1.5xl ps-px text-info"></i>
                                                 </div>
                                             </div>
-                                            <div className="status">
-                                                <span className={`badge badge-pill badge-outline gap-1 items-center ${invoice.status === 'paid' ? 'badge-success' : ''}`}>
-                                                    <span className={`badge badge-dot size-1.5 ${invoice.status === 'paid' ? 'badge-success' : 'badge-dark'}`}></span>
-                                                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                                                </span>
+
+                                            <div className="flex flex-col gap-1">
+                                                <h3 className="text-gray-900 text-sm font-medium">
+                                                    {invoice.invoice_no}
+                                                </h3>
+
+                                                <div className="flex gap-14">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs text-gray-600">
+                                                            Amount:
+                                                        </span>
+                                                        <span className="text-sm text-gray-900 font-medium">
+                                                            RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs text-gray-600">
+                                                            Due Date:
+                                                        </span>
+                                                        <span className="text-sm text-gray-900 font-medium">
+                                                            {invoice.due_date
+                                                                ? new Date(invoice.due_date).toLocaleDateString('en-GB', {
+                                                                    day: 'numeric',
+                                                                    month: 'long',
+                                                                    year: 'numeric'
+                                                                })
+                                                                : 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div className="status">
+                                            <span className={`badge badge-pill badge-outline gap-1 items-center ${invoice.status === 'paid' ? 'badge-success' : ''}`}>
+                                                <span className={`badge badge-dot size-1.5 ${invoice.status === 'paid' ? 'badge-success' : 'badge-dark'}`}></span>
+                                                {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                            </span>
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex flex-col flex-1">
+                        <h2 className="text-gray-900 text-lg font-medium mb-4">
+                            Purchase Orders (PO)
+                        </h2>
+                        <div className="flex flex-col gap-4">
+                            {sale.invoices.map((invoice, index) => (
+                                <div
+                                    key={index}
+                                    className="card cursor-pointer"
+                                    // data-modal-toggle="#payment_invoice_modal"
+                                    // onClick={() => setSelectedInvoiceId(Number(invoice.id))}
+                                >
+                                    <div className="card-body flex justify-between items-center">
+                                        
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -250,6 +278,8 @@ function SaleDetail() {
             <InvoiceDetailModal
                 invoiceId={selectedInvoiceId}
             />
+
+            <CreateAddonInvoiceModal />
         </>
     )
 }

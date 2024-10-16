@@ -37,6 +37,13 @@ import PaymentError from './pages/OwnerPages/PaymentError';
 import OrderDetail from './pages/Order/OrderDetail';
 import OrderOverview from './pages/OwnerPages/OrderOverview';
 import OTPVerifyPage from './pages/OTPVerifyPage';
+import OTPConfirmOrder from './pages/OTPConfirmOrder';
+import OwnerProtectedRoute from './utils/OwnerProtectedRoute';
+import OwnerMasterLayout from './pages/OwnerPages/OwnerMasterLayout';
+import OwnerHome from './pages/OwnerPages/OwnerHome';
+import OwnerLogin from './pages/OwnerPages/OwnerLogin';
+import UsersMain from './pages/User/UsersMain';
+import AddUser from './pages/User/AddUser';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -48,16 +55,31 @@ const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
   </ProtectedRoute>
 );
 
+const OwnerProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
+  <OwnerProtectedRoute>
+    <OwnerMasterLayout>{children}</OwnerMasterLayout>
+  </OwnerProtectedRoute>
+);
+
 const routes = [
   { path: '/login', element: <Login />, layout: null },
   { path: '/', element: <Navigate to="/dashboard" replace />, layout: ProtectedLayout },
   { path: '/dashboard', element: <Dashboard />, layout: ProtectedLayout },
 
+  
+  { path: '/owner/login', element: <OwnerLogin />, layout: null },
+
+  { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
+  { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
+
   /*--- TEST ---*/
   { path: '/test', element: <Test />, layout: null },
-  { path: '/order/overview/id/:id', element: <OrderOverview />, layout: null },
   { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
-  
+  { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
+
+  /*--- TEST ---*/
+  { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
+  { path: '/users/add', element: <AddUser />, layout: ProtectedLayout },
 
   /*--- QUOTATION VIEW ---*/
   { path: '/invoice/:id/view', element: <ViewQuotation />, layout: null },
