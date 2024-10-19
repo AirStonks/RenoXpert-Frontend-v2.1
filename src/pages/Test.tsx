@@ -1,3 +1,4 @@
+import ActivityCenter from "../components/ActivityCenter";
 import { makePaymentIntent, testSms } from "../services/api";
 
 function Test() {
@@ -29,6 +30,9 @@ function Test() {
             >
                 Test SMS
             </button>
+
+            
+            <ActivityCenter />
         </>
     );
 }

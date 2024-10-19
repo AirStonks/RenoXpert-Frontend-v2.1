@@ -680,3 +680,17 @@ export const testSms = async () => {
         throw error; // Ensure to throw the error if needed
     }
 }
+
+
+export const fetchRegistrationForm = async (formId: number) => {
+    try {
+        const response = await axios.get(API_URL + `owner/reno-registration-form/${formId}`, {
+            headers: getAuthHeaders()
+        });
+
+        return response;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}

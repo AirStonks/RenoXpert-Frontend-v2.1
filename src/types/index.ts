@@ -25,11 +25,12 @@ export interface Product {
     SKU?: string;
     category_id?: number;
     category?: string | number;
-    pivot?: { 
+    pivot?: {
         visibility: boolean;
         quantity: number;
         included: boolean;
         isOriginal: boolean;
+        internal_note?: string;
     }
     type?: string;
     description?: string;
@@ -54,6 +55,7 @@ export interface Package {
     description?: string;
     total_price?: number;
     products?: Product[];
+    description_internal?: string;
 }
 
 export interface Quotation {
@@ -96,13 +98,13 @@ export interface Order {
     contact?: Contact,
     property_id?: string,
     property?: Property,
+    sale?: Sale,
     quotation_id?: string,
     order_quotations?: OrderQuotation[],
     latest_quotation?: OrderQuotation,
     block?: string,
     floor?: string,
     unit_no?: string,
-    unit_name?: string,
     total_amount?: number,
     description?: string,
     status?: string,
@@ -182,4 +184,58 @@ export interface Payment {
     status?: string,
     created_at?: string,
     updated_at?: string,
+}
+
+export interface OwnerRegistrationForm {
+    salutations?: string;
+    name_first?: string;
+    name_last?: string;
+    name_preferred?: string;
+    email?: string;
+    phone_no?: string;
+    address?: {
+        address_1?: string;
+        address_2?: string;
+        city?: string;
+        state?: string;
+        postcode?: string;
+    }
+    address_1?: string;
+    address_2?: string;
+    city?: string;
+    state?: string;
+    postcode?: string;
+    ic?: string;
+    property?: {
+        property_name?: string;
+        block?: string;
+        level?: string;
+        unit?: string;
+        layout_type?: string;
+        sqft?: string;
+    }
+    property_name?: string;
+    block?: string;
+    level?: string;
+    unit?: string;
+    layout_type?: string;
+    sqft?: string;
+    questions?: {
+        quest_1?: string;
+        quest_2?: string;
+        quest_3?: string;
+        quest_4?: string;
+        quest_5?: string;
+        quest_6?: string;
+        quest_7?: string;
+        quest_8?: string;
+    }
+    quest_1?: string;
+    quest_2?: string;
+    quest_3?: string;
+    quest_4?: string;
+    quest_5?: string;
+    quest_6?: string;
+    quest_7?: string;
+    quest_8?: string;
 }

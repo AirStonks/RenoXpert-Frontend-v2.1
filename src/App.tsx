@@ -44,6 +44,10 @@ import OwnerHome from './pages/OwnerPages/OwnerHome';
 import OwnerLogin from './pages/OwnerPages/OwnerLogin';
 import UsersMain from './pages/User/UsersMain';
 import AddUser from './pages/User/AddUser';
+import OrderPreview from './pages/Order/OrderPreview';
+import OwnerRegistrationForm from './pages/OwnerPages/OwnerRegistrationForm';
+import FormSubmitSuccess from './pages/OwnerPages/FormSubmitSuccess';
+import RegistrationFormMain from './pages/RegistrationForm/RegistrationFormMain';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -67,24 +71,28 @@ const routes = [
   { path: '/dashboard', element: <Dashboard />, layout: ProtectedLayout },
 
   
-  { path: '/owner/login', element: <OwnerLogin />, layout: null },
 
+  /*--- OWNER SITE ---*/
+  { path: '/owner/login', element: <OwnerLogin />, layout: null },
   { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
   { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
+  { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
+  { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
+  { path: '/owner/reno-registration-form', element: <OwnerRegistrationForm />, layout: null },
+  { path: '/owner/reno-registration-form/success', element: <FormSubmitSuccess />, layout: null },
+
 
   /*--- TEST ---*/
   { path: '/test', element: <Test />, layout: null },
-  { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
-  { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
-
-  /*--- TEST ---*/
   { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
   { path: '/users/add', element: <AddUser />, layout: ProtectedLayout },
 
+
+
   /*--- QUOTATION VIEW ---*/
-  { path: '/invoice/:id/view', element: <ViewQuotation />, layout: null },
-  { path: '/invoice/:id/payment/success', element: <PaymentSuccess />, layout: null },
-  { path: '/invoice/:id/payment/error', element: <PaymentError />, layout: null },
+  { path: '/invoice/:id/view', element: <ViewQuotation />, layout: OwnerProtectedLayout },
+  { path: '/invoice/:id/payment/success', element: <PaymentSuccess />, layout: OwnerProtectedLayout },
+  { path: '/invoice/:id/payment/error', element: <PaymentError />, layout: OwnerProtectedLayout },
 
   { path: '/success/test', element: <PaymentSuccess />, layout: null },
 
@@ -110,6 +118,10 @@ const routes = [
   /*--- PROPERTY ---*/
   { path: '/properties', element: <PropertyMain />, layout: ProtectedLayout },
 
+  
+  /*--- REGISTRATION FORM ---*/
+  { path: '/registration-forms', element: <RegistrationFormMain />, layout: ProtectedLayout },
+
   /*--- ORDER ---*/
   { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },
   { path: '/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
@@ -117,6 +129,7 @@ const routes = [
   { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation />, layout: ProtectedLayout },
   { path: '/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },
   { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation />, layout: ProtectedLayout },
+  { path: '/preview/owner/order/overview/id/:id', element: <OrderPreview />, layout: null },
 
   /*--- SALES ---*/
   { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },

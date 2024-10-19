@@ -1,5 +1,6 @@
 // src\pages\Product\Package\PackageMain.tsx
 
+import ActivityCenter from '../../../components/ActivityCenter';
 import Button from '../../../components/Buttons/Button';
 import PackageTable from '../../../components/Tables/PackageTable';
 import KTComponent from '../../../metronic/core';
@@ -26,6 +27,9 @@ function PackageMain() {
                         />
                     </div>
                 </div>
+
+
+                <ActivityCenter />
 
                 <PackageTable />
             </div>

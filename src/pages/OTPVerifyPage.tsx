@@ -170,12 +170,13 @@ const OTPVerifyPage: React.FC<{ mobile: string }> = ({ mobile }) => {
                                 <input
                                     key={index}
                                     id={`otp-input-${index}`}
-                                    type="text"
+                                    type="text" // Changed from "number" to "text"
                                     className="input focus:border-primary-clarity focus:ring focus:ring-primary-clarity size-10 shrink-0 px-0 text-center"
                                     value={digit}
                                     onChange={(e) => handleChange(index, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
                                     maxLength={1}
+                                    inputMode="numeric" // Optional: Suggests numeric keyboard on mobile
                                 />
                             ))}
                         </div>

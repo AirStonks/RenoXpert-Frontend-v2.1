@@ -1,6 +1,6 @@
 // src\pages\Product\Package\CreatePackage.tsx
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast, Slide } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import InputFieldGroup from '../../../components/Forms/TextFields/InputFieldGroup';
@@ -14,6 +14,7 @@ function CreatePackage() {
         packageName: '',
         packagePrice: 0,
         description: '',
+        description_internal: '',
         products: [],
     });
 
@@ -39,7 +40,7 @@ function CreatePackage() {
         });
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
             ...prevData,
@@ -56,14 +57,27 @@ function CreatePackage() {
                 }
                 return product;
             });
-    
+
             // Update localStorage with the new state
             updateLocalStorage(updatedProducts);
-    
+
             return updatedProducts;
         });
     };
-    
+
+    const handleNoteChange = (id: string | number, value: string) => {
+
+        setSelectedProducts((prevProducts) => {
+            const updatedProducts = prevProducts.map((product) => {
+                if (product.id === id) {
+                    return { ...product, note: value }; // Update note
+                }
+                return product; // Return unchanged product
+            });
+            updateLocalStorage(updatedProducts); // Persist updated products
+            return updatedProducts; // Update state
+        });
+    }
 
     const handleSubmit = async () => {
         const storedProducts = localStorage.getItem('include_prod_selected_products');
@@ -78,6 +92,7 @@ function CreatePackage() {
                     quantity: item.quantity,
                     visibility: item.visibility,
                     product_retail_price: parseFloat(item.product_retail_price),
+                    internal_note: item.note,
                 }));
             }
 
@@ -86,6 +101,7 @@ function CreatePackage() {
                 total_price: formData.packagePrice,
                 description: formData.description,
                 products: newProducts,
+                description_internal: formData.description_internal
             };
 
             console.log(packageData);
@@ -182,11 +198,13 @@ function CreatePackage() {
 
     const handleRemoveProduct = (id: number) => {
         setSelectedProducts((prevProducts) => {
+            console.log('Previous: ', prevProducts);
+
             const updatedProducts = prevProducts.filter(product => product.id !== id);
             const removedProduct = prevProducts.find(product => product.id === id);
             if (removedProduct) {
                 // Update total price based on the removed product
-                updateTotalPrice(removedProduct.quantity * removedProduct.quantity, '-');
+                updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
             }
             updateLocalStorage(updatedProducts); // Update localStorage
             return updatedProducts;
@@ -208,33 +226,6 @@ function CreatePackage() {
 
             <div className="flex flex-wrap gap-8 mb-8">
                 <div className="left-column flex flex-col flex-[3] gap-4">
-                    <div className="card">
-                        <div className="card-body">
-                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Package Detail</h2>
-
-                            {/* Package Name */}
-                            <InputFieldGroup
-                                fieldTitle="Package Name"
-                                description="A product name is required and recommended to be unique."
-                                placeholder="Package name"
-                                name="packageName"
-                                value={formData.packageName}
-                                onChange={handleChange}
-                                error={validationErrors.name}
-                            />
-
-                            {/* Description */}
-                            <InputFieldGroup
-                                fieldTitle="Description"
-                                description="A product name is required and recommended to be unique."
-                                placeholder="Description"
-                                name="description"
-                                value={formData.description}
-                                onChange={handleChange}
-                                error={validationErrors.description}
-                            />
-                        </div>
-                    </div>
 
                     <div className="card">
                         <div className="card-body">
@@ -250,6 +241,57 @@ function CreatePackage() {
                                 <span className="text-lg font-medium text-gray-900">
                                     RM {totalPrice}
                                 </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-body">
+                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Package Detail</h2>
+
+                            {/* Package Name */}
+                            <InputFieldGroup
+                                fieldTitle="Package Name"
+                                description="A package name is required and recommended to be unique."
+                                placeholder="Package name"
+                                name="packageName"
+                                value={formData.packageName}
+                                onChange={handleChange}
+                                error={validationErrors.name}
+                            />
+
+                            {/* Description */}
+                            <InputFieldGroup
+                                fieldTitle="Description"
+                                description="The information of the package related to the package"
+                                placeholder="Description"
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                error={validationErrors.description}
+                            />
+
+                        </div>
+                    </div>
+
+                    <div className="card bg-slate-50">
+                        <div className="card-body">
+                            <div className="flex flex-col mb-8">
+                                <label className='mb-2 text-sm font-medium text-gray-900'>
+                                    Description <span className='text-slate-500'>(Internal)</span>
+                                </label>
+                                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                    Note down the remark for internal reference. (Not public in owner view quotation)
+                                </span>
+
+                                <textarea
+                                    className="textarea"
+                                    placeholder="This description will not visible on owner view"
+                                    name='description_internal'
+                                    rows={6}
+                                    value={formData.description_internal}
+                                    onChange={handleChange}
+                                >
+                                </textarea>
                             </div>
                         </div>
                     </div>
@@ -269,6 +311,10 @@ function CreatePackage() {
                                 Add Products
                             </button>
 
+                            <div className="badge badge-lg badge-dark text-yellow-300 mb-4">
+                                The Internal Reference Note is not visible in Owner View
+                            </div>
+
                             <div className="product-list flex flex-col">
                                 <div className="card min-w-full">
                                     <div className="card-table">
@@ -285,56 +331,68 @@ function CreatePackage() {
                                             </thead>
                                             <tbody>
                                                 {selectedProducts.map((product) => (
-                                                    <tr key={product.id}>
-                                                        <td>
-                                                            <div className="flex flex-col">
-                                                                <span>{product.name}</span>
-                                                                <span className="text-xs text-slate-400">{product.description}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className='text-center text-lg'>
-                                                            <button
-                                                                data-action='decrease'
-                                                                onClick={() => adjustQuantity(product.id, 'decrease')}
-                                                            >
-                                                                <i className="ki-solid ki-minus-squared"></i>
-                                                            </button>
-                                                            <span className="mx-2 text-base">
-                                                                {product.quantity}
-                                                            </span>
-                                                            <button
-                                                                data-action='increase'
-                                                                onClick={() => adjustQuantity(product.id, 'increase')}
-                                                            >
-                                                                <i className="ki-solid ki-plus-squared"></i>
-                                                            </button>
-                                                        </td>
-                                                        <td>
-                                                            RM {product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </td>
-                                                        <td>
-                                                            RM {(product.price * product.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </td>
-                                                        <td className='text-center'>
-                                                            <label className="switch flex justify-center">
+                                                    <React.Fragment key={product.id}>
+                                                        <tr>
+                                                            <td>
+                                                                <div className="flex flex-col">
+                                                                    <span>{product.name}</span>
+                                                                    <span className="text-xs text-slate-400">{product.description}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className='text-center text-lg'>
+                                                                <button
+                                                                    data-action='decrease'
+                                                                    onClick={() => adjustQuantity(product.id, 'decrease')}
+                                                                >
+                                                                    <i className="ki-solid ki-minus-squared"></i>
+                                                                </button>
+                                                                <span className="mx-2 text-base">
+                                                                    {product.quantity}
+                                                                </span>
+                                                                <button
+                                                                    data-action='increase'
+                                                                    onClick={() => adjustQuantity(product.id, 'increase')}
+                                                                >
+                                                                    <i className="ki-solid ki-plus-squared"></i>
+                                                                </button>
+                                                            </td>
+                                                            <td>
+                                                                RM {product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                            <td>
+                                                                RM {(product.price * product.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                            <td className='text-center'>
+                                                                <label className="switch flex justify-center">
+                                                                    <input
+                                                                        name="visibility"
+                                                                        type="checkbox"
+                                                                        checked={product.visibility}
+                                                                        value={product.visibility}
+                                                                        onChange={() => handleVisibilityToggle(product.id)}
+                                                                    />
+                                                                </label>
+                                                            </td>
+                                                            <td className='text-center'>
+                                                                <button
+                                                                    className="btn btn-sm btn-danger"
+                                                                    onClick={() => handleRemoveProduct(product.id)}
+                                                                >
+                                                                    Remove
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colSpan={6}>
                                                                 <input
-                                                                    name="visibility"
-                                                                    type="checkbox"
-                                                                    checked={product.visibility}
-                                                                    value={product.visibility}
-                                                                    onChange={() => handleVisibilityToggle(product.id)}
+                                                                    type="text"
+                                                                    placeholder="Add a internal reference note"
+                                                                    className="input w-full border p-2"
+                                                                    onChange={(e) => handleNoteChange(product.id, e.target.value)}
                                                                 />
-                                                            </label>
-                                                        </td>
-                                                        <td className='text-center'>
-                                                            <button
-                                                                className="btn btn-sm btn-danger"
-                                                                onClick={() => handleRemoveProduct(product.id)}
-                                                            >
-                                                                Remove
-                                                            </button>
-                                                        </td>
-                                                    </tr>
+                                                            </td>
+                                                        </tr>
+                                                    </React.Fragment>
                                                 ))}
                                             </tbody>
                                         </table>
@@ -356,6 +414,169 @@ function CreatePackage() {
                 >
                     Create
                 </button>
+            </div>
+
+            <button className="btn btn-outline btn-info rounded-e-none px-3 fixed top-20 right-0 z-20" data-drawer-toggle="#drawer_6">
+                <i className="ki-filled ki-message-notify"></i>
+            </button>
+
+            <div className="drawer drawer-end border-r drawer-open:shadow-2xl rounded-s-xl flex flex-col max-w-[90%] w-[500px]" data-drawer="true" data-drawer-backdrop="false" data-drawer-disable-scroll="false" id="drawer_6">
+                <div className="flex items-center justify-between px-5 py-4 border-b">
+                    <h3 className="text-base font-semibold text-gray-900">
+                        Activity Center
+                    </h3>
+                    <button className="btn btn-xs btn-icon btn-light" data-drawer-dismiss="true">
+                        <i className="ki-outline ki-cross">
+                        </i>
+                    </button>
+                </div>
+                <div className="px-5">
+                    <div className="tabs mb-5" data-tabs="true">
+                        <button className="tab active" data-tab-toggle="#tab_1_1">
+                            Activities
+                        </button>
+                        <button className="tab" data-tab-toggle="#tab_1_2">
+                            Comments
+                        </button>
+                    </div>
+                    <div className="overflow-y-auto scrollable h-screen" id="tab_1_1">
+                        <div className="flex flex-col gap-4">
+                            
+                        </div>
+                    </div>
+                    <div className="overflow-y-auto scrollable h-screen" id="tab_1_2">
+                        <div className="flex flex-col gap-4">
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <IncludeProductModal

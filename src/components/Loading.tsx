@@ -4,7 +4,7 @@ import React from 'react';
 
 const Loading: React.FC = () => {
     return (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" data-datatable-spinner="true" >
+        <div className="fixed inset-0 flex items-center justify-center" data-datatable-spinner="true">
             <div className="flex items-center gap-2 px-4 py-2 font-medium leading-none text-2sm border border-gray-200 shadow-default rounded-md text-gray-500 bg-light">
                 <svg className="animate-spin -ml-1 h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle>
@@ -13,7 +13,7 @@ const Loading: React.FC = () => {
                 Loading...
             </div>
         </div>
-    );
+    );    
 };
 
 export default Loading;

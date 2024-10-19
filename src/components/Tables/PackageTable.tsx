@@ -133,7 +133,7 @@ function PackageTable() {
                 <div className="card card-grid min-w-full">
                     <div className="card-header flex-wrap gap-2">
                         <h3 className="card-title font-medium text-lg">
-                            Product Category List
+                            Package List
                         </h3>
                     </div>
                     <div className="card-body">

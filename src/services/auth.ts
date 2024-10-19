@@ -42,3 +42,28 @@ export const logout = async () => {
     throw new Error(error.response ? error.response.data.message : error.message);
   }
 };
+
+export const logoutOwner = async () => {
+
+  const token = localStorage.getItem('o_token') || sessionStorage.getItem('o_token');
+  console.log(token);
+  
+  try {
+    // Make the request to the logout endpoint with the token
+    const response = await axios.post(API_URL + 'logout', {}, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    // Clear token from storage
+    localStorage.removeItem('o_token');
+    sessionStorage.removeItem('o_token');
+
+    // Return the data from the response
+    return response.data;
+
+  } catch (error) {
+    throw new Error(error.response ? error.response.data.message : error.message);
+  }
+};
