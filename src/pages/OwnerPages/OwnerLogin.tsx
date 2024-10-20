@@ -22,7 +22,7 @@ const OwnerLogin: React.FC = () => {
 
     const isValidPhoneNumber = (number: string) => {
         // Regex to match a 10-digit phone number starting with 0
-        const phoneRegex = /^0\d{9,14}$/;
+        const phoneRegex = /^\d{9,14}$/;
         return phoneRegex.test(number);
     };
 

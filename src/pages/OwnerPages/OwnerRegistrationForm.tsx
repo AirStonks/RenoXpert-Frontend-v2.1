@@ -240,7 +240,7 @@ function OwnerRegistrationForm() {
             } else {
                 console.log('error');
             }
-            
+
         } catch (error) {
             console.log(error);
         }
@@ -284,87 +284,87 @@ function OwnerRegistrationForm() {
                                         <span className="font-normal">Name:</span>
                                         <span className="font-bold">{formData.name_first} {formData.name_last}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Preferred Name:</span>
                                         <span className="font-bold">{formData.name_preferred}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Email:</span>
                                         <span className="font-bold">{formData.email}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Phone Number:</span>
                                         <span className="font-bold">{formData.phone_no}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Current residence address:</span>
                                         <span className="font-bold">{formData.address_1}, {formData.address_2}, {formData.postcode}, {formData.city}, {formData.state}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">IC / ID number:</span>
                                         <span className="font-bold">{formData.ic}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Property to be renovated:</span>
                                         <span className="font-bold">{getPropertyLabel(formData.property_name)}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Unit:</span>
                                         <span className="font-bold">{formData.block}-{formData.level}-{formData.unit}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Layout Type:</span>
                                         <span className="font-bold">{formData.layout_type}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Sqft:</span>
                                         <span className="font-bold">{formData.sqft}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">What's your original number of rooms?</span>
                                         <span className="font-bold">{getLabel(formData.quest_1, q1Options)}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">What's the number of bathroom?</span>
                                         <span className="font-bold">{getLabel(formData.quest_2, q2Options)}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Already Vacant Possessions (VP)?</span>
                                         <span className="font-bold">{getLabel(formData.quest_3, q3Options)}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Already collect key?</span>
                                         <span className="font-bold">{getLabel(formData.quest_4, q4Options)}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Already done defect inspection?</span>
                                         <span className="font-bold">{getLabel(formData.quest_5, q5Options)}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Already submit defect submission to MO?</span>
                                         <span className="font-bold">{getLabel(formData.quest_6, q6Options)}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">MO has completed that defect rectification?</span>
                                         <span className="font-bold">{getLabel(formData.quest_7, q7Options)}</span>
                                     </div>
-                                    
+
                                     <div className="flex flex-col">
                                         <span className="font-normal">Do you want to add partition room to your unit?</span>
                                         <span className="font-bold">{getLabel(formData.quest_8, q8Options)}</span>
@@ -398,7 +398,7 @@ function OwnerRegistrationForm() {
                                                 <span className="text-slate-500 text-xs">First Name</span>
                                             </div>
                                             <div className="flex flex-col w-full">
-                                                <input className={`input ${errors.name_last ? 'border-danger' : ''}`}  type="text" name="name_last" id="name_last" value={formData.name_last} onChange={handleChange} />
+                                                <input className={`input ${errors.name_last ? 'border-danger' : ''}`} type="text" name="name_last" id="name_last" value={formData.name_last} onChange={handleChange} />
                                                 <span className="text-slate-500 text-xs">Last Name</span>
                                             </div>
                                         </div>
@@ -425,8 +425,29 @@ function OwnerRegistrationForm() {
                                             </div>
                                             <div className="flex flex-col w-full">
                                                 <label className="text-slate-900 mb-2 font-medium" htmlFor="phone_no">Phone Number</label>
-                                                <input className={`input ${errors.phone_no ? 'border-danger' : ''}`} type="tel" name="phone_no" id="phone_no" value={formData.phone_no} onChange={handleChange} />
-                                                <span className="text-slate-500 text-xs">i.e: 60123456789</span>
+                                                <div className="flex">
+                                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
+                                                        <button className="dropdown-toggle btn btn-light mr-1">
+                                                            +60
+                                                        </button>
+                                                        <div className="dropdown-content w-full max-w-56 py-2">
+                                                            <div className="menu menu-default flex flex-col w-full">
+                                                                <div className="menu-item">
+                                                                    <button className="menu-link">
+                                                                        <span className="menu-icon">
+                                                                            {/* <img alt="image" className="max-h-1" src="/public/media/flags/malaysia.svg" /> */}
+                                                                        </span>
+                                                                        <span className="menu-title">
+                                                                            Malaysia +(60)
+                                                                        </span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <input className={`input ${errors.phone_no ? 'border-danger' : ''}`} type="tel" name="phone_no" id="phone_no" value={formData.phone_no} onChange={handleChange} />
+                                                </div>
+                                                <span className="text-slate-500 text-xs">i.e: +(60) 123456789</span>
                                             </div>
                                         </div>
 

@@ -29,7 +29,7 @@ function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps)
                     <div className="card-header">
                         <h3 className="card-title">Owner Information</h3>
                     </div>
-                    <div className="card-body flex flex-col gap-6">
+                    <div className="card-body flex flex-col gap-6 text-gray-900">
                         <div className="flex flex-col">
                             <span className="font-normal">Salutations:</span>
                             <span className="font-semibold">{formDetail.salutations}</span>
@@ -71,7 +71,7 @@ function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps)
                     <div className="card-header">
                         <h3 className="card-title">Property Information</h3>
                     </div>
-                    <div className="card-body flex flex-col gap-6">
+                    <div className="card-body flex flex-col gap-6 text-gray-900">
                         <div className="flex flex-col">
                             <span className="font-normal">Property to be renovated:</span>
                             <span className="font-semibold">{formDetail.property.property_name}</span>
@@ -98,7 +98,7 @@ function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps)
                     <div className="card-header">
                         <h3 className="card-title">Property Information (Detail)</h3>
                     </div>
-                    <div className="card-body flex flex-col gap-6">
+                    <div className="card-body flex flex-col gap-6 text-gray-900">
                         <div className="flex flex-col">
                             <span className="font-normal">What's your original number of rooms?</span>
                             <span className="font-semibold">{formDetail.questions.quest_1}</span>
