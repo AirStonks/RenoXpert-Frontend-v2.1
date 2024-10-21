@@ -4,7 +4,7 @@ import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
 import { Contact, DiscountFee, Invoice, Order, Package, Product, ProductCategory, Property, Quotation, Sale, User } from '../types';
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = 'https://api.renoxpert.my/api/';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');

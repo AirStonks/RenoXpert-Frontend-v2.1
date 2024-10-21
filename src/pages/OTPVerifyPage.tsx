@@ -5,7 +5,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Slide, toast, ToastContainer } from "react-toastify";
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = 'https://api.renoxpert.my/api/';
 
 const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string }> = ({ mobile, countryCode }) => {
     const navigate = useNavigate();

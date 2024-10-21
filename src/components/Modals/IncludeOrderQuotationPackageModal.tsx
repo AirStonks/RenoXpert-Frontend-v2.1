@@ -89,7 +89,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
     };
 
     const initProdTable = () => {
-        const apiUrl = 'http://' + window.location.hostname + ':8000/api/packages';
+        const apiUrl = 'https://api.renoxpert.my/api/packages';
         const datatableEl = document.querySelector('#packages_table') as HTMLElement;
         const token = localStorage.getItem('token');
 
