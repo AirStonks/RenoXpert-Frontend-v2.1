@@ -694,3 +694,30 @@ export const fetchRegistrationForm = async (formId: number) => {
         throw error; // Ensure to throw the error if needed
     }
 }
+
+export const approveRegistrationForm = async (formId: number) => {
+    try {
+        const response = await axios.get(API_URL + `owner/reno-registration-form/${formId}/status/approve`, {
+            headers: getAuthHeaders()
+        });
+
+        return response;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+
+export const rejectRegistrationForm = async (formId: number) => {
+    try {
+        const response = await axios.get(API_URL + `owner/reno-registration-form/${formId}/status/reject`, {
+            headers: getAuthHeaders()
+        });
+
+        return response;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}

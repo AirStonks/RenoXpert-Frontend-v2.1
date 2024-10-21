@@ -8,9 +8,11 @@ const OwnerLogin: React.FC = () => {
 
     useEffect(() => {
         KTComponent.init();
+        setCountryCode('+60');
     }, []);
 
     const [mobile, setMobile] = useState<string>('');
+    const [countryCode, setCountryCode] = useState<string>('+60');
     const [showOtpForm, setShowOtpForm] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -83,15 +85,37 @@ const OwnerLogin: React.FC = () => {
 
                             <div className="flex flex-col gap-1">
                                 <label className="form-label font-normal text-gray-900">Phone Number</label>
-                                <input
-                                    className="input"
-                                    placeholder="0123456789"
-                                    type="tel"
-                                    value={mobile}
-                                    onChange={handleInputChange}
-                                    tabIndex={1}
-                                    required
-                                />
+                                <div className="flex">
+                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
+                                        <button className="dropdown-toggle btn btn-light mr-1">
+                                            +60
+                                        </button>
+                                        <div className="dropdown-content w-full max-w-56 py-2">
+                                            <div className="menu menu-default flex flex-col w-full">
+                                                <div className="menu-item">
+                                                    <button type='button' className="menu-link flex items-center text-center">
+                                                        <span className="menu-icon">
+                                                            <img alt="" className="inline-block size-4 rounded-full" src="/public/media/flags/malaysia.svg" />
+                                                        </span>
+                                                        <span className="menu-title">
+                                                            Malaysia +(60)
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input
+                                        className="input"
+                                        placeholder="1234567890"
+                                        type="tel"
+                                        value={mobile}
+                                        onChange={handleInputChange}
+                                        tabIndex={1}
+                                        required
+                                    />
+                                </div>
+
                                 {error && <p className="text-sm text-red-500">{error}</p>}
                             </div>
                             <button
@@ -107,7 +131,7 @@ const OwnerLogin: React.FC = () => {
                 </>
 
             ) : (
-                <OTPVerifyPage mobile={mobile} />
+                <OTPVerifyPage mobile={mobile} countryCode={countryCode} />
             )}
         </>
     );

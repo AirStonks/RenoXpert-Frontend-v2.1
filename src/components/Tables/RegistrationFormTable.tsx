@@ -4,15 +4,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { KTDataTable, KTModal } from '../../metronic/core';
 import { Contact } from '../../types';
 import OwnerRegistrationFormModal from '../Modals/OwnerRegistrationFormModal';
+import { approveRegistrationForm, rejectRegistrationForm } from '../../services/api';
+import { useNavigate } from 'react-router-dom';
 
 function RegistrationFormTable() {
+    const navigate = useNavigate();
     const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
 
     let datatable;
     let element;
     let dataTableOptions;
 
-    const handleTableClick = useCallback((event: MouseEvent) => {
+    const handleTableClick = useCallback(async (event: MouseEvent) => {
         const target = event.target as HTMLElement;
 
         // Find the delete button element
@@ -29,15 +32,31 @@ function RegistrationFormTable() {
         }
 
         if (approveButton) {
-            const id = approveButton.dataset.id;;
+            const id = approveButton.dataset.id;
 
-            // 
+            try {
+                const res = await approveRegistrationForm(Number(id));
+
+                if (res?.data.success) {
+                    navigate(0);
+                }
+            } catch (error) {
+                console.log(error);
+            }
         }
 
         if (rejectButton) {
             const id = rejectButton.dataset.id;
-            
-            //
+
+            try {
+                const res = await rejectRegistrationForm(Number(id));
+
+                if (res?.data.success) {
+                    navigate(0);
+                }
+            } catch (error) {
+                console.log(error);
+            }
         }
 
     }, []);
@@ -72,10 +91,18 @@ function RegistrationFormTable() {
                     `,
                 },
                 phone_no: {
-                    title: "Phone No"
+                    title: "Phone No",
+                    render: (item: string, data) => `
+                        <div class="flex">
+                            ${data.country_code}${data.phone_no}
+                        </div>
+                    `
                 },
                 email: {
                     title: "Email"
+                },
+                status: {
+                    title: "Status"
                 },
                 action: {
                     title: 'Action',
@@ -91,27 +118,29 @@ function RegistrationFormTable() {
                                 View
                             </button>
 
-                            <button 
-                                class="btn-delete btn btn-sm btn-success"
-                                data-tooltip="#approve_tooltip"
-                                data-action="approve"
-                                data-id="${data.id}"
-                                data-name="${data.name}"
-                                data-modal-toggle="#confirm_item_modal"
-                            >
-                                Approve
-                            </button>
+                            ${data.status !== 'approved' && data.status !== 'rejected' ? `
+                                <button 
+                                    class="btn-delete btn btn-sm btn-success"
+                                    data-tooltip="#approve_tooltip"
+                                    data-action="approve"
+                                    data-id="${data.id}"
+                                    data-name="${data.name}"
+                                    data-modal-toggle="#confirm_item_modal"
+                                >
+                                    Approve
+                                </button>
 
-                            <button 
-                                class="btn-delete btn btn-sm btn-danger"
-                                data-tooltip="#reject_tooltip"
-                                data-action="reject"
-                                data-id="${data.id}"
-                                data-name="${data.name}"
-                                data-modal-toggle="#delete_item_modal"
-                            >
-                                Reject
-                            </button>
+                                <button 
+                                    class="btn-delete btn btn-sm btn-danger"
+                                    data-tooltip="#reject_tooltip"
+                                    data-action="reject"
+                                    data-id="${data.id}"
+                                    data-name="${data.name}"
+                                    data-modal-toggle="#delete_item_modal"
+                                >
+                                    Reject
+                                </button>
+                            ` : ''}
                         </div>
                     `
                 }
@@ -194,6 +223,12 @@ function RegistrationFormTable() {
                                             <th className="w-[150px]" data-datatable-column="email">
                                                 <span className="sort">
                                                     <span className="sort-label">Email</span>
+                                                    <span className="sort-icon"></span>
+                                                </span>
+                                            </th>
+                                            <th className="w-[100px]" data-datatable-column="email">
+                                                <span className="sort">
+                                                    <span className="sort-label">Status</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>

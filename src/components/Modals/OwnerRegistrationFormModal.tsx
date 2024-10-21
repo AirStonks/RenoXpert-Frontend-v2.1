@@ -25,7 +25,7 @@ function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps)
 
         content = (
             <div className="flex flex-wrap gap-6">
-                <div className="card flex-grow">
+                <div className="card flex-grow flex-1">
                     <div className="card-header">
                         <h3 className="card-title">Owner Information</h3>
                     </div>
@@ -52,7 +52,7 @@ function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps)
 
                         <div className="flex flex-col">
                             <span className="font-normal">Phone Number:</span>
-                            <span className="font-semibold">{formDetail.phone_no}</span>
+                            <span className="font-semibold">{formDetail.country_code}{formDetail.phone_no}</span>
                         </div>
 
                         <div className="flex flex-col">
@@ -67,7 +67,7 @@ function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps)
                     </div>
                 </div>
 
-                <div className="card flex-grow">
+                <div className="card flex-grow flex-1">
                     <div className="card-header">
                         <h3 className="card-title">Property Information</h3>
                     </div>
@@ -94,7 +94,7 @@ function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps)
                     </div>
                 </div>
 
-                <div className="card flex-grow">
+                <div className="card flex-grow flex-1">
                     <div className="card-header">
                         <h3 className="card-title">Property Information (Detail)</h3>
                     </div>

@@ -56,8 +56,8 @@ function OwnerHome() {
                             <img alt="" className="size-16 rounded-full border-2 border-success shrink-0" src="/media/avatars/blank.png" />
                         </div>
                         <span className="text-slate-900 text-xl font-bold">{owner.name}</span>
-                        <span className="text-slate-900 text-base">{owner.phone_no}</span>
-                        <span className="text-slate-900 text-base">{owner.email ? owner.email : '-'}</span>
+                        <span className="text-slate-900 text-base">+60 {owner.phone_no}</span>
+                        <span className="text-slate-900 text-base mb-3">{owner.email ? owner.email : '-'}</span>
                         <div className="flex gap-4">
                             <button className="btn btn-sm btn-secondary relative">
                                 <span className="badge badge-dot badge-success size-[8px] absolute top-[-0.6em] right-[-0.3em] transform translate-y-1/2"></span>

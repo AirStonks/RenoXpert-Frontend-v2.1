@@ -7,7 +7,7 @@ import { Slide, toast, ToastContainer } from "react-toastify";
 
 const API_URL = 'http://' + window.location.hostname + ':8000/api/';
 
-const OTPVerifyPage: React.FC<{ mobile: string }> = ({ mobile }) => {
+const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string }> = ({ mobile, countryCode }) => {
     const navigate = useNavigate();
 
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -161,7 +161,7 @@ const OTPVerifyPage: React.FC<{ mobile: string }> = ({ mobile }) => {
                             <div className="flex flex-col">
                                 <span className="text-2sm text-gray-700 mb-1.5">Enter the verification code we sent to</span>
                                 {/* <a href="#" className="text-sm font-medium text-gray-900">****** {state.mobileLast}</a> */}
-                                <span className="text-sm font-medium text-gray-900">{mobile}</span>
+                                <span className="text-sm font-medium text-gray-900">{countryCode} {mobile}</span>
                             </div>
                         </div>
 

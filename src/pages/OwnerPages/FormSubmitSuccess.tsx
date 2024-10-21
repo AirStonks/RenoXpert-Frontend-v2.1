@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function FormSubmitSuccess() {
 
     return (
@@ -20,6 +22,10 @@ function FormSubmitSuccess() {
                     
                     <div className="flex flex-col mx-8 justify-center items-center text-center">
                         <span className="text-xl font-semibold text-gray-500">Reno Registration Form has been successfully submitted.</span>
+                    </div>
+
+                    <div className="flex flex-col mx-8 justify-center items-center text-center">
+                        <span className="text-lg font-medium text-gray-900">You can now proceed to <Link to={'/owner/login'} className="link underline">Login</Link></span>
                     </div>
                 </div>
             </div>

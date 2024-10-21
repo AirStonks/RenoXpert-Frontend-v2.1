@@ -11,6 +11,7 @@ interface FormData {
     name_last: string;
     name_preferred: string;
     email: string;
+    country_code: string;
     phone_no: string;
     address_1: string;
     address_2: string;
@@ -103,6 +104,7 @@ const initialFormData: FormData = {
     name_last: '',
     name_preferred: '',
     email: '',
+    country_code: '+60',
     phone_no: '',
     address_1: '',
     address_2: '',
@@ -297,7 +299,7 @@ function OwnerRegistrationForm() {
 
                                     <div className="flex flex-col">
                                         <span className="font-normal">Phone Number:</span>
-                                        <span className="font-bold">{formData.phone_no}</span>
+                                        <span className="font-bold">{formData.country_code} {formData.phone_no}</span>
                                     </div>
 
                                     <div className="flex flex-col">
@@ -433,9 +435,9 @@ function OwnerRegistrationForm() {
                                                         <div className="dropdown-content w-full max-w-56 py-2">
                                                             <div className="menu menu-default flex flex-col w-full">
                                                                 <div className="menu-item">
-                                                                    <button className="menu-link">
+                                                                    <button type='button' className="menu-link flex items-center text-center">
                                                                         <span className="menu-icon">
-                                                                            {/* <img alt="image" className="max-h-1" src="/public/media/flags/malaysia.svg" /> */}
+                                                                            <img alt="" className="inline-block size-4 rounded-full" src="/public/media/flags/malaysia.svg" />
                                                                         </span>
                                                                         <span className="menu-title">
                                                                             Malaysia +(60)

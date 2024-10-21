@@ -192,6 +192,7 @@ export interface OwnerRegistrationForm {
     name_last?: string;
     name_preferred?: string;
     email?: string;
+    country_code?: string;
     phone_no?: string;
     address?: {
         address_1?: string;
