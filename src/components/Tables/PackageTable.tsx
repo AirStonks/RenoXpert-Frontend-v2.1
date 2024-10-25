@@ -61,7 +61,7 @@ function PackageTable() {
     };
 
     const initPackageTable = useCallback(() => {
-        const apiUrl = `http://${window.location.hostname}:8000/api/packages`;
+        const apiUrl = `https://api.renoxpert.my/api/packages`;
         const element = document.querySelector('#package_table') as HTMLElement;
         const token = localStorage.getItem('token');
 

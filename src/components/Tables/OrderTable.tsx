@@ -94,7 +94,7 @@ function OrderTable() {
     }, []);
 
     const initContactTable = () => {
-        const apiUrl = 'http://' + window.location.hostname + ':8000/api/orders';
+        const apiUrl = 'https://api.renoxpert.my/api/orders';
         element = document.querySelector('#order_table') as HTMLElement;
         const token = localStorage.getItem('token');
 
