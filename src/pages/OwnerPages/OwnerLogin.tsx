@@ -7,7 +7,7 @@ import { fetchExistsUser } from '../../services/ownerApi';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = 'https://api.renoxpert.my/api/';
 
 const OwnerLogin: React.FC = () => {
     const navigate = useNavigate();
