@@ -185,8 +185,8 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                                     id="clipboard_1_target"
                                                     placeholder="Copy to clipboard"
                                                     type="text"
-                                                    value={`http://${window.location.hostname}:5173/invoice/${invoiceDetail.id}/view`}
-                                                    onClick={() => { window.open(`http://${window.location.hostname}:5173/invoice/${invoiceDetail.id}/view`, '_blank'); }}
+                                                    value={`https://staging.renoxpert.my/invoice/${invoiceDetail.id}/view`}
+                                                    onClick={() => { window.open(`https://staging.renoxpert.my/invoice/${invoiceDetail.id}/view`, '_blank'); }}
                                                     readOnly
                                                 />
                                                 <button className="btn btn-icon" id="clipboard_1_button">

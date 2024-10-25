@@ -147,7 +147,7 @@ function OrderDetail() {
                                         <td>
                                             <button 
                                                 className="btn btn-outline btn-sm btn-primary"
-                                                onClick={() => { window.open(`http://${window.location.hostname}:5173/preview/owner/order/overview/id/${orderDetail.id}`, '_blank'); }}
+                                                onClick={() => { window.open(`https://staging.renoxpert.my/preview/owner/order/overview/id/${orderDetail.id}`, '_blank'); }}
                                             >
                                                 View Order Overview
                                             </button>
@@ -176,14 +176,14 @@ function OrderDetail() {
                                                     id="clipboard_1_target"
                                                     placeholder="Copy to clipboard"
                                                     type="text"
-                                                    value={`http://${window.location.hostname}:5173/owner/order/overview/id/${orderDetail.id}`}
-                                                    onClick={() => { window.open(`http://${window.location.hostname}:5173/owner/order/overview/id/${orderDetail.id}`, '_blank'); }}
+                                                    value={`https://staging.renoxpert.my/owner/order/overview/id/${orderDetail.id}`}
+                                                    onClick={() => { window.open(`https://staging.renoxpert.my/owner/order/overview/id/${orderDetail.id}`, '_blank'); }}
                                                     readOnly
                                                 />
                                                 <button
                                                     className="btn btn-icon copy-link"
                                                     id="clipboard_1_button"
-                                                    data-clipboard-text={`http://${window.location.hostname}:5173/owner/order/overview/id/${orderDetail.id}`}
+                                                    data-clipboard-text={`https://staging.renoxpert.my/owner/order/overview/id/${orderDetail.id}`}
                                                 >
                                                     <i className="ki-outline ki-copy"></i>
                                                 </button>
