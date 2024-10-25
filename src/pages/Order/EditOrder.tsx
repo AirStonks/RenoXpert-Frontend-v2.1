@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchContact, fetchContacts, fetchProperties, fetchProperty, fetchQuotations, updateOrder } from '../../services/api';
-import { Contact, Order, Property, Quotation } from '../../types';
+import { fetchUser, fetchUsers, fetchProperties, fetchProperty, fetchQuotations, updateOrder } from '../../services/api';
+import { User, Order, Property, Quotation } from '../../types';
 import { KTDropdown } from '../../metronic/core';
 import { Package } from '../../types/index';
 import { Link } from 'react-router-dom';
@@ -16,14 +16,14 @@ function EditOrder() {
     const { id } = useParams<{ id: string }>();
     const orderId = id ? parseInt(id, 10) : null;
 
-    const [searchContactTerm, setSearchContactTerm] = useState('');
+    const [searchUserTerm, setSearchUserTerm] = useState('');
     const [searchPropertyTerm, setSearchPropertyTerm] = useState('');
     const [searchQuotationTerm, setSearchQuotationTerm] = useState('');
-    const [contacts, setContacts] = useState<Contact[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [properties, setProperties] = useState<Property[]>([]);
     const [quotations, setQuotations] = useState<Quotation[]>([]);
 
-    const inputContactRef = useRef(null);
+    const inputUserRef = useRef(null);
     const inputPropertyRef = useRef(null);
     const inputQuotationRef = useRef(null);
 
@@ -31,7 +31,7 @@ function EditOrder() {
     const { orderDetail, loading, error } = useFetchOrder(orderId);
 
     const [formData, setFormData] = useState({
-        contactId: '',
+        userId: '',
         propertyId: '',
         quotationId: '',
         block: '',
@@ -40,7 +40,7 @@ function EditOrder() {
         status: '',
     });
 
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
     const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
     const [selectedPackages, setSelectedPackages] = useState([]);
@@ -63,7 +63,7 @@ function EditOrder() {
         if (orderDetail) {
 
             setFormData({
-                contactId: orderDetail.contact_id || '',
+                userId: orderDetail.user_id || '',
                 propertyId: orderDetail.property_id || '',
                 quotationId: orderDetail.latest_quotation.quotation_id || '',
                 block: orderDetail.block || '',
@@ -73,7 +73,7 @@ function EditOrder() {
             });
 
             const tmpEditOrder = {
-                contactId: orderDetail.contact_id || '',
+                userId: orderDetail.user_id || '',
                 propertyId: orderDetail.property_id || '',
                 quotationId: orderDetail.latest_quotation.quotation_id || '',
                 block: orderDetail.block || '',
@@ -89,8 +89,8 @@ function EditOrder() {
             }
 
 
-            if (orderDetail.contact_id) {
-                handleSelectContactById(Number(orderDetail.contact_id));
+            if (orderDetail.user_id) {
+                handleSelectUserById(Number(orderDetail.user_id));
             }
 
             if (orderDetail.property_id) {
@@ -116,10 +116,10 @@ function EditOrder() {
         const quotationDropdown = KTDropdown.getInstance(quotationEl);
 
         contractDropdown.on('shown', async () => {
-            inputContactRef.current.focus();
+            inputUserRef.current.focus();
             try {
-                const data = await fetchContacts('', 6);
-                setContacts(data.data);
+                const data = await fetchUsers('', 'owner');
+                setUsers(data.data);
 
             } catch (error) {
                 console.error('Failed to fetch quotations:', error);
@@ -158,15 +158,15 @@ function EditOrder() {
         navigate('/orders/' + orderId);
     };
 
-    const handleSearchContact = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSearchUser = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const term = event.target.value;
-        setSearchContactTerm(term);
+        setSearchUserTerm(term);
 
         try {
-            const data = await fetchContacts(term, 6);
-            setContacts(data.data);
+            const data = await fetchUsers(term, 'owner');
+            setUsers(data.data);
         } catch (error) {
-            console.error('Error fetching contacts:', error);
+            console.error('Error fetching users:', error);
         }
     };
 
@@ -199,14 +199,14 @@ function EditOrder() {
         localStorage.setItem('edit_order_data', JSON.stringify(formData));
     };
 
-    const handleSelectContact = async (contact: Contact) => {
+    const handleSelectUser = async (user: User) => {
         setFormData((prev) => ({
             ...prev,
-            contactId: contact.id,
+            userId: user.id,
         }));
-        setSelectedContact(contact);
-        setSearchContactTerm('');
-        setContacts([]);
+        setSelectedUser(user);
+        setSearchUserTerm('');
+        setUsers([]);
     };
 
     const handleSelectProperty = async (property: Property) => {
@@ -238,18 +238,18 @@ function EditOrder() {
         }
     };
 
-    const handleSelectContactById = async (id: number) => {
+    const handleSelectUserById = async (id: number) => {
         try {
-            const data = await fetchContact(id); // Assuming you have a similar fetch function
+            const data = await fetchUser(id); // Assuming you have a similar fetch function
 
             setFormData((prev) => ({
                 ...prev,
-                contactyId: data.data.id,
+                userId: data.data.id,
             }));
 
-            setSelectedContact(data.data);
-            setSearchContactTerm('');
-            setContacts([]);
+            setSelectedUser(data.data);
+            setSearchUserTerm('');
+            setUsers([]);
 
         } catch (error) {
             console.error('Error fetching properties:', error);
@@ -308,7 +308,7 @@ function EditOrder() {
         try {
             const newOrder: Order = {
                 id: orderDetail.id,
-                contact_id: selectedContact.id,
+                user_id: selectedUser.id,
                 property_id: selectedProperty.id,
                 quotation_id: selectedQuotation.id,
                 block: formData.block,
@@ -355,14 +355,14 @@ function EditOrder() {
                     <div className="card-body">
                         <h2 className='text-xl mb-4 font-semibold text-gray-900'>Order</h2>
                         <div className="flex gap-8">
-                            {/* Contact */}
+                            {/* User */}
                             <div className="flex flex-col flex-1 gap-2">
                                 <span className="text-base font-semibold text-gray-900">
-                                    1. Select a Contact
+                                    1. Select an Owner
                                 </span>
                                 <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="contract_dropdown">
                                     <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
-                                        <span>Contact</span>
+                                        <span>Owner</span>
                                         <i className="ki-filled ki-down"></i>
                                     </button>
                                     <div className="dropdown-content w-full max-w-80">
@@ -370,35 +370,35 @@ function EditOrder() {
                                             <label className="input input-sm">
                                                 <i className="ki-filled ki-magnifier"></i>
                                                 <input
-                                                    ref={inputContactRef}
-                                                    placeholder="Search contact"
+                                                    ref={inputUserRef}
+                                                    placeholder="Search user"
                                                     type="text"
-                                                    value={searchContactTerm}
-                                                    onChange={handleSearchContact}
+                                                    value={searchUserTerm}
+                                                    onChange={handleSearchUser}
                                                 />
                                             </label>
                                         </div>
                                         <div className="menu menu-default flex flex-col w-full">
-                                            {contacts.map((contact, index) => (
-                                                <div className="menu-item" key={index} data-id={contact.id}>
+                                            {users.map((user, index) => (
+                                                <div className="menu-item" key={index} data-id={user.id}>
                                                     <button
                                                         className="menu-link"
-                                                        onClick={() => handleSelectContact(contact)}
+                                                        onClick={() => handleSelectUser(user)}
                                                     >
-                                                        <span className="menu-title">{contact.name}</span>
+                                                        <span className="menu-title">{user.name}</span>
                                                     </button>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
-                                {selectedContact && (
+                                {selectedUser && (
                                     <div className="card mb-4">
                                         <div className="card-body">
                                             <div className="flex flex-col gap-1 text-gray-900">
-                                                <span className='text-sm font-semibold'>{selectedContact.name}</span>
-                                                <span className='text-sm font-normal text-slate-400'>{selectedContact.email}</span>
-                                                <span className='text-sm font-normal'>{selectedContact.phone_no}</span>
+                                                <span className='text-sm font-semibold'>{selectedUser.name}</span>
+                                                <span className='text-sm font-normal text-slate-400'>{selectedUser.email}</span>
+                                                <span className='text-sm font-normal'>{selectedUser.phone_no}</span>
                                             </div>
                                         </div>
                                     </div>

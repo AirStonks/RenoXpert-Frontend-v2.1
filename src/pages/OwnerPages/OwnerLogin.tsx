@@ -3,8 +3,14 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import KTComponent from '../../metronic/core';
 import OTPVerifyPage from '../OTPVerifyPage';
+import { fetchExistsUser } from '../../services/ownerApi';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+const API_URL = 'http://' + window.location.hostname + ':8000/api/';
 
 const OwnerLogin: React.FC = () => {
+    const navigate = useNavigate();
 
     useEffect(() => {
         KTComponent.init();
@@ -15,6 +21,8 @@ const OwnerLogin: React.FC = () => {
     const [countryCode, setCountryCode] = useState<string>('+60');
     const [showOtpForm, setShowOtpForm] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { value } = e.target;
@@ -24,7 +32,7 @@ const OwnerLogin: React.FC = () => {
 
     const isValidPhoneNumber = (number: string) => {
         // Regex to match a 10-digit phone number starting with 0
-        const phoneRegex = /^\d{9,14}$/;
+        const phoneRegex = /^\d{5,14}$/;
         return phoneRegex.test(number);
     };
 
@@ -43,8 +51,60 @@ const OwnerLogin: React.FC = () => {
         setShowOtpForm(true);
     };
 
-    const handleButtonClick = () => {
-        handleRequestOtp();
+    const handleToOtpVerify = async () => {
+        
+        if (!mobile) {
+            setError('Please enter your mobile number.');
+            return;
+        }
+
+        try {
+            const response = await fetchExistsUser(mobile);
+
+            if (response.success) {
+                handleRequestOtp();
+            } else {
+                setError('Phone number does not exists.');
+            }
+        } catch (error) {
+            setError('Phone number does not exists.');
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        console.log('yes');
+        
+        e.preventDefault(); // Prevent default form submission
+
+        // Check for missing inputs
+        if (otp.some(digit => digit === '')) {
+            setError("Please fill in all the digits.");
+            return; // Stop submission if there are missing inputs
+        } else {
+            setError(null); // Clear any previous error messages
+        }
+
+        const code = otp.join(''); // Combine the array into a string
+
+        try {
+            const requestBody = {
+                mobile: mobile,
+                otp_code: code
+            };
+
+            const response = await axios.post(`${API_URL}sms-otp/verify/login`, requestBody); // Add your API endpoint here
+
+            console.log(response);
+
+            if (response.data.status === 'verified') {
+                localStorage.setItem('o_token', response.data.o_token);
+                navigate(`/owner/home`);
+            } else {
+                console.log('Invalid');
+            }
+        } catch (error) {
+            console.error('Error fetching order details:', error);
+        }
     };
 
     return (
@@ -121,7 +181,8 @@ const OwnerLogin: React.FC = () => {
                             <button
                                 className="btn btn-primary flex justify-center grow"
                                 type="button"
-                                onClick={handleButtonClick}>
+                                onClick={handleToOtpVerify}
+                            >
                                 Next
                             </button>
 
@@ -131,7 +192,13 @@ const OwnerLogin: React.FC = () => {
                 </>
 
             ) : (
-                <OTPVerifyPage mobile={mobile} countryCode={countryCode} />
+                <OTPVerifyPage
+                    mobile={mobile}
+                    countryCode={countryCode}
+                    handleSubmit={handleSubmit}
+                    otp={otp}
+                    setOtp={setOtp} // Pass down the setter function
+                />
             )}
         </>
     );

@@ -2,15 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { Slide, toast, ToastContainer } from "react-toastify";
 
 const API_URL = 'http://' + window.location.hostname + ':8000/api/';
 
-const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string }> = ({ mobile, countryCode }) => {
-    const navigate = useNavigate();
+const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmit: (e: React.FormEvent) => void, otp: string[], setOtp: React.Dispatch<React.SetStateAction<string[]>> }> = ({ 
+    mobile, 
+    countryCode, 
+    handleSubmit, 
+    otp, 
+    setOtp 
+}) => {
 
-    const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [error, setError] = useState<string | null>(null);
     const [countdown, setCountdown] = useState(0);
     const [canResend, setCanResend] = useState(true);
@@ -76,40 +79,6 @@ const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string }> = ({ mobi
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault(); // Prevent default form submission
-
-        // Check for missing inputs
-        if (otp.some(digit => digit === '')) {
-            setError("Please fill in all the digits.");
-            return; // Stop submission if there are missing inputs
-        } else {
-            setError(null); // Clear any previous error messages
-        }
-
-        const code = otp.join(''); // Combine the array into a string
-
-        try {
-            const requestBody = {
-                mobile: mobile,
-                otp_code: code
-            };
-
-            const response = await axios.post(`${API_URL}sms-otp/verify/login`, requestBody); // Add your API endpoint here
-
-            console.log(response);
-
-            if (response.data.status === 'verified') {
-                localStorage.setItem('o_token', response.data.o_token);
-                navigate(`/owner/home`);
-            } else {
-                console.log('Invalid');
-            }
-        } catch (error) {
-            console.error('Error fetching order details:', error);
-        }
-    };
-
     const handleResend = async () => {
         try {
             const response = await axios.post(`${API_URL}sms-otp/request/${mobile}`);
@@ -152,7 +121,7 @@ const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string }> = ({ mobi
             </div>
             <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
                 <div className="card max-w-[380px] w-full">
-                    <form className="card-body flex flex-col gap-5 p-10" onSubmit={handleSubmit}>
+                    <div className="card-body flex flex-col gap-5 p-10">
                         <img src='/public/media/illustrations/34.svg' className="dark:hidden h-20 mb-2" alt="" />
                         <img src='/media/illustrations/34-dark.svg' className="light:hidden h-20 mb-2" alt="" />
 
@@ -199,8 +168,14 @@ const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string }> = ({ mobi
                             )}
                         </div>
 
-                        <button className="btn btn-primary flex justify-center grow" type="submit">Continue</button>
-                    </form>
+                        <button
+                            className="btn btn-primary flex justify-center grow"
+                            type="button"
+                            onClick={handleSubmit}
+                        >
+                            Continue
+                        </button>
+                    </div>
                 </div>
             </div>
 

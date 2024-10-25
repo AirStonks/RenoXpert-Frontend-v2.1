@@ -125,7 +125,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                             Name:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.contact.name}
+                                            {orderDetail.user.name}
                                         </td>
                                     </tr>
                                     <tr>
@@ -133,7 +133,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                             Email:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.contact.email}
+                                            {orderDetail.user.email}
                                         </td>
                                     </tr>
                                     <tr>
@@ -141,7 +141,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                             Phone No.:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.contact.phone_no}
+                                            {orderDetail.user.phone_no}
                                         </td>
                                     </tr>
                                 </tbody>

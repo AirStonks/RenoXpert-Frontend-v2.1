@@ -1,13 +1,15 @@
 
+import { useNavigate } from "react-router-dom";
 import useFetchRegistrationForm from "../../hook/useFetchRegistrationForm";
+import { KTModal } from "../../metronic/core";
 import Loading from "../Loading";
 
-// 
 interface OwnerRegistrationFormModalProps {
     formId: number | null;
 }
 
 function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps) {
+    const navigate = useNavigate();
     const { formDetail, loading, error } = useFetchRegistrationForm(formId);
 
     // if (!formId) return null;
@@ -23,130 +25,172 @@ function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps)
     } else {
         console.log(formDetail);
 
+        const handleEditForm = () => {
+            const element = document.querySelector('#view_owner_reg_form_modal') as HTMLElement;
+            const modal = KTModal.getInstance(element);
+
+            modal.hide();
+
+            navigate(`/registration-forms/edit/${formId}`)
+        }
+
         content = (
-            <div className="flex flex-wrap gap-6">
-                <div className="card flex-grow flex-1">
-                    <div className="card-header">
-                        <h3 className="card-title">Owner Information</h3>
+            <>
+                {formDetail.status === 'pending' && (
+                    <div className="flex justify-end mb-2">
+                        <button
+                            className="btn btn-sm btn-info"
+                            onClick={handleEditForm}
+                        >
+                            Edit Form
+                        </button>
                     </div>
-                    <div className="card-body flex flex-col gap-6 text-gray-900">
-                        <div className="flex flex-col">
-                            <span className="font-normal">Salutations:</span>
-                            <span className="font-semibold">{formDetail.salutations}</span>
+                )}
+                <div className="flex flex-wrap gap-6">
+                    <div className="card flex-grow flex-1">
+                        <div className="card-header">
+                            <h3 className="card-title">Owner Information</h3>
                         </div>
+                        <div className="card-body flex flex-col gap-6 text-gray-900">
+                            <div className="flex flex-col">
+                                <span className="font-normal">Salutations:</span>
+                                <span className="font-semibold">{formDetail.user.salutations}</span>
+                            </div>
 
-                        <div className="flex flex-col">
-                            <span className="font-normal">Name:</span>
-                            <span className="font-semibold">{formDetail.name_first} {formDetail.name_last}</span>
+                            <div className="flex flex-col">
+                                <span className="font-normal">Name:</span>
+                                <span className="font-semibold">{formDetail.user.name_first} {formDetail.user.name_last}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">Preferred Name:</span>
+                                <span className="font-semibold">{formDetail.user.name_preferred}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">Email:</span>
+                                <span className="font-semibold">{formDetail.user.email}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">Phone Number:</span>
+                                <span className="font-semibold">{formDetail.user.country_code}{formDetail.user.phone_no}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">Current residence address:</span>
+                                <span className="font-semibold">{formDetail.address.address_1}, {formDetail.address.address_2}, {formDetail.address.postcode}, {formDetail.address.city}, {formDetail.address.state}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">IC / ID number:</span>
+                                <span className="font-semibold">{formDetail.user.ic}</span>
+                            </div>
                         </div>
+                    </div>
 
-                        <div className="flex flex-col">
-                            <span className="font-normal">Preferred Name:</span>
-                            <span className="font-semibold">{formDetail.name_preferred}</span>
+                    <div className="card flex-grow flex-1">
+                        <div className="card-header">
+                            <h3 className="card-title">Property Information</h3>
                         </div>
+                        <div className="card-body flex flex-col gap-6 text-gray-900">
+                            <div className="flex flex-col">
+                                {formDetail.other_property &&
+                                    <div className="badge badge-dark mb-2">
+                                        <i className="ki-solid ki-information-3 pr-2 text-base text-warning"></i>
+                                        <span className="text-sm">This Property may not in the database</span>
+                                    </div>
+                                }
+                                <span className="font-normal">Property to be renovated:</span>
+                                <span className="font-semibold">{formDetail.property ? formDetail.property.property_name : "(Other) " + formDetail.other_property.property_name}</span>
+                            </div>
 
-                        <div className="flex flex-col">
-                            <span className="font-normal">Email:</span>
-                            <span className="font-semibold">{formDetail.email}</span>
+                            <div className="flex flex-col">
+                                <span className="font-normal">Unit:</span>
+                                <span className="font-semibold">
+                                    {formDetail.property ?
+                                        `${formDetail.property.block}-${formDetail.property.level}-${formDetail.property.unit}` :
+                                        `${formDetail.other_property.block}-${formDetail.other_property.level}-${formDetail.other_property.unit}`
+                                    }
+                                </span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">Layout Type:</span>
+                                <span className="font-semibold">
+                                    {formDetail.property ?
+                                        `${formDetail.property.layout_type}` :
+                                        `${formDetail.other_property.layout_type}`
+                                    }
+                                </span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">Sqft:</span>
+                                <span className="font-semibold">
+                                    {formDetail.property ?
+                                        `${formDetail.property.sqft}` :
+                                        `${formDetail.other_property.sqft}`
+                                    }
+                                </span>
+                            </div>
                         </div>
+                    </div>
 
-                        <div className="flex flex-col">
-                            <span className="font-normal">Phone Number:</span>
-                            <span className="font-semibold">{formDetail.country_code}{formDetail.phone_no}</span>
+                    <div className="card flex-grow flex-1">
+                        <div className="card-header">
+                            <h3 className="card-title">Property Information (Detail)</h3>
                         </div>
+                        <div className="card-body flex flex-col gap-6 text-gray-900">
+                            <div className="flex flex-col">
+                                <span className="font-normal">What's your original number of rooms?</span>
+                                <span className="font-semibold">{formDetail.questions.quest_1}</span>
+                            </div>
 
-                        <div className="flex flex-col">
-                            <span className="font-normal">Current residence address:</span>
-                            <span className="font-semibold">{formDetail.address.address_1}, {formDetail.address.address_2}, {formDetail.address.postcode}, {formDetail.address.city}, {formDetail.address.state}</span>
-                        </div>
+                            <div className="flex flex-col">
+                                <span className="font-normal">What's the number of bathroom?</span>
+                                <span className="font-semibold">{formDetail.questions.quest_2}</span>
+                            </div>
 
-                        <div className="flex flex-col">
-                            <span className="font-normal">IC / ID number:</span>
-                            <span className="font-semibold">{formDetail.ic}</span>
+                            <div className="flex flex-col">
+                                <span className="font-normal">Already Vacant Possessions (VP)?</span>
+                                <span className="font-semibold">{formDetail.questions.quest_3}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">Already collect key?</span>
+                                <span className="font-semibold">{formDetail.questions.quest_4}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">Already done defect inspection?</span>
+                                <span className="font-semibold">{formDetail.questions.quest_5}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">Already submit defect submission to MO?</span>
+                                <span className="font-semibold">{formDetail.questions.quest_6}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">MO has completed that defect rectification?</span>
+                                <span className="font-semibold">{formDetail.questions.quest_7}</span>
+                            </div>
+
+                            <div className="flex flex-col">
+                                <span className="font-normal">Do you want to add partition room to your unit?</span>
+                                <span className="font-semibold">{formDetail.questions.quest_8}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div className="card flex-grow flex-1">
-                    <div className="card-header">
-                        <h3 className="card-title">Property Information</h3>
-                    </div>
-                    <div className="card-body flex flex-col gap-6 text-gray-900">
-                        <div className="flex flex-col">
-                            <span className="font-normal">Property to be renovated:</span>
-                            <span className="font-semibold">{formDetail.property.property_name}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="font-normal">Unit:</span>
-                            <span className="font-semibold">{formDetail.property.block}-{formDetail.property.level}-{formDetail.property.unit}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="font-normal">Layout Type:</span>
-                            <span className="font-semibold">{formDetail.property.layout_type}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="font-normal">Sqft:</span>
-                            <span className="font-semibold">{formDetail.property.sqft}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="card flex-grow flex-1">
-                    <div className="card-header">
-                        <h3 className="card-title">Property Information (Detail)</h3>
-                    </div>
-                    <div className="card-body flex flex-col gap-6 text-gray-900">
-                        <div className="flex flex-col">
-                            <span className="font-normal">What's your original number of rooms?</span>
-                            <span className="font-semibold">{formDetail.questions.quest_1}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="font-normal">What's the number of bathroom?</span>
-                            <span className="font-semibold">{formDetail.questions.quest_2}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="font-normal">Already Vacant Possessions (VP)?</span>
-                            <span className="font-semibold">{formDetail.questions.quest_3}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="font-normal">Already collect key?</span>
-                            <span className="font-semibold">{formDetail.questions.quest_4}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="font-normal">Already done defect inspection?</span>
-                            <span className="font-semibold">{formDetail.questions.quest_5}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="font-normal">Already submit defect submission to MO?</span>
-                            <span className="font-semibold">{formDetail.questions.quest_6}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="font-normal">MO has completed that defect rectification?</span>
-                            <span className="font-semibold">{formDetail.questions.quest_7}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="font-normal">Do you want to add partition room to your unit?</span>
-                            <span className="font-semibold">{formDetail.questions.quest_8}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </>
         );
     }
 
     return (
         <div className="modal p-14" data-modal="true" id="view_owner_reg_form_modal">
-            <div className="modal-content modal-center-y max-w-[1024px]">
+            <div className="modal-content modal-overlay">
                 <div className="modal-header py-4 px-5">
                     <span className="text-lg text-gray-900 font-semibold">Registration Form Detail</span>
                     <button
@@ -156,7 +200,7 @@ function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps)
                         <i className="ki-filled ki-cross"></i>
                     </button>
                 </div>
-                <div className="modal-body max-h-[600px] scrollable overflow-y-auto">
+                <div className="modal-body max-h-full scrollable overflow-y-auto">
                     {content}
                 </div>
             </div>

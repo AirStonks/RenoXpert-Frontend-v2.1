@@ -27,7 +27,7 @@ function EditNewOrderQuotation() {
 
     const handleBackClick = () => {
         localStorage.removeItem('selected_quotation_packages');
-        navigate('/orders/create');
+        navigate(-1);
     };
 
     const handleIncludeToggle = (id: number) => {

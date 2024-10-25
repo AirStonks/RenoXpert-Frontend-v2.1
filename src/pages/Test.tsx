@@ -1,40 +1,37 @@
-import ActivityCenter from "../components/ActivityCenter";
-import { makePaymentIntent, testSms } from "../services/api";
+import { useState } from "react";
+// import ActivityCenter from "../components/ActivityCenter";
+// import { makePaymentIntent, testSms } from "../services/api";
+// import axios from "axios";
+import { submitRegistrationForm } from "../services/ownerApi";
 
 function Test() {
 
-    const handleGetToken = async () => {
-        const res = await makePaymentIntent();
+    const [file, setFile] = useState(null);
 
-        console.log(res);
-    }
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
+    };
 
-    const handleSms = async () => {
-        const res = await testSms();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('file', file);
 
-        console.log(res);
-    }
+        try {
+            const response = await submitRegistrationForm(formData);
+            console.log(response.data);
+        } catch (error) {
+            console.error('Error uploading file:', error);
+        }
+    };
 
     return (
-        <>
-            <button 
-                className="btn btn-primary"
-                onClick={handleGetToken}
-            >
-                Test Payex Get Token
-            </button>
-
-            <button 
-                className="btn btn-info"
-                onClick={handleSms}    
-            >
-                Test SMS
-            </button>
-
-            
-            <ActivityCenter />
-        </>
+        <form onSubmit={handleSubmit}>
+            <input type="file" onChange={handleFileChange} required />
+            <button type="submit">Upload</button>
+        </form>
     );
+
 }
 
 export default Test;

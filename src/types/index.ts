@@ -9,8 +9,12 @@ export interface FormValues {
 }
 
 export interface User {
-    id?: number;
+    id?: string;
     name?: string;
+    name_first?: string;
+    name_last?: string;
+    name_preferred?: string;
+    salutations?: string;
     email?: string;
     phone_no?: string;
     type?: string;
@@ -68,18 +72,6 @@ export interface Quotation {
     metadata?: JSON;
 }
 
-export interface Contact {
-    id?: string,
-    name: string,
-    email?: string,
-    phone_no?: string,
-    alt_phone_no?: string,
-    race?: string,
-    gender?: string,
-    nationality?: string,
-    description?: string,
-}
-
 export interface Property {
     id?: string,
     name: string,
@@ -94,8 +86,8 @@ export interface Property {
 export interface Order {
     id?: string,
     order_no?: string,
-    contact_id?: string,
-    contact?: Contact,
+    user_id?: string,
+    user?: User,
     property_id?: string,
     property?: Property,
     sale?: Sale,
@@ -187,6 +179,7 @@ export interface Payment {
 }
 
 export interface OwnerRegistrationForm {
+    id?: string;
     salutations?: string;
     name_first?: string;
     name_last?: string;
@@ -194,6 +187,17 @@ export interface OwnerRegistrationForm {
     email?: string;
     country_code?: string;
     phone_no?: string;
+    user?: {
+        id?: string;
+        salutations?: string;
+        name_first?: string;
+        name_last?: string;
+        name_preferred?: string;
+        email?: string;
+        country_code?: string;
+        phone_no?: string;
+        ic?: string;
+    };
     address?: {
         address_1?: string;
         address_2?: string;
@@ -208,6 +212,7 @@ export interface OwnerRegistrationForm {
     postcode?: string;
     ic?: string;
     property?: {
+        id?: string;
         property_name?: string;
         block?: string;
         level?: string;
@@ -216,11 +221,21 @@ export interface OwnerRegistrationForm {
         sqft?: string;
     }
     property_name?: string;
+    other_property_name?: string;
+    other_property?: {
+        property_name?: string;
+        block?: string;
+        level?: string;
+        unit?: string;
+        layout_type?: string;
+        sqft?: string;
+    };
     block?: string;
     level?: string;
     unit?: string;
     layout_type?: string;
     sqft?: string;
+    metadata?: string;
     questions?: {
         quest_1?: string;
         quest_2?: string;
@@ -231,12 +246,57 @@ export interface OwnerRegistrationForm {
         quest_7?: string;
         quest_8?: string;
     }
-    quest_1?: string;
-    quest_2?: string;
-    quest_3?: string;
-    quest_4?: string;
-    quest_5?: string;
-    quest_6?: string;
-    quest_7?: string;
-    quest_8?: string;
+    status?: string;
+    furnishing?: {
+        foyer_entrance?: {
+            grille_door?: string;
+            digital_lock?: string;
+            shoe_cabinet?: string;
+            lights?: string;
+            other?: string;
+        },
+        kitchen?: {
+            kitchen_cabinet?: string;
+            kitchen_island?: string;
+            sink_tap?: string;
+            hood_hob?: string;
+            microwave?: string;
+            oven?: string;
+            water_dispenser?: string;
+            fridge?: string;
+            lights?: string;
+            other?: string;
+        },
+        yard?: {
+            washer?: string;
+            dryer?: string;
+            lights?: string;
+            other?: string;
+        },
+        dining?: {
+            dining_table_chairs?: string;
+            lights?: string;
+            fan?: string;
+            other?: string;
+        }
+        living?: {
+            sofa?: string;
+            coffee_table?: string;
+            tv?: string;
+            tv_cabinet?: string;
+            fan?: string;
+            lights?: string;
+            ac?: string;
+            other?: string;
+        }
+    }
+    attachments?: {
+        [key: string]: {
+            id?: number;
+            original_name?: string;
+            file_url?: string;
+        }
+    }
+    created_at?: string,
+    updated_at?: string,
 }

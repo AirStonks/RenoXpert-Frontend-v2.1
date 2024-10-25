@@ -1,0 +1,1936 @@
+import { useEffect, useState } from "react";
+import { fetchProperties, submitRegistrationForm, userDetail } from "../../services/ownerApi";
+import { OwnerRegistrationForm, Property, User } from "../../types";
+import Loading from "../../components/Loading";
+import { useNavigate } from "react-router-dom";
+import KTComponent from "../../metronic/core";
+import OTPVerifyPage from "../OTPVerifyPage";
+import Resizer from 'react-image-file-resizer';
+import { Slide, toast } from "react-toastify";
+
+interface FormErrors {
+    [key: string]: string | undefined; // Use string or undefined for error messages
+}
+
+interface UploadedFile {
+    id: number;
+    file: File;
+    previewUrl: string;
+}
+
+const salutationOptions = [
+    { value: 'mr', label: 'Mr' },
+    { value: 'ms', label: 'Ms' },
+    { value: 'mrs', label: 'Mrs' },
+    { value: 'doctor', label: 'Doctor' },
+    { value: 'datuk', label: 'Datuk' },
+    { value: 'dato', label: 'Dato' },
+    { value: 'datin', label: 'Datin' },
+    { value: 'datuk_seri', label: 'Datuk Seri' },
+    { value: 'dato_seri', label: 'Dato Seri' },
+    { value: 'datin_seri', label: 'Datin Seri' },
+];
+
+const q1Options = [
+    { value: '1', label: '1' },
+    { value: '2', label: '2' },
+    { value: '3', label: '3' },
+    { value: '4', label: '4' },
+    { value: '5', label: '5' },
+];
+
+const q2Options = [
+    { value: '1', label: '1' },
+    { value: '2', label: '2' },
+    { value: '3', label: '3' },
+];
+
+const q3Options = [
+    { value: 'done', label: 'Done' },
+    { value: 'not_yet', label: 'Not Yet' },
+];
+
+const q4Options = [
+    { value: 'done', label: 'Done' },
+    { value: 'not_yet', label: 'Not Yet' },
+];
+
+const q5Options = [
+    { value: 'done', label: 'Done' },
+    { value: 'not_yet', label: 'Not Yet' },
+];
+
+const q6Options = [
+    { value: 'done', label: 'Done' },
+    { value: 'not_yet', label: 'Not Yet' },
+    { value: 'in_progress', label: 'In Progress' },
+];
+
+const q7Options = [
+    { value: 'done', label: 'Done' },
+    { value: 'not_yet', label: 'Not Yet' },
+    { value: 'no_defect', label: 'No Defect' },
+];
+
+const q8Options = [
+    { value: 'yes', label: 'Yes' },
+    { value: 'no', label: 'No' },
+];
+
+const acceptedFileTypes = [
+    'application/pdf', // pdf
+    'application/msword', // doc
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+    'application/vnd.ms-excel', // xls
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+    'text/csv', // csv
+    'text/plain', // txt
+    'application/rtf', // rtf
+    'text/html', // html
+    'application/zip', // zip
+    'audio/mpeg', // mp3
+    'audio/x-ms-wma', // wma
+    'video/mpeg', // mpg
+    'video/x-flv', // flv
+    'video/x-msvideo', // avi
+    'image/jpeg', // jpg
+    'image/jpeg', // jpeg
+    'image/png', // png
+    'image/gif' // gif
+];
+
+// Max file size in bytes (5MB)
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+const initialFormData: OwnerRegistrationForm = {
+    salutations: 'mr',
+    name_first: '',
+    name_last: '',
+    name_preferred: '',
+    email: '',
+    country_code: '+60',
+    phone_no: '',
+    address_1: '',
+    address_2: '',
+    city: '',
+    state: '',
+    postcode: '',
+    ic: '',
+    property_name: '',
+    other_property_name: '',
+    block: '',
+    level: '',
+    unit: '',
+    layout_type: '',
+    sqft: '',
+    questions: {
+        quest_1: '',
+        quest_2: '',
+        quest_3: '',
+        quest_4: '',
+        quest_5: '',
+        quest_6: '',
+        quest_7: '',
+        quest_8: '',
+    },
+    furnishing: {
+        foyer_entrance: {
+            grille_door: 'furnished',
+            digital_lock: 'furnished',
+            shoe_cabinet: 'furnished',
+            lights: 'furnished',
+            other: '',
+        },
+        kitchen: {
+            kitchen_cabinet: 'furnished',
+            kitchen_island: 'furnished',
+            sink_tap: 'furnished',
+            hood_hob: 'furnished',
+            microwave: 'furnished',
+            oven: 'furnished',
+            water_dispenser: 'furnished',
+            fridge: 'furnished',
+            lights: 'furnished',
+            other: '',
+        },
+        yard: {
+            washer: 'furnished',
+            dryer: 'furnished',
+            lights: 'furnished',
+            other: '',
+        },
+        dining: {
+            dining_table_chairs: 'furnished',
+            lights: 'furnished',
+            fan: 'furnished',
+            other: '',
+        },
+        living: {
+            sofa: 'furnished',
+            coffee_table: 'furnished',
+            tv: 'furnished',
+            tv_cabinet: 'furnished',
+            fan: 'furnished',
+            lights: 'furnished',
+            ac: 'furnished',
+            other: '',
+        },
+    }
+};
+
+function OwnerRenoRegistrationForm() {
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState<OwnerRegistrationForm>(initialFormData);
+    const [properties, setProperties] = useState<Property[] | null>(null);
+    const [files, setFiles] = useState<UploadedFile[]>([]);
+    const [owner, setOwner] = useState<User | null>(null);
+
+    const [attachmentErr, setAttanhmentErr] = useState(null);
+
+    const token = localStorage.getItem('o_token');
+
+    const [loading, setLoading] = useState<boolean>(true); // Loading state
+    const [errors, setErrors] = useState<FormErrors>({});
+    const [readyToSubmit, setReadyToSubmit] = useState<boolean>(false);
+    const [validateOtp, setValidateOtp] = useState<boolean>(false);
+
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+
+    useEffect(() => {
+        KTComponent.init();
+        getProperties();
+
+        if (token) {
+            console.log(token);
+            loadUser();
+        }
+    }, []);
+
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
+
+    const loadUser = async () => {
+        try {
+            const response: User = await userDetail();
+            setOwner(response);
+
+            setFormData((prevData) => ({
+                ...prevData,
+                name_first: response.name_first,
+                name_last: response.name_last,
+                name_preferred: response.name_preferred,
+                salutations: response.salutations,
+                email: response.email,
+                phone_no: response.phone_no,
+            }));
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getProperties = async () => {
+        try {
+            const response = await fetchProperties();
+
+            if (response?.success) {
+                setProperties(response.data);
+            } else {
+                console.log(response?.message);
+            }
+
+        } catch (error) {
+            console.log(error);
+
+        } finally {
+            setLoading(false); // Set loading to false after fetching
+        }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+
+        // Check if the name starts with 'questions'
+        if (name.startsWith('questions.')) {
+            const property = name.split('.')[1]; // Get the specific question property
+
+            // Update the questions state
+            setFormData((prevData) => ({
+                ...prevData,
+                questions: {
+                    ...prevData.questions,
+                    [property]: value,
+                },
+            }));
+        } else if (name.startsWith('furnishing.')) {
+            const [furnish, category, property] = name.split('.');
+
+            // Update the furnishing state
+            setFormData((prevData) => ({
+                ...prevData,
+                furnishing: {
+                    ...prevData.furnishing,
+                    [category]: {
+                        ...prevData.furnishing[category],
+                        [property]: value,
+                    },
+                },
+            }));
+        } else {
+            // Handle other input and select changes
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }));
+        }
+
+        // Clear errors for the updated field
+        setErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: '',
+        }));
+
+        // Specific logic for 'property_name'
+        if (name === 'property_name' && value !== 'other') {
+            setFormData((prevData) => ({
+                ...prevData,
+                other_property_name: '',
+            }));
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                other_property_name: '',
+            }));
+        }
+    };
+
+    // Check if the file type is accepted
+    const isAcceptedFileType = (type: string) => acceptedFileTypes.includes(type);
+
+    // Handle file uploads
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+
+        setAttanhmentErr(null);
+
+        if (event.target.files) {
+            // Check if the total number of files exceeds 5
+            if (files.length + event.target.files.length > 5) {
+                setAttanhmentErr('You can upload a maximum of 5 files.');
+                notify('error', 'You can upload a maximum of 5 files.');
+                return;
+            }
+
+            const newFiles: UploadedFile[] = [];
+
+            for (let i = 0; i < event.target.files.length; i++) {
+                const file = event.target.files[i];
+
+                // Validate file type
+                if (!isAcceptedFileType(file.type)) {
+                    setAttanhmentErr(`File type not accepted: ${file.name}`);
+                    notify('error', `File type not accepted: ${file.name}`);
+                    continue; // Skip this file
+                }
+
+                // Validate file size
+                if (file.size > MAX_FILE_SIZE) {
+                    setAttanhmentErr(`File size exceeds 5MB: ${file.name}`);
+                    notify('error', `File size exceeds 5MB: ${file.name}`);
+                    continue; // Skip this file
+                }
+
+                let finalFile = file; // Default to the original file
+
+                // Compress the file if it is an image
+                if (isImage(file.type)) {
+                    finalFile = await resizeFile(file);
+                }
+
+                newFiles.push({
+                    id: Date.now() + i,
+                    file: finalFile,
+                    previewUrl: URL.createObjectURL(finalFile),
+                });
+            }
+
+            setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+        }
+
+        const fileInput = document.querySelector('input[name="attachments"]') as HTMLInputElement;
+
+        if (fileInput) {
+            fileInput.value = ''; // Clear the file input
+        }
+    };
+
+    // Compress and resize image
+    const resizeFile = (file: File) => new Promise<File>((resolve) => {
+        Resizer.imageFileResizer(
+            file,
+            800, // Max width
+            800, // Max height
+            'JPEG', // Format
+            70, // Quality
+            0, // Rotation
+            (uri: string) => {
+                // Convert data URL to Blob and resolve
+                fetch(uri)
+                    .then((res) => res.blob())
+                    .then((blob) => {
+                        const newFile = new File([blob], file.name, { type: blob.type });
+                        resolve(newFile);
+                    });
+            },
+            'base64'
+        );
+    });
+
+    // Format file size into KB or MB
+    const formatFileSize = (size: number) => {
+        const KB = 1024;
+        const MB = KB * 1024;
+        if (size >= MB) {
+            return `${(size / MB).toFixed(2)} MB`;
+        }
+        return `${(size / KB).toFixed(2)} KB`;
+    };
+
+    // Handle file deletion
+    const handleDelete = (id: number) => {
+        setFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
+        setAttanhmentErr(null);
+    };
+
+    const handleDeleteAll = () => {
+        setFiles([]); // Clear the files array
+        setAttanhmentErr(null); // Reset any attachment error
+    };
+
+    // Check if the file is an image
+    const isImage = (fileType: string) => fileType.startsWith('image/');
+
+    const validate = (): FormErrors => {
+        const newErrors: FormErrors = {};
+        if (!formData.salutations) newErrors.salutations = "Please select an option";
+        if (!formData.name_first) newErrors.name_first = "First Name is required";
+        if (!formData.name_last) newErrors.name_last = "Last Name is required";
+        if (!formData.name_preferred) newErrors.name_preferred = "Preferred Name is required";
+        if (!formData.email) newErrors.email = "Email is required";
+        if (!formData.phone_no) newErrors.phone_no = "Phone Number is required";
+        if (!formData.address_1) newErrors.address_1 = "Address Line 1 is required";
+        if (!formData.city) newErrors.city = "City is required";
+        if (!formData.state) newErrors.state = "State is required";
+        if (!formData.postcode) newErrors.postcode = "Postal / Zip Code is required";
+        if (!formData.ic) newErrors.ic = "IC/ID number is required";
+        if (!formData.property_name) newErrors.property_name = "Please select an option";
+        if (!formData.block) newErrors.block = "Block is required";
+        if (!formData.level) newErrors.level = "Level is required";
+        if (!formData.unit) newErrors.unit = "Unit is required";
+        if (!formData.layout_type) newErrors.layout_type = "Layout Type is required";
+        if (!formData.sqft) newErrors.sqft = "Sqft is required";
+        if (!formData.questions.quest_1) newErrors.quest_1 = "Please select an option";
+        if (!formData.questions.quest_2) newErrors.quest_2 = "Please select an option";
+        if (!formData.questions.quest_3) newErrors.quest_3 = "Please select an option";
+        if (!formData.questions.quest_4) newErrors.quest_4 = "Please select an option";
+        if (!formData.questions.quest_5) newErrors.quest_5 = "Please select an option";
+        if (!formData.questions.quest_6) newErrors.quest_6 = "Please select an option";
+        if (!formData.questions.quest_7) newErrors.quest_7 = "Please select an option";
+        if (!formData.questions.quest_8) newErrors.quest_8 = "Please select an option";
+
+        if (formData.property_name === 'other') {
+            if (!formData.other_property_name) newErrors.other_property_name = "Please fill the the other property name";
+        }
+
+        return newErrors;
+    };
+
+    const handleOtherPropertyChange = (e) => {
+        setFormData((prevData) => ({ ...prevData, other_property_name: e.target.value }));
+    };
+
+    const handleResetForm = () => {
+        setFormData(initialFormData);
+        setErrors({});
+        handleDeleteAll();
+
+        // Reset all select elements to their initial values
+        const selectElements = document.querySelectorAll('select');
+        selectElements.forEach((select: HTMLSelectElement) => {
+            select.value = initialFormData[select.name as keyof OwnerRegistrationForm] || '';
+        });
+
+        const fileInput = document.querySelector('input[name="attachments"]') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = ''; // Clear the file input
+        }
+
+        if (owner) {
+            setFormData((prevData) => ({
+                ...prevData,
+                name_first: owner.name_first,
+                name_last: owner.name_last,
+                name_preferred: owner.name_preferred,
+                salutations: owner.salutations,
+                email: owner.email,
+                phone_no: owner.phone_no,
+            }));
+        }
+    };
+
+    const handleReadyToSubmit = () => {
+        const validationErrors = validate();
+
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+            setReadyToSubmit(true);
+        }
+    }
+
+    const handleConfirmForm = async () => {
+        setValidateOtp(true);
+    }
+
+    const handleSubmit = async () => {
+        
+        const validationErrors = validate();
+        const formDataToSend = new FormData();
+
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            console.log('chk1');
+            return;
+        }
+
+        // Check for missing inputs
+        if (!owner) {
+            if (otp.some(digit => digit === '')) {
+                return; // Stop submission if there are missing inputs
+            }
+        }
+
+        // Append other form data from your state (formData)
+        for (const key in formData) {
+            if (formData.hasOwnProperty(key)) {
+                const value = formData[key];
+
+                // Check if the value is an object
+                if (typeof value === 'object' && value !== null) {
+                    // Convert the object to a JSON string
+                    formDataToSend.append(key, JSON.stringify(value));
+                } else {
+                    // Append the value as is
+                    formDataToSend.append(key, value);
+                }
+            }
+        }
+
+        // Append files to the FormData
+        files.forEach((file) => {
+            formDataToSend.append('attachments[]', file.file);
+        });
+
+        try {
+            const response = await submitRegistrationForm(formDataToSend);
+
+            if (response?.success) {
+                console.log(response);
+                navigate('/owner/reno-registration-form/success');
+            } else {
+                console.log('error');
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+
+
+        // const metadataString = JSON.stringify(formData.furnishing)
+
+        // setFormData((prevData) => ({
+        //     ...prevData,
+        //     metadata: metadataString,
+        // }));
+
+        // const attachments = files.reduce((acc, file) => {
+        //     acc[file.id] = {
+        //         id: file.id,
+        //         file: file.file,
+        //         fileUrl: file.previewUrl, // Optional, depending on your needs
+        //     };
+        //     return acc;
+        // }, {} as { [key: string]: { id?: number; file?: File; fileUrl?: string } });
+
+        // const updatedFormData: OwnerRegistrationForm = {
+        //     ...formData,
+        //     attachments,
+        // };
+    };
+
+    const getLabel = (value, options) => {
+        return options.find(option => option.value === value)?.label || 'Unknown';
+    };
+
+    const getPropertyLabel = (id) => {
+
+        if (formData.property_name === 'other') {
+            return "(Other) " + formData.other_property_name;
+        }
+
+        return properties.find(property => Number(property.id) === Number(id))?.name || 'Unknown';
+    }
+
+    if (loading) return <Loading />;
+
+    return (
+        <main className="grow pt-5 items-center" id="content" role="content">
+            <div className="flex flex-col items-center">
+                <div className="container relative flex flex-col items-center justify-center" id="content_container">
+                    <div className="flex flex-col flex-wrap gap-6 pb-28 justify-center items-center w-full max-w-4xl px-2">
+                        <img className="default-logo min-h-[22px] h-[48px] max-w-none" src="/app/RenoExpert_logo-01.svg"></img>
+
+                        {readyToSubmit ?
+                            validateOtp ?
+                                <OTPVerifyPage
+                                    mobile={formData.phone_no}
+                                    countryCode={formData.country_code}
+                                    handleSubmit={handleSubmit}
+                                    otp={otp}
+                                    setOtp={setOtp} // Pass down the setter function
+                                />
+                                :
+                                <div className="card w-full">
+                                    <div className="card-header py-2">
+                                        <h2 className="text-slate-900 text-lg font-semibold">[Reno] Registration Form</h2>
+                                    </div>
+                                    <div className="card-body flex flex-col gap-6">
+                                        <div className="flex badge badge-dark badge-lg font-bold py-4">
+                                            <i className="ki-solid ki-information-3 pr-2 text-lg text-warning"></i>
+                                            <span className="">Please check the information is key in correctly</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Salutations:</span>
+                                            <span className="font-bold">{getLabel(formData.salutations, salutationOptions)}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Name:</span>
+                                            <span className="font-bold">{formData.name_first} {formData.name_last}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Preferred Name:</span>
+                                            <span className="font-bold">{formData.name_preferred}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Email:</span>
+                                            <span className="font-bold">{formData.email}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Phone Number:</span>
+                                            <span className="font-bold">{formData.country_code} {formData.phone_no}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Current residence address:</span>
+                                            <span className="font-bold">{formData.address_1}, {formData.address_2}, {formData.postcode}, {formData.city}, {formData.state}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">IC / ID number:</span>
+                                            <span className="font-bold">{formData.ic}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Property to be renovated:</span>
+                                            <span className="font-bold">{getPropertyLabel(formData.property_name)}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Unit:</span>
+                                            <span className="font-bold">{formData.block}-{formData.level}-{formData.unit}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Layout Type:</span>
+                                            <span className="font-bold">{formData.layout_type}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Sqft:</span>
+                                            <span className="font-bold">{formData.sqft}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">What's your original number of rooms?</span>
+                                            <span className="font-bold">{getLabel(formData.questions.quest_1, q1Options)}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">What's the number of bathroom?</span>
+                                            <span className="font-bold">{getLabel(formData.questions.quest_2, q2Options)}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Already Vacant Possessions (VP)?</span>
+                                            <span className="font-bold">{getLabel(formData.questions.quest_3, q3Options)}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Already collect key?</span>
+                                            <span className="font-bold">{getLabel(formData.questions.quest_4, q4Options)}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Already done defect inspection?</span>
+                                            <span className="font-bold">{getLabel(formData.questions.quest_5, q5Options)}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Already submit defect submission to MO?</span>
+                                            <span className="font-bold">{getLabel(formData.questions.quest_6, q6Options)}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">MO has completed that defect rectification?</span>
+                                            <span className="font-bold">{getLabel(formData.questions.quest_7, q7Options)}</span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="font-normal">Do you want to add partition room to your unit?</span>
+                                            <span className="font-bold">{getLabel(formData.questions.quest_8, q8Options)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            :
+                            <div className="card w-full">
+                                <div className="card-header py-2">
+                                    <h2 className="text-slate-900 text-lg font-semibold">[Reno] Registration Form</h2>
+                                </div>
+                                <div className="card-body">
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="salutations">Salutations</label>
+                                        <select className={`select ${errors.salutations ? 'border-danger' : ''}`} disabled={!!owner} name="salutations" id="salutations" onChange={handleChange} value={formData.salutations}>
+                                            <option value="">Please Select</option>
+                                            {salutationOptions.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.salutations && <span className="text-red-500 text-xs mt-2">{errors.salutations}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="name_f">Name</label>
+                                        <div className="flex gap-2">
+                                            <div className="flex flex-col w-full">
+                                                <input className={`input ${errors.name_first ? 'border-danger' : ''}`} type="text" disabled={!!owner} name="name_first" id="name_first" value={formData.name_first} onChange={handleChange} />
+                                                <span className="text-slate-500 text-xs">First Name</span>
+                                            </div>
+                                            <div className="flex flex-col w-full">
+                                                <input className={`input ${errors.name_last ? 'border-danger' : ''}`} type="text" disabled={!!owner} name="name_last" id="name_last" value={formData.name_last} onChange={handleChange} />
+                                                <span className="text-slate-500 text-xs">Last Name</span>
+                                            </div>
+                                        </div>
+                                        {(errors.name_first || errors.name_last) &&
+                                            <div className="mt-2 flex flex-col">
+                                                {errors.name_first && <span className="text-red-500 text-xs">{errors.name_first}</span>}
+                                                {errors.name_last && <span className="text-red-500 text-xs">{errors.name_last}</span>}
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="name_preferred">Preferred Name</label>
+                                        <input className={`input ${errors.name_preferred ? 'border-danger' : ''}`} type="text" disabled={!!owner} name="name_preferred" id="name_preferred" value={formData.name_preferred} onChange={handleChange} />
+                                        {errors.name_preferred && <span className="text-red-500 text-xs mt-2">{errors.name_preferred}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <div className="flex gap-2 flex-wrap">
+                                            <div className="flex flex-col flex-auto mb-6 md:mb-0">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="email">Email</label>
+                                                <input className={`input ${errors.email ? 'border-danger' : ''}`} type="email" disabled={!!owner} name="email" id="email" value={formData.email} onChange={handleChange} />
+                                                <span className="text-slate-500 text-xs">example@example.com</span>
+                                            </div>
+                                            <div className="flex flex-col flex-auto">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="phone_no">Phone Number</label>
+                                                <div className="flex">
+                                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
+                                                        <button className="dropdown-toggle btn btn-light mr-1">
+                                                            +60
+                                                        </button>
+                                                        <div className="dropdown-content w-full max-w-56 py-2">
+                                                            <div className="menu menu-default flex flex-col w-full">
+                                                                <div className="menu-item">
+                                                                    <button type='button' className="menu-link flex items-center text-center">
+                                                                        <span className="menu-icon">
+                                                                            <img alt="" className="inline-block size-4 rounded-full" src="/public/media/flags/malaysia.svg" />
+                                                                        </span>
+                                                                        <span className="menu-title">
+                                                                            Malaysia +(60)
+                                                                        </span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <input className={`input ${errors.phone_no ? 'border-danger' : ''}`} type="tel" disabled={!!owner} name="phone_no" id="phone_no" value={formData.phone_no} onChange={handleChange} />
+                                                </div>
+                                                <span className="text-slate-500 text-xs">i.e: +(60) 123456789</span>
+                                            </div>
+                                        </div>
+
+                                        {(errors.email || errors.phone_no) &&
+                                            <div className="mt-2 flex flex-col">
+                                                {errors.email && <span className="text-red-500 text-xs">{errors.email}</span>}
+                                                {errors.phone_no && <span className="text-red-500 text-xs">{errors.phone_no}</span>}
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="address_1">Current residence address (information needed for renovation agreement purpose)</label>
+
+                                        <div className="flex flex-col mb-8">
+                                            <input className={`input ${errors.address_1 ? 'border-danger' : ''}`} type="text" name="address_1" id="address_1" value={formData.address_1} onChange={handleChange} />
+                                            <span className="text-slate-500 text-xs">Address Line 1</span>
+                                            {errors.address_1 && <span className="text-red-500 text-xs mt-2">{errors.address_1}</span>}
+                                        </div>
+
+                                        <div className="flex flex-col mb-8">
+                                            <input className="input" type="text" name="address_2" id="address_2" value={formData.address_2} onChange={handleChange} />
+                                            <span className="text-slate-500 text-xs">Address Line 2 (optional)</span>
+                                        </div>
+
+                                        <div className="flex flex-col mb-8">
+                                            <div className="flex gap-2 ">
+                                                <div className="flex flex-col w-full">
+                                                    <input className={`input ${errors.city ? 'border-danger' : ''}`} type="text" name="city" id="city" value={formData.city} onChange={handleChange} />
+                                                    <span className="text-slate-500 text-xs">City</span>
+                                                </div>
+                                                <div className="flex flex-col w-full">
+                                                    <input className={`input ${errors.state ? 'border-danger' : ''}`} type="text" name="state" id="state" value={formData.state} onChange={handleChange} />
+                                                    <span className="text-slate-500 text-xs">State / Province</span>
+                                                </div>
+                                            </div>
+                                            {(errors.city || errors.state) &&
+                                                <div className="mt-2 flex flex-col">
+                                                    {errors.city && <span className="text-red-500 text-xs">{errors.city}</span>}
+                                                    {errors.state && <span className="text-red-500 text-xs">{errors.state}</span>}
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <input className={`input ${errors.postcode ? 'border-danger' : ''}`} type="text" name="postcode" id="postcode" value={formData.postcode} onChange={handleChange} />
+                                            <span className="text-slate-500 text-xs">Postal / Zip Code</span>
+                                            {errors.postcode && <span className="text-red-500 text-xs mt-2">{errors.postcode}</span>}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="ic">IC / ID number (information needed for renovation agreement purpose)</label>
+                                        <input className={`input ${errors.ic ? 'border-danger' : ''}`} type="text" name="ic" id="ic" value={formData.ic} onChange={handleChange} />
+                                        {errors.ic && <span className="text-red-500 text-xs mt-2">{errors.ic}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <div className="flex gap-2 flex-wrap">
+                                            <div className="flex flex-col flex-auto mb-6 md:mb-0">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="property_name">Property to be renovated</label>
+                                                <select className={`select ${errors.property_name ? 'border-danger' : ''}`} name="property_name" id="property_name" onChange={handleChange} value={formData.property_name}>
+                                                    <option value="">Please Select</option>
+                                                    {properties.map(property => (
+                                                        <option key={property.id} value={property.id}>
+                                                            {property.name}
+                                                        </option>
+                                                    ))}
+                                                    <option value="other">Other...</option>
+                                                </select>
+                                                {errors.property_name && <span className="text-red-500 text-xs mt-2">{errors.property_name}</span>}
+                                            </div>
+                                            {formData.property_name === 'other' && (
+                                                <div className="flex flex-col flex-auto">
+                                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="other_property_name">
+                                                        Please specify other property
+                                                    </label>
+                                                    <input
+                                                        className={`input ${errors.other_property_name ? 'border-danger' : ''}`}
+                                                        type="text"
+                                                        name="other_property_name"
+                                                        id="other_property_name"
+                                                        value={formData.other_property_name}
+                                                        onChange={(e) => {
+                                                            handleOtherPropertyChange(e);
+                                                            handleChange(e);
+                                                        }}
+                                                    />
+                                                    {errors.other_property_name && <span className="text-red-500 text-xs mt-2">{errors.other_property_name}</span>}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <div className="flex gap-2 mb-2">
+                                            <div className="flex flex-col w-full">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="block">Block</label>
+                                                <input className={`input ${errors.block ? 'border-danger' : ''}`} type="text" name="block" id="block" value={formData.block} onChange={handleChange} />
+                                                <span className="text-slate-500 text-xs">i.e: A</span>
+                                            </div>
+                                            <div className="flex flex-col w-full">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="level">Level</label>
+                                                <input className={`input ${errors.level ? 'border-danger' : ''}`} type="text" name="level" id="level" value={formData.level} onChange={handleChange} />
+                                                <span className="text-slate-500 text-xs">i.e: 12</span>
+                                            </div>
+                                            <div className="flex flex-col w-full">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="unit">Unit</label>
+                                                <input className={`input ${errors.unit ? 'border-danger' : ''}`} type="text" name="unit" id="unit" value={formData.unit} onChange={handleChange} />
+                                                <span className="text-slate-500 text-xs">i.e: 01</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex">
+                                            <span className="text-slate-500 text-xs">Full Unit i.e: A-12-01</span>
+                                        </div>
+                                        {(errors.block || errors.level || errors.unit) &&
+                                            <div className="mt-2 flex flex-col">
+                                                {errors.block && <span className="text-red-500 text-xs">{errors.block}</span>}
+                                                {errors.level && <span className="text-red-500 text-xs">{errors.level}</span>}
+                                                {errors.unit && <span className="text-red-500 text-xs">{errors.unit}</span>}
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="layout_type">Layout Type</label>
+                                        <input className={`input ${errors.layout_type ? 'border-danger' : ''}`} type="text" name="layout_type" id="layout_type" value={formData.layout_type} onChange={handleChange} />
+                                        {errors.layout_type && <span className="text-red-500 text-xs mt-2">{errors.layout_type}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="sqft">Sqft</label>
+                                        <input className={`input ${errors.sqft ? 'border-danger' : ''}`} type="text" name="sqft" id="sqft" value={formData.sqft} onChange={handleChange} />
+                                        {errors.sqft && <span className="text-red-500 text-xs mt-2">{errors.sqft}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="questions.quest_1">What's your original number of rooms?</label>
+                                        <select className={`select ${errors.quest_1 ? 'border-danger' : ''}`} name="questions.quest_1" id="questions.quest_1" onChange={handleChange} value={formData.questions.quest_1}>
+                                            <option value="">Please Select</option>
+                                            {q1Options.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.quest_1 && <span className="text-red-500 text-xs mt-2">{errors.quest_1}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="questions.quest_2">What's the number of bathroom?</label>
+                                        <select className={`select ${errors.quest_2 ? 'border-danger' : ''}`} name="questions.quest_2" id="questions.quest_2" onChange={handleChange} value={formData.questions.quest_2}>
+                                            <option value="">Please Select</option>
+                                            {q2Options.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.quest_2 && <span className="text-red-500 text-xs mt-2">{errors.quest_2}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="questions.quest_3">Already Vacant Possessions (VP)?</label>
+                                        <select className={`select ${errors.quest_3 ? 'border-danger' : ''}`} name="questions.quest_3" id="quest_3" onChange={handleChange} value={formData.questions.quest_3}>
+                                            <option value="">Please Select</option>
+                                            {q3Options.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.quest_3 && <span className="text-red-500 text-xs mt-2">{errors.quest_3}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="questions.quest_4">Already collect key?</label>
+                                        <select className={`select ${errors.quest_4 ? 'border-danger' : ''}`} name="questions.quest_4" id="questions.quest_4" onChange={handleChange} value={formData.questions.quest_4}>
+                                            <option value="">Please Select</option>
+                                            {q4Options.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.quest_4 && <span className="text-red-500 text-xs mt-2">{errors.quest_4}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="questions.quest_5">Already done defect inspection?</label>
+                                        <select className={`select ${errors.quest_5 ? 'border-danger' : ''}`} name="questions.quest_5" id="questions.quest_5" onChange={handleChange} value={formData.questions.quest_5}>
+                                            <option value="">Please Select</option>
+                                            {q5Options.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.quest_5 && <span className="text-red-500 text-xs mt-2">{errors.quest_5}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="questions.quest_6">Already submit defect submission to MO?</label>
+                                        <select className={`select ${errors.quest_6 ? 'border-danger' : ''}`} name="questions.quest_6" id="questions.quest_6" onChange={handleChange} value={formData.questions.quest_6}>
+                                            <option value="">Please Select</option>
+                                            {q6Options.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.quest_6 && <span className="text-red-500 text-xs mt-2">{errors.quest_6}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="questions.quest_7">MO has completed that defect rectification?</label>
+                                        <select className={`select ${errors.quest_7 ? 'border-danger' : ''}`} name="questions.quest_7" id="questions.quest_7" onChange={handleChange} value={formData.questions.quest_7}>
+                                            <option value="">Please Select</option>
+                                            {q7Options.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.quest_7 && <span className="text-red-500 text-xs mt-2">{errors.quest_7}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="questions.quest_8">Do you want to add partition room to your unit?</label>
+                                        <select className={`select ${errors.quest_8 ? 'border-danger' : ''}`} name="questions.quest_8" id="questions.quest_8" onChange={handleChange} value={formData.questions.quest_8}>
+                                            <option value="">Please Select</option>
+                                            {q8Options.map(option => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <span className="text-slate-500 text-xs text-justify">It is owner's decision to install partition in the unit. Owner assumes all risk for installing a partition. BeLive is not liable for penalties or removal costs requested by authorities, management office or any other parties.
+                                        </span>
+                                        {errors.quest_8 && <span className="text-red-500 text-xs mt-2">{errors.quest_8}</span>}
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <span className="text-sm text-gray-900 text-justify mb-6">
+                                            * Please take note that defect inspection, defect rectification and renovation permit application might affect renovation start date. It is subjected to condo management office and developer's work process.
+                                        </span>
+                                        <span className="text-sm text-gray-900 text-justify">
+                                            Thank you for your understanding.
+                                        </span>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <img src="/media/form/1.jpeg" alt="" />
+                                    </div>
+
+                                    <div className="flex flex-col mb-12">
+                                        <span className="text-sm text-gray-900 text-justify mb-6">
+                                            ** Image above is an example for room numbering. This is our method to determine the arrangement of rooms for each layout type. Kindly refer and don't hesitate to ask our sales team for assistance!
+                                        </span>
+
+                                        <span className="text-sm text-gray-900 text-justify">
+                                            ** Room numbering is based on clockwise rotating basis
+                                        </span>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <span className="text-sm text-gray-900 font-bold text-justify">
+                                            Please help us understand the furnishing condition of your unit for the following areas:
+                                        </span>
+                                    </div>
+
+                                    <div className="flex flex-col flex-wrap mb-8">
+                                        <div className="card rounded-md mb-8">
+                                            <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                <h2 className="">Foyer & entrance</h2>
+                                            </div>
+                                            <div className="card-body text-sm px-4">
+                                                <div className="w-full">
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        {/* Header Row */}
+                                                        <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                        <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                        {/* Grille Door */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Grille door</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.foyer_entrance.grille_door"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.foyer_entrance.grille_door === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.foyer_entrance.grille_door"
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.foyer_entrance.grille_door === 'not-furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Digital Lock */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Digital lock</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.foyer_entrance.digital_lock"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.foyer_entrance.digital_lock === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.foyer_entrance.digital_lock"
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.foyer_entrance.digital_lock === 'not-furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Shoe Cabinet */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Shoe cabinet</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.foyer_entrance.shoe_cabinet"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.foyer_entrance.shoe_cabinet === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.foyer_entrance.shoe_cabinet"
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.foyer_entrance.shoe_cabinet === 'not-furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Lights */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.foyer_entrance.lights"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.foyer_entrance.lights === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.foyer_entrance.lights"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.foyer_entrance.lights === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col mb-8">
+                                            <label className="text-slate-900 mb-2 font-medium" htmlFor="furnishing.foyer_entrance.other">Please list any other items provided or include any remarks (if applicable)</label>
+                                            <textarea
+                                                className="textarea"
+                                                name="furnishing.foyer_entrance.other"
+                                                id="furnishing.foyer_entrance.other"
+                                                rows={5}
+                                                onChange={handleChange}
+                                                value={formData.furnishing.foyer_entrance.other}
+                                            ></textarea>
+                                        </div>
+
+                                        <hr className="mb-8" />
+
+                                        <div className="card rounded-md mb-8">
+                                            <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                <h2 className="">Kitchen</h2>
+                                            </div>
+                                            <div className="card-body text-sm px-4">
+                                                <div className="w-full">
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        {/* Header Row */}
+                                                        <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                        <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                        {/* Kitchen Cabinet */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Kitchen cabinet</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.kitchen_cabinet"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.kitchen.kitchen_cabinet === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.kitchen_cabinet"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.kitchen.kitchen_cabinet === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Kitchen Island */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Kitchen island</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.kitchen_island"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.kitchen.kitchen_island === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.kitchen_island"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.kitchen.kitchen_island === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Sink & Tap */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Sink & tap</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.sink_tap"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.kitchen.sink_tap === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.sink_tap"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.kitchen.sink_tap === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Hood and Hob */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Hood and hob</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.hood_hob"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.kitchen.hood_hob === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.hood_hob"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.kitchen.hood_hob === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Microwave */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Microwave</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.microwave"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.kitchen.microwave === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.microwave"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.kitchen.microwave === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Oven */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Oven</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.oven"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.kitchen.oven === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.oven"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.kitchen.oven === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Water Dispenser / Water Purifier */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Water dispenser / water purifier</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.water_dispenser"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.kitchen.water_dispenser === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.water_dispenser"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.kitchen.water_dispenser === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Fridge */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Fridge</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.fridge"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.kitchen.fridge === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.fridge"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.kitchen.fridge === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Lights */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.lights"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.kitchen.lights === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.kitchen.lights"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.kitchen.lights === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col mb-8">
+                                            <label className="text-slate-900 mb-2 font-medium" htmlFor="kitchen.other">Please list any other items provided or include any remarks (if applicable)</label>
+                                            <textarea
+                                                className="textarea"
+                                                name="furnishing.kitchen.other"
+                                                id="kitchen.other"
+                                                rows={5}
+                                                onChange={handleChange}
+                                                value={formData.furnishing.kitchen.other}
+                                            ></textarea>
+                                        </div>
+
+                                        <hr className="mb-8" />
+
+                                        <div className="card rounded-md mb-8">
+                                            <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                <h2 className="">Yard</h2>
+                                            </div>
+                                            <div className="card-body text-sm px-4">
+                                                <div className="w-full">
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        {/* Header Row */}
+                                                        <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                        <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                        {/* Washer */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Washer</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.yard.washer"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.yard.washer === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.yard.washer"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.yard.washer === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Dryer */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Dryer</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.yard.dryer"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.yard.dryer === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.yard.dryer"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.yard.dryer === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Lights */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.yard.lights"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.yard.lights === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.yard.lights"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.yard.lights === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col mb-8">
+                                            <label className="text-slate-900 mb-2 font-medium" htmlFor="yard.other">Please list any other items provided or include any remarks (if applicable)</label>
+                                            <textarea
+                                                className="textarea"
+                                                name="furnishing.yard.other"
+                                                id="yard.other"
+                                                rows={5}
+                                                onChange={handleChange}
+                                                value={formData.furnishing.yard.other}
+                                            ></textarea>
+                                        </div>
+
+                                        <hr className="mb-8" />
+
+                                        <div className="card rounded-md mb-8">
+                                            <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                <h2 className="">Dining</h2>
+                                            </div>
+                                            <div className="card-body text-sm px-4">
+                                                <div className="w-full">
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        {/* Header Row */}
+                                                        <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                        <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                        {/* Dining Table & Chairs */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Dining table & chairs</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.dining.dining_table_chairs"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.dining.dining_table_chairs === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.dining.dining_table_chairs"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.dining.dining_table_chairs === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Lights */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.dining.lights"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.dining.lights === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.dining.lights"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.dining.lights === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Fan */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Fan</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.dining.fan"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.dining.fan === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.dining.fan"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.dining.fan === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col mb-8">
+                                            <label className="text-slate-900 mb-2 font-medium" htmlFor="dining.other">Please list any other items provided or include any remarks (if applicable)</label>
+                                            <textarea
+                                                className="textarea"
+                                                name="furnishing.dining.other"
+                                                id="dining.other"
+                                                rows={5}
+                                                onChange={handleChange}
+                                                value={formData.furnishing.dining.other}
+                                            ></textarea>
+                                        </div>
+
+                                        <hr className="mb-8" />
+
+                                        <div className="card rounded-md mb-8">
+                                            <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                <h2 className="">Living</h2>
+                                            </div>
+                                            <div className="card-body text-sm px-4">
+                                                <div className="w-full">
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        {/* Header Row */}
+                                                        <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                        <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                        {/* Sofa */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Sofa</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.sofa"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.living.sofa === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.sofa"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.living.sofa === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Coffee Table */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Coffee table</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.coffee_table"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.living.coffee_table === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.coffee_table"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.living.coffee_table === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* TV */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">TV</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.tv"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.living.tv === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.tv"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.living.tv === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* TV Cabinet */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">TV cabinet</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.tv_cabinet"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.living.tv_cabinet === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.tv_cabinet"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.living.tv_cabinet === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Fan */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Fan</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.fan"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.living.fan === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.fan"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.living.fan === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* Lights */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.lights"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.living.lights === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.lights"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.living.lights === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+
+                                                        {/* AC */}
+                                                        <div className="flex items-center text-gray-900 font-semibold">AC</div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.ac"
+                                                                value="furnished"
+                                                                checked={formData.furnishing.living.ac === 'furnished'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="furnishing.living.ac"
+                                                                value="not_furnish"
+                                                                checked={formData.furnishing.living.ac === 'not_furnish'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                onChange={handleChange}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col mb-8">
+                                            <label className="text-slate-900 mb-2 font-medium" htmlFor="living.other">Please list any other items provided or include any remarks (if applicable)</label>
+                                            <textarea
+                                                className="textarea"
+                                                name="furnishing.living.other"
+                                                id="living.other"
+                                                rows={5}
+                                                onChange={handleChange}
+                                                value={formData.furnishing.living.other}
+                                            >
+                                            </textarea>
+                                        </div>
+
+                                        <hr />
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <div className="flex flex-col mb-8">
+                                            <label className="text-slate-900 mb-2 font-medium" htmlFor="files">Please upload the photos of the item that furnished in your unit</label>
+                                            <input
+                                                className="file-input file-input-lg"
+                                                multiple={true}
+                                                type="file"
+                                                name="attachments"
+                                                onChange={handleFileUpload}
+                                            />
+                                            {attachmentErr && <span className="text-red-500 text-xs mt-2">{attachmentErr}</span>}
+                                        </div>
+
+                                        {/* Display uploaded files */}
+                                        {files.length > 0 && (
+                                            <div className="mt-4">
+                                                <h4 className="text-lg font-medium">Uploaded Files</h4>
+                                                <ul className="mt-2 space-y-2">
+                                                    {files.map((uploadedFile) => (
+                                                        <div className="flex flex-col" key={uploadedFile.id}>
+                                                            <div className="flex items-center space-x-4 mb-4">
+                                                                <div className="flex justify-center items-center w-16 h-16 bg-gray-100 rounded">
+                                                                    {/* Check if file is an image, otherwise show an icon */}
+                                                                    {isImage(uploadedFile.file.type) ? (
+                                                                        <a
+                                                                            href={uploadedFile.previewUrl}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                        >
+                                                                            <img
+                                                                                src={uploadedFile.previewUrl}
+                                                                                alt={uploadedFile.file.name} // Use file name as alt text
+                                                                                className="h-full w-full object-cover"
+                                                                            />
+                                                                        </a>
+                                                                    ) : (
+                                                                        <i className="ki-filled ki-files text-4xl"></i> // Icon for non-image files
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex-1 flex flex-col">
+                                                                    {/* Display file name and size */}
+                                                                    <span className="text-slate-700">{uploadedFile.file.name}</span>
+                                                                    <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
+                                                                        <span>{formatFileSize(uploadedFile.file.size)}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <button
+                                                                    className="px-2 py-2 rounde"
+                                                                    onClick={() => handleDelete(uploadedFile.id)}
+                                                                >
+                                                                    <i className="ki-solid ki-trash-square text-4xl text-red-500 "></i>
+                                                                </button>
+                                                            </div>
+                                                            <hr />
+                                                        </div>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2">
+                        {readyToSubmit ?
+                            validateOtp ?
+                                <>
+                                    <button
+                                        className="btn btn-lg btn-secondary rounded-3xl shadow-lg mr-4"
+                                        onClick={() => {
+                                            setValidateOtp(false);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                    >
+                                        Back
+                                    </button>
+                                </>
+                                :
+                                <>
+                                    <button
+                                        className="btn btn-lg btn-secondary rounded-3xl shadow-lg mr-4"
+                                        onClick={() => {
+                                            setReadyToSubmit(false);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                    >
+                                        Back
+                                    </button>
+
+                                    <button
+                                        className="btn btn-lg btn-primary rounded-3xl shadow-lg"
+                                        onClick={owner ? handleSubmit : handleConfirmForm}
+                                    >
+                                        Confirm
+                                    </button>
+                                </>
+                            :
+                            <>
+                                <button
+                                    className="btn btn-lg btn-secondary rounded-3xl shadow-lg mr-4"
+                                    onClick={handleResetForm}
+                                >
+                                    Reset
+                                </button>
+
+                                <button
+                                    className="btn btn-lg btn-primary rounded-3xl shadow-lg"
+                                    onClick={handleReadyToSubmit}
+                                >
+                                    Next
+                                </button>
+                            </>
+                        }
+                    </div>
+                </div>
+            </div>
+        </main>
+    )
+}
+
+export default OwnerRenoRegistrationForm;

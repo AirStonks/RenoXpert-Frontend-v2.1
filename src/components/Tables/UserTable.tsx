@@ -1,5 +1,133 @@
+import { useCallback, useEffect, useState } from "react";
+import { User } from "../../types";
+import { KTDataTable } from "../../metronic/core";
+import { render } from "react-dom";
 
 function UserTable() {
+    const [selectedUserId, setSelectedUserId] = useState<number>(null);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    
+    let datatable;
+    let element;
+    let dataTableOptions;
+
+    const handleTableClick = useCallback((event: MouseEvent) => {
+        const target = event.target as HTMLElement;
+
+        // Find the delete button element
+        const deleteButton = target.closest('[data-action="delete"]') as HTMLElement;
+        const editButton = target.closest('[data-action="edit"]') as HTMLElement;
+
+        if (deleteButton) {
+            const id = deleteButton.dataset.id;
+            const name = deleteButton.dataset.name;
+
+            if (id && name) {
+                setSelectedUser({ id: parseInt(id, 10), name });
+
+                // Close Modal
+                const modalEl = document.querySelector('#delete_item_modal') as HTMLElement | null;
+
+                if (modalEl) {
+                    const modal = KTModal.getInstance(modalEl);
+                    if (modal) {
+                        modal.hide();
+                    }
+                }
+            }
+        } else if (editButton) {
+            const id = editButton.dataset.id;
+
+            if (id) {
+                setSelectedUserId(parseInt(id, 10));
+            }
+        }
+    }, [setSelectedUserId]);
+
+    useEffect(() => {
+        initUserTable();
+    }, []);
+
+    const initUserTable = () => {
+        const apiUrl = 'http://' + window.location.hostname + ':8000/api/users';
+        element = document.querySelector('#users_table') as HTMLElement;
+        const token = localStorage.getItem('token');
+
+        dataTableOptions = {
+            apiEndpoint: apiUrl,
+            requestMethod: 'GET',
+            requestHeaders: {
+                'Authorization': `Bearer ${token}`,
+            },
+            pageSize: 5,
+            stateSave: false,
+            columns: {
+                id: {
+                    title: 'ID',
+                    render: (item: string) => `
+                        <input 
+                            class="checkbox checkbox-sm"
+                            data-datatable-row-check="true"
+                            type="checkbox"
+                            value="${item}" 
+                        />
+                    `
+                },
+                name: {
+                    title: 'Name',
+                    render: (item: string, data: User) => `
+                        <div class="flex flex-col gap-1">
+                            <span>${item}</span>
+                            <span class="text-xs text-slate-400">${data.email}</span>
+                            <span class="text-xs text-slate-700">${data.phone_no}</span>
+                        </div>
+                    `,
+                },
+                type: {
+                    title: 'User Type',
+                },
+                action: {
+                    title: 'Action',
+                    render: (item: string, data: User) => `
+                        <div class="flex justify-around gap-2">
+                            <button 
+                                class="btn-edit btn btn-sm btn-icon btn-clear btn-light"
+                                data-tooltip="#edit_tooltip"
+                                data-action="edit"
+                                data-id="${data.id}"
+                                data-modal-toggle="#edit_contact_modal"
+                            >
+                                <i class="ki-outline ki-notepad-edit"></i>
+                            </button>
+
+                            <button 
+                                class="btn-delete btn btn-sm btn-icon btn-clear btn-light"
+                                data-tooltip="#remove_tooltip"
+                                data-action="delete"
+                                data-id="${data.id}"
+                                data-name="${data.name}"
+                                data-modal-toggle="#delete_item_modal">
+                                <i class="ki-outline ki-trash"></i>
+                            </button>
+                        </div>
+                    `
+                }
+            },
+        };
+
+        if (!datatable) {
+            datatable = new KTDataTable(element, dataTableOptions);
+        }
+
+        if (element) {
+            element.addEventListener('click', handleTableClick);
+
+            return () => {
+                element.removeEventListener('click', handleTableClick);
+            };
+        }
+    }
+
     return (
         <div className="grid">
             <div className="card card-grid min-w-full">
@@ -16,9 +144,9 @@ function UserTable() {
                     </div>
                 </div>
                 <div className="card-body">
-                    <div data-datatable="true" data-datatable-page-size="5">
+                    <div data-datatable="true" data-datatable-page-size="5" id="users_table">
                         <div className="scrollable-x-auto">
-                            <table className="table table-auto table-border" data-datatable-table="true" id="grid_table">
+                            <table className="table table-auto table-border" data-datatable-table="true">
                                 <thead>
                                     <tr>
                                         <th className="w-[60px]">
@@ -27,7 +155,7 @@ function UserTable() {
                                         <th className="min-w-[175px]">
                                             <span className="sort asc">
                                                 <span className="sort-label">
-                                                    Member
+                                                    User
                                                 </span>
                                                 <span className="sort-icon">
                                                 </span>
@@ -36,7 +164,7 @@ function UserTable() {
                                         <th className="min-w-[150px]">
                                             <span className="sort">
                                                 <span className="sort-label">
-                                                    Location
+                                                    User Type
                                                 </span>
                                                 <span className="sort-icon">
                                                 </span>
@@ -55,7 +183,7 @@ function UserTable() {
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                {/* <tbody>
                                     <tr>
                                         <td>
                                             <input className="checkbox checkbox-sm" data-datatable-row-check="true" type="checkbox" value="1" />
@@ -380,7 +508,7 @@ function UserTable() {
                                             </a>
                                         </td>
                                     </tr>
-                                </tbody>
+                                </tbody> */}
                             </table>
                         </div>
                         <div className="card-footer justify-center md:justify-between flex-col md:flex-row gap-3 text-gray-600 text-2sm font-medium">

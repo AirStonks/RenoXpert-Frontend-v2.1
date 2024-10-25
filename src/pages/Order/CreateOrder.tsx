@@ -1,29 +1,39 @@
 // src\pages\Order\CreateOrder.tsx
 
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createOrder, fetchContact, fetchContacts, fetchProperties, fetchProperty, fetchQuotation, fetchQuotations } from '../../services/api';
-import { Contact, Order, Property, Quotation } from '../../types';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { createOrder, fetchProperties, fetchProperty, fetchQuotation, fetchQuotations, fetchRegistrationForm, fetchUser, fetchUsers } from '../../services/api';
+import { Order, OwnerRegistrationForm, Property, Quotation, User } from '../../types';
 import { KTDropdown } from '../../metronic/core';
 import { Package } from '../../types/index';
 import { Link } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
+import Loading from '../../components/Loading';
 
 function CreateOrder() {
     const navigate = useNavigate();
-    const [searchContactTerm, setSearchContactTerm] = useState('');
+    const location = useLocation();
+
+    const queryParams = new URLSearchParams(location.search);
+    const formId = queryParams.get('formId');
+
+    const [searchUserTerm, setSearchUserTerm] = useState('');
     const [searchPropertyTerm, setSearchPropertyTerm] = useState('');
     const [searchQuotationTerm, setSearchQuotationTerm] = useState('');
-    const [contacts, setContacts] = useState<Contact[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [properties, setProperties] = useState<Property[]>([]);
     const [quotations, setQuotations] = useState<Quotation[]>([]);
+    const [formDetail, setFormDetail] = useState<OwnerRegistrationForm | null>(null);
 
-    const inputContactRef = useRef(null);
+
+    const [loading, setLoading] = useState(false);
+
+    const inputUserRef = useRef(null);
     const inputPropertyRef = useRef(null);
     const inputQuotationRef = useRef(null);
 
     const [formData, setFormData] = useState({
-        contactId: '',
+        userId: '',
         propertyId: '',
         quotationId: '',
         totalAmount: 0,
@@ -33,7 +43,7 @@ function CreateOrder() {
         status: '',
     });
 
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
     const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
     const [selectedPackages, setSelectedPackages] = useState([]);
@@ -52,8 +62,11 @@ function CreateOrder() {
     };
 
     useEffect(() => {
-
         const sessionData = localStorage.getItem('create_order_data');
+
+        if (formId) {
+            handleSearchForm(formId);
+        }
 
         if (sessionData) {
 
@@ -61,8 +74,8 @@ function CreateOrder() {
 
             setFormData(parsedSessionData);
 
-            if (parsedSessionData.contactId) {
-                handleSelectContactById(parsedSessionData.contactId);
+            if (parsedSessionData.userId) {
+                handleSelectUserById(parsedSessionData.userId);
             }
 
             if (parsedSessionData.propertyId) {
@@ -79,14 +92,16 @@ function CreateOrder() {
                     totalAmount: parsedSessionData.totalAmount,
                 }));
             }
+
         }
 
         initDropdown();
+
     }, []);
 
     const initDropdown = async () => {
-        const contractEl = document.querySelector('#contract_dropdown') as HTMLElement;
-        const contractDropdown = KTDropdown.getInstance(contractEl);
+        const ownerEl = document.querySelector('#owner_dropdown') as HTMLElement;
+        const ownerDropdown = KTDropdown.getInstance(ownerEl);
 
         const propertyEl = document.querySelector('#property_dropdown') as HTMLElement;
         const propertyDropdown = KTDropdown.getInstance(propertyEl);
@@ -94,11 +109,11 @@ function CreateOrder() {
         const quotationEl = document.querySelector('#quotation_dropdown') as HTMLElement;
         const quotationDropdown = KTDropdown.getInstance(quotationEl);
 
-        contractDropdown.on('shown', async () => {
-            inputContactRef.current.focus();
+        ownerDropdown.on('shown', async () => {
+            inputUserRef.current.focus();
             try {
-                const data = await fetchContacts('', 6);
-                setContacts(data.data);
+                const data = await fetchUsers('', 'owner');
+                setUsers(data.data);
 
             } catch (error) {
                 console.error('Failed to fetch quotations:', error);
@@ -117,6 +132,8 @@ function CreateOrder() {
         });
 
         quotationDropdown.on('shown', async () => {
+            console.log('ysaydysd');
+
             inputQuotationRef.current.focus();
             try {
                 const data = await fetchQuotations('', 6);
@@ -126,8 +143,6 @@ function CreateOrder() {
                 console.error('Failed to fetch quotations:', error);
             }
         });
-
-
     }
 
     const handleBackClick = () => {
@@ -137,15 +152,56 @@ function CreateOrder() {
         navigate('/orders');
     };
 
-    const handleSearchContact = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const term = event.target.value;
-        setSearchContactTerm(term);
+    const handleSearchForm = async (formId: string) => {
+
+        setLoading(true);
 
         try {
-            const data = await fetchContacts(term, 6);
-            setContacts(data.data);
+            const response = await fetchRegistrationForm(Number(formId)); // This returns AxiosResponse
+            const registrationForm: OwnerRegistrationForm = response.data.data; // Extract the data
+
+            if (registrationForm) {
+                setFormDetail(registrationForm);
+
+                // Fetch the associated user and property
+                const userResponse = await fetchUser(Number(registrationForm.user.id));
+                const user: User = userResponse.data;
+
+                const propertyResponse = await fetchProperty(Number(registrationForm.property.id));
+                const property: Property = propertyResponse.data;
+
+                if (user) handleSelectUserById(Number(user.id));
+                if (property) handleSelectPropertytById(Number(property.id));
+
+                // // Update formData with the relevant fields
+                setFormData((prevData) => ({
+                    ...prevData,
+                    block: registrationForm.property.block,
+                    floor: registrationForm.property.level,
+                    unitNo: registrationForm.property.unit,
+                }));
+
+                setLoading(false);
+
+            } else {
+                toast.error("Registration form not found");
+            }
+
         } catch (error) {
-            console.error('Error fetching contacts:', error);
+            console.error("Error fetching registration form:", error);
+            toast.error("Failed to fetch registration form");
+        }
+    };
+
+    const handleSearchUser = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const term = event.target.value;
+        setSearchUserTerm(term);
+
+        try {
+            const data = await fetchUsers(term, 'owner');
+            setUsers(data.data);
+        } catch (error) {
+            console.error('Error fetching users:', error);
         }
     };
 
@@ -178,14 +234,14 @@ function CreateOrder() {
         localStorage.setItem('create_order_data', JSON.stringify(formData));
     };
 
-    const handleSelectContact = async (contact: Contact) => {
+    const handleSelectUser = async (user: User) => {
         setFormData((prev) => ({
             ...prev,
-            contactId: contact.id,
+            userId: user.id,
         }));
-        setSelectedContact(contact);
-        setSearchContactTerm('');
-        setContacts([]);
+        setSelectedUser(user);
+        setSearchUserTerm('');
+        setUsers([]);
     };
 
     const handleSelectProperty = async (property: Property) => {
@@ -218,18 +274,19 @@ function CreateOrder() {
         }
     };
 
-    const handleSelectContactById = async (id: number) => {
+    const handleSelectUserById = async (id: number) => {
         try {
-            const data = await fetchContact(id); // Assuming you have a similar fetch function
+            const data = await fetchUser(id); // Assuming you have a similar fetch function
 
             setFormData((prev) => ({
                 ...prev,
-                contactyId: data.data.id,
+                userId: data.data.id,
             }));
 
-            setSelectedContact(data.data);
-            setSearchContactTerm('');
-            setContacts([]);
+            setSelectedUser(data.data);
+            setSearchUserTerm('');
+            setUsers([]);
+            localStorage.setItem('create_order_data', JSON.stringify(formData));
 
         } catch (error) {
             console.error('Error fetching properties:', error);
@@ -240,13 +297,16 @@ function CreateOrder() {
         try {
             const data = await fetchProperty(id); // Assuming you have a similar fetch function
 
-            setFormData((prev) => ({
-                ...prev,
-                propertyId: data.data.id,
-            }));
-            setSelectedProperty(data.data);
-            setSearchPropertyTerm('');
-            setProperties([]);
+            if (data) {
+                setFormData((prev) => ({
+                    ...prev,
+                    propertyId: data.data.id,
+                }));
+                setSelectedProperty(data.data);
+                setSearchPropertyTerm('');
+                setProperties([]);
+                localStorage.setItem('create_order_data', JSON.stringify(formData));
+            }
 
         } catch (error) {
             console.error('Error fetching properties:', error);
@@ -299,7 +359,7 @@ function CreateOrder() {
 
     const handleSubmit = async () => {
         const newOrder: Order = {
-            contact_id: selectedContact.id,
+            user_id: selectedUser.id,
             property_id: selectedProperty.id,
             quotation_id: selectedQuotation.id,
             total_amount: formData.totalAmount,
@@ -327,6 +387,8 @@ function CreateOrder() {
         }
     }
 
+    if (loading) return <Loading />
+
     return (
         <>
             <div className="flex justify-between items-center flex-wrap mb-6">
@@ -340,332 +402,411 @@ function CreateOrder() {
                 </div>
             </div>
 
-            <div className="flex flex-col flex-wrap gap-8 mb-8">
-                <div className="card">
-                    <div className="card-body">
-                        <h2 className='text-xl mb-4 font-semibold text-gray-900'>Order</h2>
-                        <div className="flex gap-8">
-                            {/* Contact */}
-                            <div className="flex flex-col flex-1 gap-2">
-                                <span className="text-base font-semibold text-gray-900">
-                                    1. Select a Contact
-                                </span>
-                                <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="contract_dropdown">
-                                    <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
-                                        <span>Contact</span>
-                                        <i className="ki-filled ki-down"></i>
-                                    </button>
-                                    <div className="dropdown-content w-full max-w-80">
-                                        <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                            <label className="input input-sm">
-                                                <i className="ki-filled ki-magnifier"></i>
-                                                <input
-                                                    ref={inputContactRef}
-                                                    placeholder="Search contact"
-                                                    type="text"
-                                                    value={searchContactTerm}
-                                                    onChange={handleSearchContact}
-                                                />
-                                            </label>
-                                        </div>
-                                        <div className="menu menu-default flex flex-col w-full">
-                                            {contacts.map((contact, index) => (
-                                                <div className="menu-item" key={index} data-id={contact.id}>
-                                                    <button
-                                                        className="menu-link"
-                                                        onClick={() => handleSelectContact(contact)}
-                                                    >
-                                                        <span className="menu-title">{contact.name}</span>
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                                {selectedContact && (
-                                    <div className="card mb-4">
-                                        <div className="card-body">
-                                            <div className="flex flex-col gap-1 text-gray-900">
-                                                <span className='text-sm font-semibold'>{selectedContact.name}</span>
-                                                <span className='text-sm font-normal text-slate-400'>{selectedContact.email}</span>
-                                                <span className='text-sm font-normal'>{selectedContact.phone_no}</span>
+            <div className="flex grow flex-col gap-3 lg:gap-6 lg:mr-[360px] lg:px-6">
+                <div className="div1 flex flex-col gap-8 mb-8">
+                    <div className="card ">
+                        <div className="card-body">
+                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Order</h2>
+                            <div className="flex gap-8">
+                                {/* Owner */}
+                                <div className="flex flex-col flex-1 gap-2">
+                                    <span className="text-base font-semibold text-gray-900">
+                                        1. Select an Owner
+                                    </span>
+                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="owner_dropdown">
+                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                            <span>Owner</span>
+                                            <i className="ki-filled ki-down"></i>
+                                        </button>
+                                        <div className="dropdown-content w-full max-w-80">
+                                            <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                                <label className="input input-sm">
+                                                    <i className="ki-filled ki-magnifier"></i>
+                                                    <input
+                                                        ref={inputUserRef}
+                                                        placeholder="Search Owner"
+                                                        type="text"
+                                                        value={searchUserTerm}
+                                                        onChange={handleSearchUser}
+                                                    />
+                                                </label>
+                                            </div>
+                                            <div className="menu menu-default flex flex-col w-full">
+                                                {users.map((user, index) => (
+                                                    <div className="menu-item" key={index} data-id={user.id}>
+                                                        <button
+                                                            className="menu-link"
+                                                            onClick={() => handleSelectUser(user)}
+                                                        >
+                                                            <span className="menu-title">{user.name}</span>
+                                                        </button>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
-                                )}
-                            </div>
-                            <div className="flex flex-col flex-1 gap-2">
-                                <span className="text-base font-semibold text-gray-900">
-                                    2. Select a Property
-                                </span>
-                                <div className="dropdow" data-dropdown="true" data-dropdown-trigger="click" id='property_dropdown'>
-                                    <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
-                                        <span>Property</span>
-                                        <i className="ki-filled ki-down"></i>
-                                    </button>
-                                    <div className="dropdown-content w-full max-w-80">
-                                        <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                            <label className="input input-sm">
-                                                <i className="ki-filled ki-magnifier"></i>
-                                                <input
-                                                    ref={inputPropertyRef}
-                                                    placeholder="Search property"
-                                                    type="text"
-                                                    value={searchPropertyTerm}
-                                                    onChange={handleSearchProperty}
-                                                />
-                                            </label>
-                                        </div>
-                                        <div className="menu menu-default flex flex-col w-full">
-                                            {properties.map((property, index) => (
-                                                <div className="menu-item" key={index} data-id={property.id}>
-                                                    <button
-                                                        className="menu-link"
-                                                        onClick={() => handleSelectProperty(property)}
-                                                    >
-                                                        <span className="menu-title">{property.name}</span>
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                                {selectedProperty && (
-                                    <>
+                                    {selectedUser && (
                                         <div className="card mb-4">
                                             <div className="card-body">
                                                 <div className="flex flex-col gap-1 text-gray-900">
-                                                    <span className='text-sm font-semibold text-gray-900'>{selectedProperty.name}</span>
-                                                    <span className='text-sm font-normal text-slate-400'>
-                                                        {[
-                                                            selectedProperty.address,
-                                                            selectedProperty.street,
-                                                            selectedProperty.postcode,
-                                                            selectedProperty.city,
-                                                            selectedProperty.state
-                                                        ].filter(Boolean).join(', ')}
-                                                    </span>
+                                                    <span className='text-sm font-semibold'>{selectedUser.name}</span>
+                                                    <span className='text-sm font-normal text-slate-400'>{selectedUser.email}</span>
+                                                    <span className='text-sm font-normal'>+60 {selectedUser.phone_no}</span>
                                                 </div>
                                             </div>
                                         </div>
+                                    )}
+                                </div>
+                                <div className="flex flex-col flex-1 gap-2">
+                                    <span className="text-base font-semibold text-gray-900">
+                                        2. Select a Property
+                                    </span>
+                                    <div className="dropdow" data-dropdown="true" data-dropdown-trigger="click" id='property_dropdown'>
+                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                            <span>Property</span>
+                                            <i className="ki-filled ki-down"></i>
+                                        </button>
+                                        <div className="dropdown-content w-full max-w-80">
+                                            <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                                <label className="input input-sm">
+                                                    <i className="ki-filled ki-magnifier"></i>
+                                                    <input
+                                                        ref={inputPropertyRef}
+                                                        placeholder="Search property"
+                                                        type="text"
+                                                        value={searchPropertyTerm}
+                                                        onChange={handleSearchProperty}
+                                                    />
+                                                </label>
+                                            </div>
+                                            <div className="menu menu-default flex flex-col w-full">
+                                                {properties.map((property, index) => (
+                                                    <div className="menu-item" key={index} data-id={property.id}>
+                                                        <button
+                                                            className="menu-link"
+                                                            onClick={() => handleSelectProperty(property)}
+                                                        >
+                                                            <span className="menu-title">{property.name}</span>
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {selectedProperty && (
+                                        <>
+                                            <div className="card mb-4">
+                                                <div className="card-body">
+                                                    <div className="flex flex-col gap-1 text-gray-900">
+                                                        <span className='text-sm font-semibold text-gray-900'>{selectedProperty.name}</span>
+                                                        <span className='text-sm font-normal text-slate-400'>
+                                                            {[
+                                                                selectedProperty.address,
+                                                                selectedProperty.street,
+                                                                selectedProperty.postcode,
+                                                                selectedProperty.city,
+                                                                selectedProperty.state
+                                                            ].filter(Boolean).join(', ')}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                        <span className='text-sm font-semibold text-gray-900'>
-                                            Block
-                                        </span>
+                                            <div className="flex gap-4">
+                                                <div className="flex flex-col">
+                                                    <span className='text-sm font-semibold text-gray-900'>
+                                                        Block
+                                                    </span>
 
-                                        <input
-                                            className='input mb-2'
-                                            type='text'
-                                            name='block'
-                                            value={formData.block}
-                                            onChange={handleChange}
-                                        />
+                                                    <input
+                                                        className='input mb-2'
+                                                        type='text'
+                                                        name='block'
+                                                        value={formData.block}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
 
-                                        <span className='text-sm font-semibold text-gray-900'>
-                                            Floor
-                                        </span>
+                                                <div className="flex flex-col">
+                                                    <span className='text-sm font-semibold text-gray-900'>
+                                                        Floor
+                                                    </span>
 
-                                        <input
-                                            className='input mb-2'
-                                            type='text'
-                                            name='floor'
-                                            value={formData.floor || ''}
-                                            onChange={handleChange}
-                                        />
+                                                    <input
+                                                        className='input mb-2'
+                                                        type='text'
+                                                        name='floor'
+                                                        value={formData.floor || ''}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
 
-                                        <span className='text-sm font-semibold text-gray-900'>
-                                            Unit No
-                                        </span>
+                                                <div className="flex flex-col">
+                                                    <span className='text-sm font-semibold text-gray-900'>
+                                                        Unit No
+                                                    </span>
 
-                                        <input
-                                            className='input mb-2'
-                                            type='text'
-                                            name='unitNo'
-                                            value={formData.unitNo}
-                                            onChange={handleChange}
-                                        />
-                                    </>
-                                )}
+                                                    <input
+                                                        className='input mb-2'
+                                                        type='text'
+                                                        name='unitNo'
+                                                        value={formData.unitNo}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div className="card">
-                    <div className="card-body">
-                        <h2 className='text-xl mb-4 font-semibold text-gray-900'>Quotation</h2>
+                    <div className="card">
+                        <div className="card-body">
+                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Quotation</h2>
 
-                        <div className="flex flex-col gap-4">
-                            <div className="flex flex-col gap-2">
-                                <span className="text-base font-semibold text-gray-900">
-                                    3. Select a Quotation
-                                </span>
-                                <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
-                                    <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
-                                        <span>Quotation</span>
-                                        <i className="ki-filled ki-down"></i>
-                                    </button>
-                                    <div className="dropdown-content w-full max-w-2xl">
-                                        <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                            <label className="input input-sm">
-                                                <i className="ki-filled ki-magnifier"></i>
-                                                <input
-                                                    ref={inputQuotationRef}
-                                                    placeholder="Search quotation"
-                                                    type="text"
-                                                    value={searchQuotationTerm}
-                                                    onChange={handleSearchQuotation}
-                                                />
-                                            </label>
-                                        </div>
-                                        <div className="menu menu-default flex flex-col">
-                                            {quotations.map((quotation, index) => (
-                                                <div className="menu-item" key={index} data-id={quotation.id}>
-                                                    <button
-                                                        className="menu-link"
-                                                        onClick={() => handleSelectQuotation(quotation)}
-                                                    >
-                                                        <span className="menu-title">{quotation.name}</span>
-                                                    </button>
-                                                </div>
-                                            ))}
+                            <div className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-2">
+                                    <span className="text-base font-semibold text-gray-900">
+                                        3. Select a Quotation
+                                    </span>
+                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
+                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                            <span>Quotation</span>
+                                            <i className="ki-filled ki-down"></i>
+                                        </button>
+                                        <div className="dropdown-content w-full max-w-2xl">
+                                            <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                                <label className="input input-sm">
+                                                    <i className="ki-filled ki-magnifier"></i>
+                                                    <input
+                                                        ref={inputQuotationRef}
+                                                        placeholder="Search quotation"
+                                                        type="text"
+                                                        value={searchQuotationTerm}
+                                                        onChange={handleSearchQuotation}
+                                                    />
+                                                </label>
+                                            </div>
+                                            <div className="menu menu-default flex flex-col">
+                                                {quotations.map((quotation, index) => (
+                                                    <div className="menu-item" key={index} data-id={quotation.id}>
+                                                        <button
+                                                            className="menu-link"
+                                                            onClick={() => handleSelectQuotation(quotation)}
+                                                        >
+                                                            <span className="menu-title">{quotation.name}</span>
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                {selectedQuotation && (
-                    <div className="flex flex-col gap-4">
-                        <div className="card border-slate-800">
-                            <div className="card-body quotation-info flex justify-between items-center gap-4">
-                                <div className="flex flex-col">
-                                    <span className='text-lg font-semibold text-gray-900'>
-                                        {selectedQuotation.name}
-                                    </span>
-                                    <span className="text-base font-normal text-gray-800">
-                                        Price: RM {formData.totalAmount ? formData.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : selectedQuotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </span>
-                                    <span className="text-base font-normal text-slate-400">
-                                        {selectedQuotation.description}
-                                    </span>
-                                </div>
-                                <div className="flex actions">
-                                    <Link
-                                        to={'/orders/quotation/edit/' + selectedQuotation.id}
-                                        className="btn btn-primary btn-lg"
-                                        data-id={selectedQuotation.id}
-                                        onClick={handleEditQuotation}
-                                    >
-                                        Edit Quotation
-                                    </Link>
+                    {selectedQuotation && (
+                        <div className="flex flex-col gap-4">
+                            <div className="card border-slate-800">
+                                <div className="card-body quotation-info flex justify-between items-center gap-4">
+                                    <div className="flex flex-col">
+                                        <span className='text-lg font-semibold text-gray-900'>
+                                            {selectedQuotation.name}
+                                        </span>
+                                        <span className="text-base font-normal text-gray-800">
+                                            Price: RM {formData.totalAmount ? formData.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : selectedQuotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                        <span className="text-base font-normal text-slate-400">
+                                            {selectedQuotation.description}
+                                        </span>
+                                    </div>
+                                    <div className="flex actions">
+                                        <Link
+                                            to={'/orders/quotation/edit/' + selectedQuotation.id}
+                                            className="btn btn-primary btn-lg"
+                                            data-id={selectedQuotation.id}
+                                            onClick={handleEditQuotation}
+                                        >
+                                            Edit Quotation
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="card border-slate-800">
-                            <div className="card-body">
-                                <div className="text-base font-semibold text-gray-900 mb-2">
-                                    Packages:
-                                </div>
-                                <div className="flex flex-col gap-5" data-accordion="true" data-accordion-expand-all="true">
-                                    {selectedPackages.map((prodPackage: Package) => (
-                                        <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
-                                            <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
-                                                <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
-                                                    <div className="flex flex-col items-start">
-                                                        <span className="text-base text-gray-900 font-medium">
-                                                            {prodPackage.name}
-                                                        </span>
-                                                        <span className='text-base text-slate-700'>
-                                                            RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </span>
-                                                        <span className='text-sm text-slate-400'>
-                                                            {prodPackage.description}
-                                                        </span>
-                                                    </div>
-                                                    <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
-                                                    </i>
-                                                    <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
-                                                    </i>
-                                                </button>
-                                                <div className="accordion-content active border-t" id={"package_content_" + prodPackage.id.toString()}>
-                                                    <div className="product-list flex flex-col">
-                                                        <table className="table align-middle text-gray-700 font-medium text-sm">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th className='w-[250px]'>Product</th>
-                                                                    <th className='w-[100px] text-center'>Quantity</th>
-                                                                    <th className='w-[100px] text-center'>Unit Price</th>
-                                                                    <th className='w-[100px] text-center'>Discount</th>
-                                                                    <th className='w-[100px] text-center'>Total Price</th>
-                                                                    <th className='w-[100px] text-center'>Include Product</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {prodPackage.products.map((product) => (
-                                                                    <tr
-                                                                        key={product.id}
-                                                                    >
-                                                                        <td>
-                                                                            <div className="flex flex-col">
-                                                                                <span>{product.name}</span>
-                                                                                <span className="text-xs text-slate-400">{product.description}</span>
-                                                                            </div>
-                                                                        </td>
-                                                                        <td className='text-center text-lg'>
-                                                                            <span className="mx-2 text-base">
-                                                                                {product.pivot.included ? product.pivot.quantity : '0'}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td className="text-center">
-                                                                            RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                        </td>
-                                                                        <td className='text-center'>
-                                                                            {!product.pivot.included
-                                                                                ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                                : null}
-                                                                        </td>
-                                                                        <td className="text-center">
-                                                                            {!product.pivot.included
-                                                                                ? null
-                                                                                : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                        </td>
-                                                                        <td className='text-center'>
-                                                                            <label className="switch flex justify-center">
-                                                                                <input
-                                                                                    name="included"
-                                                                                    type="checkbox"
-                                                                                    checked={product.pivot.included}
-                                                                                    readOnly
-                                                                                />
-                                                                            </label>
-                                                                        </td>
+                            <div className="card border-slate-800">
+                                <div className="card-body">
+                                    <div className="text-base font-semibold text-gray-900 mb-2">
+                                        Packages:
+                                    </div>
+                                    <div className="flex flex-col gap-5" data-accordion="true" data-accordion-expand-all="true">
+                                        {selectedPackages.map((prodPackage: Package) => (
+                                            <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
+                                                <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
+                                                    <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
+                                                        <div className="flex flex-col items-start">
+                                                            <span className="text-base text-gray-900 font-medium">
+                                                                {prodPackage.name}
+                                                            </span>
+                                                            <span className='text-base text-slate-700'>
+                                                                RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                            <span className='text-sm text-slate-400'>
+                                                                {prodPackage.description}
+                                                            </span>
+                                                        </div>
+                                                        <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
+                                                        </i>
+                                                        <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
+                                                        </i>
+                                                    </button>
+                                                    <div className="accordion-content active border-t" id={"package_content_" + prodPackage.id.toString()}>
+                                                        <div className="product-list flex flex-col">
+                                                            <table className="table align-middle text-gray-700 font-medium text-sm">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th className='w-[250px]'>Product</th>
+                                                                        <th className='w-[100px] text-center'>Quantity</th>
+                                                                        <th className='w-[100px] text-center'>Unit Price</th>
+                                                                        <th className='w-[100px] text-center'>Discount</th>
+                                                                        <th className='w-[100px] text-center'>Total Price</th>
+                                                                        <th className='w-[100px] text-center'>Include Product</th>
                                                                     </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {prodPackage.products.map((product) => (
+                                                                        <tr
+                                                                            key={product.id}
+                                                                        >
+                                                                            <td>
+                                                                                <div className="flex flex-col">
+                                                                                    <span>{product.name}</span>
+                                                                                    <span className="text-xs text-slate-400">{product.description}</span>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className='text-center text-lg'>
+                                                                                <span className="mx-2 text-base">
+                                                                                    {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className="text-center">
+                                                                                RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                            </td>
+                                                                            <td className='text-center'>
+                                                                                {!product.pivot.included
+                                                                                    ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                                    : null}
+                                                                            </td>
+                                                                            <td className="text-center">
+                                                                                {!product.pivot.included
+                                                                                    ? null
+                                                                                    : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                            </td>
+                                                                            <td className='text-center'>
+                                                                                <label className="switch flex justify-center">
+                                                                                    <input
+                                                                                        name="included"
+                                                                                        type="checkbox"
+                                                                                        checked={product.pivot.included}
+                                                                                        readOnly
+                                                                                    />
+                                                                                </label>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    )}
+
+                    <div className="flex justify-end gap-4">
+                        <button className="btn btn-lg btn-light">
+                            Cancel
+                        </button>
+                        <button
+                            className="btn btn-lg btn-primary"
+                            onClick={handleSubmit}
+                        >
+                            Create
+                        </button>
                     </div>
-                )}
+                </div>
             </div>
 
-            <div className="flex justify-end gap-6">
-                <button className="btn btn-lg btn-light">
-                    Cancel
-                </button>
-                <button
-                    className="btn btn-lg btn-primary"
-                    onClick={handleSubmit}
+            <div
+                className="w-[340px] drawer drawer-start grow fixed z-1 top-20 lg:top-20 bottom-12 lg:bottom-12 lg:right-[max(0px,calc(50%-45rem))] lg:left-auto lg:translate-x-0 lg:flex flex-col items-stretch shrink-0 bg-[#fefefe] dark:bg-coal-500"
+                data-overlay="true"
+                data-overlay-enable="true|lg:false"
+                id="aside"
+            >
+                <div
+                    className="card flex flex-col shrink-0 px-3 scrollable-y-hover max-h-dvh"
+                    data-scrollable="true"
+                    data-scrollable-dependencies="#header"
+                    data-scrollable-height="auto"
+                    data-scrollable-offset="15px"
+                    data-scrollable-wrappers="#page"
+                    id="aside_content"
+                    style={{ height: 'calc(100vh - 11em)', maxHeight: 'calc(100vh - 11em)' }}
                 >
-                    Create
-                </button>
+                    {formDetail ?
+                        <>
+                            <div className="card-header px-2">
+                                <h2 className='text-base font-semibold'>Form Detail</h2>
+                            </div>
+                            <div className="card-body flex flex-col gap-6 text-gray-900 px-2 py-4">
+                                <div className="flex flex-col">
+                                    <span className="font-normal">What's your original number of rooms?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_1}</span>
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <span className="font-normal">What's the number of bathroom?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_2}</span>
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <span className="font-normal">Already Vacant Possessions (VP)?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_3}</span>
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <span className="font-normal">Already collect key?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_4}</span>
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <span className="font-normal">Already done defect inspection?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_5}</span>
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <span className="font-normal">Already submit defect submission to MO?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_6}</span>
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <span className="font-normal">MO has completed that defect rectification?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_7}</span>
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <span className="font-normal">Do you want to add partition room to your unit?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_8}</span>
+                                </div>
+                            </div>
+                        </>
+                        :
+                        <span>Nothing</span>
+                    }
+                </div>
             </div>
         </>
     );

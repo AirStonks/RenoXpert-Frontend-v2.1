@@ -19,7 +19,6 @@ import QuotationMain from './pages/Quotation/QuotationMain';
 import CreateQuotation from './pages/Quotation/CreateQuotation';
 import EditQuotation from './pages/Quotation/EditQuotation';
 import Loading from './components/Loading';
-import ContactMain from './pages/Contact/ContactMain';
 import PropertyMain from './pages/Property/PropertyMain';
 import OrderMain from './pages/Order/OrderMain';
 import CreateOrder from './pages/Order/CreateOrder';
@@ -45,9 +44,12 @@ import OwnerLogin from './pages/OwnerPages/OwnerLogin';
 import UsersMain from './pages/User/UsersMain';
 import AddUser from './pages/User/AddUser';
 import OrderPreview from './pages/Order/OrderPreview';
-import OwnerRegistrationForm from './pages/OwnerPages/OwnerRegistrationForm';
+import OwnerRenoRegistrationForm from './pages/OwnerPages/OwnerRenoRegistrationForm';
 import FormSubmitSuccess from './pages/OwnerPages/FormSubmitSuccess';
 import RegistrationFormMain from './pages/RegistrationForm/RegistrationFormMain';
+import EditRegistrationForm from './pages/RegistrationForm/EditRegistrationForm';
+import RegistrationFormDetail from './pages/RegistrationForm/RegistrationFormDetail';
+import RenoRegistrationFormDetail from './pages/OwnerPages/RenoRegistrationFormDetail';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -78,7 +80,7 @@ const routes = [
   { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
   { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
   { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
-  { path: '/owner/reno-registration-form', element: <OwnerRegistrationForm />, layout: null },
+  { path: '/owner/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
   { path: '/owner/reno-registration-form/success', element: <FormSubmitSuccess />, layout: null },
 
 
@@ -96,6 +98,10 @@ const routes = [
 
   { path: '/success/test', element: <PaymentSuccess />, layout: null },
 
+
+  /*--- REGISTRATION FORM ---*/
+  { path: '/owner/form/reno-registration-forms/:id', element: <RenoRegistrationFormDetail />, layout: OwnerProtectedLayout },
+
   /*--- PRODUCT ---*/
   { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
   { path: '/products/create', element: <CreateProduct />, layout: ProtectedLayout },
@@ -112,15 +118,15 @@ const routes = [
   { path: '/quotations/create', element: <CreateQuotation />, layout: ProtectedLayout },
   { path: '/quotations/edit/:id', element: <EditQuotation />, layout: ProtectedLayout },
 
-  /*--- CONTACT ---*/
-  { path: '/contacts', element: <ContactMain />, layout: ProtectedLayout },
-
   /*--- PROPERTY ---*/
   { path: '/properties', element: <PropertyMain />, layout: ProtectedLayout },
 
   
   /*--- REGISTRATION FORM ---*/
   { path: '/registration-forms', element: <RegistrationFormMain />, layout: ProtectedLayout },
+  { path: '/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
+  { path: '/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
+  
 
   /*--- ORDER ---*/
   { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },

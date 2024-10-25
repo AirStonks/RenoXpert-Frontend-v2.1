@@ -249,7 +249,7 @@ function Sidebar() {
               </div>
             </div>
           </div>
-          <div
+          {/* <div
             className="menu-item"
             data-menu-item-toggle="accordion"
             data-menu-item-trigger="click"
@@ -295,7 +295,7 @@ function Sidebar() {
                 </Link>
               </div>
             </div>
-          </div>
+          </div> */}
           <div
             className="menu-item"
             data-menu-item-toggle="accordion"

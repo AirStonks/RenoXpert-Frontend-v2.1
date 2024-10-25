@@ -91,7 +91,6 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
         }
     }
 
-
     const handleSelectDiscountFee = (discountFee: DiscountFee) => {
         console.log(discountFee);
 

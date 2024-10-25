@@ -2,22 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { Slide, toast } from "react-toastify";
-import { Contact } from "../../types";
+import { User } from "../../types";
 import { KTCollapse, KTModal } from "../../metronic/core";
-import { createContact } from "../../services/api";
+import { createUser } from "../../services/api";
 
 function CreateAddonInvoiceModal() {
     const [isOpen, setIsOpen] = useState(false);
 
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone_no: '',
-        alt_phone_no: '',
-        race: '',
-        gender: '',
-        nationality: '',
-        description: '',
+        // name: '',
+        // email: '',
+        // phone_no: '',
+        // alt_phone_no: '',
+        // race: '',
+        // gender: '',
+        // nationality: '',
+        // description: '',
     });
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -42,37 +42,37 @@ function CreateAddonInvoiceModal() {
     };
 
     const handleSubmit = async () => {
-        try {
-            const contactData: Contact = {
-                name: formData.name,
-                email: formData.email,
-                phone_no: formData.phone_no,
-                alt_phone_no: formData.alt_phone_no,
-                race: formData.race,
-                gender: formData.gender,
-                nationality: formData.nationality,
-                description: formData.description,
-            };
+        // try {
+        //     const userData: User = {
+        //         name: formData.name,
+        //         email: formData.email,
+        //         phone_no: formData.phone_no,
+        //         alt_phone_no: formData.alt_phone_no,
+        //         race: formData.race,
+        //         gender: formData.gender,
+        //         nationality: formData.nationality,
+        //         description: formData.description,
+        //     };
 
-            const response = await createContact(contactData);
+        //     const response = await createUser(userData);
 
-            if (response?.success) {
-                notify('success', "Contact Created Successfully!");
+        //     if (response?.success) {
+        //         notify('success', "User Created Successfully!");
 
-                // Close Modal
-                const element = document.querySelector('#create_contact_modal') as HTMLElement;
-                const modal = KTModal.getInstance(element);
+        //         // Close Modal
+        //         const element = document.querySelector('#create_user_modal') as HTMLElement;
+        //         const modal = KTModal.getInstance(element);
 
-                modal.hide();
-            }
+        //         modal.hide();
+        //     }
 
-        } catch (error) {
-            if (error.response?.status === 422) {
-                notify('error', "Contact creation unsuccessful. Check the errors below.");
-            } else {
-                console.error('Contact creation failed:', error);
-            }
-        }
+        // } catch (error) {
+        //     if (error.response?.status === 422) {
+        //         notify('error', "User creation unsuccessful. Check the errors below.");
+        //     } else {
+        //         console.error('User creation failed:', error);
+        //     }
+        // }
     };
 
     useEffect(() => {
@@ -83,7 +83,7 @@ function CreateAddonInvoiceModal() {
         <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="create-addon-inv-modal">
             <div className="modal-content modal-center-y max-w-[600px] max-h-[95%]">
                 <div className="modal-header py-4 px-5">
-                    <span className="text-lg text-gray-900 font-bold">Add New Contact</span>
+                    <span className="text-lg text-gray-900 font-bold">Add New User</span>
                     <button
                         className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
                         data-modal-dismiss="true"
@@ -92,7 +92,7 @@ function CreateAddonInvoiceModal() {
                     </button>
                 </div>
                 <div className="modal-body p-6 scrollable overflow-y-auto">
-                    <div className="flex flex-col mb-4">
+                    {/* <div className="flex flex-col mb-4">
                         <label className='mb-2 text-sm font-medium text-gray-900'>
                             Name
                         </label>
@@ -220,7 +220,7 @@ function CreateAddonInvoiceModal() {
                                 onChange={handleChange}
                             />
                         </div>
-                    </div>
+                    </div> */}
 
                 </div>
                 <div className="modal-footer justify-end">

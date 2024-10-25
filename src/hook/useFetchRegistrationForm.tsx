@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { fetchRegistrationForm } from '../services/api';
 import { OwnerRegistrationForm } from '../types';
 
-const useFetchRegistrationForm = (formId: number | null) => {
+const useFetchRegistrationForm = (formId: number | null, originalForm: string = 'false') => {
     const [formDetail, setFormDetail] = useState<OwnerRegistrationForm | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -18,7 +18,7 @@ const useFetchRegistrationForm = (formId: number | null) => {
         }
 
         setLoading(true);
-        fetchRegistrationForm(formId)
+        fetchRegistrationForm(formId, originalForm)
             .then((data) => {
                 setFormDetail(data.data.data);
                 setLoading(false);

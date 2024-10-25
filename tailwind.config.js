@@ -2,6 +2,7 @@
 export default {
   content: [
     "./index.html",
+	'./src/components/**/*.{ts,js}',
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   safelist: [

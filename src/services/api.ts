@@ -2,9 +2,9 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { Contact, DiscountFee, Invoice, Order, Package, Product, ProductCategory, Property, Quotation, Sale, User } from '../types';
+import { DiscountFee, Invoice, Order, OwnerRegistrationForm, Package, Product, ProductCategory, Property, Quotation, Sale, User } from '../types';
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
@@ -16,6 +16,40 @@ const getAuthHeaders = () => {
 export const user = async () => {
     try {
         const response = await axios.get(API_URL + 'user', {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchUser = async (userId: number) => {
+    try {
+        const response = await axios.get(API_URL + `users/${userId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const fetchUsers = async (searchTerm = '', userType: string = null) => {
+    try {
+        if (userType) {
+            const response = await axios.get(API_URL + 'users/type/' + userType, {
+                headers: getAuthHeaders(),
+                params: {
+                    search: searchTerm,
+                }
+            });
+
+            return response.data;
+        }
+
+        const response = await axios.get(API_URL + 'users', {
             headers: getAuthHeaders()
         });
         return response.data;
@@ -285,77 +319,6 @@ export const fetchQuotations = async (searchTerm = '', length = 5) => {
 export const removeQuotation = async (quotationId: number) => {
     try {
         const response = await axios.delete(API_URL + `quotations/${quotationId}`, {
-            headers: {
-                ...getAuthHeaders(),
-                'Content-Type': 'application/json',
-            }
-        });
-        return response.data;
-    } catch (error) {
-        handle401Error(error as AxiosError);
-        throw error; // Ensure to throw the error if needed
-    }
-}
-
-export const createContact = async (contactData: Contact) => {
-    try {
-        const response = await axios.post(API_URL + 'contacts', contactData, {
-            headers: {
-                ...getAuthHeaders(),
-                'Content-Type': 'application/json',
-            }
-        });
-        return response.data;
-    } catch (error) {
-        handle401Error(error as AxiosError);
-    }
-};
-
-export const fetchContact = async (contactId: number) => {
-    try {
-        const response = await axios.get(API_URL + `contacts/${contactId}`, {
-            headers: getAuthHeaders()
-        });
-        return response.data; // Return product data
-    } catch (error) {
-        handle401Error(error as AxiosError);
-        throw error; // Ensure to throw the error if needed
-    }
-};
-
-export const fetchContacts = async (searchTerm = '', length = 5) => {
-    try {
-        const response = await axios.get(API_URL + `contacts`, {
-            headers: getAuthHeaders(),
-            params: {
-                search: searchTerm,
-                size: length
-            }
-        });
-        return response.data; // Return product data
-    } catch (error) {
-        handle401Error(error as AxiosError);
-        throw error; // Ensure to throw the error if needed
-    }
-};
-
-export const updateContact = async (contactData: Contact) => {
-    try {
-        const response = await axios.put(API_URL + `contacts/${contactData.id}`, contactData, {
-            headers: {
-                ...getAuthHeaders(),
-                'Content-Type': 'application/json',
-            }
-        });
-        return response.data;
-    } catch (error) {
-        handle401Error(error as AxiosError);
-    }
-};
-
-export const removeContact = async (contactId: number) => {
-    try {
-        const response = await axios.delete(API_URL + `contacts/${contactId}`, {
             headers: {
                 ...getAuthHeaders(),
                 'Content-Type': 'application/json',
@@ -682,9 +645,9 @@ export const testSms = async () => {
 }
 
 
-export const fetchRegistrationForm = async (formId: number) => {
+export const fetchRegistrationForm = async (formId: number, originalForm: boolean = false) => {
     try {
-        const response = await axios.get(API_URL + `owner/reno-registration-form/${formId}`, {
+        const response = await axios.get(API_URL + `owner/reno-registration-form/${formId}?originalForm=${originalForm}`, {
             headers: getAuthHeaders()
         });
 
@@ -721,3 +684,17 @@ export const rejectRegistrationForm = async (formId: number) => {
         throw error;
     }
 }
+
+export const updateRegistrationForm = async (form: OwnerRegistrationForm) => {
+    try {
+        const response = await axios.put(API_URL + `owner/reno-registration-form/${form.id}`, form, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};

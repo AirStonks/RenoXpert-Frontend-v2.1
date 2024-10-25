@@ -1,11 +1,12 @@
 // src\components\Tables\ContactTable.tsx
 
 import { useCallback, useEffect, useState } from 'react';
-import { KTDataTable, KTModal } from '../../metronic/core';
-import { Contact } from '../../types';
+import { KTDataTable } from '../../metronic/core';
 import OwnerRegistrationFormModal from '../Modals/OwnerRegistrationFormModal';
 import { approveRegistrationForm, rejectRegistrationForm } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { OwnerRegistrationForm } from '../../types';
+import Tooltip from '../Tooltip';
 
 function RegistrationFormTable() {
     const navigate = useNavigate();
@@ -22,13 +23,13 @@ function RegistrationFormTable() {
         const viewButton = target.closest('[data-action="view"]') as HTMLElement;
         const approveButton = target.closest('[data-action="approve"]') as HTMLElement;
         const rejectButton = target.closest('[data-action="reject"]') as HTMLElement;
+        const createQuotationButton = target.closest('[data-action="create_quotation"]') as HTMLElement;
 
 
         if (viewButton) {
             const id = viewButton.dataset.id;
-            if (id) {
-                setSelectedFormId(parseInt(id, 10));
-            }
+
+            navigate('/registration-forms/' + id);
         }
 
         if (approveButton) {
@@ -59,6 +60,12 @@ function RegistrationFormTable() {
             }
         }
 
+        if (createQuotationButton) {
+            const id = createQuotationButton.dataset.id;
+
+            navigate('/orders/create?formId=' + id);
+        }
+
     }, []);
 
     useEffect(() => {
@@ -84,29 +91,34 @@ function RegistrationFormTable() {
                 },
                 name: {
                     title: 'Name',
-                    render: (item: string, data) => `
+                    render: (item: string, data: OwnerRegistrationForm) => `
                         <div class="flex">
-                            ${data.name_first} ${data.name_last}
+                            ${data.user.name_first} ${data.user.name_last}
                         </div>
                     `,
                 },
                 phone_no: {
                     title: "Phone No",
-                    render: (item: string, data) => `
+                    render: (item: string, data: OwnerRegistrationForm) => `
                         <div class="flex">
-                            ${data.country_code}${data.phone_no}
+                            ${data.user.country_code}${data.user.phone_no}
                         </div>
                     `
                 },
                 email: {
-                    title: "Email"
+                    title: "Email",
+                    render: (item: string, data: OwnerRegistrationForm) => `
+                        <div class="flex">
+                            ${data.user.email}
+                        </div>
+                    `
                 },
                 status: {
                     title: "Status"
                 },
                 action: {
                     title: 'Action',
-                    render: (item: string, data) => `
+                    render: (item: string, data: OwnerRegistrationForm) => `
                         <div class="flex justify-around gap-2">
                             <button 
                                 class="btn-edit btn btn-sm btn-light"
@@ -120,11 +132,10 @@ function RegistrationFormTable() {
 
                             ${data.status !== 'approved' && data.status !== 'rejected' ? `
                                 <button 
-                                    class="btn-delete btn btn-sm btn-success"
-                                    data-tooltip="#approve_tooltip"
+                                    class="btn-delete btn btn-sm btn-success ${!data.property ? 'disabled' : ''}"
+                                    data-tooltip="#${!data.property ? 'disabled_tooltip' : 'approve_tooltip'}"
                                     data-action="approve"
                                     data-id="${data.id}"
-                                    data-name="${data.name}"
                                     data-modal-toggle="#confirm_item_modal"
                                 >
                                     Approve
@@ -135,10 +146,20 @@ function RegistrationFormTable() {
                                     data-tooltip="#reject_tooltip"
                                     data-action="reject"
                                     data-id="${data.id}"
-                                    data-name="${data.name}"
                                     data-modal-toggle="#delete_item_modal"
                                 >
                                     Reject
+                                </button>
+                            ` :
+                            data.status === 'approved' ? `
+                                <button 
+                                    class="btn-create-quotation btn btn-sm btn-info"
+                                    data-tooltip="#create_quotation_tooltip"
+                                    data-action="create_quotation"
+                                    data-id="${data.id}"
+                                    data-modal-toggle="#create_quotation_modal"
+                                >
+                                    Create Quotation
                                 </button>
                             ` : ''}
                         </div>
@@ -185,7 +206,7 @@ function RegistrationFormTable() {
                 <div className="card card-grid min-w-full">
                     <div className="card-header flex-wrap gap-2">
                         <h3 className="card-title font-medium text-lg">
-                            Contact List
+                            Form List
                         </h3>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button
@@ -270,6 +291,11 @@ function RegistrationFormTable() {
                 navigateUrl='/contacts'
                 deleteFunction={removeContact}
             /> */}
+
+
+            <div className="tooltips">
+                <Tooltip id='disabled_tooltip' content='Change property to enable this feature' />
+            </div>
         </>
     );
 }

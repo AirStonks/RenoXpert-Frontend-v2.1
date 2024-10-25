@@ -137,13 +137,13 @@ function OrderTable() {
                         </div>
                     `
                 },
-                contact: {
+                user: {
                     title: 'Contact',
                     render: (item: string, data: Order) => `
                         <div class="flex flex-col gap-1">
-                            <span>${data.contact.name}</span>
-                            <span class="text-xs text-slate-400">${data.contact.email}</span>
-                            <span class="text-xs text-slate-700">${data.contact.phone_no}</span>
+                            <span>${data.user.name}</span>
+                            <span class="text-xs text-slate-400">${data.user.email}</span>
+                            <span class="text-xs text-slate-700">${data.user.phone_no}</span>
                         </div>
                     `,
                 },

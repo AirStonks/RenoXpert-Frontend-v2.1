@@ -6,6 +6,8 @@ import useFetchOrder from "../../hook/useFetchOrder";
 import { KTAccordion } from "../../metronic/core";
 import { OrderQuotation, Package } from "../../types";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import ClipboardJS from "clipboard";
+import { Slide, toast } from "react-toastify";
 
 function OrderDetail() {
     const navigate = useNavigate();
@@ -14,12 +16,37 @@ function OrderDetail() {
 
     const { orderDetail, loading, error } = useFetchOrder(orderId);
 
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
+
     useEffect(() => {
         KTAccordion.init();
 
         // if (orderDetail) {
         //     console.log(JSON.parse(JSON.stringify(orderDetail.total_amount)));
         // }
+
+        const clipboard = new ClipboardJS('.copy-link');
+
+        clipboard.on('success', function (e) {
+            notify('success', 'Copied to clipboard!');
+            e.clearSelection();
+            console.log('yeet');
+        });
+
+        return () => {
+            clipboard.destroy();
+        };
 
     }, [orderDetail]);
 
@@ -149,11 +176,15 @@ function OrderDetail() {
                                                     id="clipboard_1_target"
                                                     placeholder="Copy to clipboard"
                                                     type="text"
-                                                    // value={`http://${window.location.hostname}:5173/invoice/${invoiceDetail.id}/view`}
-                                                    // onClick={() => { window.open(`http://${window.location.hostname}:5173/invoice/${invoiceDetail.id}/view`, '_blank'); }}
+                                                    value={`http://${window.location.hostname}:5173/owner/order/overview/id/${orderDetail.id}`}
+                                                    onClick={() => { window.open(`http://${window.location.hostname}:5173/owner/order/overview/id/${orderDetail.id}`, '_blank'); }}
                                                     readOnly
                                                 />
-                                                <button className="btn btn-icon" id="clipboard_1_button">
+                                                <button
+                                                    className="btn btn-icon copy-link"
+                                                    id="clipboard_1_button"
+                                                    data-clipboard-text={`http://${window.location.hostname}:5173/owner/order/overview/id/${orderDetail.id}`}
+                                                >
                                                     <i className="ki-outline ki-copy"></i>
                                                 </button>
                                             </div>
@@ -178,7 +209,7 @@ function OrderDetail() {
                                             Name:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.contact.name}
+                                            {orderDetail.user.name}
                                         </td>
                                     </tr>
                                     <tr>
@@ -186,7 +217,7 @@ function OrderDetail() {
                                             Email:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.contact.email}
+                                            {orderDetail.user.email}
                                         </td>
                                     </tr>
                                     <tr>
@@ -194,7 +225,7 @@ function OrderDetail() {
                                             Phone No.:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.contact.phone_no}
+                                            {orderDetail.user.phone_no}
                                         </td>
                                     </tr>
                                 </tbody>

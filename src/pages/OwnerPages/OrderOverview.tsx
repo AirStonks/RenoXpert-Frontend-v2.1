@@ -53,7 +53,7 @@ function OrderOverview() {
     const handleAgreeOrder = async () => {
         navigate('/confirm/order/otp/verify', {
             state: {
-                'mobile': orderDetail.contact.phone_no,
+                'mobile': orderDetail.user.phone_no,
                 'orderId': orderDetail.id
             }
         });
@@ -121,7 +121,7 @@ function OrderOverview() {
                 <span>BETWEEN</span>
                 <span><strong>BELIVE VENTURES SDN. BHD. [Registration No.202101035366 (1435666-K)]</strong> of <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 47500 Subang Jaya, Selangor</strong> (“the Contractor”) of the one part;</span>
                 <span>AND</span>
-                <span><strong>{orderDetail.contact.name} (NRIC No.[ic])</strong> of <strong>{address}</strong> ("the Owner") of the other part</span>
+                <span><strong>{orderDetail.user.name} (NRIC No.[ic])</strong> of <strong>{address}</strong> ("the Owner") of the other part</span>
             </div>
             <div className="flex flex-col gap-6 mb-6">
                 <span className='font-bold'>WHEREAS:</span>
@@ -400,7 +400,7 @@ function OrderOverview() {
                                                 <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
                                                 <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
 
-                                                <h2 className="text-xl font-semibold text-slate-900">There is no Quotation here</h2>
+                                                <h2 className="text-xl font-semibold text-slate-900">There is no Payment Invoices here</h2>
                                             </div>
                                             : orderDetail.sale.invoices.map((invoice, index) => (
                                                 <Link
