@@ -608,7 +608,7 @@ function CreateOrder() {
                     </div>
                     {selectedQuotation && (
                         <div className="flex flex-col gap-4">
-                            <div className="card border-slate-800">
+                            <div className="card">
                                 <div className="card-body quotation-info flex justify-between items-center gap-4">
                                     <div className="flex flex-col">
                                         <span className='text-lg font-semibold text-gray-900'>
@@ -633,7 +633,7 @@ function CreateOrder() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="card border-slate-800">
+                            <div className="card">
                                 <div className="card-body">
                                     <div className="text-base font-semibold text-gray-900 mb-2">
                                         Packages:
@@ -654,16 +654,14 @@ function CreateOrder() {
                                                                 {prodPackage.description}
                                                             </span>
                                                         </div>
-                                                        <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
-                                                        </i>
-                                                        <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
-                                                        </i>
                                                     </button>
                                                     <div className="accordion-content active border-t" id={"package_content_" + prodPackage.id.toString()}>
                                                         <div className="product-list flex flex-col">
                                                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                                                 <thead>
                                                                     <tr>
+                                                                        <th className='w-[10px] text-center'>Supply</th>
+                                                                        <th className='w-[10px] text-center'>Install</th>
                                                                         <th className='w-[250px]'>Product</th>
                                                                         <th className='w-[100px] text-center'>Quantity</th>
                                                                         <th className='w-[100px] text-center'>Unit Price</th>
@@ -677,6 +675,29 @@ function CreateOrder() {
                                                                         <tr
                                                                             key={product.id}
                                                                         >
+                                                                            <td>
+                                                                                <span></span>
+                                                                                <div className="flex flex-col items-center">
+                                                                                    <input
+                                                                                        className="checkbox"
+                                                                                        name="supply"
+                                                                                        type="checkbox"
+                                                                                        checked={!!product.pivot.includeSupply}
+                                                                                        readOnly
+                                                                                    />
+                                                                                </div>
+                                                                            </td>
+                                                                            <td>
+                                                                                <div className="flex flex-col items-center">
+                                                                                    <input
+                                                                                        className="checkbox"
+                                                                                        name="install"
+                                                                                        type="checkbox"
+                                                                                        checked={!!product.pivot.includeInstall}
+                                                                                        readOnly
+                                                                                    />
+                                                                                </div>
+                                                                            </td>
                                                                             <td>
                                                                                 <div className="flex flex-col">
                                                                                     <span>{product.name}</span>
@@ -741,7 +762,7 @@ function CreateOrder() {
             </div>
 
             <div
-                className="w-[340px] drawer drawer-start grow fixed z-1 top-20 lg:top-20 bottom-12 lg:bottom-12 lg:right-[max(0px,calc(50%-45rem))] lg:left-auto lg:translate-x-0 lg:flex flex-col items-stretch shrink-0 bg-[#fefefe] dark:bg-coal-500"
+                className="w-[340px] drawer drawer-start grow fixed z-1 top-20 lg:top-20 bottom-12 lg:bottom-12 lg:right-8 lg:left-auto lg:translate-x-0 lg:flex flex-col items-stretch shrink-0 bg-[#fefefe] dark:bg-coal-500"
                 data-overlay="true"
                 data-overlay-enable="true|lg:false"
                 id="aside"
@@ -804,7 +825,11 @@ function CreateOrder() {
                             </div>
                         </>
                         :
-                        <span>Nothing</span>
+                        <div className="card-body flex flex-col items-center justify-center">
+                            <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
+                            <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
+                            <span className="text-gray-800 text-lg font-semibold text-center">No Registration Form selected</span>
+                        </div>
                     }
                 </div>
             </div>

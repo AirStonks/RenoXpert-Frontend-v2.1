@@ -317,6 +317,38 @@ function EditNewOrderQuotation() {
         localStorage.setItem('selected_quotation_packages', JSON.stringify(packages));
     };
 
+    const toggleProperty = (id: number, packId: number, property: 'supply' | 'install') => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage) => {
+                if (prodPackage.id === packId) {
+                    const updatedProducts = prodPackage.products.map((product) => {
+                        if (product.id === id) {
+                            const key = property === 'install' ? 'includeInstall' : 'includeSupply';
+
+                            return {
+                                ...product,
+                                pivot: {
+                                    ...product.pivot,
+                                    [key]: product.pivot ? !product.pivot[key] : true, // handle case if pivot is undefined
+                                },
+                            };
+                        }
+                        return product; // Return the original product if not matched
+                    });
+
+                    return {
+                        ...prodPackage,
+                        products: updatedProducts,
+                    };
+                }
+                return prodPackage; // Return the original package if not matched
+            });
+
+            updateLocalStorage(updatedPackages);
+            return updatedPackages;
+        });
+    };
+
     const adjustQuantity = (prodId: number, packId: number, action: 'increase' | 'decrease') => {
         setSelectedPackages((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage) => {
@@ -495,6 +527,8 @@ function EditNewOrderQuotation() {
                                                 <table className="table align-middle text-gray-700 font-medium text-sm">
                                                     <thead>
                                                         <tr>
+                                                            <th className='w-[10px] text-center'>Supply</th>
+                                                            <th className='w-[10px] text-center'>Install</th>
                                                             <th className='w-[250px]'>Product</th>
                                                             <th className='w-[100px] text-center'>Quantity</th>
                                                             <th className='w-[100px] text-center'>Unit Price</th>
@@ -508,6 +542,29 @@ function EditNewOrderQuotation() {
                                                             <tr
                                                                 key={product.id}
                                                             >
+                                                                <td>
+                                                                    <span></span>
+                                                                    <div className="flex flex-col items-center">
+                                                                        <input
+                                                                            className="checkbox"
+                                                                            name="supply"
+                                                                            type="checkbox"
+                                                                            checked={!!product.pivot.includeSupply}
+                                                                            onChange={() => toggleProperty(product.id, prodPackage.id, 'supply')}
+                                                                        />
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="flex flex-col items-center">
+                                                                        <input
+                                                                            className="checkbox"
+                                                                            name="install"
+                                                                            type="checkbox"
+                                                                            checked={!!product.pivot.includeInstall}
+                                                                            onChange={() => toggleProperty(product.id, prodPackage.id, 'install')}
+                                                                        />
+                                                                    </div>
+                                                                </td>
                                                                 <td>
                                                                     <div className="flex flex-col">
                                                                         <span>{product.name}</span>

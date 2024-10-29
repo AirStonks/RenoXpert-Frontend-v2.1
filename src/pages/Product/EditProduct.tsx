@@ -27,9 +27,12 @@ const EditProduct: React.FC = () => {
         type: 'service',
         description: '',
         category: 0,
+        uom: '',
         product_retail_price: '',
         product_cost_of_good_sold: '',
         product_excluded_price: '',
+        supply_cost: 0,
+        install_cost: 0,
         status: ''
     });
 
@@ -61,10 +64,13 @@ const EditProduct: React.FC = () => {
                 SKU: product.SKU || '',
                 type: product.type || '',
                 category: product.category_id || 0,
+                uom: product.uom,
                 description: product.description || '',
                 product_retail_price: product.product_retail_price.toString() || '',
                 product_cost_of_good_sold: product.product_cost_of_good_sold.toString() || '',
                 product_excluded_price: product.product_excluded_price.toString() || '',
+                supply_cost: product.supply_cost,
+                install_cost: product.install_cost,
                 status: product.status || ''
             });
         }
@@ -72,7 +78,9 @@ const EditProduct: React.FC = () => {
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        
         const { name, value } = e.target;
+        console.log(name, value);
         
         setFormData((prevData) => ({
             ...prevData,
@@ -86,12 +94,15 @@ const EditProduct: React.FC = () => {
                 id: formData.id,
                 name: formData.productName,
                 SKU: formData.SKU,
-                category: formData.category, // Example category, you can modify this
+                category: formData.category,
                 type: formData.type,
                 description: formData.description,
+                uom: formData.uom,
                 product_retail_price: parseFloat(formData.product_retail_price),
                 product_cost_of_good_sold: parseFloat(formData.product_cost_of_good_sold),
                 product_excluded_price: parseFloat(formData.product_excluded_price),
+                supply_cost: formData.supply_cost,
+                install_cost: formData.install_cost,
                 status: formData.status,
             };
 
@@ -238,7 +249,7 @@ const EditProduct: React.FC = () => {
                                     fieldTitle="Product Name"
                                     description="A product name is required and recommended to be unique."
                                     placeholder="Product name"
-                                    name="name"
+                                    name="productName"
                                     value={formData.productName}
                                     onChange={handleChange}
                                     error={validationErrors.name}
@@ -311,45 +322,83 @@ const EditProduct: React.FC = () => {
                     {/* Pricing */}
                     <div className="card">
                         <div className="card-body">
-                            <div className="flex flex-col">
-                                {/* Header */}
-                                <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Pricing</h1>
+                            {/* Header */}
+                            <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Pricing</h1>
+                            <div className="flex gap-12">
+                                <div className="flex flex-col flex-1">
+                                    {/* Retail Price */}
+                                    <InputFieldGroup
+                                        fieldTitle="UOM"
+                                        description="Unit of Measurement of the product"
+                                        placeholder="Retail Price"
+                                        type="text"
+                                        name="uom"
+                                        value={formData.uom}
+                                        onChange={handleChange}
+                                        error={validationErrors.uom}
+                                    />
 
-                                {/* Retail Price */}
-                                <InputFieldGroup
-                                    fieldTitle="Retail Price"
-                                    description="This is the price at which the product will be sold to customers"
-                                    placeholder="Retail Price"
-                                    type="number"
-                                    name="product_retail_price"
-                                    value={formData.product_retail_price}
-                                    onChange={handleChange}
-                                    error={validationErrors.product_retail_price}
-                                />
+                                    {/* Retail Price */}
+                                    <InputFieldGroup
+                                        fieldTitle="Retail Price"
+                                        description="This is the price at which the product will be sold to customers"
+                                        placeholder="Retail Price"
+                                        type="number"
+                                        name="product_retail_price"
+                                        value={formData.product_retail_price}
+                                        onChange={handleChange}
+                                        error={validationErrors.product_retail_price}
+                                    />
 
-                                {/* Cost of Good */}
-                                <InputFieldGroup
-                                    fieldTitle="Cost of Good Sold"
-                                    description="This includes all costs directly tied to the production of the product"
-                                    placeholder="Cost of Good Sold"
-                                    type="number"
-                                    name="product_cost_of_good_sold"
-                                    value={formData.product_cost_of_good_sold}
-                                    onChange={handleChange}
-                                    error={validationErrors.product_cost_of_good_sold}
-                                />
+                                    {/* Cost of Good */}
+                                    <InputFieldGroup
+                                        fieldTitle="Cost of Good Sold"
+                                        description="This includes all costs directly tied to the production of the product"
+                                        placeholder="Cost of Good Sold"
+                                        type="number"
+                                        name="product_cost_of_good_sold"
+                                        value={formData.product_cost_of_good_sold}
+                                        onChange={handleChange}
+                                        error={validationErrors.product_cost_of_good_sold}
+                                    />
 
-                                {/* Excluded Price */}
-                                <InputFieldGroup
-                                    fieldTitle="Excluded Price"
-                                    description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
-                                    placeholder="Excluded Price"
-                                    type="number"
-                                    name="product_excluded_price"
-                                    value={formData.product_excluded_price}
-                                    onChange={handleChange}
-                                    error={validationErrors.product_excluded_price}
-                                />
+                                    {/* Excluded Price */}
+                                    <InputFieldGroup
+                                        fieldTitle="Excluded Price"
+                                        description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
+                                        placeholder="Excluded Price"
+                                        type="number"
+                                        name="product_excluded_price"
+                                        value={formData.product_excluded_price}
+                                        onChange={handleChange}
+                                        error={validationErrors.product_excluded_price}
+                                    />
+                                </div>
+                                <div className="flex flex-col flex-1">
+                                    {/* Supply Price */}
+                                    <InputFieldGroup
+                                        fieldTitle="Supply Cost"
+                                        description="This is the price at which the product will be sold to customers"
+                                        placeholder="Price"
+                                        type="number"
+                                        name="supply_cost"
+                                        value={formData.supply_cost}
+                                        onChange={handleChange}
+                                        error={validationErrors.supply_cost}
+                                    />
+
+                                    {/* Install Cost */}
+                                    <InputFieldGroup
+                                        fieldTitle="Install Cost"
+                                        description="This includes all costs directly tied to the production of the product"
+                                        placeholder="Price"
+                                        type="number"
+                                        name="install_cost"
+                                        value={formData.install_cost}
+                                        onChange={handleChange}
+                                        error={validationErrors.install_cost}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

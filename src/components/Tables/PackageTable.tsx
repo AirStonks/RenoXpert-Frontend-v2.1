@@ -60,10 +60,25 @@ function PackageTable() {
         });
     };
 
-    const initPackageTable = useCallback(() => {
+    useEffect(() => {
+        initPackageTable();
+        
+        document.querySelector('#package_table')?.addEventListener('click', handleTableClick);
+
+        return () => {
+            document.querySelector('#package_table')?.removeEventListener('click', handleTableClick);
+        };
+    }, [handleTableClick]);
+
+    const initPackageTable = () => {
         const apiUrl = `http://${window.location.hostname}:8000/api/packages`;
         const element = document.querySelector('#package_table') as HTMLElement;
         const token = localStorage.getItem('token');
+
+        if (!element) {
+            console.error("Package table element not found");
+            return;
+        }
 
         const dataTableOptions = {
             apiEndpoint: apiUrl,
@@ -74,58 +89,51 @@ function PackageTable() {
             pageSize: 5,
             stateSave: false,
             columns: {
-                id: {
-                    title: 'ID',
-                },
-                name: {
-                    title: 'Name',
-                },
-                description: {
-                    title: 'Description',
-                },
+                id: { title: 'ID' },
+                name: { title: 'Name' },
+                description: { title: 'Description' },
                 total_price: {
                     title: 'Price',
                     render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                 },
                 action: {
                     title: 'Action',
-                    render: (item: string, data: Package) => `
-                        <div class="flex justify-around gap-2">
-                            <button 
-                                class="btn btn-sm btn-secondary"
+                    render: (item: string, data: Package) =>
+                        `<div className="flex justify-around gap-2">
+                            <button
+                                className="btn btn-sm btn-secondary"
                                 data-modal-toggle="#package_detail_modal"
                                 data-action="view"
-                                data-id="${data.id}"
+                                data-id=${data.id}
                             >
                                 View
                             </button>
-                            <button 
-                                class="btn-delete btn btn-sm btn-icon btn-danger"
+                            <button
+                                className="btn-delete btn btn-sm btn-icon btn-danger"
                                 data-tooltip="#remove_tooltip"
                                 data-action="delete"
-                                data-id="${data.id}"
-                                data-name="${data.name}"
+                                data-id=${data.id}
+                                data-name=${data.name}
                                 data-modal-toggle="#delete_item_modal"
                             >
-                                <i class="ki-outline ki-trash"></i>
+                                <i className="ki-outline ki-trash"></i>
                             </button>
-                        </div>
-                    `
-                }
+                        </div>`
+                    ,
+                },
             },
         };
 
         datatable = new KTDataTable(element, dataTableOptions);
-    }, []);
 
-    useEffect(() => {
-        initPackageTable();
-        document.querySelector('#package_table')?.addEventListener('click', handleTableClick);
+        if (element) {
+            element.addEventListener('click', handleTableClick);
 
-        return () => {
-            document.querySelector('#package_table')?.removeEventListener('click', handleTableClick);
-        };
-    }, [initPackageTable, handleTableClick]);
+            return () => {
+                element.removeEventListener('click', handleTableClick);
+            };
+        }
+    };
 
     return (
         <>

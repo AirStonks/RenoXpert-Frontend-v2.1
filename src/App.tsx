@@ -50,6 +50,8 @@ import RegistrationFormMain from './pages/RegistrationForm/RegistrationFormMain'
 import EditRegistrationForm from './pages/RegistrationForm/EditRegistrationForm';
 import RegistrationFormDetail from './pages/RegistrationForm/RegistrationFormDetail';
 import RenoRegistrationFormDetail from './pages/OwnerPages/RenoRegistrationFormDetail';
+import CreatePO from './pages/PO/CreatePO';
+import DeveloperTool from './pages/DeveloperTools';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -141,8 +143,16 @@ const routes = [
   { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },
   { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
 
+  
+  /*--- PO---*/
+  { path: '/sales/:id/purchase-order/create', element: <CreatePO />, layout: ProtectedLayout },
+
   /*--- DISCOUNT AND FEE ---*/
   { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
+
+
+  /*--- DEVELOPER TOOLS ---*/
+  { path: '/developer-tools', element: <DeveloperTool />, layout: ProtectedLayout },
 ];
 
 function App() {

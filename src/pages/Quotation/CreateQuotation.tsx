@@ -28,6 +28,8 @@ function CreateQuotation() {
         localStorage.removeItem('include_packages');
         localStorage.removeItem('packages_data');
         localStorage.removeItem('packages_table');
+        localStorage.removeItem('products_data');
+        localStorage.removeItem('products_table');
         navigate('/quotations');
     };
 
@@ -160,8 +162,12 @@ function CreateQuotation() {
                 name: product.name,
                 quantity: product.pivot.quantity,
                 price: product.price,
+                includeSupply: true,
+                includeInstall: true,
                 description: product.description || "N/A" // Using "N/A" for null descriptions
             }));
+
+            console.log(selectedProducts);
 
             localStorage.setItem('selected_quotation_packages', includePackages);
             localStorage.setItem('quotation:selected_package_id', JSON.stringify(selectedPackage.id))
@@ -216,6 +222,40 @@ function CreateQuotation() {
     const updateLocalStorage = (packages) => {
         localStorage.setItem('include_packages', JSON.stringify(packages));
     };
+
+    const toggleProperty = (id: number, packId: number, property: 'supply' | 'install') => {
+        console.log('Triggered toggleProperty');
+    
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage) => {
+                if (prodPackage.id === packId) {
+                    const updatedProducts = prodPackage.products.map((product) => {
+                        if (product.id === id) {
+                            const key = property === 'install' ? 'includeInstall' : 'includeSupply';
+                            
+                            return {
+                                ...product,
+                                pivot: {
+                                    ...product.pivot,
+                                    [key]: product.pivot ? !product.pivot[key] : true, // handle case if pivot is undefined
+                                },
+                            };
+                        }
+                        return product; // Return the original product if not matched
+                    });
+    
+                    return {
+                        ...prodPackage,
+                        products: updatedProducts,
+                    };
+                }
+                return prodPackage; // Return the original package if not matched
+            });
+    
+            updateLocalStorage(updatedPackages);
+            return updatedPackages;
+        });
+    };    
 
     const adjustQuantity = (prodId: number, packId: number, action: 'increase' | 'decrease') => {
         setSelectedPackages((prevPackages: Package[]) => {
@@ -422,6 +462,8 @@ function CreateQuotation() {
                                                     <table className="table align-middle text-gray-700 font-medium text-sm">
                                                         <thead>
                                                             <tr>
+                                                                <th className='w-[10px] text-center'>Supply</th>
+                                                                <th className='w-[10px] text-center'>Install</th>
                                                                 <th className='w-[250px]'>Product</th>
                                                                 <th className='w-[100px] text-center'>Quantity</th>
                                                                 <th className='w-[120px] text-center'>Retail Price</th>
@@ -435,6 +477,29 @@ function CreateQuotation() {
                                                                 <tr
                                                                     key={product.id}
                                                                 >
+                                                                    <td>
+                                                                        <span></span>
+                                                                        <div className="flex flex-col items-center">
+                                                                            <input
+                                                                                className="checkbox"
+                                                                                name="supply"
+                                                                                type="checkbox"
+                                                                                checked={!!product.pivot.includeSupply}
+                                                                                onChange={() => toggleProperty(product.id, prodPackage.id, 'supply')}
+                                                                            />
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div className="flex flex-col items-center">
+                                                                            <input
+                                                                                className="checkbox"
+                                                                                name="install"
+                                                                                type="checkbox"
+                                                                                checked={!!product.pivot.includeInstall}
+                                                                                onChange={() => toggleProperty(product.id, prodPackage.id, 'install')}
+                                                                            />
+                                                                        </div>
+                                                                    </td>
                                                                     <td>
                                                                         <div className="flex flex-col">
                                                                             <span>{product.name}</span>
@@ -459,10 +524,10 @@ function CreateQuotation() {
                                                                             <i className="ki-solid ki-plus-squared"></i>
                                                                         </button>
                                                                     </td>
-                                                                    <td>
+                                                                    <td className='text-center'>
                                                                         RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </td>
-                                                                    <td>
+                                                                    <td className='text-center'>
                                                                         RM {(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </td>
                                                                     <td className='text-center'>
@@ -514,7 +579,7 @@ function CreateQuotation() {
                 selectedPackages={selectedPackages}
                 updateSelectedPackages={updateSelectedPackages}
             />
-            
+
 
             <IncludeQuotationProductModal
                 updateSelectedPackages={updateSelectedPackages}

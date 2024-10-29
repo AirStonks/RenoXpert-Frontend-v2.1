@@ -53,25 +53,21 @@ function OwnerHome() {
     if (userError) return <div>{userError}</div>;
     if (!orders || !owner || !forms) return <div>An unexpected error occurred</div>;
 
-    const svgString = toSvg(owner.name + owner.phone_no, 50);
+    const svgString = toSvg(owner.name + owner.phone_no, 60);
 
     return (
         <div className="flex flex-col w-full px-4">
-            <div className="card mb-4">
+            <div className="card mb-4 mt-8">
                 <div className="card-body">
                     <div className="flex flex-col justify-center items-center">
                         <div
                             dangerouslySetInnerHTML={{ __html: svgString }}
-                            className="flex justify-center items-center size-16 rounded-full border-2 border-success shrink-0"
+                            className="absolute top-16 flex justify-center items-center size-20 rounded-full border-2 border-success shrink-0 bg-white"
                         />
-                        <span className="text-slate-900 text-xl font-bold">{owner.name}</span>
+                        <span className="text-slate-900 text-xl font-bold mt-6">{owner.name}</span>
                         <span className="text-slate-900 text-base">+60 {owner.phone_no}</span>
                         <span className="text-slate-900 text-base mb-3">{owner.email ? owner.email : '-'}</span>
                         <div className="flex gap-4">
-                            {/* <button className="btn btn-sm btn-secondary relative">
-                                <span className="badge badge-dot badge-success size-[8px] absolute top-[-0.6em] right-[-0.3em] transform translate-y-1/2"></span>
-                                Complete Profile
-                            </button> */}
                             <button className="btn btn-sm btn-danger" onClick={handleLogout}>Logout</button>
                         </div>
                     </div>
@@ -180,7 +176,7 @@ function OwnerHome() {
                 <div className="flex flex-col">
                     <div className="flex justify-between items-center mb-2">
                         <span className="text-lg font-bold text-slate-900">Registration Form</span>
-                        <Link 
+                        <Link
                             to={'/owner/reno-registration-form'}
                             className="btn btn-sm btn-secondary"
                         >

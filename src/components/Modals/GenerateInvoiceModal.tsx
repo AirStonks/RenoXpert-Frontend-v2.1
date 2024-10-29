@@ -263,7 +263,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                 </div>
                             </div>
                         </div>
-                        <div className="flex mb-4">
+                        {/* <div className="flex mb-4">
                             <div className="card w-full">
                                 <div className="card-body">
                                     <span className="text-md text-gray-600 font-semibold">
@@ -271,7 +271,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                     </span>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         <div className="flex flex-col mb-8">
                             <div className="flex flex-col mb-4">
                                 <div className="flex">

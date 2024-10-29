@@ -93,6 +93,8 @@ function CreatePackage() {
                     visibility: item.visibility,
                     product_retail_price: parseFloat(item.product_retail_price),
                     internal_note: item.note,
+                    supply: item.supply,
+                    install: item.install,
                 }));
             }
 
@@ -147,6 +149,8 @@ function CreatePackage() {
         const storedProducts = localStorage.getItem('include_prod_selected_products');
         if (storedProducts) {
             const parsedProducts = JSON.parse(storedProducts);
+            console.log(parsedProducts);
+            
             setSelectedProducts(parsedProducts);
             const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
             setTotalPrice(initialTotalPrice);
@@ -195,6 +199,24 @@ function CreatePackage() {
             return updatedProducts;
         });
     };
+
+    const toggleProperty = (id: number, property: 'supply' | 'install') => {
+        setSelectedProducts((prevProducts) => {
+            const updatedProducts = prevProducts.map((product) => {
+                if (product.id === id) {
+                    // Toggle the specified property (supply or install)
+                    return {
+                        ...product,
+                        [property]: !product[property],
+                    };
+                }
+                return product;
+            });
+            updateLocalStorage(updatedProducts); // Update localStorage
+            return updatedProducts;
+        });
+    };
+
 
     const handleRemoveProduct = (id: number) => {
         setSelectedProducts((prevProducts) => {
@@ -321,6 +343,8 @@ function CreatePackage() {
                                         <table className="table align-middle text-gray-700 font-medium text-sm">
                                             <thead>
                                                 <tr>
+                                                    <th className='w-[10px] text-center'>Supply</th>
+                                                    <th className='w-[10px] text-center'>Install</th>
                                                     <th className='w-[250px]'>Product</th>
                                                     <th className='w-[100px] text-center'>Quantity</th>
                                                     <th className='w-[120px] text-center'>Retail Price</th>
@@ -333,6 +357,29 @@ function CreatePackage() {
                                                 {selectedProducts.map((product) => (
                                                     <React.Fragment key={product.id}>
                                                         <tr>
+                                                            <td>
+                                                                <span></span>
+                                                                <div className="flex flex-col items-center">
+                                                                    <input
+                                                                        className="checkbox"
+                                                                        name="supply"
+                                                                        type="checkbox"
+                                                                        checked={!!product.supply}
+                                                                        onChange={() => toggleProperty(product.id, 'supply')}
+                                                                    />
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div className="flex flex-col items-center">
+                                                                    <input
+                                                                        className="checkbox"
+                                                                        name="install"
+                                                                        type="checkbox"
+                                                                        checked={!!product.install}
+                                                                        onChange={() => toggleProperty(product.id, 'install')}
+                                                                    />
+                                                                </div>
+                                                            </td>
                                                             <td>
                                                                 <div className="flex flex-col">
                                                                     <span>{product.name}</span>
@@ -383,7 +430,7 @@ function CreatePackage() {
                                                             </td>
                                                         </tr>
                                                         <tr>
-                                                            <td colSpan={6}>
+                                                            <td colSpan={8}>
                                                                 <input
                                                                     type="text"
                                                                     placeholder="Add a internal reference note"
@@ -441,7 +488,7 @@ function CreatePackage() {
                     </div>
                     <div className="overflow-y-auto scrollable h-screen" id="tab_1_1">
                         <div className="flex flex-col gap-4">
-                            
+
                         </div>
                     </div>
                     <div className="overflow-y-auto scrollable h-screen" id="tab_1_2">

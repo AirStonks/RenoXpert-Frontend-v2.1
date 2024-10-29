@@ -98,6 +98,8 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                         quantity: 1,
                         included: true,
                         visibility: true,
+                        includeSupply: true,
+                        includeInstall: true,
                         isOriginal: !isFromOrderQuotation,
                     };
                     

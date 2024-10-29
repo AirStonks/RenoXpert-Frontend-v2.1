@@ -428,6 +428,22 @@ export const fetchOrder = async (orderId: number) => {
     }
 };
 
+export const fetchOrders = async (searchTerm = '', length = 5) => {
+    try {
+        const response = await axios.get(API_URL + `orders`, {
+            headers: getAuthHeaders(),
+            params: {
+                search: searchTerm,
+                size: length
+            }
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
 export const updateOrder = async (orderData: Order) => {
     try {
         const response = await axios.put(API_URL + `orders/${orderData.id}`, orderData, {

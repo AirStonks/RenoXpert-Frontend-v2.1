@@ -38,6 +38,12 @@ function OrderOverview() {
         return date.toLocaleDateString('en-GB', options);
     };
 
+    const formatDate = (dateStr: string) => {
+        const [day, month, year] = dateStr.split("/");
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        return `${day} ${monthNames[parseInt(month) - 1]} ${year}`;
+      };
+
     useEffect(() => {
         KTComponent.init();
     }, []);
@@ -104,11 +110,11 @@ function OrderOverview() {
     );
 
     const address = [
-        orderDetail.property.address,
-        orderDetail.property.street,
-        orderDetail.property.postcode,
-        orderDetail.property.city,
-        orderDetail.property.state,
+        orderDetail.user.address.address_1,
+        orderDetail.user.address.street,
+        orderDetail.user.address.postcode,
+        orderDetail.user.address.city,
+        orderDetail.user.address.state,
     ]
         .filter(Boolean)
         .join(', ');
@@ -117,11 +123,11 @@ function OrderOverview() {
     const renoAgreement = (
         <div className='flex flex-col w-full text-sm text-justify'>
             <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
-                <span>THIS AGREEMENT is made this day of <strong>{getCurrentDate()}</strong></span>
+                <span>THIS AGREEMENT is made this day of <strong>{orderDetail.status ? formatDate(orderDetail.created_at) : getCurrentDate()}</strong></span>
                 <span>BETWEEN</span>
                 <span><strong>BELIVE VENTURES SDN. BHD. [Registration No.202101035366 (1435666-K)]</strong> of <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 47500 Subang Jaya, Selangor</strong> (“the Contractor”) of the one part;</span>
                 <span>AND</span>
-                <span><strong>{orderDetail.user.name} (NRIC No.[ic])</strong> of <strong>{address}</strong> ("the Owner") of the other part</span>
+                <span><strong>{orderDetail.user.name} (NRIC No. {orderDetail.user.ic})</strong> of <strong>{address}</strong> ("the Owner") of the other part</span>
             </div>
             <div className="flex flex-col gap-6 mb-6">
                 <span className='font-bold'>WHEREAS:</span>

@@ -145,7 +145,7 @@ function OrderDetail() {
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Preview Link:</td>
                                         <td>
-                                            <button 
+                                            <button
                                                 className="btn btn-outline btn-sm btn-primary"
                                                 onClick={() => { window.open(`http://${window.location.hostname}:5173/preview/owner/order/overview/id/${orderDetail.id}`, '_blank'); }}
                                             >
@@ -348,6 +348,8 @@ function OrderDetail() {
                                                         <table className="table align-middle text-gray-700 font-medium text-sm">
                                                             <thead>
                                                                 <tr>
+                                                                    <th className='w-[10px] text-center'>Supply</th>
+                                                                    <th className='w-[10px] text-center'>Install</th>
                                                                     <th className='w-[250px]'>Product</th>
                                                                     <th className='w-[100px] text-center'>Quantity</th>
                                                                     <th className='w-[100px] text-center'>Unit Price</th>
@@ -361,6 +363,29 @@ function OrderDetail() {
                                                                     <tr
                                                                         key={product.id}
                                                                     >
+                                                                        <td>
+                                                                            <span></span>
+                                                                            <div className="flex flex-col items-center">
+                                                                                <input
+                                                                                    className="checkbox"
+                                                                                    name="supply"
+                                                                                    type="checkbox"
+                                                                                    checked={!!product.pivot.includeSupply}
+                                                                                    readOnly
+                                                                                />
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <div className="flex flex-col items-center">
+                                                                                <input
+                                                                                    className="checkbox"
+                                                                                    name="install"
+                                                                                    type="checkbox"
+                                                                                    checked={!!product.pivot.includeInstall}
+                                                                                    readOnly
+                                                                                />
+                                                                            </div>
+                                                                        </td>
                                                                         <td>
                                                                             <div className="flex flex-col">
                                                                                 <span>{product.name}</span>

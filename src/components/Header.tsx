@@ -19,7 +19,7 @@ function Header() {
     {/* begin: container */}
     <div
       // mx-auto px-10
-      className="container-fixed flex justify-between items-stretch lg:gap-4"
+      className="container-fluid flex justify-between items-stretch lg:gap-4"
       id="header_container"
     >
       <div className="flex gap-1 lg:hidden items-center -ml-1">

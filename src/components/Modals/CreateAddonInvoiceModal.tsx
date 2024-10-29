@@ -83,7 +83,7 @@ function CreateAddonInvoiceModal() {
         <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="create-addon-inv-modal">
             <div className="modal-content modal-center-y max-w-[600px] max-h-[95%]">
                 <div className="modal-header py-4 px-5">
-                    <span className="text-lg text-gray-900 font-bold">Add New User</span>
+                    <span className="text-lg text-gray-900 font-bold">Header</span>
                     <button
                         className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
                         data-modal-dismiss="true"
@@ -232,7 +232,7 @@ function CreateAddonInvoiceModal() {
                             className="btn btn-primary"
                             onClick={handleSubmit}
                         >
-                            Add
+                            Submit
                         </button>
                     </div>
                 </div>

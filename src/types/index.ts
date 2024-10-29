@@ -8,6 +8,15 @@ export interface FormValues {
     rememberMe: boolean;
 }
 
+export interface Address {
+    id?: string;
+    address_1?: string;
+    address_2?: string;
+    city?: string;
+    state?: string;
+    postcode?: string;
+}
+
 export interface User {
     id?: string;
     name?: string;
@@ -15,9 +24,11 @@ export interface User {
     name_last?: string;
     name_preferred?: string;
     salutations?: string;
+    ic?: string;
     email?: string;
     phone_no?: string;
     type?: string;
+    address?: Address;
     password?: string;
     created_at?: string;
     updated_at?: string;
@@ -35,12 +46,17 @@ export interface Product {
         included: boolean;
         isOriginal: boolean;
         internal_note?: string;
+        includeSupply?: boolean;
+        includeInstall?: boolean;
     }
     type?: string;
     description?: string;
+    uom?: string;
     product_retail_price?: number;
     product_cost_of_good_sold?: number;
     product_excluded_price?: number;
+    supply_cost?: number;
+    install_cost?: number;
     status?: string;
     premium_price?: number;
     created_at?: string;
@@ -55,7 +71,7 @@ export interface ProductCategory {
 
 export interface Package {
     id?: number;
-    name: string;
+    name?: string;
     description?: string;
     total_price?: number;
     products?: Product[];
@@ -198,13 +214,7 @@ export interface OwnerRegistrationForm {
         phone_no?: string;
         ic?: string;
     };
-    address?: {
-        address_1?: string;
-        address_2?: string;
-        city?: string;
-        state?: string;
-        postcode?: string;
-    }
+    address?: Address
     address_1?: string;
     address_2?: string;
     city?: string;

@@ -7,6 +7,7 @@ import KTComponent from "../../metronic/core";
 import OTPVerifyPage from "../OTPVerifyPage";
 import Resizer from 'react-image-file-resizer';
 import { Slide, toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 interface FormErrors {
     [key: string]: string | undefined; // Use string or undefined for error messages
@@ -135,44 +136,44 @@ const initialFormData: OwnerRegistrationForm = {
     },
     furnishing: {
         foyer_entrance: {
-            grille_door: 'furnished',
-            digital_lock: 'furnished',
-            shoe_cabinet: 'furnished',
-            lights: 'furnished',
+            grille_door: '',
+            digital_lock: '',
+            shoe_cabinet: '',
+            lights: '',
             other: '',
         },
         kitchen: {
-            kitchen_cabinet: 'furnished',
-            kitchen_island: 'furnished',
-            sink_tap: 'furnished',
-            hood_hob: 'furnished',
-            microwave: 'furnished',
-            oven: 'furnished',
-            water_dispenser: 'furnished',
-            fridge: 'furnished',
-            lights: 'furnished',
+            kitchen_cabinet: '',
+            kitchen_island: '',
+            sink_tap: '',
+            hood_hob: '',
+            microwave: '',
+            oven: '',
+            water_dispenser: '',
+            fridge: '',
+            lights: '',
             other: '',
         },
         yard: {
-            washer: 'furnished',
-            dryer: 'furnished',
-            lights: 'furnished',
+            washer: '',
+            dryer: '',
+            lights: '',
             other: '',
         },
         dining: {
-            dining_table_chairs: 'furnished',
-            lights: 'furnished',
-            fan: 'furnished',
+            dining_table_chairs: '',
+            lights: '',
+            fan: '',
             other: '',
         },
         living: {
-            sofa: 'furnished',
-            coffee_table: 'furnished',
-            tv: 'furnished',
-            tv_cabinet: 'furnished',
-            fan: 'furnished',
-            lights: 'furnished',
-            ac: 'furnished',
+            sofa: '',
+            coffee_table: '',
+            tv: '',
+            tv_cabinet: '',
+            fan: '',
+            lights: '',
+            ac: '',
             other: '',
         },
     }
@@ -232,6 +233,13 @@ function OwnerRenoRegistrationForm() {
                 salutations: response.salutations,
                 email: response.email,
                 phone_no: response.phone_no,
+                ic: response.ic,
+
+                address_1: response.address.address_1,
+                address_2: response.address.address_2,
+                city: response.address.city,
+                state: response.address.state,
+                postcode: response.address.postcode,
             }));
 
         } catch (error) {
@@ -447,6 +455,32 @@ function OwnerRenoRegistrationForm() {
         if (!formData.questions.quest_6) newErrors.quest_6 = "Please select an option";
         if (!formData.questions.quest_7) newErrors.quest_7 = "Please select an option";
         if (!formData.questions.quest_8) newErrors.quest_8 = "Please select an option";
+        if (!formData.furnishing.foyer_entrance.grille_door) newErrors.foyer_entrance = "Please fill in all";
+        if (!formData.furnishing.foyer_entrance.digital_lock) newErrors.foyer_entrance = "Please fill in all";
+        if (!formData.furnishing.foyer_entrance.lights) newErrors.foyer_entrance = "Please fill in all";
+        if (!formData.furnishing.foyer_entrance.shoe_cabinet) newErrors.foyer_entrance = "Please fill in all";
+        if (!formData.furnishing.kitchen.fridge) newErrors.kitchen = "Please fill in all";
+        if (!formData.furnishing.kitchen.hood_hob) newErrors.kitchen = "Please fill in all";
+        if (!formData.furnishing.kitchen.kitchen_cabinet) newErrors.kitchen = "Please fill in all";
+        if (!formData.furnishing.kitchen.kitchen_island) newErrors.kitchen = "Please fill in all";
+        if (!formData.furnishing.kitchen.lights) newErrors.kitchen = "Please fill in all";
+        if (!formData.furnishing.kitchen.microwave) newErrors.kitchen = "Please fill in all";
+        if (!formData.furnishing.kitchen.oven) newErrors.kitchen = "Please fill in all";
+        if (!formData.furnishing.kitchen.sink_tap) newErrors.kitchen = "Please fill in all";
+        if (!formData.furnishing.kitchen.water_dispenser) newErrors.kitchen = "Please fill in all";
+        if (!formData.furnishing.yard.dryer) newErrors.yard = "Please fill in all";
+        if (!formData.furnishing.yard.lights) newErrors.yard = "Please fill in all";
+        if (!formData.furnishing.yard.washer) newErrors.yard = "Please fill in all";
+        if (!formData.furnishing.dining.dining_table_chairs) newErrors.dining = "Please fill in all";
+        if (!formData.furnishing.dining.fan) newErrors.dining = "Please fill in all";
+        if (!formData.furnishing.dining.lights) newErrors.dining = "Please fill in all";
+        if (!formData.furnishing.living.ac) newErrors.living = "Please fill in all";
+        if (!formData.furnishing.living.coffee_table) newErrors.living = "Please fill in all";
+        if (!formData.furnishing.living.fan) newErrors.living = "Please fill in all";
+        if (!formData.furnishing.living.lights) newErrors.living = "Please fill in all";
+        if (!formData.furnishing.living.sofa) newErrors.living = "Please fill in all";
+        if (!formData.furnishing.living.tv) newErrors.living = "Please fill in all";
+        if (!formData.furnishing.living.tv_cabinet) newErrors.living = "Please fill in all";
 
         if (formData.property_name === 'other') {
             if (!formData.other_property_name) newErrors.other_property_name = "Please fill the the other property name";
@@ -505,7 +539,7 @@ function OwnerRenoRegistrationForm() {
     }
 
     const handleSubmit = async () => {
-        
+
         const validationErrors = validate();
         const formDataToSend = new FormData();
 
@@ -720,7 +754,15 @@ function OwnerRenoRegistrationForm() {
                             :
                             <div className="card w-full">
                                 <div className="card-header py-2">
-                                    <h2 className="text-slate-900 text-lg font-semibold">[Reno] Registration Form</h2>
+                                    <div className="flex gap-4 justify-center">
+                                        {!!owner &&
+                                            <Link
+                                                to={'/owner/home'}
+                                                className="ki-solid ki-arrow-left items-center">
+                                            </Link>
+                                        }
+                                        <h2 className="text-slate-900 text-lg font-semibold">[Reno] Registration Form</h2>
+                                    </div>
                                 </div>
                                 <div className="card-body">
                                     <div className="flex flex-col mb-8">
@@ -809,24 +851,24 @@ function OwnerRenoRegistrationForm() {
                                         <label className="text-slate-900 mb-2 font-medium" htmlFor="address_1">Current residence address (information needed for renovation agreement purpose)</label>
 
                                         <div className="flex flex-col mb-8">
-                                            <input className={`input ${errors.address_1 ? 'border-danger' : ''}`} type="text" name="address_1" id="address_1" value={formData.address_1} onChange={handleChange} />
+                                            <input className={`input ${errors.address_1 ? 'border-danger' : ''}`} type="text" disabled={!!owner} name="address_1" id="address_1" value={formData.address_1} onChange={handleChange} />
                                             <span className="text-slate-500 text-xs">Address Line 1</span>
                                             {errors.address_1 && <span className="text-red-500 text-xs mt-2">{errors.address_1}</span>}
                                         </div>
 
                                         <div className="flex flex-col mb-8">
-                                            <input className="input" type="text" name="address_2" id="address_2" value={formData.address_2} onChange={handleChange} />
+                                            <input className="input" type="text" disabled={!!owner} name="address_2" id="address_2" value={formData.address_2} onChange={handleChange} />
                                             <span className="text-slate-500 text-xs">Address Line 2 (optional)</span>
                                         </div>
 
                                         <div className="flex flex-col mb-8">
                                             <div className="flex gap-2 ">
                                                 <div className="flex flex-col w-full">
-                                                    <input className={`input ${errors.city ? 'border-danger' : ''}`} type="text" name="city" id="city" value={formData.city} onChange={handleChange} />
+                                                    <input className={`input ${errors.city ? 'border-danger' : ''}`} type="text" disabled={!!owner} name="city" id="city" value={formData.city} onChange={handleChange} />
                                                     <span className="text-slate-500 text-xs">City</span>
                                                 </div>
                                                 <div className="flex flex-col w-full">
-                                                    <input className={`input ${errors.state ? 'border-danger' : ''}`} type="text" name="state" id="state" value={formData.state} onChange={handleChange} />
+                                                    <input className={`input ${errors.state ? 'border-danger' : ''}`} type="text" disabled={!!owner} name="state" id="state" value={formData.state} onChange={handleChange} />
                                                     <span className="text-slate-500 text-xs">State / Province</span>
                                                 </div>
                                             </div>
@@ -839,7 +881,7 @@ function OwnerRenoRegistrationForm() {
                                         </div>
 
                                         <div className="flex flex-col">
-                                            <input className={`input ${errors.postcode ? 'border-danger' : ''}`} type="text" name="postcode" id="postcode" value={formData.postcode} onChange={handleChange} />
+                                            <input className={`input ${errors.postcode ? 'border-danger' : ''}`} type="text" disabled={!!owner} name="postcode" id="postcode" value={formData.postcode} onChange={handleChange} />
                                             <span className="text-slate-500 text-xs">Postal / Zip Code</span>
                                             {errors.postcode && <span className="text-red-500 text-xs mt-2">{errors.postcode}</span>}
                                         </div>
@@ -847,7 +889,7 @@ function OwnerRenoRegistrationForm() {
 
                                     <div className="flex flex-col mb-8">
                                         <label className="text-slate-900 mb-2 font-medium" htmlFor="ic">IC / ID number (information needed for renovation agreement purpose)</label>
-                                        <input className={`input ${errors.ic ? 'border-danger' : ''}`} type="text" name="ic" id="ic" value={formData.ic} onChange={handleChange} />
+                                        <input className={`input ${errors.ic ? 'border-danger' : ''}`} type="text" disabled={!!owner} name="ic" id="ic" value={formData.ic} onChange={handleChange} />
                                         {errors.ic && <span className="text-red-500 text-xs mt-2">{errors.ic}</span>}
                                     </div>
 
@@ -1168,6 +1210,8 @@ function OwnerRenoRegistrationForm() {
                                                                 onChange={handleChange}
                                                             />
                                                         </div>
+
+                                                        {errors.foyer_entrance && <span className="text-red-500 text-sm mt-2">{errors.foyer_entrance}</span>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -1404,6 +1448,8 @@ function OwnerRenoRegistrationForm() {
                                                                 onChange={handleChange}
                                                             />
                                                         </div>
+
+                                                        {errors.kitchen && <span className="text-red-500 text-sm mt-2">{errors.kitchen}</span>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -1502,6 +1548,8 @@ function OwnerRenoRegistrationForm() {
                                                                 onChange={handleChange}
                                                             />
                                                         </div>
+
+                                                        {errors.yard && <span className="text-red-500 text-sm mt-2">{errors.yard}</span>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -1600,6 +1648,8 @@ function OwnerRenoRegistrationForm() {
                                                                 onChange={handleChange}
                                                             />
                                                         </div>
+
+                                                        {errors.dining && <span className="text-red-500 text-sm mt-2">{errors.dining}</span>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -1790,6 +1840,8 @@ function OwnerRenoRegistrationForm() {
                                                                 onChange={handleChange}
                                                             />
                                                         </div>
+
+                                                        {errors.living && <span className="text-red-500 text-sm mt-2">{errors.living}</span>}
                                                     </div>
                                                 </div>
                                             </div>

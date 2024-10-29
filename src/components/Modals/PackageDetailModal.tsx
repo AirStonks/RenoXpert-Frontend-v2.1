@@ -168,6 +168,7 @@ function PackageDetailModal({ packageId }: PackageDetailModalProps) {
                                                         name="visibility"
                                                         type="checkbox"
                                                         checked={product.pivot.visibility}
+                                                        readOnly
                                                     />
                                                 </label>
                                             </td>

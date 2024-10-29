@@ -1,11 +1,5 @@
-import { useEffect } from "react";
-import KTComponent from "../metronic/core";
 
 function ActivityCenter() {
-
-    useEffect(() => {
-        KTComponent.init();
-    });
 
     return (
         <>
@@ -112,131 +106,134 @@ function ActivityCenter() {
                         <hr className='my-4' />
                     </div>
                     <div className="hidden" id="tab_1_2">
-                        <div className="card w-[85%]">
-                            <div className="card-body flex flex-col px-4">
-                                <div className="flex mb-2 items-center gap-2">
-                                    <div className="rounded-full">
-                                        <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                        <div className="flex flex-col gap-4">
+
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
                                     </div>
-                                    <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
-                                </div>
-                                <span className='text-slate-900 text-sm mb-4'>
-                                    Please take note that the owner have some requested to have partition room.
-                                </span>
-                                <div className="flex justify-end">
-                                    <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="card w-[85%] ml-auto bg-violet-100">
-                            <div className="card-body flex flex-col px-4 justify-end">
-                                <div className="flex mb-2 items-center gap-2">
-                                    <div className="rounded-full">
-                                        <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
                                     </div>
-                                    <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
-                                </div>
-                                <span className='text-slate-900 text-sm mb-4'>
-                                    Please take note that the owner have some requested to have partition room.
-                                </span>
-                                <div className="flex justify-end">
-                                    <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="card w-[85%]">
-                            <div className="card-body flex flex-col px-4">
-                                <div className="flex mb-2 items-center gap-2">
-                                    <div className="rounded-full">
-                                        <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
                                     </div>
-                                    <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
-                                </div>
-                                <span className='text-slate-900 text-sm mb-4'>
-                                    Please take note that the owner have some requested to have partition room.
-                                </span>
-                                <div className="flex justify-end">
-                                    <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="card w-[85%] ml-auto bg-violet-100">
-                            <div className="card-body flex flex-col px-4 justify-end">
-                                <div className="flex mb-2 items-center gap-2">
-                                    <div className="rounded-full">
-                                        <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
                                     </div>
-                                    <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
-                                </div>
-                                <span className='text-slate-900 text-sm mb-4'>
-                                    Please take note that the owner have some requested to have partition room.
-                                </span>
-                                <div className="flex justify-end">
-                                    <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="card w-[85%]">
-                            <div className="card-body flex flex-col px-4">
-                                <div className="flex mb-2 items-center gap-2">
-                                    <div className="rounded-full">
-                                        <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
                                     </div>
-                                    <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
-                                </div>
-                                <span className='text-slate-900 text-sm mb-4'>
-                                    Please take note that the owner have some requested to have partition room.
-                                </span>
-                                <div className="flex justify-end">
-                                    <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="card w-[85%] ml-auto bg-violet-100">
-                            <div className="card-body flex flex-col px-4 justify-end">
-                                <div className="flex mb-2 items-center gap-2">
-                                    <div className="rounded-full">
-                                        <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
                                     </div>
-                                    <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
-                                </div>
-                                <span className='text-slate-900 text-sm mb-4'>
-                                    Please take note that the owner have some requested to have partition room.
-                                </span>
-                                <div className="flex justify-end">
-                                    <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="card w-[85%]">
-                            <div className="card-body flex flex-col px-4">
-                                <div className="flex mb-2 items-center gap-2">
-                                    <div className="rounded-full">
-                                        <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
                                     </div>
-                                    <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
-                                </div>
-                                <span className='text-slate-900 text-sm mb-4'>
-                                    Please take note that the owner have some requested to have partition room.
-                                </span>
-                                <div className="flex justify-end">
-                                    <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="card w-[85%] ml-auto bg-violet-100">
-                            <div className="card-body flex flex-col px-4 justify-end">
-                                <div className="flex mb-2 items-center gap-2">
-                                    <div className="rounded-full">
-                                        <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
                                     </div>
-                                    <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
-                                </div>
-                                <span className='text-slate-900 text-sm mb-4'>
-                                    Please take note that the owner have some requested to have partition room.
-                                </span>
-                                <div className="flex justify-end">
-                                    <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

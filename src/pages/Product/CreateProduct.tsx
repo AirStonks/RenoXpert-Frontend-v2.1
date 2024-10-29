@@ -23,9 +23,12 @@ function CreateProduct() {
         type: 'service',
         description: '',
         category: '1',
+        uom: '',
         product_retail_price: '',
         product_cost_of_good_sold: '',
         product_excluded_price: '',
+        supply_cost: '',
+        install_cost: '',
         status: 'available'
     });
 
@@ -69,9 +72,12 @@ function CreateProduct() {
                 category: formData.category,
                 type: formData.type,
                 description: formData.description,
+                uom: formData.uom,
                 product_retail_price: parseFloat(formData.product_retail_price),
                 product_cost_of_good_sold: parseFloat(formData.product_cost_of_good_sold),
                 product_excluded_price: parseFloat(formData.product_excluded_price),
+                supply_cost: parseFloat(formData.supply_cost),
+                install_cost: parseFloat(formData.install_cost),
                 status: formData.status,
             };
 
@@ -256,45 +262,83 @@ function CreateProduct() {
                     {/* Pricing */}
                     <div className="card">
                         <div className="card-body">
-                            <div className="flex flex-col">
-                                {/* Header */}
-                                <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Pricing</h1>
+                            {/* Header */}
+                            <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Pricing</h1>
+                            <div className="flex gap-12">
+                                <div className="flex flex-col flex-1">
+                                    {/* Retail Price */}
+                                    <InputFieldGroup
+                                        fieldTitle="UOM"
+                                        description="Unit of Measurement of the product"
+                                        placeholder="Retail Price"
+                                        type="text"
+                                        name="uom"
+                                        value={formData.uom}
+                                        onChange={handleChange}
+                                        error={validationErrors.uom}
+                                    />
 
-                                {/* Retail Price */}
-                                <InputFieldGroup
-                                    fieldTitle="Retail Price"
-                                    description="This is the price at which the product will be sold to customers"
-                                    placeholder="Retail Price"
-                                    type="number"
-                                    name="product_retail_price"
-                                    value={formData.product_retail_price}
-                                    onChange={handleChange}
-                                    error={validationErrors.product_retail_price}
-                                />
+                                    {/* Retail Price */}
+                                    <InputFieldGroup
+                                        fieldTitle="Retail Price"
+                                        description="This is the price at which the product will be sold to customers"
+                                        placeholder="Retail Price"
+                                        type="number"
+                                        name="product_retail_price"
+                                        value={formData.product_retail_price}
+                                        onChange={handleChange}
+                                        error={validationErrors.product_retail_price}
+                                    />
 
-                                {/* Cost of Good */}
-                                <InputFieldGroup
-                                    fieldTitle="Cost of Good Sold"
-                                    description="This includes all costs directly tied to the production of the product"
-                                    placeholder="Cost of Good Sold"
-                                    type="number"
-                                    name="product_cost_of_good_sold"
-                                    value={formData.product_cost_of_good_sold}
-                                    onChange={handleChange}
-                                    error={validationErrors.product_cost_of_good_sold}
-                                />
+                                    {/* Cost of Good */}
+                                    <InputFieldGroup
+                                        fieldTitle="Cost of Good Sold"
+                                        description="This includes all costs directly tied to the production of the product"
+                                        placeholder="Cost of Good Sold"
+                                        type="number"
+                                        name="product_cost_of_good_sold"
+                                        value={formData.product_cost_of_good_sold}
+                                        onChange={handleChange}
+                                        error={validationErrors.product_cost_of_good_sold}
+                                    />
 
-                                {/* Excluded Price */}
-                                <InputFieldGroup
-                                    fieldTitle="Excluded Price"
-                                    description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
-                                    placeholder="Excluded Price"
-                                    type="number"
-                                    name="product_excluded_price"
-                                    value={formData.product_excluded_price}
-                                    onChange={handleChange}
-                                    error={validationErrors.product_excluded_price}
-                                />
+                                    {/* Excluded Price */}
+                                    <InputFieldGroup
+                                        fieldTitle="Excluded Price"
+                                        description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
+                                        placeholder="Excluded Price"
+                                        type="number"
+                                        name="product_excluded_price"
+                                        value={formData.product_excluded_price}
+                                        onChange={handleChange}
+                                        error={validationErrors.product_excluded_price}
+                                    />
+                                </div>
+                                <div className="flex flex-col flex-1">
+                                    {/* Supply Price */}
+                                    <InputFieldGroup
+                                        fieldTitle="Supply Cost"
+                                        description="This is the price at which the product will be sold to customers"
+                                        placeholder="Price"
+                                        type="number"
+                                        name="supply_cost"
+                                        value={formData.supply_cost}
+                                        onChange={handleChange}
+                                        error={validationErrors.supply_cost}
+                                    />
+
+                                    {/* Install Cost */}
+                                    <InputFieldGroup
+                                        fieldTitle="Install Cost"
+                                        description="This includes all costs directly tied to the production of the product"
+                                        placeholder="Price"
+                                        type="number"
+                                        name="install_cost"
+                                        value={formData.install_cost}
+                                        onChange={handleChange}
+                                        error={validationErrors.install_cost}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

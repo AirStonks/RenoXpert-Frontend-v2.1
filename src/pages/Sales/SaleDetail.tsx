@@ -8,6 +8,7 @@ import { Sale } from "../../types";
 import { useEffect, useState } from "react";
 import InvoiceDetailModal from "../../components/Modals/InvoiceDetailModal";
 import CreateAddonInvoiceModal from "../../components/Modals/CreateAddonInvoiceModal";
+import { Link } from "react-router-dom";
 
 function SaleDetail() {
     const navigate = useNavigate();
@@ -154,7 +155,7 @@ function SaleDetail() {
                             </div>
                         </div>
                     </div>
-                </div >
+                </div>
 
                 <div className="flex gap-8">
                     <div className="flex flex-col flex-1">
@@ -248,22 +249,36 @@ function SaleDetail() {
                         </div>
                     </div>
                     <div className="flex flex-col flex-1">
-                        <h2 className="text-gray-900 text-lg font-medium mb-4">
-                            Purchase Orders (PO)
-                        </h2>
+
+                        <div className="flex justify-between items-center flex-wrap mb-4">
+                            <h2 className="text-gray-900 text-lg font-medium">
+                                Purchase Orders (PO)
+                            </h2>
+
+                            <div className="flex gap-4">
+                                <Link
+                                    to={`/sales/${saleId}/purchase-order/create`}
+                                    className="btn btn-xs btn-info flex gap-2 items-center"
+                                    data-modal-toggle="#create-addon-inv-modal"
+                                >
+                                    <i className="ki-outline ki-plus-squared"></i>
+                                    Create PO
+                                </Link>
+                            </div>
+                        </div>
                         <div className="flex flex-col gap-4">
-                            {sale.invoices.map((invoice, index) => (
+                            {/* {sale.invoices.map((invoice, index) => (
                                 <div
                                     key={index}
                                     className="card cursor-pointer"
-                                    // data-modal-toggle="#payment_invoice_modal"
-                                    // onClick={() => setSelectedInvoiceId(Number(invoice.id))}
+                                // data-modal-toggle="#payment_invoice_modal"
+                                // onClick={() => setSelectedInvoiceId(Number(invoice.id))}
                                 >
                                     <div className="card-body flex justify-between items-center">
-                                        
+
                                     </div>
                                 </div>
-                            ))}
+                            ))} */}
                         </div>
                     </div>
                 </div>
