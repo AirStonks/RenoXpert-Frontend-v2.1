@@ -1,6 +1,6 @@
 // src\pages\Dashboard.tsx
 
-import Table from '../components/Table';
+// import Table from '../components/Table';
 import KTLayout from '../metronic/app/layouts/demo1';
 import KTComponent from '../metronic/core';
 import { useEffect } from 'react';
@@ -10,7 +10,7 @@ function Dashboard() {
         KTComponent.init();
         KTLayout.init();
     }, []);
-    return <Table />
+    return <></>
 }
 
 export default Dashboard;
