@@ -12,7 +12,7 @@ function CreatePackage() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         packageName: '',
-        packagePrice: 0,
+        // packagePrice: 0,
         description: '',
         description_internal: '',
         products: [],
@@ -20,7 +20,7 @@ function CreatePackage() {
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [selectedProducts, setSelectedProducts] = useState([]);
-    const [totalPrice, setTotalPrice] = useState<number>(0);
+    // const [totalPrice, setTotalPrice] = useState<number>(0);
 
     const handleBackClick = () => {
         localStorage.removeItem('include_prod_selected_products');
@@ -91,7 +91,7 @@ function CreatePackage() {
                     name: item.name,
                     quantity: item.quantity,
                     visibility: item.visibility,
-                    product_retail_price: parseFloat(item.product_retail_price),
+                    // product_retail_price: parseFloat(item.product_retail_price),
                     internal_note: item.note,
                     supply: item.supply,
                     install: item.install,
@@ -100,7 +100,7 @@ function CreatePackage() {
 
             const packageData: Package = {
                 name: formData.packageName,
-                total_price: formData.packagePrice,
+                // total_price: formData.packagePrice,
                 description: formData.description,
                 products: newProducts,
                 description_internal: formData.description_internal
@@ -152,8 +152,8 @@ function CreatePackage() {
             console.log(parsedProducts);
             
             setSelectedProducts(parsedProducts);
-            const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
-            setTotalPrice(initialTotalPrice);
+            // const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+            // setTotalPrice(initialTotalPrice);
         }
     }, []);
 
@@ -166,19 +166,19 @@ function CreatePackage() {
         localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
-    const updateTotalPrice = (price: number, operator: string) => {
+    // const updateTotalPrice = (price: number, operator: string) => {
 
-        setTotalPrice(prevTotal => {
-            switch (operator) {
-                case '+':
-                    return prevTotal + price;
-                case '-':
-                    return prevTotal - price;
-                default:
-                    throw new Error('Invalid operator');
-            }
-        });
-    };
+    //     setTotalPrice(prevTotal => {
+    //         switch (operator) {
+    //             case '+':
+    //                 return prevTotal + price;
+    //             case '-':
+    //                 return prevTotal - price;
+    //             default:
+    //                 throw new Error('Invalid operator');
+    //         }
+    //     });
+    // };
 
     const adjustQuantity = (id: number, action: 'increase' | 'decrease') => {
         setSelectedProducts((prevProducts) => {
@@ -188,27 +188,10 @@ function CreatePackage() {
                     const operator = action === 'increase' ? '+' : '-';
 
                     if (product.quantity > 1 || action === 'increase') {
-                        updateTotalPrice(product.price, operator);
+                        // updateTotalPrice(product.price, operator);
                     }
 
                     return { ...product, quantity: newQty };
-                }
-                return product;
-            });
-            updateLocalStorage(updatedProducts); // Update localStorage
-            return updatedProducts;
-        });
-    };
-
-    const toggleProperty = (id: number, property: 'supply' | 'install') => {
-        setSelectedProducts((prevProducts) => {
-            const updatedProducts = prevProducts.map((product) => {
-                if (product.id === id) {
-                    // Toggle the specified property (supply or install)
-                    return {
-                        ...product,
-                        [property]: !product[property],
-                    };
                 }
                 return product;
             });
@@ -225,8 +208,8 @@ function CreatePackage() {
             const updatedProducts = prevProducts.filter(product => product.id !== id);
             const removedProduct = prevProducts.find(product => product.id === id);
             if (removedProduct) {
-                // Update total price based on the removed product
-                updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
+                // // Update total price based on the removed product
+                // updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
             }
             updateLocalStorage(updatedProducts); // Update localStorage
             return updatedProducts;
@@ -261,7 +244,7 @@ function CreatePackage() {
                                 </span>
 
                                 <span className="text-lg font-medium text-gray-900">
-                                    RM {totalPrice}
+                                    {/* RM {totalPrice} */}
                                 </span>
                             </div>
                         </div>
@@ -343,12 +326,10 @@ function CreatePackage() {
                                         <table className="table align-middle text-gray-700 font-medium text-sm">
                                             <thead>
                                                 <tr>
-                                                    <th className='w-[10px] text-center'>Supply</th>
-                                                    <th className='w-[10px] text-center'>Install</th>
                                                     <th className='w-[250px]'>Product</th>
                                                     <th className='w-[100px] text-center'>Quantity</th>
-                                                    <th className='w-[120px] text-center'>Retail Price</th>
-                                                    <th className='w-[120px] text-center'>Total Price</th>
+                                                    {/* <th className='w-[120px] text-center'>Retail Price</th> */}
+                                                    {/* <th className='w-[120px] text-center'>Total Price</th> */}
                                                     <th className='w-[60px] text-center'>Visibility</th>
                                                     <th className='w-[60px] text-center'>Action</th>
                                                 </tr>
@@ -357,29 +338,6 @@ function CreatePackage() {
                                                 {selectedProducts.map((product) => (
                                                     <React.Fragment key={product.id}>
                                                         <tr>
-                                                            <td>
-                                                                <span></span>
-                                                                <div className="flex flex-col items-center">
-                                                                    <input
-                                                                        className="checkbox"
-                                                                        name="supply"
-                                                                        type="checkbox"
-                                                                        checked={!!product.supply}
-                                                                        onChange={() => toggleProperty(product.id, 'supply')}
-                                                                    />
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div className="flex flex-col items-center">
-                                                                    <input
-                                                                        className="checkbox"
-                                                                        name="install"
-                                                                        type="checkbox"
-                                                                        checked={!!product.install}
-                                                                        onChange={() => toggleProperty(product.id, 'install')}
-                                                                    />
-                                                                </div>
-                                                            </td>
                                                             <td>
                                                                 <div className="flex flex-col">
                                                                     <span>{product.name}</span>
@@ -403,12 +361,12 @@ function CreatePackage() {
                                                                     <i className="ki-solid ki-plus-squared"></i>
                                                                 </button>
                                                             </td>
-                                                            <td>
+                                                            {/* <td>
                                                                 RM {product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </td>
-                                                            <td>
+                                                            </td> */}
+                                                            {/* <td>
                                                                 RM {(product.price * product.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </td>
+                                                            </td> */}
                                                             <td className='text-center'>
                                                                 <label className="switch flex justify-center">
                                                                     <input
@@ -629,7 +587,8 @@ function CreatePackage() {
             <IncludeProductModal
                 selectedProducts={selectedProducts}
                 updateSelectedProducts={updateSelectedProducts}
-                updateTotalPrice={updateTotalPrice}
+                // updateTotalPrice={updateTotalPrice}
+                // updateTotalPrice={updateTotalPrice}
             />
         </>
     );

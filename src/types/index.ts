@@ -49,16 +49,26 @@ export interface Product {
         includeSupply?: boolean;
         includeInstall?: boolean;
     }
+    provisioning?: {
+        supply?: {
+            id?: string;
+            retail_price?: number;
+            cogs?: number;
+            excluded_price?: number;
+            status?: string;
+        },
+        install?: {
+            id?: string;
+            retail_price?: number;
+            cogs?: number;
+            excluded_price?: number;
+            status?: string;
+        }
+    }
     type?: string;
     description?: string;
     uom?: string;
-    product_retail_price?: number;
-    product_cost_of_good_sold?: number;
-    product_excluded_price?: number;
-    supply_cost?: number;
-    install_cost?: number;
     status?: string;
-    premium_price?: number;
     created_at?: string;
     updated_at?: string;
 }

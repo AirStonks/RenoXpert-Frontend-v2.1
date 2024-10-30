@@ -100,10 +100,10 @@ function CreatePO() {
             </div>
 
             <div className="flex gap-8">
-                <div className="flex flex-col flex-[2]">
+                <div className="flex flex-col flex-[2] gap-4">
                     <div className="card">
                         <div className="card-header">
-                            <span>Header</span>
+                            <span className="font-semibold">General</span>
                         </div>
                         <div className="card-group py-4 flex items-center">
                             <span className="text-sm text-gray-600 pe-4 lg:pe-8 font-semibold">
@@ -171,7 +171,7 @@ function CreatePO() {
                                                 placeholder="Select a vendor"
                                                 type="text"
                                                 value={searchVendorTerm}
-                                                // onChange={handleSearchOrder}
+                                            // onChange={handleSearchOrder}
                                             />
                                         </label>
                                     </div>
@@ -201,6 +201,15 @@ function CreatePO() {
                             </div>
                         </div>
                     </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <span className="font-semibold">Total Amount</span>
+                        </div>
+                        <div className="card-body">
+                            <span>RM [total_price]</span>
+                        </div>
+                    </div>
                 </div>
                 <div className="flex flex-[5]">
                     {selectedOrder && (
@@ -211,9 +220,59 @@ function CreatePO() {
                                     <div className="card">
                                         <div className="card-body">
                                             {selectedPOProducts.length > 0 ?
-                                                ''
+                                                <div className="flex flex-col">
+
+                                                </div>
                                                 :
-                                                <span className="text-sm">Added Product will display on here</span>
+                                                // <span className="text-sm">Added Product will display on here</span>
+                                                <table className="table align-middle text-gray-700 font-medium text-sm">
+                                                    <thead className="sticky top-0 bg-white z-5 rounded">
+                                                        <tr>
+                                                            <th className='w-[10px] text-center'></th>
+                                                            <th className='w-[10px] text-center'>Supply</th>
+                                                            <th className='w-[10px] text-center'>Install</th>
+                                                            <th className='w-[250px]'>Product</th>
+                                                            <th className='w-[250px]'>Description</th>
+                                                            <th className='w-[100px] text-center'>Quantity</th>
+                                                            <th className='w-[100px] text-center'>Unit Price</th>
+                                                            <th className='w-[100px] text-center'>Discount</th>
+                                                            <th className='w-[100px] text-center'>Total Price</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>
+                                                                <button className="btn btn-danger btn-xs">
+                                                                    <i className="ki-outline ki-cross"></i>
+                                                                </button>
+                                                            </td>
+                                                            <td className="text-center">
+                                                                <input
+                                                                    className="checkbox"
+                                                                    name="sel_prod"
+                                                                    type="checkbox"
+                                                                // checked={!!product.pivot.includeSupply}
+                                                                // readOnly
+                                                                />
+                                                            </td>
+                                                            <td className="text-center">
+                                                                <input
+                                                                    className="checkbox"
+                                                                    name="sel_prod"
+                                                                    type="checkbox"
+                                                                // checked={!!product.pivot.includeSupply}
+                                                                // readOnly
+                                                                />
+                                                            </td>
+                                                            <td>Built-In 3 Doors Swing Wardrobe</td>
+                                                            <td>with full height mirror (1200mm (W) x 2400mm (H) x 480mm (D),Fabricated w/ LED strip & 2nos 13A plugpoints</td>
+                                                            <td className="text-center">1</td>
+                                                            <td className="text-center">RM 415</td>
+                                                            <td className="text-center"></td>
+                                                            <td className="text-center">	RM 415</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             }
                                         </div>
                                     </div>
@@ -265,7 +324,7 @@ function CreatePO() {
                                                             <td>{product.description}</td>
                                                             <td className="text-center">{product.pivot.quantity}</td>
                                                             <td className="text-center">RM {product.product_cost_of_good_sold}</td>
-                                                            <td className="text-center">7</td>
+                                                            <td className="text-center"></td>
                                                             <td className="text-center">RM {product.product_cost_of_good_sold * product.pivot.quantity}</td>
                                                         </tr>
                                                     ))}

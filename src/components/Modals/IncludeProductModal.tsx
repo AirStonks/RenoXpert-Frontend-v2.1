@@ -44,7 +44,7 @@ function IncludeProductModal({
                 selectBtn.dataset.action = 'select';
                 selectBtn.className = 'btn btn-primary btn-sm';
                 selectBtn.innerText = 'Select';
-            
+
                 updateTotalPrice(productPrice, '-');
             } else {
                 // If it is not selected, add it
@@ -61,7 +61,7 @@ function IncludeProductModal({
                 selectBtn.dataset.action = 'remove';
                 selectBtn.className = 'btn btn-danger btn-sm';
                 selectBtn.innerText = 'Remove';
-            
+
                 updateTotalPrice(productPrice, '+');
 
             }
@@ -116,10 +116,10 @@ function IncludeProductModal({
                 category: {
                     title: 'Category',
                 },
-                product_retail_price: {
-                    title: 'Retail Price',
-                    render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
-                },
+                // product_retail_price: {
+                //     title: 'Retail Price',
+                //     render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
+                // },
                 action: {
                     title: 'Action',
                     render: (item: string, data: Product) => {
@@ -139,7 +139,6 @@ function IncludeProductModal({
                                     data-action="${action}"
                                     data-id="${data.id}"
                                     data-name="${data.name}"
-                                    data-price="${data.product_retail_price}"
                                     data-desc="${data.description}"
                                 >
                                     ${buttonText}
@@ -190,10 +189,10 @@ function IncludeProductModal({
                     <span className="text-lg text-gray-900 font-bold">Add Product into Package</span>
                     <button
                         className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
-                        {...(previousModalId 
+                        {...(previousModalId
                             ? { 'data-modal-toggle': `#${previousModalId}` }
                             : { 'data-modal-dismiss': 'true' }
-                          )}
+                        )}
                     >
                         <i className="ki-filled ki-cross"></i>
                     </button>
@@ -228,13 +227,13 @@ function IncludeProductModal({
                                                 </span>
                                             </span>
                                         </th>
-                                        <th className="min-w-[120px] text-center">
+                                        {/* <th className="min-w-[120px] text-center">
                                             <span className="sort">
                                                 <span className="sort-label">
                                                     Retail Price
                                                 </span>
                                             </span>
-                                        </th>
+                                        </th> */}
                                         <th className="min-w-[110px] text-center">
 
                                         </th>

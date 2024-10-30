@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import Dropdown from '../../components/Forms/Dropdown/Dropdown';
 import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
-import KTLayout from '../../metronic/app/layouts/demo1';
-import KTComponent from '../../metronic/core';
 import { createProduct } from '../../services/api';
 import { toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -13,26 +11,39 @@ import { Product, ProductCategory } from '../../types';
 import useFetchProductCategory from '../../hook/useFetchProductCategory';
 import Loading from '../../components/Loading';
 
+interface FormErrors {
+    [key: string]: string | undefined; // Use string or undefined for error messages
+}
+
+const initProductData: Product = {
+    name: '',
+    SKU: '',
+    type: 'service',
+    description: '',
+    category: '1',
+    uom: '',
+    provisioning: {
+        supply: {
+            retail_price: 0,
+            cogs: 0,
+            excluded_price: 0,
+        },
+        install: {
+            retail_price: 0,
+            cogs: 0,
+            excluded_price: 0,
+        }
+    },
+    status: 'available'
+}
+
 function CreateProduct() {
     const navigate = useNavigate();
     const { productCategory, loading, error } = useFetchProductCategory();
 
-    const [formData, setFormData] = useState({
-        productName: '',
-        SKU: '',
-        type: 'service',
-        description: '',
-        category: '1',
-        uom: '',
-        product_retail_price: '',
-        product_cost_of_good_sold: '',
-        product_excluded_price: '',
-        supply_cost: '',
-        install_cost: '',
-        status: 'available'
-    });
+    const [formData, setFormData] = useState<Product>(initProductData);
 
-    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+    const [errors, setErrors] = useState<FormErrors>({});
 
     const handleBackClick = () => {
         navigate('/products'); // Go back to the previous route
@@ -52,36 +63,74 @@ function CreateProduct() {
     };
 
     useEffect(() => {
-        KTComponent.init();
-        KTLayout.init();
+
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value
-        }));
+
+        if (name.startsWith('provisioning.supply')) {
+            const property = name.split('.')[2];
+
+            setFormData((prevData) => ({
+                ...prevData,
+                provisioning: {
+                    ...prevData.provisioning,
+                    supply: {
+                        ...prevData.provisioning.supply,
+                        [property]: value,
+                    },
+                },
+
+            }));
+
+        } else if (name.startsWith('provisioning.install')) {
+            const property = name.split('.')[2];
+
+            setFormData((prevData) => ({
+                ...prevData,
+                provisioning: {
+                    ...prevData.provisioning,
+                    install: {
+                        ...prevData.provisioning.install,
+                        [property]: value,
+                    },
+                },
+
+            }));
+        } else {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value
+            }));
+        }
+    };
+
+    const validate = (): FormErrors => {
+        const newErrors: FormErrors = {};
+        if (!formData.name) newErrors.name = "Name required";
+        if (!formData.uom) newErrors.uom = "UOM required";
+        if (!formData.provisioning.supply.retail_price) newErrors.supply_retail_price = "Retail Price required";
+        if (!formData.provisioning.supply.cogs) newErrors.supply_cogs = "Cost of Good Sold required";
+        if (!formData.provisioning.supply.excluded_price) newErrors.supply_excluded_price = "Excluded Price required";
+        if (!formData.provisioning.install.retail_price) newErrors.install_retail_price = "Retail Price required";
+        if (!formData.provisioning.install.cogs) newErrors.install_cogs = "Cost of Good Sold required";
+        if (!formData.provisioning.install.excluded_price) newErrors.install_excluded_price = "Excluded Price required";
+
+        return newErrors;
     };
 
     const handleSubmit = async () => {
-        try {
-            const productData: Product = {
-                name: formData.productName,
-                SKU: formData.SKU,
-                category: formData.category,
-                type: formData.type,
-                description: formData.description,
-                uom: formData.uom,
-                product_retail_price: parseFloat(formData.product_retail_price),
-                product_cost_of_good_sold: parseFloat(formData.product_cost_of_good_sold),
-                product_excluded_price: parseFloat(formData.product_excluded_price),
-                supply_cost: parseFloat(formData.supply_cost),
-                install_cost: parseFloat(formData.install_cost),
-                status: formData.status,
-            };
 
-            const response = await createProduct(productData);
+        const validationErrors = validate();
+
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+        
+        try {
+            const response = await createProduct(formData);
 
             if (response?.success) {
                 notify('success', "Product Created Successfully!");
@@ -89,20 +138,7 @@ function CreateProduct() {
             }
 
         } catch (error) {
-            if (error.response?.status === 422) {
-                // Extract validation errors from the response
-                const errors = error.response.data.data || {};
-                // Convert array of errors to a single error message for each field
-                const formattedErrors = Object.keys(errors).reduce((acc, key) => {
-                    acc[key] = errors[key].join(' '); // Join array of errors into a single string
-                    return acc;
-                }, {} as Record<string, string>);
-
-                setValidationErrors(formattedErrors);
-                notify('error', "Product creation unsuccessful. Check the errors below.");
-            } else {
-                console.error('Product creation failed:', error);
-            }
+            console.error('Product creation failed:', error);
         }
     };
 
@@ -189,10 +225,10 @@ function CreateProduct() {
                                     fieldTitle="Product Name"
                                     description="A product name is required and recommended to be unique."
                                     placeholder="Product name"
-                                    name="productName"
-                                    value={formData.productName}
+                                    name="name"
+                                    value={formData.name}
                                     onChange={handleChange}
-                                    error={validationErrors.name}
+                                    error={errors.name}
                                 />
 
                                 {/* SKU */}
@@ -203,7 +239,7 @@ function CreateProduct() {
                                     name="SKU"
                                     value={formData.SKU}
                                     onChange={handleChange}
-                                    error={validationErrors.SKU}
+                                    error={errors.SKU}
                                 />
 
                                 {/* Type */}
@@ -253,7 +289,6 @@ function CreateProduct() {
                                     name="description"
                                     value={formData.description}
                                     onChange={handleChange}
-                                    error={validationErrors.description}
                                 />
                             </div>
                         </div>
@@ -275,7 +310,7 @@ function CreateProduct() {
                                         name="uom"
                                         value={formData.uom}
                                         onChange={handleChange}
-                                        error={validationErrors.uom}
+                                        error={errors.uom}
                                     />
                                 </div>
                             </div>
@@ -296,10 +331,10 @@ function CreateProduct() {
                                     description="This is the price at which the product will be sold to customers"
                                     placeholder="Retail Price"
                                     type="number"
-                                    name="product_retail_price"
-                                    value={formData.product_retail_price}
+                                    name="provisioning.supply.retail_price"
+                                    value={formData.provisioning.supply.retail_price}
                                     onChange={handleChange}
-                                    error={validationErrors.product_retail_price}
+                                    error={errors.supply_retail_price}
                                 />
 
                                 {/* Cost of Good */}
@@ -308,10 +343,10 @@ function CreateProduct() {
                                     description="This includes all costs directly tied to the production of the product"
                                     placeholder="Cost of Good Sold"
                                     type="number"
-                                    name="product_cost_of_good_sold"
-                                    value={formData.product_cost_of_good_sold}
+                                    name="provisioning.supply.cogs"
+                                    value={formData.provisioning.supply.cogs}
                                     onChange={handleChange}
-                                    error={validationErrors.product_cost_of_good_sold}
+                                    error={errors.supply_cogs}
                                 />
 
                                 {/* Excluded Price */}
@@ -320,10 +355,10 @@ function CreateProduct() {
                                     description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
                                     placeholder="Excluded Price"
                                     type="number"
-                                    name="product_excluded_price"
-                                    value={formData.product_excluded_price}
+                                    name="provisioning.supply.excluded_price"
+                                    value={formData.provisioning.supply.excluded_price}
                                     onChange={handleChange}
-                                    error={validationErrors.product_excluded_price}
+                                    error={errors.supply_excluded_price}
                                 />
                             </div>
                         </div>
@@ -340,10 +375,10 @@ function CreateProduct() {
                                     description="This is the price at which the product will be sold to customers"
                                     placeholder="Retail Price"
                                     type="number"
-                                    name="product_retail_price"
-                                    value={formData.product_retail_price}
+                                    name="provisioning.install.retail_price"
+                                    value={formData.provisioning.install.retail_price}
                                     onChange={handleChange}
-                                    error={validationErrors.product_retail_price}
+                                    error={errors.install_retail_price}
                                 />
 
                                 {/* Cost of Good */}
@@ -352,10 +387,10 @@ function CreateProduct() {
                                     description="This includes all costs directly tied to the production of the product"
                                     placeholder="Cost of Good Sold"
                                     type="number"
-                                    name="product_cost_of_good_sold"
-                                    value={formData.product_cost_of_good_sold}
+                                    name="provisioning.install.cogs"
+                                    value={formData.provisioning.install.cogs}
                                     onChange={handleChange}
-                                    error={validationErrors.product_cost_of_good_sold}
+                                    error={errors.install_cogs}
                                 />
 
                                 {/* Excluded Price */}
@@ -364,10 +399,10 @@ function CreateProduct() {
                                     description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
                                     placeholder="Excluded Price"
                                     type="number"
-                                    name="product_excluded_price"
-                                    value={formData.product_excluded_price}
+                                    name="provisioning.install.excluded_price"
+                                    value={formData.provisioning.install.excluded_price}
                                     onChange={handleChange}
-                                    error={validationErrors.product_excluded_price}
+                                    error={errors.install_excluded_price}
                                 />
                             </div>
                         </div>

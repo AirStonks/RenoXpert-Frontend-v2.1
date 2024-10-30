@@ -6,7 +6,7 @@ interface InputFieldGroupProps {
     placeholder?: string;
     type?: string;
     name: string;
-    value?: string;  // Value could be string or undefined
+    value?: string | number;  // Value could be string or undefined
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     error?: string;  // Add error prop to display validation errors
 }
