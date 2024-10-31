@@ -20,7 +20,7 @@ function CreatePackage() {
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [selectedProducts, setSelectedProducts] = useState([]);
-    // const [totalPrice, setTotalPrice] = useState<number>(0);
+    const [totalPrice, setTotalPrice] = useState<number>(0);
 
     const handleBackClick = () => {
         localStorage.removeItem('include_prod_selected_products');
@@ -166,19 +166,19 @@ function CreatePackage() {
         localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
-    // const updateTotalPrice = (price: number, operator: string) => {
+    const updateTotalPrice = (price: number, operator: string) => {
 
-    //     setTotalPrice(prevTotal => {
-    //         switch (operator) {
-    //             case '+':
-    //                 return prevTotal + price;
-    //             case '-':
-    //                 return prevTotal - price;
-    //             default:
-    //                 throw new Error('Invalid operator');
-    //         }
-    //     });
-    // };
+        setTotalPrice(prevTotal => {
+            switch (operator) {
+                case '+':
+                    return prevTotal + price;
+                case '-':
+                    return prevTotal - price;
+                default:
+                    throw new Error('Invalid operator');
+            }
+        });
+    };
 
     const adjustQuantity = (id: number, action: 'increase' | 'decrease') => {
         setSelectedProducts((prevProducts) => {
@@ -188,7 +188,7 @@ function CreatePackage() {
                     const operator = action === 'increase' ? '+' : '-';
 
                     if (product.quantity > 1 || action === 'increase') {
-                        // updateTotalPrice(product.price, operator);
+                        updateTotalPrice(product.price, operator);
                     }
 
                     return { ...product, quantity: newQty };
@@ -208,8 +208,8 @@ function CreatePackage() {
             const updatedProducts = prevProducts.filter(product => product.id !== id);
             const removedProduct = prevProducts.find(product => product.id === id);
             if (removedProduct) {
-                // // Update total price based on the removed product
-                // updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
+                // Update total price based on the removed product
+                updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
             }
             updateLocalStorage(updatedProducts); // Update localStorage
             return updatedProducts;
@@ -244,7 +244,7 @@ function CreatePackage() {
                                 </span>
 
                                 <span className="text-lg font-medium text-gray-900">
-                                    {/* RM {totalPrice} */}
+                                    RM {totalPrice}
                                 </span>
                             </div>
                         </div>
@@ -328,8 +328,8 @@ function CreatePackage() {
                                                 <tr>
                                                     <th className='w-[250px]'>Product</th>
                                                     <th className='w-[100px] text-center'>Quantity</th>
-                                                    {/* <th className='w-[120px] text-center'>Retail Price</th> */}
-                                                    {/* <th className='w-[120px] text-center'>Total Price</th> */}
+                                                    <th className='w-[120px] text-center'>Selling Price</th>
+                                                    <th className='w-[120px] text-center'>Total Price</th>
                                                     <th className='w-[60px] text-center'>Visibility</th>
                                                     <th className='w-[60px] text-center'>Action</th>
                                                 </tr>
@@ -361,12 +361,12 @@ function CreatePackage() {
                                                                     <i className="ki-solid ki-plus-squared"></i>
                                                                 </button>
                                                             </td>
-                                                            {/* <td>
+                                                            <td>
                                                                 RM {product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </td> */}
-                                                            {/* <td>
+                                                            </td>
+                                                            <td>
                                                                 RM {(product.price * product.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </td> */}
+                                                            </td>
                                                             <td className='text-center'>
                                                                 <label className="switch flex justify-center">
                                                                     <input
@@ -587,8 +587,7 @@ function CreatePackage() {
             <IncludeProductModal
                 selectedProducts={selectedProducts}
                 updateSelectedProducts={updateSelectedProducts}
-                // updateTotalPrice={updateTotalPrice}
-                // updateTotalPrice={updateTotalPrice}
+                updateTotalPrice={updateTotalPrice}
             />
         </>
     );

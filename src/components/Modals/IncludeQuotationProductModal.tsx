@@ -102,7 +102,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                         includeInstall: true,
                         isOriginal: !isFromOrderQuotation,
                     };
-                    
+
                     // Get selected quotation packages from localStorage
                     const storedPackages = localStorage.getItem('selected_quotation_packages');
                     const selectedPackages = storedPackages ? JSON.parse(storedPackages) : [];
@@ -142,9 +142,9 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
 
             const selectedPackages = localStorage.getItem('selected_quotation_packages');
 
-            
+
             updateSelectedPackages(JSON.parse(selectedPackages));
-            
+
             localStorage.setItem('include_quotation_pack_prods', JSON.stringify(selectedProducts));
         }
     }, [updateSelectedPackages]);
@@ -176,7 +176,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                     render: (item: string, data: Product) => `
                         <div class="flex flex-col">
                             <span>${item}</span>
-                            <span class="text-xs text-slate-400">${data.description}</span>
+                            <span class="text-xs text-slate-400">${data.description ? data.description : '-'}</span>
                         </div>
                     `,
                 },
@@ -184,21 +184,21 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                     title: 'Category',
                 },
                 product_retail_price: {
-                    title: 'Price',
-                    render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
+                    title: 'Selling Price',
+                    render: (item: number, product: Product) => `RM ${(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
                 },
                 action: {
                     title: 'Action',
                     render: (item: string, data: Product) => {
                         const selectedProductsString = localStorage.getItem('selected_quotation_packages');
                         const selectedPackageId = localStorage.getItem('quotation:selected_package_id');
-                        
+
                         // Parse selected products from localStorage
                         const selectedProducts: Product[] = selectedProductsString ? JSON.parse(selectedProductsString)[0].products : [];
-                        
+
                         // Check if the current product is selected
                         const isSelected = selectedProducts.some(product => product.id === data.id);
-                        
+
                         // Check if the product is original and should not display the button
                         if (isFromOrderQuotation) {
                             const isOriginal = selectedProducts.some(product => product.id === data.id && product.pivot.isOriginal);
@@ -206,12 +206,12 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                 return ''; // Return an empty string if the product is original
                             }
                         }
-                    
+
                         // Determine button classes and text based on selection state
                         const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
                         const action = isSelected ? 'remove' : 'select';
                         const buttonText = isSelected ? 'Remove' : 'Select';
-                    
+
                         // Render the button
                         return `
                             <div class="flex justify-around gap-2">
@@ -221,7 +221,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                     data-packId="${selectedPackageId}"
                                     data-id="${data.id}"
                                     data-name="${data.name}"
-                                    data-price="${data.product_retail_price}"
+                                    data-price="${data.provisioning.supply.retail_price + data.provisioning.install.retail_price}"
                                     data-desc="${data.description}"
                                 >
                                     ${buttonText}
@@ -309,7 +309,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                         <th className="min-w-[120px] text-center">
                                             <span className="sort">
                                                 <span className="sort-label">
-                                                    Price
+                                                    Selling Price
                                                 </span>
                                             </span>
                                         </th>

@@ -6,8 +6,10 @@ import { Package } from '../../types';
 import DeleteModal from '../Modals/DeleteModal';
 import QuotationDetailModal from '../Modals/QuotationDetailModal';
 import { removeQuotation } from '../../services/api';
+import { useNavigate } from 'react-router-dom';
 
 function QuotationTable () {
+    const navigate = useNavigate();
     const [selectedQuotationId, setSelectedQuotationId] = useState<number | null>(null);
     const [selectedQuotation, setSelectedQuotation] = useState<{ id: number, name: string } | null>(null);
     let datatable;
@@ -19,9 +21,7 @@ function QuotationTable () {
 
         if (viewButton) {
             const id = viewButton.dataset.id;
-            if (id) {
-                setSelectedQuotationId(parseInt(id, 10));
-            }
+            navigate('/quotations/' + id);
         } else if (deleteButton) {
             console.log('yes');
 
@@ -97,7 +97,6 @@ function QuotationTable () {
                         <div class="flex justify-around gap-2">
                             <button 
                                 class="btn btn-sm btn-secondary"
-                                data-modal-toggle="#quotation_detail_modal"
                                 data-action="view"
                                 data-id="${data.id}"
                             >

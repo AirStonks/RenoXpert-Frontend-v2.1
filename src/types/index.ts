@@ -96,6 +96,7 @@ export interface Quotation {
     valid_from?: string;
     valid_until?: string;
     metadata?: JSON;
+    packages?: Package[];
 }
 
 export interface Property {

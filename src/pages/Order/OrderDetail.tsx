@@ -398,17 +398,20 @@ function OrderDetail() {
                                                                             </span>
                                                                         </td>
                                                                         <td className="text-center">
-                                                                            RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                            RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                         </td>
-                                                                        <td className='text-center'>
+                                                                        <td>
+                                                                            
+                                                                        </td>
+                                                                        {/* <td className='text-center'>
                                                                             {!product.pivot.included
                                                                                 ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                                 : null}
-                                                                        </td>
+                                                                        </td> */}
                                                                         <td className="text-center">
                                                                             {!product.pivot.included
                                                                                 ? null
-                                                                                : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                : `RM ${((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                         </td>
                                                                         <td className='text-center'>
                                                                             <label className="switch flex justify-center">

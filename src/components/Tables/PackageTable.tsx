@@ -4,9 +4,10 @@ import { Package } from '../../types';
 import PackageDetailModal from '../Modals/PackageDetailModal';
 import DeleteModal from '../Modals/DeleteModal';
 import { removePackage } from '../../services/api';
+import { useNavigate } from 'react-router-dom';
 
 function PackageTable() {
-    const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
+    const navigate = useNavigate();
     const [selectedPackage, setSelectedPackage] = useState<{ id: number, name: string } | null>(null);
     let datatable;
 
@@ -17,9 +18,7 @@ function PackageTable() {
 
         if (viewButton) {
             const id = viewButton.dataset.id;
-            if (id) {
-                setSelectedPackageId(parseInt(id, 10));
-            }
+            navigate('/packages/' + id);
         } else if (deleteButton) {
             const id = deleteButton.dataset.id;
             const name = deleteButton.dataset.name;
@@ -40,25 +39,6 @@ function PackageTable() {
         }
     }, [setSelectedPackage]);
 
-    const handleCloseModal = async () => {
-        const detailModalEl = document.querySelector('#package_detail_modal') as HTMLElement;
-        const detailModal = KTModal.getInstance(detailModalEl);
-
-
-        detailModal.on('hidden', () => {
-            const modalEl = document.querySelector('#edit_package_modal') as HTMLElement;
-            const modal = KTModal.getInstance(modalEl);
-
-            // Buffer for getting modal-open status
-            setTimeout(() => {
-                if (modal.isOpen() == false && detailModal.isOpen() == false) {
-                    setSelectedPackageId(null);
-                    localStorage.removeItem('include_prod_selected_products');
-                }
-            }, 200);
-
-        });
-    };
 
     useEffect(() => {
         initPackageTable();
@@ -102,7 +82,6 @@ function PackageTable() {
                         `<div className="flex justify-around gap-2">
                             <button
                                 className="btn btn-sm btn-secondary"
-                                data-modal-toggle="#package_detail_modal"
                                 data-action="view"
                                 data-id=${data.id}
                             >
@@ -199,8 +178,6 @@ function PackageTable() {
                     </div>
                 </div>
             </div>
-
-            <PackageDetailModal packageId={selectedPackageId} onClose={handleCloseModal} />
 
             <DeleteModal
                 item={selectedPackage}

@@ -1,6 +1,6 @@
 // src\pages\Quotation\CreateQuotation.tsx
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +21,7 @@ function CreateQuotation() {
     const qtyBtnRef = useRef(null);
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-    const [selectedPackages, setSelectedPackages] = useState([]);
+    const [selectedPackages, setSelectedPackages] = useState<Package[]>([]);
     const [totalAmount, setTotalAmount] = useState<number>(0);
 
     const handleBackClick = () => {
@@ -68,7 +68,7 @@ function CreateQuotation() {
 
                 // Calculate the new total price based on the updated products
                 const newTotalPrice = updatedProducts.reduce((sum, product) => {
-                    return sum + (product.product_retail_price * product.pivot.quantity);
+                    return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
                 }, 0);
 
                 return {
@@ -115,7 +115,7 @@ function CreateQuotation() {
             total_amount: formData.quotationPrice,
             metadata: newMetadata,
         }
-
+        
         const response = await createQuotation(quotationData);
 
         if (response?.success) {
@@ -191,7 +191,14 @@ function CreateQuotation() {
         const storedPackages = localStorage.getItem('include_packages');
 
         if (storedPackages) {
-            setSelectedPackages(JSON.parse(storedPackages));
+            const selectedPackages: Package[] = JSON.parse(storedPackages);
+            setSelectedPackages(selectedPackages);
+            
+            const totalAmount = selectedPackages.reduce((sum, prodPackage) => {
+                return sum + prodPackage.total_price;
+            }, 0);
+        
+            setTotalAmount(totalAmount);
         }
 
         setFormData(prevData => ({
@@ -204,7 +211,8 @@ function CreateQuotation() {
     const updateSelectedPackages = (packages) => {
         const updatedPackages = packages.map((prodPackage: Package) => {
             const totalPrice = prodPackage.products.reduce((sum, product) => {
-                return sum + product.product_retail_price * product.pivot.quantity;
+                
+                return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
             }, 0);
 
             return {
@@ -223,39 +231,39 @@ function CreateQuotation() {
         localStorage.setItem('include_packages', JSON.stringify(packages));
     };
 
-    const toggleProperty = (id: number, packId: number, property: 'supply' | 'install') => {
-        console.log('Triggered toggleProperty');
-    
-        setSelectedPackages((prevPackages: Package[]) => {
-            const updatedPackages = prevPackages.map((prodPackage) => {
-                if (prodPackage.id === packId) {
-                    const updatedProducts = prodPackage.products.map((product) => {
-                        if (product.id === id) {
-                            const key = property === 'install' ? 'includeInstall' : 'includeSupply';
-                            
-                            return {
-                                ...product,
-                                pivot: {
-                                    ...product.pivot,
-                                    [key]: product.pivot ? !product.pivot[key] : true, // handle case if pivot is undefined
-                                },
-                            };
-                        }
-                        return product; // Return the original product if not matched
-                    });
-    
-                    return {
-                        ...prodPackage,
-                        products: updatedProducts,
-                    };
-                }
-                return prodPackage; // Return the original package if not matched
-            });
-    
-            updateLocalStorage(updatedPackages);
-            return updatedPackages;
-        });
-    };    
+    // const toggleProperty = (id: number, packId: number, property: 'supply' | 'install') => {
+    //     console.log('Triggered toggleProperty');
+
+    //     setSelectedPackages((prevPackages: Package[]) => {
+    //         const updatedPackages = prevPackages.map((prodPackage) => {
+    //             if (prodPackage.id === packId) {
+    //                 const updatedProducts = prodPackage.products.map((product) => {
+    //                     if (product.id === id) {
+    //                         const key = property === 'install' ? 'includeInstall' : 'includeSupply';
+
+    //                         return {
+    //                             ...product,
+    //                             pivot: {
+    //                                 ...product.pivot,
+    //                                 [key]: product.pivot ? !product.pivot[key] : true, // handle case if pivot is undefined
+    //                             },
+    //                         };
+    //                     }
+    //                     return product; // Return the original product if not matched
+    //                 });
+
+    //                 return {
+    //                     ...prodPackage,
+    //                     products: updatedProducts,
+    //                 };
+    //             }
+    //             return prodPackage; // Return the original package if not matched
+    //         });
+
+    //         updateLocalStorage(updatedPackages);
+    //         return updatedPackages;
+    //     });
+    // };
 
     const adjustQuantity = (prodId: number, packId: number, action: 'increase' | 'decrease') => {
         setSelectedPackages((prevPackages: Package[]) => {
@@ -279,7 +287,7 @@ function CreateQuotation() {
                     });
 
                     const newTotalPrice = updatedProducts.reduce((sum, product) => {
-                        return sum + product.product_retail_price * product.pivot.quantity;
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
                     }, 0);
 
                     return {
@@ -305,7 +313,7 @@ function CreateQuotation() {
                     const updatedProducts = prodPackage.products.filter((product: Product) => product.id !== prodId);
 
                     const newTotalPrice = updatedProducts.reduce((sum, product) => {
-                        return sum + product.product_retail_price * product.pivot.quantity;
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
                     }, 0);
 
                     return {
@@ -462,11 +470,9 @@ function CreateQuotation() {
                                                     <table className="table align-middle text-gray-700 font-medium text-sm">
                                                         <thead>
                                                             <tr>
-                                                                <th className='w-[10px] text-center'>Supply</th>
-                                                                <th className='w-[10px] text-center'>Install</th>
                                                                 <th className='w-[250px]'>Product</th>
                                                                 <th className='w-[100px] text-center'>Quantity</th>
-                                                                <th className='w-[120px] text-center'>Retail Price</th>
+                                                                <th className='w-[120px] text-center'>Selling Price</th>
                                                                 <th className='w-[120px] text-center'>Total Price</th>
                                                                 <th className='w-[60px] text-center'>Visibility</th>
                                                                 <th className='w-[60px] text-center'>Action</th>
@@ -474,81 +480,68 @@ function CreateQuotation() {
                                                         </thead>
                                                         <tbody>
                                                             {prodPackage.products.map((product) => (
-                                                                <tr
-                                                                    key={product.id}
-                                                                >
-                                                                    <td>
-                                                                        <span></span>
-                                                                        <div className="flex flex-col items-center">
+                                                                <React.Fragment key={product.id}>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <div className="flex flex-col">
+                                                                                <span>{product.name}</span>
+                                                                                <span className="text-xs text-slate-400">{product.description}</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className='text-center text-lg'>
+                                                                            <button
+                                                                                data-action='decrease'
+                                                                                onClick={() => adjustQuantity(product.id, prodPackage.id, 'decrease')}
+                                                                            >
+                                                                                <i className="ki-solid ki-minus-squared"></i>
+                                                                            </button>
+                                                                            <span className="mx-2 text-base">
+                                                                                {product.pivot.quantity}
+                                                                            </span>
+                                                                            <button
+                                                                                data-action='increase'
+                                                                                onClick={() => adjustQuantity(product.id, prodPackage.id, 'increase')}
+                                                                            >
+                                                                                <i className="ki-solid ki-plus-squared"></i>
+                                                                            </button>
+                                                                        </td>
+                                                                        <td>
+                                                                            RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </td>
+                                                                        <td>
+                                                                            RM {((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </td>
+                                                                        <td className='text-center'>
+                                                                            <label className="switch flex justify-center">
+                                                                                <input
+                                                                                    name="visibility"
+                                                                                    type="checkbox"
+                                                                                    checked={product.pivot.visibility}
+                                                                                    // value={product.pivot.visibility}
+                                                                                    onChange={() => handleVisibilityToggle(product.id)}
+                                                                                />
+                                                                            </label>
+                                                                        </td>
+                                                                        <td className='text-center'>
+                                                                            <button
+                                                                                className="btn btn-sm btn-danger"
+                                                                                onClick={() => handleRemoveProduct(product.id, prodPackage.id)}
+                                                                            >
+                                                                                Remove
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colSpan={8}>
                                                                             <input
-                                                                                className="checkbox"
-                                                                                name="supply"
-                                                                                type="checkbox"
-                                                                                checked={!!product.pivot.includeSupply}
-                                                                                onChange={() => toggleProperty(product.id, prodPackage.id, 'supply')}
+                                                                                type="text"
+                                                                                placeholder="Add a internal reference note"
+                                                                                className="input w-full border p-2"
+                                                                                // onChange={(e) => handleNoteChange(product.id, e.target.value)}
                                                                             />
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        <div className="flex flex-col items-center">
-                                                                            <input
-                                                                                className="checkbox"
-                                                                                name="install"
-                                                                                type="checkbox"
-                                                                                checked={!!product.pivot.includeInstall}
-                                                                                onChange={() => toggleProperty(product.id, prodPackage.id, 'install')}
-                                                                            />
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        <div className="flex flex-col">
-                                                                            <span>{product.name}</span>
-                                                                            <span className="text-xs text-slate-400">{product.description}</span>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className='text-center text-lg'>
-                                                                        <button
-                                                                            ref={qtyBtnRef}
-                                                                            data-action='decrease'
-                                                                            onClick={() => adjustQuantity(product.id, prodPackage.id, 'decrease')}
-                                                                        >
-                                                                            <i className="ki-solid ki-minus-squared"></i>
-                                                                        </button>
-                                                                        <span className="mx-2 text-base">
-                                                                            {product.pivot.quantity}
-                                                                        </span>
-                                                                        <button
-                                                                            data-action='increase'
-                                                                            onClick={() => adjustQuantity(product.id, prodPackage.id, 'increase')}
-                                                                        >
-                                                                            <i className="ki-solid ki-plus-squared"></i>
-                                                                        </button>
-                                                                    </td>
-                                                                    <td className='text-center'>
-                                                                        RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                    </td>
-                                                                    <td className='text-center'>
-                                                                        RM {(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                    </td>
-                                                                    <td className='text-center'>
-                                                                        <label className="switch flex justify-center">
-                                                                            <input
-                                                                                name="visibility"
-                                                                                type="checkbox"
-                                                                                checked={product.pivot.visibility}
-                                                                                onChange={() => handleVisibilityToggle(product.id)}
-                                                                            />
-                                                                        </label>
-                                                                    </td>
-                                                                    <td className='text-center'>
-                                                                        <button
-                                                                            className="btn btn-sm btn-danger"
-                                                                            onClick={() => handleRemoveProduct(prodPackage.id, product.id)}
-                                                                        >
-                                                                            Remove
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
+                                                                        </td>
+                                                                    </tr>
+                                                                </React.Fragment>
                                                             ))}
                                                         </tbody>
                                                     </table>

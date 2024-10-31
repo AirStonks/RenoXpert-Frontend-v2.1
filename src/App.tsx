@@ -52,6 +52,8 @@ import RegistrationFormDetail from './pages/RegistrationForm/RegistrationFormDet
 import RenoRegistrationFormDetail from './pages/OwnerPages/RenoRegistrationFormDetail';
 import CreatePO from './pages/PO/CreatePO';
 import DeveloperTool from './pages/DeveloperTools';
+import PackageDetail from './pages/Product/Package/PackageDetail';
+import QuotationDetail from './pages/Quotation/QuotationDetail';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -113,12 +115,14 @@ const routes = [
   /*--- PACKAGES ---*/
   { path: '/packages', element: <PackageMain />, layout: ProtectedLayout },
   { path: '/packages/create', element: <CreatePackage />, layout: ProtectedLayout },
+  { path: '/packages/:id', element: <PackageDetail />, layout: ProtectedLayout },
   { path: '/packages/edit/:id', element: <EditPackage />, layout: ProtectedLayout },
 
   /*--- QUOTATION ---*/
   { path: '/quotations', element: <QuotationMain />, layout: ProtectedLayout },
   { path: '/quotations/create', element: <CreateQuotation />, layout: ProtectedLayout },
   { path: '/quotations/edit/:id', element: <EditQuotation />, layout: ProtectedLayout },
+  { path: '/quotations/:id', element: <QuotationDetail />, layout: ProtectedLayout },
 
   /*--- PROPERTY ---*/
   { path: '/properties', element: <PropertyMain />, layout: ProtectedLayout },

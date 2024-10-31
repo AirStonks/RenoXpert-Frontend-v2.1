@@ -665,9 +665,8 @@ function CreateOrder() {
                                                                         <th className='w-[250px]'>Product</th>
                                                                         <th className='w-[100px] text-center'>Quantity</th>
                                                                         <th className='w-[100px] text-center'>Unit Price</th>
-                                                                        <th className='w-[100px] text-center'>Discount</th>
+                                                                        {/* <th className='w-[100px] text-center'>Discount</th> */}
                                                                         <th className='w-[100px] text-center'>Total Price</th>
-                                                                        <th className='w-[100px] text-center'>Include Product</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -710,27 +709,17 @@ function CreateOrder() {
                                                                                 </span>
                                                                             </td>
                                                                             <td className="text-center">
-                                                                                RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                             </td>
-                                                                            <td className='text-center'>
+                                                                            {/* <td className='text-center'>
                                                                                 {!product.pivot.included
                                                                                     ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                                     : null}
-                                                                            </td>
+                                                                            </td> */}
                                                                             <td className="text-center">
                                                                                 {!product.pivot.included
                                                                                     ? null
-                                                                                    : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                            </td>
-                                                                            <td className='text-center'>
-                                                                                <label className="switch flex justify-center">
-                                                                                    <input
-                                                                                        name="included"
-                                                                                        type="checkbox"
-                                                                                        checked={product.pivot.included}
-                                                                                        readOnly
-                                                                                    />
-                                                                                </label>
+                                                                                    : `RM ${((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                             </td>
                                                                         </tr>
                                                                     ))}

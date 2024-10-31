@@ -371,7 +371,7 @@ function EditNewOrderQuotation() {
                     });
 
                     const newTotalPrice = updatedProducts.reduce((sum, product) => {
-                        return sum + product.product_retail_price * product.pivot.quantity;
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
                     }, 0);
 
                     return {
@@ -390,7 +390,6 @@ function EditNewOrderQuotation() {
         });
     };
 
-
     const handleRemoveProduct = (packId: number, prodId: number) => {
         setSelectedPackages((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage: Package) => {
@@ -398,14 +397,8 @@ function EditNewOrderQuotation() {
                     const updatedProducts = prodPackage.products.filter((product: Product) => product.id !== prodId);
 
                     const newTotalPrice = updatedProducts.reduce((sum, product) => {
-                        if (product.pivot.included) {
-                            return sum + product.product_retail_price * product.pivot.quantity;
-                        } else {
-                            return sum + (product.product_retail_price - product.product_excluded_price);
-                        }
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
                     }, 0);
-
-                    console.log(newTotalPrice);
 
                     return {
                         ...prodPackage,
@@ -534,7 +527,7 @@ function EditNewOrderQuotation() {
                                                             <th className='w-[100px] text-center'>Unit Price</th>
                                                             <th className='w-[100px] text-center'>Discount</th>
                                                             <th className='w-[100px] text-center'>Total Price</th>
-                                                            <th className='w-[100px] text-center'>Include Product</th>
+                                                            <th className='w-[100px] text-center'>Actions</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -599,31 +592,24 @@ function EditNewOrderQuotation() {
 
                                                                 </td>
                                                                 <td className="text-center">
-                                                                    RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </td>
-                                                                <td className='text-center'>
+                                                                <td>
+
+                                                                </td>
+                                                                {/* <td className='text-center'>
                                                                     {!product.pivot.included
                                                                         ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                         : null}
-                                                                </td>
+                                                                </td> */}
                                                                 <td className="text-center">
                                                                     {!product.pivot.included
                                                                         ? null
-                                                                        : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                        : `RM ${((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </td>
                                                                 <td className='text-center'>
                                                                     {product.pivot.isOriginal ?
-                                                                        product.pivot.visibility ?
-                                                                            <label className="switch flex justify-center">
-                                                                                <input
-                                                                                    name="included"
-                                                                                    type="checkbox"
-                                                                                    checked={product.pivot.included}
-                                                                                    onChange={() => handleIncludeToggle(product.id)}
-                                                                                />
-                                                                            </label>
-                                                                            :
-                                                                            <i className="ki-solid ki-eye-slash text-2xl"></i>
+                                                                        !product.pivot.visibility && <i className="ki-solid ki-eye-slash text-2xl"></i>
                                                                         :
                                                                         <button
                                                                             className="btn-revoke btn btn-sm btn-danger"

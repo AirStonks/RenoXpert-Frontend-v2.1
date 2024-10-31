@@ -45,6 +45,9 @@ function IncludeProductModal({
                 selectBtn.className = 'btn btn-primary btn-sm';
                 selectBtn.innerText = 'Select';
 
+                console.log(productPrice);
+                
+
                 updateTotalPrice(productPrice, '-');
             } else {
                 // If it is not selected, add it
@@ -109,17 +112,17 @@ function IncludeProductModal({
                     render: (item: string, data: Product) => `
                         <div class="flex flex-col">
                             <span>${item}</span>
-                            <span class="text-xs text-slate-400">${data.description}</span>
+                            <span class="text-xs text-slate-400">${data.description ? data.description : '-'}</span>
                         </div>
                     `,
                 },
                 category: {
                     title: 'Category',
                 },
-                // product_retail_price: {
-                //     title: 'Retail Price',
-                //     render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
-                // },
+                product_retail_price: {
+                    title: 'Selling Price',
+                    render: (item: number, product: Product) => `RM ${(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
+                },
                 action: {
                     title: 'Action',
                     render: (item: string, data: Product) => {
@@ -138,6 +141,7 @@ function IncludeProductModal({
                                     class="btn ${buttonClass} btn-sm"
                                     data-action="${action}"
                                     data-id="${data.id}"
+                                    data-price="${data.provisioning.supply.retail_price + data.provisioning.install.retail_price}"
                                     data-name="${data.name}"
                                     data-desc="${data.description}"
                                 >
@@ -227,13 +231,13 @@ function IncludeProductModal({
                                                 </span>
                                             </span>
                                         </th>
-                                        {/* <th className="min-w-[120px] text-center">
+                                        <th className="min-w-[120px] text-center">
                                             <span className="sort">
                                                 <span className="sort-label">
-                                                    Retail Price
+                                                    Selling Price
                                                 </span>
                                             </span>
-                                        </th> */}
+                                        </th>
                                         <th className="min-w-[110px] text-center">
 
                                         </th>
