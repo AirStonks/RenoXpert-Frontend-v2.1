@@ -71,7 +71,7 @@ function AddUser() {
                 setNewPassword(response.data.new_password);
             } else {
                 console.log(response.data);
-                
+
                 setValidationErrors(response.data);
             }
 
@@ -127,28 +127,35 @@ function AddUser() {
                     </div>
                     <div className="flex flex-col mb-4 w-full">
                         <label className='mb-2 text-sm font-medium text-gray-900'>Email</label>
-                        <input
-                            className='input mb-2'
-                            placeholder='name@example.com'
-                            type='email'
-                            name='email'
-                            value={formData.email}
-                            onChange={handleChange}
-                        />
+                        <div className="flex items-center mb-2">
+                            <input
+                                className='input mr-2'
+                                placeholder='email'
+                                type='text'
+                                name='email'
+                                value={formData.email}
+                                onChange={handleChange}
+                            />
+                            <div className='badge badge-lg text-md rounded-md cursor-default'>@belive.asia</div>
+                        </div>
                         {validationErrors.email && (
                             <span className="text-red-500 text-sm">{validationErrors.email.join(', ')}</span>
                         )}
                     </div>
                     <div className="flex flex-col mb-4 w-full">
                         <label className='mb-2 text-sm font-medium text-gray-900'>Phone Number</label>
-                        <input
-                            className='input mb-2'
-                            placeholder='0123456789'
-                            type='phone'
-                            name='phone'
-                            value={formData.phone}
-                            onChange={handleChange}
-                        />
+
+                        <div className="flex items-center mb-2">
+                            <div className='badge badge-lg text-md rounded-md cursor-default mr-2'>+60</div>
+                            <input
+                                className='input'
+                                placeholder='123456789'
+                                type='phone'
+                                name='phone'
+                                value={formData.phone}
+                                onChange={handleChange}
+                            />
+                        </div>
                         {validationErrors.phone && (
                             <span className="text-red-500 text-sm">{validationErrors.phone.join(', ')}</span>
                         )}
