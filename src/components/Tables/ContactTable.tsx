@@ -52,7 +52,7 @@ function ContactTable() {
     }, []);
 
     const initContactTable = () => {
-        const apiUrl = 'http://' + window.location.hostname + ':8000/api/contacts';
+        const apiUrl = 'https://api.renoxpert.my/api/contacts';
         element = document.querySelector('#contact_table') as HTMLElement;
         const token = localStorage.getItem('token');
 

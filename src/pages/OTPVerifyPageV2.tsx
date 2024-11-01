@@ -5,7 +5,7 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Slide, toast, ToastContainer } from "react-toastify";
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = 'https://api.renoxpert.my/api/';
 
 const OTPVerifyPageV2: React.FC = () => {
     const location = useLocation();

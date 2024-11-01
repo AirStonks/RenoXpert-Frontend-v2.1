@@ -1009,7 +1009,7 @@ function RegistrationFormDetail() {
                                             return (
                                                 <li key={key}>
                                                     {attachment.file_url ? (
-                                                        <a href={'http://192.168.1.32:8000' + attachment.file_url} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2 break-words">
+                                                        <a href={'https://api.renoxpert.my' + attachment.file_url} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2 break-words">
                                                             Attachment {Number(key) + 1}
                                                         </a>
                                                     ) : (

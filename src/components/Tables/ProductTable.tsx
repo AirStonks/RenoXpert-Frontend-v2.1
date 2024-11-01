@@ -53,7 +53,7 @@ function ProductTable() {
 
     useEffect(() => {
         // Initialize KTDataTable after component mounts
-        const apiUrl = 'http://' + window.location.hostname + ':8000/api/products';
+        const apiUrl = 'https://api.renoxpert.my/api/products';
         const element = document.querySelector('#product_data_table') as HTMLElement;
         const token = localStorage.getItem('token');
 
