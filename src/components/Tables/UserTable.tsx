@@ -49,7 +49,7 @@ function UserTable() {
     }, []);
 
     const initUserTable = () => {
-        const apiUrl = 'http://' + window.location.hostname + ':8000/api/users';
+        const apiUrl = 'https://api.renoxpert.my/api/users';
         element = document.querySelector('#users_table') as HTMLElement;
         const token = localStorage.getItem('token');
 

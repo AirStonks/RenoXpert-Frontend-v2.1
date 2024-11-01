@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Slide, toast, ToastContainer } from "react-toastify";
 import { confirmOrder } from "../services/api";
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = 'https://api.renoxpert.my/api/';
 
 const OTPConfirmOrder: React.FC = () => {
     const location = useLocation();

@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = 'https://api.renoxpert.my/api/';
 
 export const userLogin = async (email: string, password: string) => {
   try {
