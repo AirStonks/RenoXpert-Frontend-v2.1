@@ -30,101 +30,6 @@ function EditNewOrderQuotation() {
         navigate(-1);
     };
 
-    const handleIncludeToggle = (id: number) => {
-        setSelectedPackages((prevPackages) => {
-            const updatedPackages = prevPackages.map((prodPackage) => {
-
-                let totalPrice = prodPackage.total_price;
-
-                // Check if the package has the product to toggle
-                const updatedProducts = prodPackage.products.map((product) => {
-                    if (product.id === id) {
-                        // Toggle the include of the product
-                        const newIncludedStatus = !product.pivot.included;
-                        const newQuantity = 1;
-
-                        // Update the pivot based on new status
-                        const updatedPivot = { ...product.pivot, quantity: newQuantity, included: newIncludedStatus };
-
-                        if (newIncludedStatus) {
-                            console.log('included');
-
-                            totalPrice += (product.product_excluded_price);
-                        } else {
-                            // console.log('excluded', totalPrice - (product.product_retail_price * product.pivot.quantity) + product.product_excluded_price);
-                            totalPrice -= (product.product_retail_price * (product.pivot.quantity - 1)) + product.product_excluded_price;
-                        }
-
-                        return {
-                            ...product,
-                            pivot: updatedPivot,
-                        };
-                    }
-                    return product; // Return the original product if not matched
-                });
-                console.log('total: ', totalPrice);
-
-                return {
-                    ...prodPackage,
-                    products: updatedProducts,
-                    total_price: totalPrice, // Update total price for the package
-                };
-            });
-
-            setSelectedPackages(updatedPackages);
-            const newTotalAmount = calculateTotalAmount(updatedPackages);
-            setTotalAmount(newTotalAmount); // Update totalAmount
-            updateLocalStorage(updatedPackages);
-
-            return updatedPackages; // Return the updated packages
-        });
-    };
-
-    // const handleRemoveItem = (id: number) => {
-    //     setSelectedPackages((prevPackages) => {
-    //         const updatedPackages = prevPackages.map((prodPackage) => {
-
-    //             let totalPrice = prodPackage.total_price;
-
-    //             // Check if the package has the product to toggle
-    //             const updatedProducts = prodPackage.products.map((product) => {
-    //                 if (product.id === id) {
-    //                     // Toggle the include of the product
-    //                     const newIncludedStatus = !product.pivot.included;
-    //                     const newQuantity = 1;
-
-    //                     // Update the pivot based on new status
-    //                     const updatedPivot = { ...product.pivot, quantity: newQuantity, included: newIncludedStatus };
-
-    //                     if (newIncludedStatus) {
-    //                         totalPrice += (product.product_excluded_price);
-    //                     } else {
-    //                         totalPrice -= (product.product_retail_price * (product.pivot.quantity - 1)) + product.product_excluded_price;
-    //                     }
-
-    //                     return {
-    //                         ...product,
-    //                         pivot: updatedPivot,
-    //                     };
-    //                 }
-    //                 return product; // Return the original product if not matched
-    //             });
-    //             console.log('total: ', totalPrice);
-
-    //             return {
-    //                 ...prodPackage,
-    //                 products: updatedProducts,
-    //                 total_price: totalPrice, // Update total price for the package
-    //             };
-    //         });
-
-    //         // Update localStorage with the new state
-    //         updateLocalStorage(updatedPackages);
-
-    //         return updatedPackages; // Return the updated packages
-    //     });
-    // };
-
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
             position: "top-center",
@@ -276,6 +181,7 @@ function EditNewOrderQuotation() {
             // Parse the JSON string into an object
             const orderObject = JSON.parse(orderData);
 
+            console.log(orderObject.totalAmount);
             setTotalAmount(orderObject.totalAmount);
         }
 
@@ -285,20 +191,27 @@ function EditNewOrderQuotation() {
     }, [quotationDetail]);
 
 
-
     const updateSelectedPackages = (packages) => {
         const updatedPackages = packages.map((prodPackage: Package) => {
-            const totalPrice = prodPackage.products.reduce((sum, product) => {
-                if (product.pivot.included) {
-                    return sum + product.product_retail_price * product.pivot.quantity;
-                } else {
-                    return sum + (product.product_retail_price - product.product_excluded_price);
-                }
+            const packageTotalPrice = prodPackage.products.reduce((sum, product) => {
+                return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
             }, 0);
+
+            let newTotalPrice = packageTotalPrice
+
+            prodPackage.products.map((product) => {
+                if (!product.pivot.includeSupply) {
+                    newTotalPrice -= (product.provisioning.supply.excluded_price * product.pivot.quantity);
+                }
+
+                if (!product.pivot.includeInstall) {
+                    newTotalPrice -= (product.provisioning.install.excluded_price * product.pivot.quantity);
+                }
+            });
 
             return {
                 ...prodPackage,
-                total_price: totalPrice // Calculate total price
+                total_price: newTotalPrice // Calculate total price
             };
         });
 
@@ -336,14 +249,35 @@ function EditNewOrderQuotation() {
                         return product; // Return the original product if not matched
                     });
 
+                    const packageTotalPrice = updatedProducts.reduce((sum, product) => {
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
+                    }, 0);
+
+                    let newTotalPrice = packageTotalPrice
+
+                    updatedProducts.map((product) => {
+                        if (!product.pivot.includeSupply) {
+                            newTotalPrice -= (product.provisioning.supply.excluded_price * product.pivot.quantity);
+                        }
+
+                        if (!product.pivot.includeInstall) {
+                            newTotalPrice -= (product.provisioning.install.excluded_price * product.pivot.quantity);
+                        }
+                    });
+
+
+
                     return {
                         ...prodPackage,
                         products: updatedProducts,
+                        total_price: newTotalPrice // Update total price
                     };
                 }
                 return prodPackage; // Return the original package if not matched
             });
 
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
             updateLocalStorage(updatedPackages);
             return updatedPackages;
         });
@@ -370,9 +304,21 @@ function EditNewOrderQuotation() {
                         return product; // Return the original product if not matched
                     });
 
-                    const newTotalPrice = updatedProducts.reduce((sum, product) => {
+                    const packageTotalPrice = updatedProducts.reduce((sum, product) => {
                         return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
                     }, 0);
+
+                    let newTotalPrice = packageTotalPrice
+
+                    updatedProducts.map((product) => {
+                        if (!product.pivot.includeSupply) {
+                            newTotalPrice -= (product.provisioning.supply.excluded_price * product.pivot.quantity);
+                        }
+
+                        if (!product.pivot.includeInstall) {
+                            newTotalPrice -= (product.provisioning.install.excluded_price * product.pivot.quantity);
+                        }
+                    });
 
                     return {
                         ...prodPackage,
@@ -431,7 +377,28 @@ function EditNewOrderQuotation() {
     };
 
     const calculateTotalAmount = (packages: Package[]) => {
-        return packages.reduce((sum, pkg) => sum + pkg.total_price, 0);
+        return packages.reduce((sum, pkg) => {
+            sum += pkg.products.reduce((prodSum, product) => {
+                if (!product.pivot.includeSupply) {
+                    prodSum += (product.provisioning.supply.retail_price * product.pivot.quantity) - (product.provisioning.supply.excluded_price * product.pivot.quantity);
+                } else {
+                    prodSum += (product.provisioning.supply.retail_price * product.pivot.quantity);
+                }
+
+                if (!product.pivot.includeInstall) {
+                    prodSum += (product.provisioning.install.retail_price * product.pivot.quantity) - (product.provisioning.install.excluded_price * product.pivot.quantity);
+                } else {
+                    prodSum += (product.provisioning.install.retail_price * product.pivot.quantity);
+                }
+
+                // console.log('prodSum Instalkl: ', prodSum);
+
+
+                return prodSum;
+            }, 0)
+
+            return sum;
+        }, 0);
     };
 
     if (loading) return <Loading />;
@@ -594,18 +561,27 @@ function EditNewOrderQuotation() {
                                                                 <td className="text-center">
                                                                     RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </td>
-                                                                <td>
-
-                                                                </td>
-                                                                {/* <td className='text-center'>
-                                                                    {!product.pivot.included
-                                                                        ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                <td className='text-center'>
+                                                                    {!product.pivot.includeSupply || !product.pivot.includeInstall
+                                                                        ? `- RM ${(
+                                                                            (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0) +
+                                                                            (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
+                                                                        )
+                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                         : null}
-                                                                </td> */}
+                                                                </td>
                                                                 <td className="text-center">
                                                                     {!product.pivot.included
                                                                         ? null
-                                                                        : `RM ${((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                        : `RM ${(
+                                                                            (product.provisioning.supply.retail_price * product.pivot.quantity -
+                                                                                (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0)
+                                                                            ) +
+                                                                            (product.provisioning.install.retail_price * product.pivot.quantity -
+                                                                                (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
+                                                                            )
+                                                                        )
+                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </td>
                                                                 <td className='text-center'>
                                                                     {product.pivot.isOriginal ?

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import useFetchPackage from "../../../hook/useFetchPackage";
-import { KTModal } from '../../../metronic/core';
 import { useParams } from "react-router-dom";
 import Loading from "../../../components/Loading";
 import { Link } from "react-router-dom";
@@ -13,13 +12,6 @@ function PackageDetail() {
     useEffect(() => {
         console.log('Package ID:', packageId);
     }, [packageId]);
-
-    const handleClose = () => {
-        const modalEl = document.querySelector('#package_detail_modal') as HTMLElement;
-        const modal = KTModal.getInstance(modalEl);
-
-        modal.toggle();
-    }
 
     if (!packageId) return null; // Early return for null packageId
 
@@ -46,7 +38,6 @@ function PackageDetail() {
                             className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                             data-tooltip="#edit_tooltip"
                             data-action="edit"
-                            onClick={handleClose}
                         >
                             <i className="ki-outline ki-notepad-edit"></i>
                         </Link>
@@ -122,7 +113,6 @@ function PackageDetail() {
                             className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                             data-tooltip="#edit_tooltip"
                             data-action="edit"
-                            onClick={handleClose}
                         >
                             <i className="ki-outline ki-notepad-edit"></i>
                         </Link>

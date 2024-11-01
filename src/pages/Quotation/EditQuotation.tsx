@@ -10,6 +10,8 @@ import { Package, Product, Quotation } from '../../types';
 import { updateQuotation } from '../../services/api';
 import useFetchQuotation from '../../hook/useFetchQuotation';
 import Loading from '../../components/Loading';
+import React from 'react';
+import IncludeQuotationProductModal from '../../components/Modals/IncludeQuotationProductModal';
 
 function EditQuotation() {
     const navigate = useNavigate();
@@ -70,7 +72,7 @@ function EditQuotation() {
 
                 // Calculate the new total price based on the updated products
                 const newTotalPrice = updatedProducts.reduce((sum, product) => {
-                    return sum + (product.product_retail_price * product.pivot.quantity);
+                    return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
                 }, 0);
 
                 return {
@@ -155,11 +157,53 @@ function EditQuotation() {
         }
     };
 
+    const openAddProductModal = (event) => {
+
+        // Get selected package id
+        const id = event.currentTarget.getAttribute('data-id');
+
+        const includePackages = localStorage.getItem('include_packages');
+        const packages = JSON.parse(includePackages);
+
+        const selectedPackage = packages.find(pkg => pkg.id === Number(id));
+
+        if (selectedPackage) {
+
+            const selectedProducts = selectedPackage.products.map(product => ({
+                id: product.id,
+                name: product.name,
+                quantity: product.pivot.quantity,
+                price: product.price,
+                includeSupply: true,
+                includeInstall: true,
+                description: product.description || "N/A" // Using "N/A" for null descriptions
+            }));
+
+            console.log(selectedProducts);
+
+            localStorage.setItem('selected_quotation_packages', includePackages);
+            localStorage.setItem('quotation:selected_package_id', JSON.stringify(selectedPackage.id))
+            localStorage.setItem('include_quotation_pack_prods', JSON.stringify(selectedProducts))
+
+            const datatableEl = document.querySelector('#products_table') as HTMLElement;
+            if (datatableEl) {
+                const datatable = (datatableEl as any).instance;
+
+                if (datatable) {
+                    datatable.reload();
+                }
+            }
+
+        } else {
+            console.log('Package not found');
+        }
+    };
+
     useEffect(() => {
         if (quotationDetail) {
 
             console.log(quotationDetail);
-            
+
 
             localStorage.setItem('include_packages', JSON.stringify(quotationDetail.metadata));
             const storedPackages = localStorage.getItem('include_packages');
@@ -182,7 +226,8 @@ function EditQuotation() {
     const updateSelectedPackages = (packages) => {
         const updatedPackages = packages.map((prodPackage: Package) => {
             const totalPrice = prodPackage.products.reduce((sum, product) => {
-                return sum + product.product_retail_price * product.pivot.quantity;
+
+                return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
             }, 0);
 
             return {
@@ -223,7 +268,7 @@ function EditQuotation() {
                     });
 
                     const newTotalPrice = updatedProducts.reduce((sum, product) => {
-                        return sum + product.product_retail_price * product.pivot.quantity;
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
                     }, 0);
 
                     return {
@@ -249,7 +294,7 @@ function EditQuotation() {
                     const updatedProducts = prodPackage.products.filter((product: Product) => product.id !== prodId);
 
                     const newTotalPrice = updatedProducts.reduce((sum, product) => {
-                        return sum + product.product_retail_price * product.pivot.quantity;
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
                     }, 0);
 
                     return {
@@ -305,7 +350,7 @@ function EditQuotation() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="left-column flex flex-col flex-[3] gap-8">
+                <div className="flex flex-col flex-[3] gap-8">
                     <div className="card">
                         <div className="card-body">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Package Detail</h2>
@@ -353,7 +398,7 @@ function EditQuotation() {
                     </div>
                 </div>
 
-                <div className='flex flex-col right-column flex-[6] gap-8'>
+                <div className='flex flex-col right-column flex-[7] gap-8'>
                     <div className="card">
                         <div className="card-body">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Packages</h2>
@@ -395,13 +440,23 @@ function EditQuotation() {
                                                 </i>
                                             </button>
                                             <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
+                                                <div className="flex justify-end my-2 mr-3">
+                                                    <button
+                                                        className="btn btn-primary"
+                                                        data-id={prodPackage.id}
+                                                        data-modal-toggle='#include_pack_prod_modal'
+                                                        onClick={openAddProductModal}
+                                                    >
+                                                        Add Product
+                                                    </button>
+                                                </div>
                                                 <div className="product-list flex flex-col">
                                                     <table className="table align-middle text-gray-700 font-medium text-sm">
                                                         <thead>
                                                             <tr>
                                                                 <th className='w-[250px]'>Product</th>
                                                                 <th className='w-[100px] text-center'>Quantity</th>
-                                                                <th className='w-[120px] text-center'>Retail Price</th>
+                                                                <th className='w-[120px] text-center'>Selling Price</th>
                                                                 <th className='w-[120px] text-center'>Total Price</th>
                                                                 <th className='w-[60px] text-center'>Visibility</th>
                                                                 <th className='w-[60px] text-center'>Action</th>
@@ -409,58 +464,68 @@ function EditQuotation() {
                                                         </thead>
                                                         <tbody>
                                                             {prodPackage.products.map((product) => (
-                                                                <tr
-                                                                    key={product.id}
-                                                                >
-                                                                    <td>
-                                                                        <div className="flex flex-col">
-                                                                            <span>{product.name}</span>
-                                                                            <span className="text-xs text-slate-400">{product.description}</span>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className='text-center text-lg'>
-                                                                        <button
-                                                                            ref={qtyBtnRef}
-                                                                            data-action='decrease'
-                                                                            onClick={() => adjustQuantity(product.id, prodPackage.id, 'decrease')}
-                                                                        >
-                                                                            <i className="ki-solid ki-minus-squared"></i>
-                                                                        </button>
-                                                                        <span className="mx-2 text-base">
-                                                                            {product.pivot.quantity}
-                                                                        </span>
-                                                                        <button
-                                                                            data-action='increase'
-                                                                            onClick={() => adjustQuantity(product.id, prodPackage.id, 'increase')}
-                                                                        >
-                                                                            <i className="ki-solid ki-plus-squared"></i>
-                                                                        </button>
-                                                                    </td>
-                                                                    <td>
-                                                                        RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                    </td>
-                                                                    <td>
-                                                                        RM {(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                    </td>
-                                                                    <td className='text-center'>
-                                                                        <label className="switch flex justify-center">
+                                                                <React.Fragment key={product.id}>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <div className="flex flex-col">
+                                                                                <span>{product.name}</span>
+                                                                                <span className="text-xs text-slate-400">{product.description}</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className='text-center text-lg'>
+                                                                            <button
+                                                                                data-action='decrease'
+                                                                                onClick={() => adjustQuantity(product.id, prodPackage.id, 'decrease')}
+                                                                            >
+                                                                                <i className="ki-solid ki-minus-squared"></i>
+                                                                            </button>
+                                                                            <span className="mx-2 text-base">
+                                                                                {product.pivot.quantity}
+                                                                            </span>
+                                                                            <button
+                                                                                data-action='increase'
+                                                                                onClick={() => adjustQuantity(product.id, prodPackage.id, 'increase')}
+                                                                            >
+                                                                                <i className="ki-solid ki-plus-squared"></i>
+                                                                            </button>
+                                                                        </td>
+                                                                        <td>
+                                                                            RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </td>
+                                                                        <td>
+                                                                            RM {((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </td>
+                                                                        <td className='text-center'>
+                                                                            <label className="switch flex justify-center">
+                                                                                <input
+                                                                                    name="visibility"
+                                                                                    type="checkbox"
+                                                                                    checked={product.pivot.visibility}
+                                                                                    // value={product.pivot.visibility}
+                                                                                    onChange={() => handleVisibilityToggle(product.id)}
+                                                                                />
+                                                                            </label>
+                                                                        </td>
+                                                                        <td className='text-center'>
+                                                                            <button
+                                                                                className="btn btn-sm btn-danger"
+                                                                                onClick={() => handleRemoveProduct(product.id, prodPackage.id)}
+                                                                            >
+                                                                                Remove
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colSpan={8}>
                                                                             <input
-                                                                                name="visibility"
-                                                                                type="checkbox"
-                                                                                checked={product.pivot.visibility}
-                                                                                onChange={() => handleVisibilityToggle(product.id)}
+                                                                                type="text"
+                                                                                placeholder="Add a internal reference note"
+                                                                                className="input w-full border p-2"
+                                                                            // onChange={(e) => handleNoteChange(product.id, e.target.value)}
                                                                             />
-                                                                        </label>
-                                                                    </td>
-                                                                    <td className='text-center'>
-                                                                        <button
-                                                                            className="btn btn-sm btn-danger"
-                                                                            onClick={() => handleRemoveProduct(prodPackage.id, product.id)}
-                                                                        >
-                                                                            Remove
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
+                                                                        </td>
+                                                                    </tr>
+                                                                </React.Fragment>
                                                             ))}
                                                         </tbody>
                                                     </table>
@@ -487,9 +552,15 @@ function EditQuotation() {
                 </button>
             </div>
 
+
             <IncludePackageModal
                 selectedPackages={selectedPackages}
                 updateSelectedPackages={updateSelectedPackages}
+            />
+
+            <IncludeQuotationProductModal
+                updateSelectedPackages={updateSelectedPackages}
+                isFromOrderQuotation={false}
             />
         </>
     );

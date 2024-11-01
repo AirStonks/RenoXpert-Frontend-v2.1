@@ -40,15 +40,14 @@ function IncludeProductModal({
 
             if (productIndex > -1) {
                 // If it is selected, remove it
+                const productQuantity = selectedProducts[productIndex].quantity;
+                
                 selectedProducts.splice(productIndex, 1);
                 selectBtn.dataset.action = 'select';
                 selectBtn.className = 'btn btn-primary btn-sm';
                 selectBtn.innerText = 'Select';
 
-                console.log(productPrice);
-                
-
-                updateTotalPrice(productPrice, '-');
+                updateTotalPrice(productPrice * productQuantity, '-');
             } else {
                 // If it is not selected, add it
                 selectedProducts.push({

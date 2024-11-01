@@ -12,7 +12,7 @@ function CreatePackage() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         packageName: '',
-        // packagePrice: 0,
+        packagePrice: 0,
         description: '',
         description_internal: '',
         products: [],
@@ -100,7 +100,7 @@ function CreatePackage() {
 
             const packageData: Package = {
                 name: formData.packageName,
-                // total_price: formData.packagePrice,
+                total_price: formData.packagePrice,
                 description: formData.description,
                 products: newProducts,
                 description_internal: formData.description_internal
@@ -152,8 +152,9 @@ function CreatePackage() {
             console.log(parsedProducts);
             
             setSelectedProducts(parsedProducts);
-            // const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
-            // setTotalPrice(initialTotalPrice);
+
+            const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+            setTotalPrice(initialTotalPrice);
         }
     }, []);
 
@@ -166,8 +167,7 @@ function CreatePackage() {
         localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
-    const updateTotalPrice = (price: number, operator: string) => {
-
+    const updateTotalPrice = (price: number, operator: string) => {        
         setTotalPrice(prevTotal => {
             switch (operator) {
                 case '+':
@@ -328,7 +328,7 @@ function CreatePackage() {
                                                 <tr>
                                                     <th className='w-[250px]'>Product</th>
                                                     <th className='w-[100px] text-center'>Quantity</th>
-                                                    <th className='w-[120px] text-center'>Selling Price</th>
+                                                    <th className='w-[120px] text-center'>Retail Price</th>
                                                     <th className='w-[120px] text-center'>Total Price</th>
                                                     <th className='w-[60px] text-center'>Visibility</th>
                                                     <th className='w-[60px] text-center'>Action</th>

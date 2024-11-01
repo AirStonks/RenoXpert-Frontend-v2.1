@@ -142,6 +142,9 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
 
             const selectedPackages = localStorage.getItem('selected_quotation_packages');
 
+            console.log('NEW: ', JSON.parse(selectedPackages));
+            
+
 
             updateSelectedPackages(JSON.parse(selectedPackages));
 

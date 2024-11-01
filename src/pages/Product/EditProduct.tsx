@@ -12,6 +12,10 @@ import { Slide, toast } from 'react-toastify';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import useFetchProductCategory from '../../hook/useFetchProductCategory';
 
+interface FormErrors {
+    [key: string]: string | undefined; // Use string or undefined for error messages
+}
+
 const EditProduct: React.FC = () => {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -20,24 +24,10 @@ const EditProduct: React.FC = () => {
     const { product, loading: productLoading, error: productError } = useFetchProduct(productId);
     const { productCategory, loading: categoryLoading, error: categoryError } = useFetchProductCategory();
 
-    const [formData, setFormData] = useState({
-        id: 0,
-        productName: '',
-        SKU: '',
-        type: 'service',
-        description: '',
-        category: 0,
-        uom: '',
-        product_retail_price: '',
-        product_cost_of_good_sold: '',
-        product_excluded_price: '',
-        supply_cost: 0,
-        install_cost: 0,
-        status: ''
-    });
+    const [formData, setFormData] = useState<Product | null>(null);
 
     const [selectedProduct, setSelectedProduct] = useState<{ id: number, name: string } | null>(null);
-    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+    const [errors, setErrors] = useState<FormErrors>({});
 
     const handleBackClick = () => {
         navigate('/products'); // Go back to the previous route
@@ -58,55 +48,80 @@ const EditProduct: React.FC = () => {
 
     useEffect(() => {
         if (product) {
-            setFormData({
-                id: product.id,
-                productName: product.name || '',
-                SKU: product.SKU || '',
-                type: product.type || '',
-                category: product.category_id || 0,
-                uom: product.uom,
-                description: product.description || '',
-                product_retail_price: product.product_retail_price.toString() || '',
-                product_cost_of_good_sold: product.product_cost_of_good_sold.toString() || '',
-                product_excluded_price: product.product_excluded_price.toString() || '',
-                supply_cost: product.supply_cost,
-                install_cost: product.install_cost,
-                status: product.status || ''
-            });
+            setFormData(product);
+        }
+
+        if (formData) {
+            console.log(formData);
+            
         }
     }, [product]);
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        
         const { name, value } = e.target;
-        console.log(name, value);
-        
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value
-        }));
+
+        if (name.startsWith('provisioning.supply')) {
+            const property = name.split('.')[2];
+
+            setFormData((prevData) => ({
+                ...prevData,
+                provisioning: {
+                    ...prevData.provisioning,
+                    supply: {
+                        ...prevData.provisioning.supply,
+                        [property]: value,
+                    },
+                },
+
+            }));
+
+        } else if (name.startsWith('provisioning.install')) {
+            const property = name.split('.')[2];
+
+            setFormData((prevData) => ({
+                ...prevData,
+                provisioning: {
+                    ...prevData.provisioning,
+                    install: {
+                        ...prevData.provisioning.install,
+                        [property]: value,
+                    },
+                },
+
+            }));
+        } else {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value
+            }));
+        }
+    };
+
+    const validate = (): FormErrors => {
+        const newErrors: FormErrors = {};
+        if (!formData.name) newErrors.name = "Name required";
+        if (!formData.uom) newErrors.uom = "UOM required";
+        if (!formData.provisioning.supply.retail_price) newErrors.supply_retail_price = "Retail Price required";
+        if (!formData.provisioning.supply.cogs) newErrors.supply_cogs = "Cost of Good Sold required";
+        if (!formData.provisioning.supply.excluded_price) newErrors.supply_excluded_price = "Excluded Price required";
+        if (!formData.provisioning.install.retail_price) newErrors.install_retail_price = "Retail Price required";
+        if (!formData.provisioning.install.cogs) newErrors.install_cogs = "Cost of Good Sold required";
+        if (!formData.provisioning.install.excluded_price) newErrors.install_excluded_price = "Excluded Price required";
+
+        return newErrors;
     };
 
     const handleSubmit = async () => {
-        try {
-            const productData: Product = {
-                id: formData.id,
-                name: formData.productName,
-                SKU: formData.SKU,
-                category: formData.category,
-                type: formData.type,
-                description: formData.description,
-                uom: formData.uom,
-                product_retail_price: parseFloat(formData.product_retail_price),
-                product_cost_of_good_sold: parseFloat(formData.product_cost_of_good_sold),
-                product_excluded_price: parseFloat(formData.product_excluded_price),
-                supply_cost: formData.supply_cost,
-                install_cost: formData.install_cost,
-                status: formData.status,
-            };
+        const validationErrors = validate();
 
-            const response = await updateProduct(productData);
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+
+        try {
+            const response = await updateProduct(formData);
 
             if (response?.success) {
                 notify('success', "Product Edited Successfully!");
@@ -114,25 +129,12 @@ const EditProduct: React.FC = () => {
             }
 
         } catch (error) {
-            if (error.response?.status === 422) {
-                // Extract validation errors from the response
-                const errors = error.response.data.data || {};
-                // Convert array of errors to a single error message for each field
-                const formattedErrors = Object.keys(errors).reduce((acc, key) => {
-                    acc[key] = errors[key].join(' '); // Join array of errors into a single string
-                    return acc;
-                }, {} as Record<string, string>);
-
-                setValidationErrors(formattedErrors);
-                notify('error', "Product edit unsuccessful. Check the errors below.");
-            } else {
-                console.error('Product creation failed:', error);
-            }
+            console.error('Product creation failed:', error);
         }
     };
 
     const handleRemoveProduct = () => {
-        setSelectedProduct({ id: productId, name: formData.productName });
+        setSelectedProduct({ id: productId, name: formData.name });
 
         const modal = document.querySelector('#delete_product_modal') as HTMLElement;
         if (modal) {
@@ -165,7 +167,7 @@ const EditProduct: React.FC = () => {
                     </span>
                 </div>
                 <div className="flex gap-3 flex-wrap">
-                    <button className="btn btn-sm btn-danger" data-action="delete" data-id={productId} data-name={formData.productName} data-modal-toggle="#delete_product_modal" onClick={handleRemoveProduct}>
+                    <button className="btn btn-sm btn-danger" data-action="delete" data-id={productId} data-name={formData.name} data-modal-toggle="#delete_product_modal" onClick={handleRemoveProduct}>
                         <i className="ki-outline ki-trash"></i>
                         Remove Product
                     </button>
@@ -173,7 +175,8 @@ const EditProduct: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="left-column flex flex-col flex-auto gap-8">
+                <div className="flex flex-col flex-[2] gap-8">
+
                     {/* Image */}
                     {/* <div className="card relative">
                         <div className="comming-soon-overlay rounded-xl absolute flex items-center justify-center inset-0 bg-black bg-opacity-60 pointer-events-none">
@@ -192,33 +195,15 @@ const EditProduct: React.FC = () => {
                         </div>
                     </div> */}
 
-                    {/* Product ID */}
-                    <div className="card">
-                        <div className="card-body">
-                            <div className="flex flex-col">
-                                {/* Image Placeholder */}
-                                <div className="flex gap-4">
-                                    <span className="flex text-md font-semibold text-gray-800 tracking-wide">
-                                        Product ID:
-                                    </span>
-
-                                    <span className="flex text-md font-semibold text-gray-950 tracking-wide">
-                                        {formData.id}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Status */}
                     <div className="card">
                         <div className="card-body">
                             <div className="flex flex-col">
                                 {/* Header */}
-                                <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Status</h1>
+                                <h1 className='text-xl mb-4 font-semibold text-gray-900'>Status</h1>
 
                                 {/* Status Dropdown */}
-                                <div className="flex flex-col mb-8">
+                                <div className="flex flex-col">
                                     <Dropdown
                                         options={[
                                             { value: "available", label: "Available" },
@@ -242,17 +227,17 @@ const EditProduct: React.FC = () => {
                         <div className="card-body">
                             <div className="flex flex-col">
                                 {/* Header */}
-                                <h1 className='text-2xl mb-4 font-semibold text-gray-900'>General</h1>
+                                <h1 className='text-xl mb-4 font-semibold text-gray-900'>General</h1>
 
                                 {/* Product Name */}
                                 <InputFieldGroup
                                     fieldTitle="Product Name"
                                     description="A product name is required and recommended to be unique."
                                     placeholder="Product name"
-                                    name="productName"
-                                    value={formData.productName}
+                                    name="name"
+                                    value={formData.name}
                                     onChange={handleChange}
-                                    error={validationErrors.name}
+                                    error={errors.name}
                                 />
 
                                 {/* SKU */}
@@ -263,7 +248,7 @@ const EditProduct: React.FC = () => {
                                     name="SKU"
                                     value={formData.SKU}
                                     onChange={handleChange}
-                                    error={validationErrors.SKU}
+                                    error={errors.SKU}
                                 />
 
                                 {/* Type */}
@@ -271,6 +256,10 @@ const EditProduct: React.FC = () => {
                                     <label className='mb-2 text-sm font-medium text-gray-900'>
                                         Product Type
                                     </label>
+
+                                    <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                        Select the type of product: <strong>Service</strong> for tasks or benefits, and <strong>Component</strong> for physical parts.
+                                    </span>
 
                                     <Dropdown
                                         options={[
@@ -281,10 +270,6 @@ const EditProduct: React.FC = () => {
                                         value={formData.type}
                                         onChange={handleChange}
                                     />
-
-                                    <span className="text-xs text-gray-600 tracking-wide">
-                                        Select the type of product: <strong>Service</strong> for tasks or benefits, and <strong>Component</strong> for physical parts.
-                                    </span>
                                 </div>
 
                                 {/* Category */}
@@ -313,7 +298,6 @@ const EditProduct: React.FC = () => {
                                     name="description"
                                     value={formData.description}
                                     onChange={handleChange}
-                                    error={validationErrors.description}
                                 />
                             </div>
                         </div>
@@ -330,75 +314,105 @@ const EditProduct: React.FC = () => {
                                     <InputFieldGroup
                                         fieldTitle="UOM"
                                         description="Unit of Measurement of the product"
-                                        placeholder="Retail Price"
+                                        placeholder="measurement"
                                         type="text"
                                         name="uom"
                                         value={formData.uom}
                                         onChange={handleChange}
-                                        error={validationErrors.uom}
-                                    />
-
-                                    {/* Retail Price */}
-                                    <InputFieldGroup
-                                        fieldTitle="Retail Price"
-                                        description="This is the price at which the product will be sold to customers"
-                                        placeholder="Retail Price"
-                                        type="number"
-                                        name="product_retail_price"
-                                        value={formData.product_retail_price}
-                                        onChange={handleChange}
-                                        error={validationErrors.product_retail_price}
-                                    />
-
-                                    {/* Cost of Good */}
-                                    <InputFieldGroup
-                                        fieldTitle="Cost of Good Sold"
-                                        description="This includes all costs directly tied to the production of the product"
-                                        placeholder="Cost of Good Sold"
-                                        type="number"
-                                        name="product_cost_of_good_sold"
-                                        value={formData.product_cost_of_good_sold}
-                                        onChange={handleChange}
-                                        error={validationErrors.product_cost_of_good_sold}
-                                    />
-
-                                    {/* Excluded Price */}
-                                    <InputFieldGroup
-                                        fieldTitle="Excluded Price"
-                                        description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
-                                        placeholder="Excluded Price"
-                                        type="number"
-                                        name="product_excluded_price"
-                                        value={formData.product_excluded_price}
-                                        onChange={handleChange}
-                                        error={validationErrors.product_excluded_price}
+                                        error={errors.uom}
                                     />
                                 </div>
-                                <div className="flex flex-col flex-1">
-                                    {/* Supply Price */}
-                                    <InputFieldGroup
-                                        fieldTitle="Supply Cost"
-                                        description="This is the price at which the product will be sold to customers"
-                                        placeholder="Price"
-                                        type="number"
-                                        name="supply_cost"
-                                        value={formData.supply_cost}
-                                        onChange={handleChange}
-                                        error={validationErrors.supply_cost}
-                                    />
+                            </div>
+                        </div>
+                    </div>
 
-                                    {/* Install Cost */}
-                                    <InputFieldGroup
-                                        fieldTitle="Install Cost"
-                                        description="This includes all costs directly tied to the production of the product"
-                                        placeholder="Price"
-                                        type="number"
-                                        name="install_cost"
-                                        value={formData.install_cost}
-                                        onChange={handleChange}
-                                        error={validationErrors.install_cost}
-                                    />
+                    <div className="flex flex-wrap gap-4">
+                        <div className="card flex lg:flex-1 md:flex-auto">
+                            <div className="card-body">
+                                <div className="flex flex-col mb-4">
+                                    <h1 className='text-2xl font-semibold text-gray-900 mb-2'>Supply</h1>
+                                    <span className='text-xs text-gray-600 tracking-wide'>The costs for the product supply</span>
                                 </div>
+
+                                {/* Retail Price */}
+                                <InputFieldGroup
+                                    fieldTitle="Retail Price"
+                                    description="This is the price at which the product will be sold to customers"
+                                    placeholder="Retail Price"
+                                    type="number"
+                                    name="provisioning.supply.retail_price"
+                                    value={formData.provisioning.supply.retail_price}
+                                    onChange={handleChange}
+                                    error={errors.supply_retail_price}
+                                />
+
+                                {/* Cost of Good */}
+                                <InputFieldGroup
+                                    fieldTitle="Cost of Good Sold"
+                                    description="This includes all costs directly tied to the production of the product"
+                                    placeholder="Cost of Good Sold"
+                                    type="number"
+                                    name="provisioning.supply.cogs"
+                                    value={formData.provisioning.supply.cogs}
+                                    onChange={handleChange}
+                                    error={errors.supply_cogs}
+                                />
+
+                                {/* Excluded Price */}
+                                <InputFieldGroup
+                                    fieldTitle="Excluded Price"
+                                    description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
+                                    placeholder="Excluded Price"
+                                    type="number"
+                                    name="provisioning.supply.excluded_price"
+                                    value={formData.provisioning.supply.excluded_price}
+                                    onChange={handleChange}
+                                    error={errors.supply_excluded_price}
+                                />
+                            </div>
+                        </div>
+                        <div className="card flex lg:flex-1 md:flex-auto">
+                            <div className="card-body">
+                                <div className="flex flex-col mb-4">
+                                    <h1 className='text-2xl font-semibold text-gray-900 mb-2'>Install</h1>
+                                    <span className='text-xs text-gray-600 tracking-wide'>The installation cost for the product</span>
+                                </div>
+
+                                {/* Retail Price */}
+                                <InputFieldGroup
+                                    fieldTitle="Retail Price"
+                                    description="This is the price at which the product will be sold to customers"
+                                    placeholder="Retail Price"
+                                    type="number"
+                                    name="provisioning.install.retail_price"
+                                    value={formData.provisioning.install.retail_price}
+                                    onChange={handleChange}
+                                    error={errors.install_retail_price}
+                                />
+
+                                {/* Cost of Good */}
+                                <InputFieldGroup
+                                    fieldTitle="Cost of Good Sold"
+                                    description="This includes all costs directly tied to the production of the product"
+                                    placeholder="Cost of Good Sold"
+                                    type="number"
+                                    name="provisioning.install.cogs"
+                                    value={formData.provisioning.install.cogs}
+                                    onChange={handleChange}
+                                    error={errors.install_cogs}
+                                />
+
+                                {/* Excluded Price */}
+                                <InputFieldGroup
+                                    fieldTitle="Excluded Price"
+                                    description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
+                                    placeholder="Excluded Price"
+                                    type="number"
+                                    name="provisioning.install.excluded_price"
+                                    value={formData.provisioning.install.excluded_price}
+                                    onChange={handleChange}
+                                    error={errors.install_excluded_price}
+                                />
                             </div>
                         </div>
                     </div>
@@ -418,7 +432,7 @@ const EditProduct: React.FC = () => {
             </div>
 
 
-            <DeleteModal 
+            <DeleteModal
                 item={selectedProduct}
                 modalTitle='Remove Product'
                 modalPrompt='Are you sure to permanently remove this product:'

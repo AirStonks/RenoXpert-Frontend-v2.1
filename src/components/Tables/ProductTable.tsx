@@ -40,7 +40,7 @@ function ProductTable() {
         }
     }, [navigate]);
 
-    const handleRefreshTable = async ()  => {
+    const handleRefreshTable = async () => {
         datatable.reload();
     };
 
@@ -66,7 +66,7 @@ function ProductTable() {
                 //         let color = 'bg-gray-500';
 
                 //         console.log(data);
-                        
+
                 //         if (item === 'available') {
                 //             color = 'bg-success';
                 //         }
@@ -99,6 +99,14 @@ function ProductTable() {
                 },
                 SKU: {
                     title: 'SKU',
+                },
+                selling_price: {
+                    title: 'Selling Price',
+                    render: (item: string, data: Product) => `
+                        <div class="flex flex-col justify-center items-center">
+                            <span>RM ${data.provisioning.supply.retail_price + data.provisioning.install.retail_price}</span>
+                        </div>
+                    `,
                 },
                 category: {
                     title: 'Category',
@@ -239,6 +247,12 @@ function ProductTable() {
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
+                                            <th className="w-[100px] text-center" data-datatable-column="selling_price">
+                                                <span className="sort">
+                                                    <span className="sort-label">Selling Price</span>
+                                                    <span className="sort-icon"></span>
+                                                </span>
+                                            </th>
                                             <th className="w-[120px] text-center" data-datatable-column="category">
                                                 <span className="sort">
                                                     <span className="sort-label">Category</span>
@@ -301,7 +315,7 @@ function ProductTable() {
                 <Tooltip id='other' content='Other' />
             </div>
 
-            <DeleteModal 
+            <DeleteModal
                 item={selectedProduct}
                 modalTitle='Remove Product'
                 modalPrompt='Are you sure to permanently remove this product:'

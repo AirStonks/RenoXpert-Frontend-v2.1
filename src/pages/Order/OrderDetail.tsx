@@ -338,12 +338,8 @@ function OrderDetail() {
                                                             {prodPackage.description}
                                                         </span>
                                                     </div>
-                                                    <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
-                                                    </i>
-                                                    <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
-                                                    </i>
                                                 </button>
-                                                <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
+                                                <div className="accordion-content active border-t" id={"package_content_" + prodPackage.id.toString()}>
                                                     <div className="product-list flex flex-col">
                                                         <table className="table align-middle text-gray-700 font-medium text-sm">
                                                             <thead>
@@ -355,7 +351,6 @@ function OrderDetail() {
                                                                     <th className='w-[100px] text-center'>Unit Price</th>
                                                                     <th className='w-[100px] text-center'>Discount</th>
                                                                     <th className='w-[100px] text-center'>Total Price</th>
-                                                                    <th className='w-[100px] text-center'>Include Product</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -400,28 +395,27 @@ function OrderDetail() {
                                                                         <td className="text-center">
                                                                             RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                         </td>
-                                                                        <td>
-                                                                            
-                                                                        </td>
-                                                                        {/* <td className='text-center'>
-                                                                            {!product.pivot.included
-                                                                                ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                        <td className='text-center'>
+                                                                            {!product.pivot.includeSupply || !product.pivot.includeInstall
+                                                                                ? `- RM ${(
+                                                                                    (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0) +
+                                                                                    (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
+                                                                                )
+                                                                                    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                                 : null}
-                                                                        </td> */}
+                                                                        </td>
                                                                         <td className="text-center">
                                                                             {!product.pivot.included
                                                                                 ? null
-                                                                                : `RM ${((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                        </td>
-                                                                        <td className='text-center'>
-                                                                            <label className="switch flex justify-center">
-                                                                                <input
-                                                                                    name="included"
-                                                                                    type="checkbox"
-                                                                                    checked={product.pivot.included}
-                                                                                    readOnly
-                                                                                />
-                                                                            </label>
+                                                                                : `RM ${(
+                                                                                    (product.provisioning.supply.retail_price * product.pivot.quantity -
+                                                                                        (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0)
+                                                                                    ) +
+                                                                                    (product.provisioning.install.retail_price * product.pivot.quantity -
+                                                                                        (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
+                                                                                    )
+                                                                                )
+                                                                                    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                         </td>
                                                                     </tr>
                                                                 ))}

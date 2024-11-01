@@ -665,7 +665,7 @@ function CreateOrder() {
                                                                         <th className='w-[250px]'>Product</th>
                                                                         <th className='w-[100px] text-center'>Quantity</th>
                                                                         <th className='w-[100px] text-center'>Unit Price</th>
-                                                                        {/* <th className='w-[100px] text-center'>Discount</th> */}
+                                                                        <th className='w-[100px] text-center'>Discount</th>
                                                                         <th className='w-[100px] text-center'>Total Price</th>
                                                                     </tr>
                                                                 </thead>
@@ -711,15 +711,27 @@ function CreateOrder() {
                                                                             <td className="text-center">
                                                                                 RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                             </td>
-                                                                            {/* <td className='text-center'>
-                                                                                {!product.pivot.included
-                                                                                    ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                            <td className='text-center'>
+                                                                                {!product.pivot.includeSupply || !product.pivot.includeInstall
+                                                                                    ? `- RM ${(
+                                                                                        (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0) +
+                                                                                        (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
+                                                                                    )
+                                                                                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                                     : null}
-                                                                            </td> */}
+                                                                            </td>
                                                                             <td className="text-center">
                                                                                 {!product.pivot.included
                                                                                     ? null
-                                                                                    : `RM ${((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                    : `RM ${(
+                                                                                        (product.provisioning.supply.retail_price * product.pivot.quantity -
+                                                                                            (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0)
+                                                                                        ) +
+                                                                                        (product.provisioning.install.retail_price * product.pivot.quantity -
+                                                                                            (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
+                                                                                        )
+                                                                                    )
+                                                                                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                             </td>
                                                                         </tr>
                                                                     ))}

@@ -1,6 +1,6 @@
 // src\pages\Product\Package\CreatePackage.tsx
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast, Slide } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
 import InputFieldGroup from '../../../components/Forms/TextFields/InputFieldGroup';
@@ -14,13 +14,14 @@ function EditPackage() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const packageId = id ? parseInt(id, 10) : null;
-    
+
     const { packageDetail, loading, error } = useFetchPackage(packageId);
 
     const [formData, setFormData] = useState({
         packageName: '',
         packagePrice: 0,
         description: '',
+        description_internal: '',
         products: [],
     });
 
@@ -46,7 +47,7 @@ function EditPackage() {
         });
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
             ...prevData,
@@ -63,13 +64,27 @@ function EditPackage() {
                 }
                 return product;
             });
-    
+
             // Update localStorage with the new state
             updateLocalStorage(updatedProducts);
-    
+
             return updatedProducts;
         });
     };
+
+    const handleNoteChange = (id: string | number, value: string) => {
+
+        setSelectedProducts((prevProducts) => {
+            const updatedProducts = prevProducts.map((product) => {
+                if (product.id === id) {
+                    return { ...product, note: value }; // Update note
+                }
+                return product; // Return unchanged product
+            });
+            updateLocalStorage(updatedProducts); // Persist updated products
+            return updatedProducts; // Update state
+        });
+    }
 
     const handleSubmit = async () => {
         const storedProducts = localStorage.getItem('include_prod_selected_products');
@@ -135,7 +150,7 @@ function EditPackage() {
     };
 
     useEffect(() => {
-        
+
         if (packageDetail) {
 
             setFormData((prev) => ({
@@ -146,19 +161,19 @@ function EditPackage() {
 
             const selectedProducts = [];
 
-            packageDetail.products.forEach(({ id, name, pivot, product_retail_price, description }) => {
-                selectedProducts.push({ 
+            packageDetail.products.forEach(({ id, name, pivot, provisioning, description }) => {
+                selectedProducts.push({
                     id,
                     name,
                     quantity: pivot.quantity,
                     visibility: pivot.visibility,
-                    price: product_retail_price,
-                    description 
+                    price: provisioning.install.retail_price + provisioning.supply.retail_price,
+                    description
                 });
             });
 
             localStorage.setItem('include_prod_selected_products', JSON.stringify(selectedProducts));
-            
+
             updateSelectedProducts(selectedProducts);
         }
         const storedProducts = localStorage.getItem('include_prod_selected_products');
@@ -220,7 +235,7 @@ function EditPackage() {
             const removedProduct = prevProducts.find(product => product.id === id);
             if (removedProduct) {
                 // Update total price based on the removed product
-                updateTotalPrice(removedProduct.quantity * removedProduct.quantity, '-');
+                updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
             }
             updateLocalStorage(updatedProducts); // Update localStorage
             return updatedProducts;
@@ -230,6 +245,10 @@ function EditPackage() {
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!packageDetail) return <div>Package not found</div>;
+
+    // if (selectedProducts) {
+    //     console.log(selectedProducts);
+    // }
 
     return (
         <>
@@ -246,33 +265,6 @@ function EditPackage() {
 
             <div className="flex flex-wrap gap-8 mb-8">
                 <div className="left-column flex flex-col flex-[3] gap-4">
-                    <div className="card">
-                        <div className="card-body">
-                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Package Detail</h2>
-
-                            {/* Package Name */}
-                            <InputFieldGroup
-                                fieldTitle="Package Name"
-                                description="A product name is required and recommended to be unique."
-                                placeholder="Package name"
-                                name="packageName"
-                                value={formData.packageName}
-                                onChange={handleChange}
-                                error={validationErrors.name}
-                            />
-
-                            {/* Description */}
-                            <InputFieldGroup
-                                fieldTitle="Description"
-                                description="A product name is required and recommended to be unique."
-                                placeholder="Description"
-                                name="description"
-                                value={formData.description}
-                                onChange={handleChange}
-                                error={validationErrors.description}
-                            />
-                        </div>
-                    </div>
 
                     <div className="card">
                         <div className="card-body">
@@ -288,6 +280,57 @@ function EditPackage() {
                                 <span className="text-lg font-medium text-gray-900">
                                     RM {totalPrice}
                                 </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-body">
+                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Package Detail</h2>
+
+                            {/* Package Name */}
+                            <InputFieldGroup
+                                fieldTitle="Package Name"
+                                description="A package name is required and recommended to be unique."
+                                placeholder="Package name"
+                                name="packageName"
+                                value={formData.packageName}
+                                onChange={handleChange}
+                                error={validationErrors.name}
+                            />
+
+                            {/* Description */}
+                            <InputFieldGroup
+                                fieldTitle="Description"
+                                description="The information of the package related to the package"
+                                placeholder="Description"
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                error={validationErrors.description}
+                            />
+
+                        </div>
+                    </div>
+
+                    <div className="card bg-slate-50">
+                        <div className="card-body">
+                            <div className="flex flex-col mb-8">
+                                <label className='mb-2 text-sm font-medium text-gray-900'>
+                                    Description <span className='text-slate-500'>(Internal)</span>
+                                </label>
+                                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                    Note down the remark for internal reference. (Not public in owner view quotation)
+                                </span>
+
+                                <textarea
+                                    className="textarea"
+                                    placeholder="This description will not visible on owner view"
+                                    name='description_internal'
+                                    rows={6}
+                                    value={formData.description_internal}
+                                    onChange={handleChange}
+                                >
+                                </textarea>
                             </div>
                         </div>
                     </div>
@@ -307,6 +350,10 @@ function EditPackage() {
                                 Add Products
                             </button>
 
+                            <div className="badge badge-lg badge-dark text-yellow-300 mb-4">
+                                The Internal Reference Note is not visible in Owner View
+                            </div>
+
                             <div className="product-list flex flex-col">
                                 <div className="card min-w-full">
                                     <div className="card-table">
@@ -320,59 +367,71 @@ function EditPackage() {
                                                     <th className='w-[60px] text-center'>Visibility</th>
                                                     <th className='w-[60px] text-center'>Action</th>
                                                 </tr>
-                                            </thead>    
+                                            </thead>
                                             <tbody>
                                                 {selectedProducts.map((product) => (
-                                                    <tr key={product.id}>
-                                                        <td>
-                                                            <div className="flex flex-col">
-                                                                <span>{product.name}</span>
-                                                                <span className="text-xs text-slate-400">{product.description}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className='text-center text-lg'>
-                                                            <button
-                                                                data-action='decrease'
-                                                                onClick={() => adjustQuantity(product.id, 'decrease')}
-                                                            >
-                                                                <i className="ki-solid ki-minus-squared"></i>
-                                                            </button>
-                                                            <span className="mx-2 text-base">
-                                                                {product.quantity}
-                                                            </span>
-                                                            <button
-                                                                data-action='increase'
-                                                                onClick={() => adjustQuantity(product.id, 'increase')}
-                                                            >
-                                                                <i className="ki-solid ki-plus-squared"></i>
-                                                            </button>
-                                                        </td>
-                                                        <td>
-                                                            RM {product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </td>
-                                                        <td>
-                                                            RM {(product.price * product.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </td>
-                                                        <td className='text-center'>
-                                                            <label className="switch flex justify-center">
+                                                    <React.Fragment key={product.id}>
+                                                        <tr>
+                                                            <td>
+                                                                <div className="flex flex-col">
+                                                                    <span>{product.name}</span>
+                                                                    <span className="text-xs text-slate-400">{product.description}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className='text-center text-lg'>
+                                                                <button
+                                                                    data-action='decrease'
+                                                                    onClick={() => adjustQuantity(product.id, 'decrease')}
+                                                                >
+                                                                    <i className="ki-solid ki-minus-squared"></i>
+                                                                </button>
+                                                                <span className="mx-2 text-base">
+                                                                    {product.quantity}
+                                                                </span>
+                                                                <button
+                                                                    data-action='increase'
+                                                                    onClick={() => adjustQuantity(product.id, 'increase')}
+                                                                >
+                                                                    <i className="ki-solid ki-plus-squared"></i>
+                                                                </button>
+                                                            </td>
+                                                            <td>
+                                                                RM {product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                            <td>
+                                                                RM {(product.price * product.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                            <td className='text-center'>
+                                                                <label className="switch flex justify-center">
+                                                                    <input
+                                                                        name="visibility"
+                                                                        type="checkbox"
+                                                                        checked={product.visibility}
+                                                                        value={product.visibility}
+                                                                        onChange={() => handleVisibilityToggle(product.id)}
+                                                                    />
+                                                                </label>
+                                                            </td>
+                                                            <td className='text-center'>
+                                                                <button
+                                                                    className="btn btn-sm btn-danger"
+                                                                    onClick={() => handleRemoveProduct(product.id)}
+                                                                >
+                                                                    Remove
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colSpan={8}>
                                                                 <input
-                                                                    name="visibility"
-                                                                    type="checkbox"
-                                                                    checked={product.visibility}
-                                                                    value={product.visibility}
-                                                                    onChange={() => handleVisibilityToggle(product.id)}
+                                                                    type="text"
+                                                                    placeholder="Add a internal reference note"
+                                                                    className="input w-full border p-2"
+                                                                    onChange={(e) => handleNoteChange(product.id, e.target.value)}
                                                                 />
-                                                            </label>
-                                                        </td>
-                                                        <td className='text-center'>
-                                                            <button
-                                                                className="btn btn-sm btn-danger"
-                                                                onClick={() => handleRemoveProduct(product.id)}
-                                                            >
-                                                                Remove
-                                                            </button>
-                                                        </td>
-                                                    </tr>
+                                                            </td>
+                                                        </tr>
+                                                    </React.Fragment>
                                                 ))}
                                             </tbody>
                                         </table>
