@@ -459,41 +459,49 @@ function EditOrder() {
                                             </div>
                                         </div>
 
-                                        <span className='text-sm font-semibold text-gray-900'>
-                                            Block
-                                        </span>
+                                        <div className="flex gap-4">
+                                            <div className="flex flex-col">
+                                                <span className='text-sm font-semibold text-gray-900'>
+                                                    Block
+                                                </span>
 
-                                        <input
-                                            className='input mb-2'
-                                            type='text'
-                                            name='block'
-                                            value={formData.block}
-                                            onChange={handleChange}
-                                        />
+                                                <input
+                                                    className='input mb-2'
+                                                    type='text'
+                                                    name='block'
+                                                    value={formData.block}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
 
-                                        <span className='text-sm font-semibold text-gray-900'>
-                                            Floor
-                                        </span>
+                                            <div className="flex flex-col">
+                                                <span className='text-sm font-semibold text-gray-900'>
+                                                    Floor
+                                                </span>
 
-                                        <input
-                                            className='input mb-2'
-                                            type='text'
-                                            name='floor'
-                                            value={formData.floor || ''}
-                                            onChange={handleChange}
-                                        />
+                                                <input
+                                                    className='input mb-2'
+                                                    type='text'
+                                                    name='floor'
+                                                    value={formData.floor || ''}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
 
-                                        <span className='text-sm font-semibold text-gray-900'>
-                                            Unit No
-                                        </span>
+                                            <div className="flex flex-col">
+                                                <span className='text-sm font-semibold text-gray-900'>
+                                                    Unit No
+                                                </span>
 
-                                        <input
-                                            className='input mb-2'
-                                            type='text'
-                                            name='unitNo'
-                                            value={formData.unitNo}
-                                            onChange={handleChange}
-                                        />
+                                                <input
+                                                    className='input mb-2'
+                                                    type='text'
+                                                    name='unitNo'
+                                                    value={formData.unitNo}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                        </div>
                                     </>
                                 )}
                             </div>
@@ -630,6 +638,7 @@ function EditOrder() {
                                                                     <th className='w-[100px] text-center'>Unit Price</th>
                                                                     <th className='w-[100px] text-center'>Discount</th>
                                                                     <th className='w-[100px] text-center'>Total Price</th>
+                                                                    <th className='w-[10px] text-center'></th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -695,6 +704,9 @@ function EditOrder() {
                                                                                     )
                                                                                 )
                                                                                     .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                        </td>
+                                                                        <td className="text-center">
+                                                                            {!product.pivot.visibility && <i className="ki-solid ki-eye-slash text-2xl"></i>}
                                                                         </td>
                                                                     </tr>
                                                                 ))}

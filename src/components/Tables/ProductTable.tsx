@@ -18,15 +18,22 @@ function ProductTable() {
     // Function to handle click events
     const handleTableClick = useCallback((event: MouseEvent) => {
         const target = event.target as HTMLElement;
-        const editButton = target.closest('[data-action="edit"]');
-        const deleteButton = target.closest('[data-action="delete"]');
 
-        if (editButton instanceof HTMLElement) {
+        const viewButton = target.closest('[data-action="view"]') as HTMLElement;
+        const editButton = target.closest('[data-action="edit"]') as HTMLElement;
+        const deleteButton = target.closest('[data-action="delete"]') as HTMLElement;
+
+        if (viewButton) {
+            const id = viewButton.dataset.id;
+            if (id) {
+                navigate(`/products/${id}`);
+            }
+        } else if (editButton) {
             const id = editButton.dataset.id;
             if (id) {
                 navigate(`/products/edit/${id}`);
             }
-        } else if (deleteButton instanceof HTMLElement) {
+        } else if (deleteButton) {
             const id = deleteButton.dataset.id;
             const name = deleteButton.dataset.name;
             if (id && name) {
@@ -112,12 +119,14 @@ function ProductTable() {
                     title: 'Category',
                     createdCell(cell: HTMLElement) {
                         cell.classList.add('capitalize');
+                        cell.classList.add('text-center');
                     },
                 },
                 type: {
                     title: 'Type',
                     createdCell(cell: HTMLElement) {
                         cell.classList.add('capitalize');
+                        cell.classList.add('text-center');
                     },
                 },
                 // product_retail_price: {
@@ -137,12 +146,12 @@ function ProductTable() {
                     render: (item: number, data: Product) => `
                         <div class="flex justify-around gap-2">
                             <button
-                                class="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                data-tooltip="#edit_tooltip"
-                                data-action="edit"
+                                class="btn-view btn btn-sm btn-secondary"
+                                data-tooltip="#view_tooltip"
+                                data-action="view"
                                 data-id="${item}"
                             >
-                                <i class="ki-outline ki-notepad-edit"></i>
+                                View
                             </button>
 
                             <button
@@ -154,16 +163,6 @@ function ProductTable() {
                                 data-modal-toggle="#delete_item_modal"
                             >
                                 <i class="ki-outline ki-trash"></i>
-                            </button>
-
-                            <button
-                                class="btn-delete btn btn-sm btn-icon btn-clear btn-light"
-                                data-tooltip="#other_tooltip"
-                                data-action="delete"
-                                data-id="${item}"
-                                data-name="${data.name}"
-                            >
-                                <i class="ki-outline ki-mouse-square"></i>
                             </button>
                         </div>
                     `,

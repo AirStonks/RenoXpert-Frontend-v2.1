@@ -32,8 +32,10 @@ const Login: React.FC = () => {
         setLoading(true);
         setError(null);
 
+        const emailWithDomain = formData.email.trim() + '@belive.asia';
+
         try {
-            const userData = await userLogin(formData.email, formData.password);
+            const userData = await userLogin(emailWithDomain, formData.password);
             if (userData) {
                 navigate('/'); // Redirect to dashboard on successful userLogin
             }
@@ -70,25 +72,28 @@ const Login: React.FC = () => {
                         </h3>
                     </div>
                     {error && <p className="text-red-500">{error}</p>}
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 justify-center">
                         <label className="form-label font-normal text-gray-900">Email</label>
-                        <input
-                            className="input"
-                            placeholder="email@email.com"
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            tabIndex={1}
-                            required
-                        />
+                        <div className="flex items-center">
+                            <input
+                                className="input mr-1"
+                                placeholder="name"
+                                type="text"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                tabIndex={1}
+                                required
+                            />
+                            <div className='badge badge-lg text-md rounded-md cursor-default'>@belive.asia</div>
+                        </div>
                     </div>
                     <div className="flex flex-col gap-1">
                         <div className="flex items-center justify-between gap-1">
                             <label className="form-label font-normal text-gray-900">
                                 Password
                             </label>
-                            <a className="text-2sm link shrink-0" href="/metronic/tailwind/demo1/authentication/classic/reset-password/enter-email/">
+                            <a className="text-2sm link shrink-0" href="#">
                                 Forgot Password?
                             </a>
                         </div>

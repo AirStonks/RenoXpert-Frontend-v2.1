@@ -54,6 +54,7 @@ import CreatePO from './pages/PO/CreatePO';
 import DeveloperTool from './pages/DeveloperTools';
 import PackageDetail from './pages/Product/Package/PackageDetail';
 import QuotationDetail from './pages/Quotation/QuotationDetail';
+import ProductDetail from './pages/Product/ProductDetail';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -109,6 +110,7 @@ const routes = [
   /*--- PRODUCT ---*/
   { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
   { path: '/products/create', element: <CreateProduct />, layout: ProtectedLayout },
+  { path: '/products/:id', element: <ProductDetail />, layout: ProtectedLayout },
   { path: '/products/edit/:id', element: <EditProduct />, layout: ProtectedLayout },
   { path: '/products/category', element: <ProductCategory />, layout: ProtectedLayout },
 

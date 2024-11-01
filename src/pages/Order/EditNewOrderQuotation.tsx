@@ -532,30 +532,24 @@ function EditNewOrderQuotation() {
                                                                     </div>
                                                                 </td>
                                                                 <td className='text-center text-lg'>
-                                                                    {product.pivot.visibility ?
-                                                                        <>
-                                                                            <button
-                                                                                ref={qtyBtnRef}
-                                                                                data-action='decrease'
-                                                                                onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'decrease') : null}
-                                                                                disabled={!product.pivot.included}
-                                                                            >
-                                                                                <i className="ki-solid ki-minus-squared"></i>
-                                                                            </button>
-                                                                            <span className="mx-2 text-base">
-                                                                                {product.pivot.included ? product.pivot.quantity : '0'}
-                                                                            </span>
-                                                                            <button
-                                                                                data-action='increase'
-                                                                                onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'increase') : null}
-                                                                                disabled={!product.pivot.included}
-                                                                            >
-                                                                                <i className="ki-solid ki-plus-squared"></i>
-                                                                            </button>
-                                                                        </>
-                                                                        :
-                                                                        ""
-                                                                    }
+                                                                    <button
+                                                                        ref={qtyBtnRef}
+                                                                        data-action='decrease'
+                                                                        onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'decrease') : null}
+                                                                        disabled={!product.pivot.included}
+                                                                    >
+                                                                        <i className="ki-solid ki-minus-squared"></i>
+                                                                    </button>
+                                                                    <span className="mx-2 text-base">
+                                                                        {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                    </span>
+                                                                    <button
+                                                                        data-action='increase'
+                                                                        onClick={product.pivot.included ? () => adjustQuantity(product.id, prodPackage.id, 'increase') : null}
+                                                                        disabled={!product.pivot.included}
+                                                                    >
+                                                                        <i className="ki-solid ki-plus-squared"></i>
+                                                                    </button>
 
                                                                 </td>
                                                                 <td className="text-center">

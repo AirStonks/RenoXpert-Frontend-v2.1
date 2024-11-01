@@ -667,6 +667,7 @@ function CreateOrder() {
                                                                         <th className='w-[100px] text-center'>Unit Price</th>
                                                                         <th className='w-[100px] text-center'>Discount</th>
                                                                         <th className='w-[100px] text-center'>Total Price</th>
+                                                                        <th className='w-[10px] text-center'></th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -732,6 +733,9 @@ function CreateOrder() {
                                                                                         )
                                                                                     )
                                                                                         .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                            </td>
+                                                                            <td className="text-center">
+                                                                                {!product.pivot.visibility && <i className="ki-solid ki-eye-slash text-2xl"></i>}
                                                                             </td>
                                                                         </tr>
                                                                     ))}

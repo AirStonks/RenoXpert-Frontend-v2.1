@@ -113,6 +113,20 @@ function RegistrationFormTable() {
                         </div>
                     `
                 },
+                created_at: {
+                    title: 'Submitted At',
+                    render: (item: string, data: OwnerRegistrationForm) => `
+                        <div class="flex">
+                            ${item
+                                ? new Date(item).toLocaleDateString('en-GB', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric'
+                                })
+                                : 'N/A'}
+                        </div>
+                    `
+                },
                 status: {
                     title: "Status"
                 },
@@ -247,7 +261,13 @@ function RegistrationFormTable() {
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[100px]" data-datatable-column="email">
+                                            <th className="w-[150px]" data-datatable-column="created_at">
+                                                <span className="sort">
+                                                    <span className="sort-label">Submitted At</span>
+                                                    <span className="sort-icon"></span>
+                                                </span>
+                                            </th>
+                                            <th className="w-[100px]" data-datatable-column="status">
                                                 <span className="sort">
                                                     <span className="sort-label">Status</span>
                                                     <span className="sort-icon"></span>

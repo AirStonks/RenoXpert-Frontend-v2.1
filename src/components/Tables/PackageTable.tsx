@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { KTDataTable, KTModal } from '../../metronic/core';
 import { Package } from '../../types';
-import PackageDetailModal from '../Modals/PackageDetailModal';
 import DeleteModal from '../Modals/DeleteModal';
 import { removePackage } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -79,23 +78,23 @@ function PackageTable() {
                 action: {
                     title: 'Action',
                     render: (item: string, data: Package) =>
-                        `<div className="flex justify-around gap-2">
+                        `<div class="flex justify-around gap-2">
                             <button
-                                className="btn btn-sm btn-secondary"
+                                class="btn btn-sm btn-secondary"
                                 data-action="view"
                                 data-id=${data.id}
                             >
                                 View
                             </button>
                             <button
-                                className="btn-delete btn btn-sm btn-icon btn-danger"
+                                class="btn-delete btn btn-sm btn-icon btn-danger"
                                 data-tooltip="#remove_tooltip"
                                 data-action="delete"
                                 data-id=${data.id}
                                 data-name=${data.name}
                                 data-modal-toggle="#delete_item_modal"
                             >
-                                <i className="ki-outline ki-trash"></i>
+                                <i class="ki-outline ki-trash"></i>
                             </button>
                         </div>`
                     ,

@@ -30,7 +30,7 @@ const EditProduct: React.FC = () => {
     const [errors, setErrors] = useState<FormErrors>({});
 
     const handleBackClick = () => {
-        navigate('/products'); // Go back to the previous route
+        navigate('/products/' + productId); // Go back to the previous route
     };
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -427,7 +427,7 @@ const EditProduct: React.FC = () => {
                     className="btn btn-lg btn-primary"
                     onClick={handleSubmit} // Trigger form submission
                 >
-                    Edit
+                    Update
                 </button>
             </div>
 
