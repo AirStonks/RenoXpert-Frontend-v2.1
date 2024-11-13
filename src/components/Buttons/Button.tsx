@@ -21,7 +21,7 @@ const Button: React.FC<ButtonOption> = ({
     return (
         <Link 
             to={url} 
-            className={`btn ${btnSize} ${btnColor} text-white`}
+            className={`btn ${btnSize} ${btnColor} text-white btn-`}
         >
             {icon && <i className={icon}></i>}
 

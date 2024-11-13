@@ -1,9 +1,9 @@
 // src\pages\Product\Package\PackageMain.tsx
 
-import ActivityCenter from '../../../components/ActivityCenter';
-import Button from '../../../components/Buttons/Button';
-import PackageTable from '../../../components/Tables/PackageTable';
-import KTComponent from '../../../metronic/core';
+import ActivityCenter from '../../components/ActivityCenter';
+import Button from '../../components/Buttons/Button';
+import PackageTable from '../../components/Tables/PackageTable';
+import KTComponent from '../../metronic/core';
 import { useEffect } from 'react';
 
 function PackageMain() {

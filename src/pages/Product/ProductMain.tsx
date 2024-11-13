@@ -27,6 +27,12 @@ function ProductMain() {
                             btnSize='btn-sm' 
                             icon='ki-outline ki-plus-squared'
                         />
+                        <Button 
+                            url='/products/category'
+                            btnText='Manage Category'
+                            btnSize='btn-sm' 
+                            btnColor='btn-warning'
+                        />
                     </div>
                 </div>
 

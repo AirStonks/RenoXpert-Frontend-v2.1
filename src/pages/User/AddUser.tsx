@@ -83,6 +83,7 @@ function AddUser() {
             setIsLoading(false);
         }
     }
+
     const renderUserDetails = () => (
         <div className="flex flex-wrap gap-8 mb-8">
             <div className="card w-full flex justify-center items-center">
@@ -164,7 +165,7 @@ function AddUser() {
                         <label className='mb-2 text-sm font-medium text-gray-900'>User Type/Role</label>
                         <div className="flex flex-col items-start gap-6">
                             {['staff', 'admin', 'super-admin'].map(role => (
-                                <label key={role} className="form-label flex items-center gap-3">
+                                <label key={role} className={`form-label flex items-center gap-3 ${role === 'admin' || role === 'super-admin' ? 'disabled' : '' }`}>
                                     <input
                                         className="radio radio-sm"
                                         name="type"
@@ -172,6 +173,7 @@ function AddUser() {
                                         checked={formData.type === role}
                                         value={role}
                                         onChange={handleChange}
+                                        disabled={role === 'admin' || role === 'super-admin' ? true : false }
                                     />
                                     <div className="flex flex-col">
                                         <span className="text-sm">{role.charAt(0).toUpperCase() + role.slice(1)}</span>

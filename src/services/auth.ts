@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
 
 export const userLogin = async (email: string, password: string) => {
   try {
@@ -17,12 +17,24 @@ export const userLogin = async (email: string, password: string) => {
   }
 };
 
+export const operationLogin = async (mobile: string, password: string) => {
+  try {
+    const response = await axios.post(API_URL + 'operation/login', { mobile, password });
+    if (response.data.success) {
+      localStorage.setItem('p_token', response.data.data.token); // Store the token
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error('Login error', error);
+    throw error;
+  }
+}
 
 export const logout = async () => {
 
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   console.log(token);
-  
+
   try {
     // Make the request to the logout endpoint with the token
     const response = await axios.post(API_URL + 'logout', {}, {
@@ -47,7 +59,7 @@ export const logoutOwner = async () => {
 
   const token = localStorage.getItem('o_token') || sessionStorage.getItem('o_token');
   console.log(token);
-  
+
   try {
     // Make the request to the logout endpoint with the token
     const response = await axios.post(API_URL + 'logout', {}, {

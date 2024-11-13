@@ -115,8 +115,8 @@ function ProductTable() {
                         </div>
                     `,
                 },
-                category: {
-                    title: 'Category',
+                pm_category: {
+                    title: 'PM Category',
                     createdCell(cell: HTMLElement) {
                         cell.classList.add('capitalize');
                         cell.classList.add('text-center');
@@ -252,9 +252,9 @@ function ProductTable() {
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[120px] text-center" data-datatable-column="category">
+                                            <th className="w-[120px] text-center" data-datatable-column="pm_category">
                                                 <span className="sort">
-                                                    <span className="sort-label">Category</span>
+                                                    <span className="sort-label">PM Category</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>

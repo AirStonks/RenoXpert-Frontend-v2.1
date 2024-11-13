@@ -6,7 +6,7 @@ interface MasterLayoutProps {
     children: ReactNode;
 }
 
-function OwnerMasterLayout({ children }: MasterLayoutProps) {
+function OperationMasterLayout({ children }: MasterLayoutProps) {
     useEffect(() => {
 
     }, []);
@@ -17,7 +17,7 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
                 <div className="container relative flex items-center justify-center" id="content_container">
                     <div className="flex flex-col flex-wrap gap-6 pb-28 justify-center items-center w-full max-w-4xl">
                         <Link
-                            to={'/owner/home'}
+                            to={'/op/home'}
                         >
                             <img className="default-logo min-h-[22px] h-[48px] max-w-none" src="/app/RenoExpert_logo-01.svg"></img>
                         </Link>
@@ -31,4 +31,4 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
     );
 }
 
-export default OwnerMasterLayout;
+export default OperationMasterLayout;

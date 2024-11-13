@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { DiscountFee, Invoice, Order, OwnerRegistrationForm, Package, Product, ProductCategory, Property, Quotation, Sale, User } from '../types';
+import { DiscountFee, Invoice, Order, OwnerRegistrationForm, Package, PMCategory, Product, Property, QCForm, Quotation, Sale, User } from '../types';
 
 const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
 
@@ -13,10 +13,35 @@ const getAuthHeaders = () => {
     };
 };
 
+export const testGenerateProgress = async () => {
+    try {
+        const response = await axios.get(API_URL + 'tmp/progress/generate', {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const user = async () => {
     try {
         const response = await axios.get(API_URL + 'user', {
             headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const changePassword = async (formData) => {
+    try {
+        const response = await axios.post(API_URL + 'change-password', formData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
         });
         return response.data;
     } catch (error) {
@@ -149,10 +174,13 @@ export const removeProduct = async (productId: number) => {
     }
 }
 
-export const fetchProductCategory = async () => {
+export const fetchPMCategory = async (length = 5) => {
     try {
         const response = await axios.get(API_URL + 'product/category', {
-            headers: getAuthHeaders()
+            headers: getAuthHeaders(),
+            params: {
+                size: length
+            }
         });
         return response.data;
     } catch (error) {
@@ -160,9 +188,7 @@ export const fetchProductCategory = async () => {
     }
 };
 
-export const addProductCategory = async (categoryData: ProductCategory) => {
-    console.log('lol');
-
+export const addPMCategory = async (categoryData: PMCategory) => {
     try {
         const response = await axios.post(API_URL + 'product/category', categoryData, {
             headers: {
@@ -714,3 +740,57 @@ export const updateRegistrationForm = async (form: OwnerRegistrationForm) => {
         handle401Error(error as AxiosError);
     }
 };
+
+export const fetchRenoProgress = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const toggleTaskSupply = async (renoProgressId: number, taskId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/supply/toggle`, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const toggleTaskInstall = async (renoProgressId: number, taskId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/install/toggle`, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+
+export const submitQCForm = async (formData: QCForm) => {
+    try {
+        const response = await axios.post(API_URL + `reno/qc-form/submit`, formData, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}

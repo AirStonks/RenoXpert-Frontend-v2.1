@@ -69,9 +69,7 @@ function CreateOrder() {
         }
 
         if (sessionData) {
-
             const parsedSessionData = JSON.parse(sessionData);
-
             setFormData(parsedSessionData);
 
             if (parsedSessionData.userId) {
@@ -92,12 +90,52 @@ function CreateOrder() {
                     totalAmount: parsedSessionData.totalAmount,
                 }));
             }
-
         }
 
         initDropdown();
+        
+    }, [formId]); // Add formId to the dependency array
 
-    }, []);
+
+    const handleSearchForm = async (formId: string) => {
+
+        setLoading(true);
+
+        try {
+            const response = await fetchRegistrationForm(Number(formId)); // This returns AxiosResponse
+            const registrationForm: OwnerRegistrationForm = response.data.data; // Extract the data
+
+            if (registrationForm) {
+                setFormDetail(registrationForm);
+
+                // Fetch the associated user and property
+                const userResponse = await fetchUser(Number(registrationForm.user.id));
+                const user: User = userResponse.data;
+
+                const propertyResponse = await fetchProperty(Number(registrationForm.property.id));
+                const property: Property = propertyResponse.data;
+
+                if (user) handleSelectUserById(Number(user.id));
+                if (property) handleSelectPropertytById(Number(property.id));
+
+                // // Update formData with the relevant fields
+                setFormData((prevData) => ({
+                    ...prevData,
+                    block: registrationForm.property.block,
+                    floor: registrationForm.property.level,
+                    unitNo: registrationForm.property.unit,
+                }));
+
+                setLoading(false);
+            } else {
+                toast.error("Registration form not found");
+            }
+
+        } catch (error) {
+            console.error("Error fetching registration form:", error);
+            toast.error("Failed to fetch registration form");
+        }
+    };
 
     const initDropdown = async () => {
         const ownerEl = document.querySelector('#owner_dropdown') as HTMLElement;
@@ -108,6 +146,7 @@ function CreateOrder() {
 
         const quotationEl = document.querySelector('#quotation_dropdown') as HTMLElement;
         const quotationDropdown = KTDropdown.getInstance(quotationEl);
+
 
         ownerDropdown.on('shown', async () => {
             inputUserRef.current.focus();
@@ -150,47 +189,6 @@ function CreateOrder() {
         localStorage.removeItem('include_packages');
         localStorage.removeItem('selected_quotation_packages');
         navigate('/orders');
-    };
-
-    const handleSearchForm = async (formId: string) => {
-
-        setLoading(true);
-
-        try {
-            const response = await fetchRegistrationForm(Number(formId)); // This returns AxiosResponse
-            const registrationForm: OwnerRegistrationForm = response.data.data; // Extract the data
-
-            if (registrationForm) {
-                setFormDetail(registrationForm);
-
-                // Fetch the associated user and property
-                const userResponse = await fetchUser(Number(registrationForm.user.id));
-                const user: User = userResponse.data;
-
-                const propertyResponse = await fetchProperty(Number(registrationForm.property.id));
-                const property: Property = propertyResponse.data;
-
-                if (user) handleSelectUserById(Number(user.id));
-                if (property) handleSelectPropertytById(Number(property.id));
-
-                // // Update formData with the relevant fields
-                setFormData((prevData) => ({
-                    ...prevData,
-                    block: registrationForm.property.block,
-                    floor: registrationForm.property.level,
-                    unitNo: registrationForm.property.unit,
-                }));
-
-                setLoading(false);
-
-            } else {
-                toast.error("Registration form not found");
-            }
-
-        } catch (error) {
-            console.error("Error fetching registration form:", error);
-            toast.error("Failed to fetch registration form");
-        }
     };
 
     const handleSearchUser = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -387,7 +385,10 @@ function CreateOrder() {
         }
     }
 
-    if (loading) return <Loading />
+    if (loading) return <Loading />;
+
+    initDropdown();
+
 
     return (
         <>

@@ -2,21 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { toast, Slide } from 'react-toastify';
-import { useNavigate, useParams } from 'react-router-dom';
-import InputFieldGroup from '../../../components/Forms/TextFields/InputFieldGroup';
-import IncludeProductModal from '../../../components/Modals/IncludeProductModal';
-import { Package, Product } from '../../../types';
-import { createPackage, updatePackage } from '../../../services/api';
-import useFetchPackage from '../../../hook/useFetchPackage';
-import Loading from '../../../components/Loading';
+import { useNavigate } from 'react-router-dom';
+import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
+import IncludeProductModal from '../../components/Modals/IncludeProductModal';
+import { Package, Product } from '../../types';
+import { createPackage } from '../../services/api';
 
-function EditPackage() {
+function CreatePackage() {
     const navigate = useNavigate();
-    const { id } = useParams<{ id: string }>();
-    const packageId = id ? parseInt(id, 10) : null;
-
-    const { packageDetail, loading, error } = useFetchPackage(packageId);
-
     const [formData, setFormData] = useState({
         packageName: '',
         packagePrice: 0,
@@ -97,25 +90,28 @@ function EditPackage() {
                     id: item.id,
                     name: item.name,
                     quantity: item.quantity,
-                    visibility: item.visibility, // Adjusting the key to match the Product interface
-                    product_retail_price: parseFloat(item.product_retail_price), // Ensure the price is a number
-                    // Add other properties if necessary
+                    visibility: item.visibility,
+                    // product_retail_price: parseFloat(item.product_retail_price),
+                    internal_note: item.note,
+                    supply: item.supply,
+                    install: item.install,
                 }));
             }
 
-
             const packageData: Package = {
-                id: packageDetail.id,
                 name: formData.packageName,
                 total_price: formData.packagePrice,
                 description: formData.description,
                 products: newProducts,
+                description_internal: formData.description_internal
             };
 
-            const response = await updatePackage(packageData);
+            console.log(packageData);
+
+            const response = await createPackage(packageData);
 
             if (response?.success) {
-                notify('success', "Package Updated Successfully!");
+                notify('success', "Package Created Successfully!");
                 localStorage.removeItem('include_prod_selected_products');
                 navigate('/packages');
             }
@@ -150,40 +146,17 @@ function EditPackage() {
     };
 
     useEffect(() => {
-
-        if (packageDetail) {
-
-            setFormData((prev) => ({
-                ...prev,
-                packageName: packageDetail.name,
-                description: packageDetail.description
-            }));
-
-            const selectedProducts = [];
-
-            packageDetail.products.forEach(({ id, name, pivot, provisioning, description }) => {
-                selectedProducts.push({
-                    id,
-                    name,
-                    quantity: pivot.quantity,
-                    visibility: pivot.visibility,
-                    price: provisioning.install.retail_price + provisioning.supply.retail_price,
-                    description
-                });
-            });
-
-            localStorage.setItem('include_prod_selected_products', JSON.stringify(selectedProducts));
-
-            updateSelectedProducts(selectedProducts);
-        }
         const storedProducts = localStorage.getItem('include_prod_selected_products');
         if (storedProducts) {
             const parsedProducts = JSON.parse(storedProducts);
+            console.log(parsedProducts);
+            
             setSelectedProducts(parsedProducts);
+
             const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
             setTotalPrice(initialTotalPrice);
         }
-    }, [packageDetail]);
+    }, []);
 
     const updateSelectedProducts = (products: Product[]) => {
         setSelectedProducts(products);
@@ -194,8 +167,7 @@ function EditPackage() {
         localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
-    const updateTotalPrice = (price: number, operator: string) => {
-
+    const updateTotalPrice = (price: number, operator: string) => {        
         setTotalPrice(prevTotal => {
             switch (operator) {
                 case '+':
@@ -207,7 +179,6 @@ function EditPackage() {
             }
         });
     };
-
 
     const adjustQuantity = (id: number, action: 'increase' | 'decrease') => {
         setSelectedProducts((prevProducts) => {
@@ -229,8 +200,11 @@ function EditPackage() {
         });
     };
 
+
     const handleRemoveProduct = (id: number) => {
         setSelectedProducts((prevProducts) => {
+            console.log('Previous: ', prevProducts);
+
             const updatedProducts = prevProducts.filter(product => product.id !== id);
             const removedProduct = prevProducts.find(product => product.id === id);
             if (removedProduct) {
@@ -242,14 +216,6 @@ function EditPackage() {
         });
     };
 
-    if (loading) return <Loading />;
-    if (error) return <div>{error}</div>;
-    if (!packageDetail) return <div>Package not found</div>;
-
-    // if (selectedProducts) {
-    //     console.log(selectedProducts);
-    // }
-
     return (
         <>
             <div className="flex justify-between items-center flex-wrap mb-6">
@@ -258,7 +224,7 @@ function EditPackage() {
                         <i className="ki-solid ki-arrow-left"></i>
                     </button>
                     <span className="text-2xl font-bold text-gray-900">
-                        Edit Package
+                        Create New Package
                     </span>
                 </div>
             </div>
@@ -451,8 +417,171 @@ function EditPackage() {
                     className="btn btn-lg btn-primary"
                     onClick={handleSubmit} // Trigger form submission
                 >
-                    Update
+                    Create
                 </button>
+            </div>
+
+            <button className="btn btn-outline btn-info rounded-e-none px-3 fixed top-20 right-0 z-20" data-drawer-toggle="#drawer_6">
+                <i className="ki-filled ki-message-notify"></i>
+            </button>
+
+            <div className="drawer drawer-end border-r drawer-open:shadow-2xl rounded-s-xl flex flex-col max-w-[90%] w-[500px]" data-drawer="true" data-drawer-backdrop="false" data-drawer-disable-scroll="false" id="drawer_6">
+                <div className="flex items-center justify-between px-5 py-4 border-b">
+                    <h3 className="text-base font-semibold text-gray-900">
+                        Activity Center
+                    </h3>
+                    <button className="btn btn-xs btn-icon btn-light" data-drawer-dismiss="true">
+                        <i className="ki-outline ki-cross">
+                        </i>
+                    </button>
+                </div>
+                <div className="px-5">
+                    <div className="tabs mb-5" data-tabs="true">
+                        <button className="tab active" data-tab-toggle="#tab_1_1">
+                            Activities
+                        </button>
+                        <button className="tab" data-tab-toggle="#tab_1_2">
+                            Comments
+                        </button>
+                    </div>
+                    <div className="overflow-y-auto scrollable h-screen" id="tab_1_1">
+                        <div className="flex flex-col gap-4">
+
+                        </div>
+                    </div>
+                    <div className="overflow-y-auto scrollable h-screen" id="tab_1_2">
+                        <div className="flex flex-col gap-4">
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%]">
+                                <div className="card-body flex flex-col px-4">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="card w-[85%] ml-auto bg-violet-100">
+                                <div className="card-body flex flex-col px-4 justify-end">
+                                    <div className="flex mb-2 items-center gap-2">
+                                        <div className="rounded-full">
+                                            <img alt="" className="size-9 rounded-full border-2 border-success shrink-0" src="/media/avatars/300-2.png" />
+                                        </div>
+                                        <span className='text-slate-900 text-sm font-semibold'>Jane Doe</span>
+                                    </div>
+                                    <span className='text-slate-900 text-sm mb-4'>
+                                        Please take note that the owner have some requested to have partition room.
+                                    </span>
+                                    <div className="flex justify-end">
+                                        <span className='text-slate-400 text-xs'>12:07 pm </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <IncludeProductModal
@@ -464,4 +593,4 @@ function EditPackage() {
     );
 }
 
-export default EditPackage;
+export default CreatePackage;

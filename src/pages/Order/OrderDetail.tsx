@@ -129,19 +129,6 @@ function OrderDetail() {
                                             </span>
                                         </td>
                                     </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Link Management
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Preview Link:</td>
                                         <td className="text-sm text-gray-900 pb-3">
@@ -153,44 +140,6 @@ function OrderDetail() {
                                             </button>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Link Status:</td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <select
-                                                className="select select-sm max-w-24"
-                                            // value={invoice.link_status}
-                                            // onChange={(e) => handleChangeLinkStatus(e.target.value)} // Pass the new status here
-                                            >
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
-                                                <option value="deactivate">Deactivate</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Link:</td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <div className="input w-auto">
-                                                <input
-                                                    className="w-auto cursor-pointer"
-                                                    id="clipboard_1_target"
-                                                    placeholder="Copy to clipboard"
-                                                    type="text"
-                                                    value={`http://${window.location.hostname}:5173/owner/order/overview/id/${orderDetail.id}`}
-                                                    onClick={() => { window.open(`http://${window.location.hostname}:5173/owner/order/overview/id/${orderDetail.id}`, '_blank'); }}
-                                                    readOnly
-                                                />
-                                                <button
-                                                    className="btn btn-icon copy-link"
-                                                    id="clipboard_1_button"
-                                                    data-clipboard-text={`http://${window.location.hostname}:5173/owner/order/overview/id/${orderDetail.id}`}
-                                                >
-                                                    <i className="ki-outline ki-copy"></i>
-                                                </button>
-                                            </div>
-
-                                        </td>
-                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -198,7 +147,7 @@ function OrderDetail() {
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
-                                Contact
+                                Owner
                             </h3>
                         </div>
                         <div className="card-body pt-3.5 pb-3.5">
@@ -325,7 +274,7 @@ function OrderDetail() {
                                 <div className="flex flex-col gap-5" data-accordion="true">
                                     {selectedPackages.map((prodPackage: Package) => (
                                         <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
-                                            <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
+                                            <div className="accordion-item active border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
                                                 <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
                                                     <div className="flex flex-col items-start">
                                                         <span className="text-base text-gray-900 font-medium">
