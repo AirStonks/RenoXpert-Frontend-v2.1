@@ -778,19 +778,3 @@ export const toggleTaskInstall = async (renoProgressId: number, taskId: number) 
         throw error;
     }
 }
-
-
-export const submitQCForm = async (formData: QCForm) => {
-    try {
-        const response = await axios.post(API_URL + `reno/qc-form/submit`, formData, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'multipart/form-data',
-            }
-        });
-        return response.data; // Return product data
-    } catch (error) {
-        handle401Error(error as AxiosError);
-        throw error; // Ensure to throw the error if needed
-    }
-}

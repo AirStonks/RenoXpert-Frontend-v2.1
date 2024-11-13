@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import KTComponent, { KTStepper } from '../metronic/core';
-import { DefectInspectionForm, Property, RenoProgress, Sale } from '../types';
-import { fetchProperties, submitDefectInspectionForm } from '../services/ownerApi';
-import Loading from '../components/Loading';
-import { fetchRenoProgress, fetchSale } from '../services/api';
-import { Slide, toast, ToastContainer } from 'react-toastify';
+import { DefectInspectionForm, Property, RenoProgress, Sale } from '../../types';
+import KTComponents, { KTStepper } from '../../metronic/core';
+import { Slide, toast } from 'react-toastify';
+import { fetchProperties, submitDefectInspectionForm } from '../../services/operationApi';
+import Loading from '../../components/Loading';
 
 interface FormErrors {
     [key: string]: string | FormErrors | undefined; // Use string or undefined for error messages
@@ -294,7 +293,7 @@ function DefectInspectionFormPage() {
 
     useEffect(() => {
         const initFunctions = async () => {
-            await KTComponent.init();
+            await KTComponents.init();
             await getProperties();
 
             if (renoProgressId) {
@@ -897,7 +896,6 @@ function DefectInspectionFormPage() {
             notify('error', 'No attachments available.');
         }
     };
-
 
     if (loading) return <Loading />;
 

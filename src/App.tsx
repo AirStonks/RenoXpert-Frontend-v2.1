@@ -59,14 +59,14 @@ import MakeoverLanding from './pages/Test/MakeoverLanding';
 import ChangePassword from './pages/Profile/ChangePassword';
 import PMMain from './pages/ProgressManagement/PMMain';
 import ProgressMgnt from './pages/ProgressManagement/ProgressMgnt';
-import DefectInspectionFormPage from './pages/DefectInspectionFormPage';
 import DefectInspectionReport from './pages/ProgressManagement/DefectInspectionReport';
-import QCFormPage from './pages/QCFormPage';
 import OperationLogin from './pages/OperationPages/OperationLogin';
 import OperationProtectedRoute from './utils/OperationProtectedRoute';
 import OperationMasterLayout from './pages/OperationPages/OperationMasterLayout';
 import OperationHome from './pages/OperationPages/OperationHome';
 import QCFormDetail from './pages/OperationPages/QCFormDetail';
+import DefectInspectionFormPage from './pages/OperationPages/DefectInspectionFormPage';
+import QCFormPage from './pages/OperationPages/QCFormPage';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -83,6 +83,7 @@ const OwnerProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
     <OwnerMasterLayout>{children}</OwnerMasterLayout>
   </OwnerProtectedRoute>
 );
+
 
 const OperationProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
   <OperationProtectedRoute>

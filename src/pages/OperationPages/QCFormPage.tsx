@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Slide, toast } from "react-toastify";
-import KTComponents, { KTStepper } from "../metronic/core";
-import { Property, QCForm, User } from "../types";
-import { fetchProperties } from "../services/ownerApi";
-import Loading from "../components/Loading";
 import React from 'react';
-import { user, submitQCForm } from "../services/api";
-import { fetchQCForm } from "../services/operationApi";
+import { Property, QCForm, User } from "../../types";
+import KTComponents from "../../metronic/core";
+import { KTStepper } from '../../metronic/core/components/stepper/stepper';
+import { fetchProperties, fetchQCForm, submitQCForm, user } from "../../services/operationApi";
+import Loading from "../../components/Loading";
 
 interface FormErrors {
     [key: string]: string | FormErrors | undefined; // Use string or undefined for error messages
@@ -402,7 +401,10 @@ function QCFormPage() {
             await KTComponents.init();
             await getUser();
             await getProperties();
-            await getQCForm();
+
+            if (qcFormId) {
+                await getQCForm();
+            }
 
             await new Promise(resolve => setTimeout(resolve, 1));
             await KTStepper.init();
@@ -412,6 +414,41 @@ function QCFormPage() {
         initFunctions();
 
     }, []);
+
+    const handleSearchRenoProgress = async (renoProgressId: string) => {
+        setLoading(true); // Start loading immediately
+
+        try {
+            const response = await fetchRenoProgress(Number(renoProgressId)); // Fetch reno progress data
+            const renoProgress: RenoProgress = response.data; // Extract reno progress data
+
+            if (renoProgress) {
+                const res = await fetchSale(Number(renoProgress.sale_id)); // Fetch sale data based on reno progress
+                const sale: Sale = res.data; // Extract sale data
+
+                if (sale) {
+                    // Set form data based on the fetched sale data
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        owner_email: sale.order.user.email,
+                        reno_progress_id: renoProgressId,
+                        property: {
+                            ...prevData.property,
+                            property_name: sale.order.property_id,
+                            block: sale.order.block,
+                            level: sale.order.floor,
+                            unit: sale.order.unit_no,
+                        },
+                    }));
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching reno progress or sale data:', error);
+        } finally {
+            // Ensure loading is set to false only after all the async operations are completed
+            setLoading(false);
+        }
+    };
 
     const getUser = async () => {
         try {
@@ -444,6 +481,7 @@ function QCFormPage() {
     const getProperties = async () => {
         try {
             const response = await fetchProperties();
+            console.log(response);
 
             if (response?.success) {
                 setProperties(response.data);

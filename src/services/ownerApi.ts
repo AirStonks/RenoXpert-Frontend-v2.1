@@ -132,17 +132,3 @@ export const fetchRegistrationForm = async (formId: number) => {
         throw error; // Ensure to throw the error if needed
     }
 };
-
-export const submitDefectInspectionForm = async (formData) => {
-    try {
-        const response = await axios.post(API_URL + `reno/defect-inspection-form/submit`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            }
-        });
-        return response.data; // Return product data
-    } catch (error) {
-        handleOwner401Error(error as AxiosError);
-        throw error; // Ensure to throw the error if needed
-    }
-}
