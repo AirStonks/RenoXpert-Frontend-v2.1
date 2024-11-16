@@ -1,3 +1,5 @@
+import { File } from "buffer";
+
 export interface MyData {
     key: string;
 }
@@ -38,8 +40,8 @@ export interface Product {
     id?: number;
     name: string;
     SKU?: string;
-    category_id?: number;
-    category?: string | number;
+    pm_category_id?: number;
+    pm_category?: string | number;
     pivot?: {
         visibility: boolean;
         quantity: number;
@@ -73,7 +75,7 @@ export interface Product {
     updated_at?: string;
 }
 
-export interface ProductCategory {
+export interface PMCategory {
     id?: number;
     name: string;
     description?: string;
@@ -117,6 +119,8 @@ export interface Order {
     user?: User,
     property_id?: string,
     property?: Property,
+    bedroom_count?: number,
+    bathroom_count?: number,
     sale?: Sale,
     quotation_id?: string,
     order_quotations?: OrderQuotation[],
@@ -128,6 +132,8 @@ export interface Order {
     description?: string,
     status?: string,
     metadata?: JSON,
+    created_by?: string,
+    updated_by?: string,
     created_at?: string,
     updated_at?: string,
 }
@@ -151,12 +157,14 @@ export interface Sale {
     order_id?: string,
     order?: Order,
     invoices?: Invoice[],
+    reno_progress_id?: string,
     user_id?: string,
     user?: string,
     description?: string,
     total_amount?: number,
     remaining_amount?: number,
     remaining_percentage?: number,
+    paid_percentage?: number,
     status?: string,
     created_at?: string,
     updated_at?: string,
@@ -318,6 +326,560 @@ export interface OwnerRegistrationForm {
             file_url?: string;
         }
     }
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface DefectInspectionForm {
+    id?: string,
+    reno_progress_id?: string,
+    date?: string,
+    time?: string,
+    owner_email?: string,
+    property?: {
+        id?: string,
+        property_name?: string,
+        other_property_name?: string,
+        block?: string,
+        level?: string,
+        unit?: string,
+    },
+    contractor_name?: string,
+    contractor_email?: string,
+    bedroom_count?: string | number,
+    bathroom_count?: string | number,
+    area?: {
+        foyer?: {
+            q1?: FormQuestion,
+            q2?: FormQuestion,
+            q3?: FormQuestion,
+            q4?: FormQuestion,
+        },
+        kitchen?: {
+            q1?: FormQuestion,
+            q2?: FormQuestion,
+            q3?: FormQuestion,
+            q4?: FormQuestion,
+            q5?: FormQuestion,
+            q6?: FormQuestion,
+            q7?: FormQuestion,
+            q8?: FormQuestion,
+        },
+        yard?: {
+            q1?: FormQuestion,
+            q2?: FormQuestion,
+            q3?: FormQuestion,
+            q4?: FormQuestion,
+            q5?: FormQuestion,
+            q6?: FormQuestion,
+            q7?: FormQuestion,
+            q8?: FormQuestion,
+        },
+        living?: {
+            q1?: FormQuestion,
+            q2?: FormQuestion,
+            q3?: FormQuestion,
+            q4?: FormQuestion,
+            q5?: FormQuestion,
+            q6?: FormQuestion,
+            q7?: FormQuestion,
+            q8?: FormQuestion,
+            q9?: FormQuestion,
+        },
+        balcony?: {
+            q1?: FormQuestion,
+            q2?: FormQuestion,
+            q3?: FormQuestion,
+            q4?: FormQuestion,
+        },
+        hallway?: {
+            q1?: FormQuestion,
+            q2?: FormQuestion,
+            q3?: FormQuestion,
+            q4?: FormQuestion,
+        },
+        bedrooms?: {
+            [bedroom: string]: {
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                q6?: FormQuestion,
+                q7?: FormQuestion,
+                q8?: FormQuestion,
+                q9?: FormQuestion,
+            }
+        },
+        bathrooms?: {
+            [bathroom: string]: {
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                q6?: FormQuestion,
+                q7?: FormQuestion,
+                q8?: FormQuestion,
+                q9?: FormQuestion,
+            }
+        }
+    }
+    status?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface QCForm {
+    id?: string,
+    reno_progress_id?: string,
+    date?: string,
+    time?: string,
+    property?: {
+        id?: string,
+        property_name?: string,
+        other_property_name?: string,
+        block?: string,
+        level?: string,
+        unit?: string,
+    },
+    bedroom_count?: string | number,
+    bathroom_count?: string | number,
+    include_commune_living?: boolean,
+    inspector_first_name?: string,
+    inspector_last_name?: string,
+    inspector_role?: 'belive' | 'contractor' | 'owner',
+    contractor_email?: string,
+    area?: {
+        foyer?: {
+            s1?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s2?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s3?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s4?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s5?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                q6?: FormQuestion,
+                q7?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s6?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                q6?: FormQuestion,
+                q7?: FormQuestion,
+                attachments?: Attachment,
+            }
+        },
+        kitchen?: {
+            s1?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s2?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s3?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s4?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                q6?: FormQuestion,
+                q7?: FormQuestion,
+                q8?: FormQuestion,
+                q9?: FormQuestion,
+                q10?: FormQuestion,
+                q11?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s5?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                q6?: FormQuestion,
+                q7?: FormQuestion,
+                q8?: FormQuestion,
+                attachments?: Attachment,
+            },
+        },
+        laundry?: {
+            s1?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s2?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s3?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s4?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                attachments?: Attachment,
+            },
+        },
+        dining?: {
+            s1?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                q6?: FormQuestion,
+                q7?: FormQuestion,
+                q8?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s2?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s3?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s4?: {
+                label?: string,
+                other?: FormQuestion
+            }
+        },
+        commune?: {
+            s1?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                q6?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s2?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                q6?: FormQuestion,
+                q7?: FormQuestion,
+                q8?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s3?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s4?: {
+                label?: string,
+                q1?: FormQuestion,
+                q2?: FormQuestion,
+                q3?: FormQuestion,
+                q4?: FormQuestion,
+                q5?: FormQuestion,
+                attachments?: Attachment,
+            },
+            s5?: {
+                label?: string,
+                other?: FormQuestion
+            }
+        } | null,
+        bedrooms?: {
+            [bedroom: string]: {
+                s1?: {
+                    label?: string,
+                    q1?: FormQuestion,
+                    q2?: FormQuestion,
+                    q3?: FormQuestion,
+                    q4?: FormQuestion,
+                    q5?: FormQuestion,
+                    attachments?: Attachment,
+                },
+                s2?: {
+                    label?: string,
+                    q1?: FormQuestion,
+                    q2?: FormQuestion,
+                    q3?: FormQuestion,
+                    q4?: FormQuestion,
+                    q5?: FormQuestion,
+                    q6?: FormQuestion,
+                    q7?: FormQuestion,
+                    q8?: FormQuestion,
+                    attachments?: Attachment,
+                },
+                s3?: {
+                    label?: string,
+                    q1?: FormQuestion,
+                    q2?: FormQuestion,
+                    q3?: FormQuestion,
+                    q4?: FormQuestion,
+                    q5?: FormQuestion,
+                    q6?: FormQuestion,
+                    attachments?: Attachment,
+                },
+                s4?: {
+                    label?: string,
+                    q1?: FormQuestion,
+                    q2?: FormQuestion,
+                    q3?: FormQuestion,
+                    q4?: FormQuestion,
+                    q5?: FormQuestion,
+                    q6?: FormQuestion,
+                    q7?: FormQuestion,
+                    q8?: FormQuestion,
+                    attachments?: Attachment,
+                },
+                s5?: {
+                    label?: string,
+                    q1?: FormQuestion,
+                    q2?: FormQuestion,
+                    q3?: FormQuestion,
+                    q4?: FormQuestion,
+                    q5?: FormQuestion,
+                    q6?: FormQuestion,
+                    q7?: FormQuestion,
+                    q8?: FormQuestion,
+                    q9?: FormQuestion,
+                    q10?: FormQuestion,
+                    q11?: FormQuestion,
+                    q12?: FormQuestion,
+                    attachments?: Attachment,
+                },
+                s6?: {
+                    label?: string,
+                    q1?: FormQuestion,
+                    q2?: FormQuestion,
+                    q3?: FormQuestion,
+                    q4?: FormQuestion,
+                    q5?: FormQuestion,
+                    q6?: FormQuestion,
+                    attachments?: Attachment,
+                },
+                s7?: {
+                    label?: string,
+                    other?: FormQuestion
+                }
+            }
+        },
+        bathrooms?: {
+            [bathroom: string]: {
+                s1?: {
+                    label?: string,
+                    q1?: FormQuestion,
+                    q2?: FormQuestion,
+                    q3?: FormQuestion,
+                    q4?: FormQuestion,
+                    q5?: FormQuestion,
+                    q6?: FormQuestion,
+                    attachments?: Attachment,
+                },
+                s2?: {
+                    label?: string,
+                    q1?: FormQuestion,
+                    q2?: FormQuestion,
+                    q3?: FormQuestion,
+                    q4?: FormQuestion,
+                    q5?: FormQuestion,
+                    q6?: FormQuestion,
+                    attachments?: Attachment,
+                },
+                s3?: {
+                    label?: string,
+                    q1?: FormQuestion,
+                    q2?: FormQuestion,
+                    q3?: FormQuestion,
+                    q4?: FormQuestion,
+                    attachments?: Attachment,
+                },
+                s4?: {
+                    label?: string,
+                    q1?: FormQuestion,
+                    q2?: FormQuestion,
+                    q3?: FormQuestion,
+                    q4?: FormQuestion,
+                    q5?: FormQuestion,
+                    q6?: FormQuestion,
+                    q7?: FormQuestion,
+                    q8?: FormQuestion,
+                    q9?: FormQuestion,
+                    q10?: FormQuestion,
+                    attachments?: Attachment,
+                },
+                s5?: {
+                    label?: string,
+                    other?: FormQuestion
+                }
+            }
+        }
+    },
+    status?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface FormQuestion {
+    label?: string,
+    value?: string,
+    attachments?: {
+        [key: string]: Attachment
+    },
+    remark?: string,
+}
+
+export interface Attachment {
+    id?: string;
+    original_name?: string;
+    file_url?: string;
+    file?: File;
+}
+
+export interface RenoProgress {
+    id?: string,
+    sale_id?: string,
+    phases?: ProgressPhase[],
+    status?: string,
+    completed_at?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface ProgressPhase {
+    id?: string,
+    name?: string,
+    progress_id?: string,
+    jobs?: PhaseJob[],
+    status?: string,
+    completed_at?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface PhaseJob {
+    id?: string,
+    name?: string,
+    phase_id?: string,
+    priority?: number,
+    tasks?: JobTask[],
+    status?: string,
+    completed_at?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface JobTask {
+    id?: string,
+    name?: string,
+    phase_id?: string,
+    priority?: number,
+    is_supplied?: boolean,
+    is_installed?: boolean,
+    supply_date?: string,
+    install_date?: string,
+    attachments?: {
+        [key: string]: {
+            id?: string;
+            original_name?: string;
+            file_url?: string;
+        }
+    },
+    is_defect_form?: boolean,
+    is_qc_form?: boolean,
+    status?: string,
+    owner_comment?: string,
+    internal_comment?: string,
+    completed_at?: string,
     created_at?: string,
     updated_at?: string,
 }

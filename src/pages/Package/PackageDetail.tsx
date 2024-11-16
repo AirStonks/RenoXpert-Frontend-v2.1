@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import useFetchPackage from "../../../hook/useFetchPackage";
+import useFetchPackage from "../../hook/useFetchPackage";
 import { useNavigate, useParams } from "react-router-dom";
-import Loading from "../../../components/Loading";
+import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
 
 function PackageDetail() {

@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { toast, Slide } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import InputFieldGroup from '../../../components/Forms/TextFields/InputFieldGroup';
-import IncludeProductModal from '../../../components/Modals/IncludeProductModal';
-import { Package, Product } from '../../../types';
-import { createPackage } from '../../../services/api';
+import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
+import IncludeProductModal from '../../components/Modals/IncludeProductModal';
+import { Package, Product } from '../../types';
+import { createPackage } from '../../services/api';
 
 function CreatePackage() {
     const navigate = useNavigate();
@@ -278,7 +278,7 @@ function CreatePackage() {
                         </div>
                     </div>
 
-                    <div className="card bg-slate-50">
+                    {/* <div className="card bg-slate-50">
                         <div className="card-body">
                             <div className="flex flex-col mb-8">
                                 <label className='mb-2 text-sm font-medium text-gray-900'>
@@ -299,7 +299,7 @@ function CreatePackage() {
                                 </textarea>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className='flex flex-col right-column flex-[7] gap-8'>
@@ -316,9 +316,9 @@ function CreatePackage() {
                                 Add Products
                             </button>
 
-                            <div className="badge badge-lg badge-dark text-yellow-300 mb-4">
+                            {/* <div className="badge badge-lg badge-dark text-yellow-300 mb-4">
                                 The Internal Reference Note is not visible in Owner View
-                            </div>
+                            </div> */}
 
                             <div className="product-list flex flex-col">
                                 <div className="card min-w-full">
@@ -387,7 +387,7 @@ function CreatePackage() {
                                                                 </button>
                                                             </td>
                                                         </tr>
-                                                        <tr>
+                                                        {/* <tr>
                                                             <td colSpan={8}>
                                                                 <input
                                                                     type="text"
@@ -396,7 +396,7 @@ function CreatePackage() {
                                                                     onChange={(e) => handleNoteChange(product.id, e.target.value)}
                                                                 />
                                                             </td>
-                                                        </tr>
+                                                        </tr> */}
                                                     </React.Fragment>
                                                 ))}
                                             </tbody>
@@ -421,7 +421,7 @@ function CreatePackage() {
                 </button>
             </div>
 
-            <button className="btn btn-outline btn-info rounded-e-none px-3 fixed top-20 right-0 z-20" data-drawer-toggle="#drawer_6">
+            {/* <button className="btn btn-outline btn-info rounded-e-none px-3 fixed top-20 right-0 z-20" data-drawer-toggle="#drawer_6">
                 <i className="ki-filled ki-message-notify"></i>
             </button>
 
@@ -582,7 +582,7 @@ function CreatePackage() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             <IncludeProductModal
                 selectedProducts={selectedProducts}

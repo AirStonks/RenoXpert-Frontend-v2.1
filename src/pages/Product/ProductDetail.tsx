@@ -97,10 +97,10 @@ function ProductDetail() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Category:
+                                            PM Category:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {product.category}
+                                            {product.pm_category}
                                         </td>
                                     </tr>
                                 </tbody>

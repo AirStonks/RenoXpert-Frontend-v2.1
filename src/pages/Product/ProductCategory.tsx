@@ -3,10 +3,16 @@
 import ProductCategoryTable from "../../components/Tables/ProductCategoryTable";
 import AddProductCategoryModal from '../../components/Modals/AddProductCategoryModal';
 import { KTDataTable } from "../../metronic/core";
+import { useNavigate } from "react-router-dom";
 
 function ProductCategory() {
+    const navigate = useNavigate();
 
-    const handleRefresh = async ()  => {
+    const handleBackClick = () => {
+        navigate('/products');
+    };
+
+    const handleRefresh = async () => {
         KTDataTable.init();
         KTDataTable.createInstances();
 
@@ -21,25 +27,28 @@ function ProductCategory() {
 
     return (
         <>
-            <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-center flex-wrap">
+            <div className="flex justify-between items-center flex-wrap mb-6">
+                <div className="flex gap-4 items-center">
+                    <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
+                        <i className="ki-solid ki-arrow-left"></i>
+                    </button>
                     <span className="text-2xl font-bold text-gray-900">
-                        Category Overview
+                        Category Management
                     </span>
-                    <div className="flex gap-3 flex-wrap">
-                        <button className="btn btn-sm btn-info" disabled>
-                            Go to Product Inventory
-                        </button>
-                        <button 
-                            className="btn btn-sm btn-primary text-white"
-                            data-modal-toggle="#add_prod_cat_modal"
-                        >
-                            <i className="ki-outline ki-plus-squared"></i>
-                            Add Category
-                        </button>
-                    </div>
                 </div>
+                
+                <div className="flex gap-4">
+                    <button
+                        className="btn btn-sm btn-primary text-white"
+                        data-modal-toggle="#add_prod_cat_modal"
+                    >
+                        <i className="ki-outline ki-plus-squared"></i>
+                        Add Category
+                    </button>
+                </div>
+            </div>
 
+            <div className="flex flex-col gap-4">
                 <ProductCategoryTable />
                 <AddProductCategoryModal />
             </div>

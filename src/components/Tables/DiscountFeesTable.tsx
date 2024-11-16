@@ -132,7 +132,7 @@ function DiscountFeesTable() {
                     render: (item: number, data: DiscountFee) => {
                         return `
                             <div class="flex flex-col gap-1">
-                                ${(data.percentage ? `${data.percentage * 100}%` : `RM ${data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)}
+                                ${(data.percentage ? `${(data.percentage * 100).toFixed(2)}%` : `RM ${data.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)}
                             </div>
                         `;
                     },

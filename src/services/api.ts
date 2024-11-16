@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { DiscountFee, Invoice, Order, OwnerRegistrationForm, Package, Product, ProductCategory, Property, Quotation, Sale, User } from '../types';
+import { DiscountFee, Invoice, Order, OwnerRegistrationForm, Package, PMCategory, Product, Property, QCForm, Quotation, Sale, User } from '../types';
 
 const API_URL = 'https://api.renoxpert.my/api/';
 
@@ -13,10 +13,35 @@ const getAuthHeaders = () => {
     };
 };
 
+export const testGenerateProgress = async () => {
+    try {
+        const response = await axios.get(API_URL + 'tmp/progress/generate', {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const user = async () => {
     try {
         const response = await axios.get(API_URL + 'user', {
             headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const changePassword = async (formData) => {
+    try {
+        const response = await axios.post(API_URL + 'change-password', formData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
         });
         return response.data;
     } catch (error) {
@@ -149,10 +174,13 @@ export const removeProduct = async (productId: number) => {
     }
 }
 
-export const fetchProductCategory = async () => {
+export const fetchPMCategory = async (length = 5) => {
     try {
         const response = await axios.get(API_URL + 'product/category', {
-            headers: getAuthHeaders()
+            headers: getAuthHeaders(),
+            params: {
+                size: length
+            }
         });
         return response.data;
     } catch (error) {
@@ -160,9 +188,7 @@ export const fetchProductCategory = async () => {
     }
 };
 
-export const addProductCategory = async (categoryData: ProductCategory) => {
-    console.log('lol');
-
+export const addPMCategory = async (categoryData: PMCategory) => {
     try {
         const response = await axios.post(API_URL + 'product/category', categoryData, {
             headers: {
@@ -714,3 +740,125 @@ export const updateRegistrationForm = async (form: OwnerRegistrationForm) => {
         handle401Error(error as AxiosError);
     }
 };
+
+export const fetchRenoProgress = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const toggleTaskSupply = async (renoProgressId: number, taskId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/supply/toggle`, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const toggleTaskInstall = async (renoProgressId: number, taskId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/install/toggle`, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const changeOwnerComment = async (renoProgressId: number, taskId: number, comment: string) => {
+    try {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/owner-comment/change`, { owner_comment: comment }, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const changeInternalComment = async (renoProgressId: number, taskId: number, comment: string) => {
+    try {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/internal-comment/change`, { internal_comment: comment }, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const uploadTaskDocuments = async (renoProgressId: number, taskId: number, files: File[]) => {
+    try {
+        // Create a new FormData instance
+        const formData = new FormData();
+
+        // Append each file to the FormData object
+        files.forEach(file => {
+            formData.append('attachments[]', file);  // 'attachments[]' because your backend expects an array
+        });
+
+        // Make the API request
+        const response = await axios.post(
+            `${API_URL}reno-progress/${renoProgressId}/task/${taskId}/documents/upload`,
+            formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handle401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+};
+
+export const fetchTaskDocuments = async (renoProgressId: number, taskId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/documents/fetch`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const removeTaskDocument = async (renoProgressId: number, taskId: number, documentIndex: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/documents/${documentIndex}/remove`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+
+

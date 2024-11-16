@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import InvoiceDetailModal from "../../components/Modals/InvoiceDetailModal";
 import CreateAddonInvoiceModal from "../../components/Modals/CreateAddonInvoiceModal";
 import { Link } from "react-router-dom";
+import { testGenerateProgress } from "../../services/api";
 
 function SaleDetail() {
     const navigate = useNavigate();
@@ -32,6 +33,16 @@ function SaleDetail() {
 
     const handleUpdateSale = (updatedSale: Sale) => {
         setSale(updatedSale);
+    }
+
+    const test = async () => {
+        try {
+            const response = await testGenerateProgress();
+            return response.data; // You can return the data if needed
+        } catch (error) {
+            console.error('Error fetching data:', error); // Log any error that occurs
+            throw error; // Optionally rethrow or handle the error as needed
+        }
     }
 
     if (loading) return <Loading />;
@@ -83,10 +94,10 @@ function SaleDetail() {
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td className="text-sm text-gray-600 pe-4 lg:pe-8 font-semibold">
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
                                                 Status:
                                             </td>
-                                            <td className="text-sm text-gray-900">
+                                            <td className="text-sm text-gray-900 pb-3">
                                                 <span className={`badge badge-pill cursor-default
                                                 ${sale.status === 'issued' ? 'badge-primary' : ''} 
                                                 ${sale.status === 'partial-paid' ? 'badge-info' : ''} 
@@ -98,13 +109,34 @@ function SaleDetail() {
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td className="text-sm text-gray-600 pe-4 lg:pe-8 font-semibold">
-                                                Contact:
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Description:
                                             </td>
-                                            <td className="text-sm text-gray-900">
-                                                <button className="btn btn-outline btn-secondary btn-xs my-2">
-                                                    View Contact
-                                                </button>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                N/A
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 font-semibold">
+                                                Progress:
+                                            </td>
+                                            <td>
+                                                {sale.reno_progress_id ?
+                                                    <Link
+                                                        to={'/reno-progress/' + sale.reno_progress_id}
+                                                        state={{ fromUrl: '/sales/' + sale.id }}
+                                                        className="btn btn-secondary btn-outline btn-sm"
+                                                    >
+                                                        View Progress
+                                                    </Link>
+                                                    :
+                                                    <>
+                                                        Not Started
+                                                        <button className="btn btn-sm btn-secondary" onClick={test}>
+                                                            DEV [Generate Progress]
+                                                        </button>
+                                                    </>
+                                                }
                                             </td>
                                         </tr>
                                     </tbody>
@@ -117,12 +149,32 @@ function SaleDetail() {
                             <div className="card-body">
                                 <div className="flex flex-col">
                                     <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (sale.remaining_percentage * 100)}% Payment Progress</span>
-                                    <div className="progress progress-success mb-4">
+                                    {/* Nested progress bar. Assume 20% is already paid */}
+                                    {/* <div className="progress progress-success mb-4">
                                         <div className="progress-bar" style={{
                                             width: `${100 - (sale.remaining_percentage * 100)}%`,
                                             height: '12px'
                                         }}>
                                         </div>
+                                    </div> */}
+                                    <div className="w-full bg-gray-200 rounded-full h-[12px] mb-4 relative overflow-hidden">
+                                        {/* Issued progress bar (outer) */}
+                                        <div
+                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
+                                            style={{
+                                                width: `${100 - (sale.remaining_percentage * 100)}%`,
+                                                height: '12px'
+                                            }}
+                                        />
+
+                                        {/* Paid progress bar (inner) */}
+                                        <div
+                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                            style={{
+                                                width: `${sale.paid_percentage * 100}%`,
+                                                height: '12px'
+                                            }}
+                                        />
                                     </div>
                                 </div>
                                 <div className="flex justify-between gap-2">

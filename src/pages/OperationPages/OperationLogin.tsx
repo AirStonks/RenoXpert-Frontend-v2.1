@@ -2,20 +2,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { userLogin } from '../services/auth';
-import KTComponent from '../metronic/core';
-import { ToastContainer } from 'react-toastify';
+import KTComponents from '../../metronic/core';
+import { operationLogin } from '../../services/auth';
 
 interface LoginForm {
-    email: string;
+    mobile: string;
     password: string;
 }
 
-const Login: React.FC = () => {
+const OperationLogin: React.FC = () => {
     useEffect(() => {
-        KTComponent.init();
+        KTComponents.init();
     }, []);
-    const [formData, setFormData] = useState<LoginForm>({ email: '', password: '' });
+    const [formData, setFormData] = useState<LoginForm>({ mobile: '', password: '' });
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate(); // React Router's useNavigate hook
@@ -33,12 +32,10 @@ const Login: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const emailWithDomain = formData.email.trim() + '@belive.asia';
-
         try {
-            const userData = await userLogin(emailWithDomain, formData.password);
+            const userData = await operationLogin(formData.mobile, formData.password);
             if (userData) {
-                navigate('/'); // Redirect to dashboard on successful userLogin
+                navigate('/op/home'); // Redirect to dashboard on successful userLogin
             }
         } catch (err) {
             setError('Invalid userLogin credentials. Please try again.');
@@ -71,22 +68,44 @@ const Login: React.FC = () => {
                         <h3 className="text-lg font-medium text-gray-900 leading-none mb-2.5">
                             Sign in
                         </h3>
+                        <div className="flex items-center justify-center font-medium">
+                            <span className="text-2sm text-gray-700 me-1.5">
+                                Login to Operation Portal
+                            </span>
+                        </div>
                     </div>
-                    {error && <p className="text-red-500">{error}</p>}
                     <div className="flex flex-col gap-1 justify-center">
                         <label className="form-label font-normal text-gray-900">Email</label>
-                        <div className="flex items-center">
+                        <div className="flex">
+                            <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
+                                <button className="dropdown-toggle btn btn-light mr-1">
+                                    +60
+                                </button>
+                                <div className="dropdown-content w-full max-w-56 py-2">
+                                    <div className="menu menu-default flex flex-col w-full">
+                                        <div className="menu-item">
+                                            <button type='button' className="menu-link flex items-center text-center">
+                                                <span className="menu-icon">
+                                                    <img alt="" className="inline-block size-4 rounded-full" src="/public/media/flags/malaysia.svg" />
+                                                </span>
+                                                <span className="menu-title">
+                                                    Malaysia +(60)
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <input
-                                className="input mr-1"
-                                placeholder="name"
-                                type="text"
-                                name="email"
-                                value={formData.email}
+                                className="input"
+                                placeholder="1234567890"
+                                name='mobile'
+                                type="tel"
+                                value={formData.mobile}
                                 onChange={handleInputChange}
                                 tabIndex={1}
                                 required
                             />
-                            <div className='badge badge-lg text-md rounded-md cursor-default'>@belive.asia</div>
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
@@ -132,10 +151,8 @@ const Login: React.FC = () => {
                     </button>
                 </form>
             </div>
-
-            <ToastContainer />
         </>
     );
 };
 
-export default Login;
+export default OperationLogin;

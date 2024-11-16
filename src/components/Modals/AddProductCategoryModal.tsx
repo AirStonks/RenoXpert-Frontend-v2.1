@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Slide, toast } from "react-toastify";
-import { ProductCategory } from "../../types";
-import { addProductCategory } from "../../services/api";
 import { KTModal } from "../../metronic/core";
+import { addPMCategory } from "../../services/api";
+import { PMCategory } from "../../types";
 
 function AddProductCategoryModal() {
     const [formData, setFormData] = useState({
@@ -35,12 +35,12 @@ function AddProductCategoryModal() {
 
     const handleSubmit = async () => {
         try {
-            const categoryData: ProductCategory = {
+            const categoryData: PMCategory = {
                 name: formData.categoryName,
                 description: formData.categoryDesc,
             };
 
-            const response = await addProductCategory(categoryData);
+            const response = await addPMCategory(categoryData);
 
             if (response?.success) {
                 notify('success', "Category Added Successfully!");

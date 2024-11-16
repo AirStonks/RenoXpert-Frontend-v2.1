@@ -13,8 +13,8 @@ import ProductMain from './pages/Product/ProductMain';
 import CreateProduct from './pages/Product/CreateProduct';
 import EditProduct from './pages/Product/EditProduct';
 import ProductCategory from './pages/Product/ProductCategory';
-import PackageMain from './pages/Product/Package/PackageMain';
-import CreatePackage from './pages/Product/Package/CreatePackage';
+import PackageMain from './pages/Package/PackageMain';
+import CreatePackage from './pages/Package/CreatePackage';
 import QuotationMain from './pages/Quotation/QuotationMain';
 import CreateQuotation from './pages/Quotation/CreateQuotation';
 import EditQuotation from './pages/Quotation/EditQuotation';
@@ -28,7 +28,7 @@ import EditOrderQuotation from './pages/Order/EditOrderQuotation';
 import SalesMain from './pages/Sales/SalesMain';
 import SaleDetail from './pages/Sales/SaleDetail';
 import DiscountFeeMain from './pages/DiscountFee/DiscountFeeMain';
-import EditPackage from './pages/Product/Package/EditPackage';
+import EditPackage from './pages/Package/EditPackage';
 import ViewQuotation from './pages/OwnerPages/ViewQuotation';
 import Test from './pages/Test';
 import PaymentSuccess from './pages/OwnerPages/PaymentSuccess';
@@ -52,9 +52,21 @@ import RegistrationFormDetail from './pages/RegistrationForm/RegistrationFormDet
 import RenoRegistrationFormDetail from './pages/OwnerPages/RenoRegistrationFormDetail';
 import CreatePO from './pages/PO/CreatePO';
 import DeveloperTool from './pages/DeveloperTools';
-import PackageDetail from './pages/Product/Package/PackageDetail';
+import PackageDetail from './pages/Package/PackageDetail';
 import QuotationDetail from './pages/Quotation/QuotationDetail';
 import ProductDetail from './pages/Product/ProductDetail';
+import MakeoverLanding from './pages/Test/MakeoverLanding';
+import ChangePassword from './pages/Profile/ChangePassword';
+import PMMain from './pages/ProgressManagement/PMMain';
+import ProgressMgnt from './pages/ProgressManagement/ProgressMgnt';
+import DefectInspectionReport from './pages/ProgressManagement/DefectInspectionReport';
+import OperationLogin from './pages/OperationPages/OperationLogin';
+import OperationProtectedRoute from './utils/OperationProtectedRoute';
+import OperationMasterLayout from './pages/OperationPages/OperationMasterLayout';
+import OperationHome from './pages/OperationPages/OperationHome';
+import QCFormDetail from './pages/OperationPages/QCFormDetail';
+import DefectInspectionFormPage from './pages/OperationPages/DefectInspectionFormPage';
+import QCFormPage from './pages/OperationPages/QCFormPage';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -72,16 +84,35 @@ const OwnerProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
   </OwnerProtectedRoute>
 );
 
+
+const OperationProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
+  <OperationProtectedRoute>
+    <OperationMasterLayout>{children}</OperationMasterLayout>
+  </OperationProtectedRoute>
+);
+
 const routes = [
   { path: '/login', element: <Login />, layout: null },
   { path: '/', element: <Navigate to="/dashboard" replace />, layout: ProtectedLayout },
   { path: '/dashboard', element: <Dashboard />, layout: ProtectedLayout },
 
+
+  { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
+
   
+  /*--- OPERATION SITE ---*/
+  { path: '/op/login', element: <OperationLogin />, layout: null },
+  { path: '/op/home', element: <OperationHome />, layout: OperationProtectedLayout },
+  { path: '/op', element: <OperationHome />, layout: OperationProtectedLayout },
+  { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
+  { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
+  { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
+
 
   /*--- OWNER SITE ---*/
   { path: '/owner/login', element: <OwnerLogin />, layout: null },
   { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
+  { path: '/owner', element: <OwnerHome />, layout: OwnerProtectedLayout },
   { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
   { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
   { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
@@ -107,6 +138,11 @@ const routes = [
   /*--- REGISTRATION FORM ---*/
   { path: '/owner/form/reno-registration-forms/:id', element: <RenoRegistrationFormDetail />, layout: OwnerProtectedLayout },
 
+
+  /*--- PROFILE ---*/
+  { path: '/profile/change-password', element: <ChangePassword />, layout: ProtectedLayout },
+  
+
   /*--- PRODUCT ---*/
   { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
   { path: '/products/create', element: <CreateProduct />, layout: ProtectedLayout },
@@ -129,12 +165,12 @@ const routes = [
   /*--- PROPERTY ---*/
   { path: '/properties', element: <PropertyMain />, layout: ProtectedLayout },
 
-  
+
   /*--- REGISTRATION FORM ---*/
   { path: '/registration-forms', element: <RegistrationFormMain />, layout: ProtectedLayout },
   { path: '/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
   { path: '/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
-  
+
 
   /*--- ORDER ---*/
   { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },
@@ -149,12 +185,18 @@ const routes = [
   { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },
   { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
 
-  
+
   /*--- PO---*/
   { path: '/sales/:id/purchase-order/create', element: <CreatePO />, layout: ProtectedLayout },
 
   /*--- DISCOUNT AND FEE ---*/
   { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
+
+
+  /*--- PROGRESS MANAGEMENT ---*/
+  { path: '/reno-progress', element: <PMMain />, layout: ProtectedLayout },
+  { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
+  { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
 
 
   /*--- DEVELOPER TOOLS ---*/
@@ -192,8 +234,8 @@ function AppRoutes() {
           key={path}
           path={path}
           element={
-            path === '/login' || Layout === null 
-              ? element 
+            path === '/login' || Layout === null
+              ? element
               : <Layout>{element}</Layout>
           }
         />

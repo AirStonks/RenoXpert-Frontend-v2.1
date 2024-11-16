@@ -6,11 +6,11 @@ import useFetchProduct from '../../hook/useFetchProduct';
 import Loading from '../../components/Loading';
 import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
 import Dropdown from '../../components/Forms/Dropdown/Dropdown';
-import { Product, ProductCategory } from '../../types';
+import { Product, PMCategory } from '../../types';
 import { removeProduct, updateProduct } from '../../services/api';
 import { Slide, toast } from 'react-toastify';
 import DeleteModal from '../../components/Modals/DeleteModal';
-import useFetchProductCategory from '../../hook/useFetchProductCategory';
+import useFetchPMCategory from '../../hook/useFetchPMCategory';
 
 interface FormErrors {
     [key: string]: string | undefined; // Use string or undefined for error messages
@@ -22,7 +22,7 @@ const EditProduct: React.FC = () => {
     const productId = id ? parseInt(id, 10) : null;
 
     const { product, loading: productLoading, error: productError } = useFetchProduct(productId);
-    const { productCategory, loading: categoryLoading, error: categoryError } = useFetchProductCategory();
+    const { pmCategory, loading: categoryLoading, error: categoryError } = useFetchPMCategory();
 
     const [formData, setFormData] = useState<Product | null>(null);
 
@@ -150,7 +150,7 @@ const EditProduct: React.FC = () => {
     if (!product) return <div>Product not found</div>;
 
     // Convert productCategory to the format needed for Dropdown options
-    const dropdownOptions = productCategory.map((cat: ProductCategory) => ({
+    const dropdownOptions = pmCategory.map((cat: PMCategory) => ({
         value: cat.id.toString(), // Ensure value is a string
         label: cat.name // Assuming productCategory has a 'name' property
     }));
@@ -284,8 +284,8 @@ const EditProduct: React.FC = () => {
 
                                     <Dropdown
                                         options={dropdownOptions}
-                                        name="category"
-                                        value={formData.category}
+                                        name="pm_category_id"
+                                        value={formData.pm_category_id}
                                         onChange={handleChange}
                                     />
                                 </div>

@@ -82,7 +82,7 @@ function Sidebar() {
               Components
             </span>
           </div>
-          <div
+          {/* <div
             className="menu-item"
             data-menu-item-toggle="accordion"
             data-menu-item-trigger="click"
@@ -201,8 +201,28 @@ function Sidebar() {
                 </div>
               </div>
             </div>
+          </div> */}
+          <div className="menu-item">
+            <Link to="/products" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
+              <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
+                <i className="ki-filled ki-cube-2 text-lg"></i>
+              </span>
+              <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
+                Products
+              </span>
+            </Link>
           </div>
-          <div
+          <div className="menu-item">
+            <Link to="/packages" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
+              <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
+                <i className="ki-filled ki-parcel text-lg"></i>
+              </span>
+              <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
+                Packages
+              </span>
+            </Link>
+          </div>
+          {/* <div
             className="menu-item"
             data-menu-item-toggle="accordion"
             data-menu-item-trigger="click"
@@ -248,6 +268,16 @@ function Sidebar() {
                 </Link>
               </div>
             </div>
+          </div> */}
+          <div className="menu-item">
+            <Link to="/quotations" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
+              <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
+                <i className="ki-filled ki-tablet-text-down text-lg"></i>
+              </span>
+              <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
+                Quotations
+              </span>
+            </Link>
           </div>
           {/* <div
             className="menu-item"
@@ -304,7 +334,7 @@ function Sidebar() {
               </span>
             </Link>
           </div>
-          <div
+          {/* <div
             className="menu-item"
             data-menu-item-toggle="accordion"
             data-menu-item-trigger="click"
@@ -350,13 +380,13 @@ function Sidebar() {
                 </Link>
               </div>
             </div>
-          </div>
+          </div> */}
           <div className="menu-item pt-2.25 pb-px">
             <span className="menu-heading uppercase pl-[10px] pr-[10px] text-2sm font-semibold text-gray-500">
               Sales
             </span>
           </div>
-          <div
+          {/* <div
             className="menu-item"
             data-menu-item-toggle="accordion"
             data-menu-item-trigger="click"
@@ -402,8 +432,18 @@ function Sidebar() {
                 </Link>
               </div>
             </div>
+          </div> */}
+          <div className="menu-item">
+            <Link to="/orders" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
+              <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
+                <i className="ki-filled ki-delivery-door text-lg"></i>
+              </span>
+              <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
+                Orders
+              </span>
+            </Link>
           </div>
-          <div
+          {/* <div
             className="menu-item"
             data-menu-item-toggle="accordion"
             data-menu-item-trigger="click"
@@ -437,6 +477,27 @@ function Sidebar() {
                 </Link>
               </div>
             </div>
+          </div> */}
+          <div className="menu-item">
+            <Link to="/sales" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
+              <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
+                <i className="ki-filled ki-tag text-lg"></i>
+              </span>
+              <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
+                Sales
+              </span>
+            </Link>
+          </div>
+          
+          <div className="menu-item">
+            <Link to="/discountFee" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
+              <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
+                <i className="ki-filled ki-percentage text-lg"></i>
+              </span>
+              <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
+                Discounts and Fees
+              </span>
+            </Link>
           </div>
           {/* <div
             className="menu-item"
@@ -584,6 +645,16 @@ function Sidebar() {
             <span className="menu-heading uppercase pl-[10px] pr-[10px] text-2sm font-semibold text-gray-500">
               Miscellaneous
             </span>
+          </div>
+          <div className="menu-item">
+            <Link to="/reno-progress" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
+              <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
+                <i className="ki-filled ki-logistic text-lg"></i>
+              </span>
+              <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
+                Progress Management
+              </span>
+            </Link>
           </div>
           {user.type === 'admin' || user.type === 'super-admin' ?
             <>

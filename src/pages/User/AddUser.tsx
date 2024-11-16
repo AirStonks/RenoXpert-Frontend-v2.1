@@ -71,7 +71,7 @@ function AddUser() {
                 setNewPassword(response.data.new_password);
             } else {
                 console.log(response.data);
-                
+
                 setValidationErrors(response.data);
             }
 
@@ -83,6 +83,7 @@ function AddUser() {
             setIsLoading(false);
         }
     }
+
     const renderUserDetails = () => (
         <div className="flex flex-wrap gap-8 mb-8">
             <div className="card w-full flex justify-center items-center">
@@ -127,28 +128,35 @@ function AddUser() {
                     </div>
                     <div className="flex flex-col mb-4 w-full">
                         <label className='mb-2 text-sm font-medium text-gray-900'>Email</label>
-                        <input
-                            className='input mb-2'
-                            placeholder='name@example.com'
-                            type='email'
-                            name='email'
-                            value={formData.email}
-                            onChange={handleChange}
-                        />
+                        <div className="flex items-center mb-2">
+                            <input
+                                className='input mr-2'
+                                placeholder='email'
+                                type='text'
+                                name='email'
+                                value={formData.email}
+                                onChange={handleChange}
+                            />
+                            <div className='badge badge-lg text-md rounded-md cursor-default'>@belive.asia</div>
+                        </div>
                         {validationErrors.email && (
                             <span className="text-red-500 text-sm">{validationErrors.email.join(', ')}</span>
                         )}
                     </div>
                     <div className="flex flex-col mb-4 w-full">
                         <label className='mb-2 text-sm font-medium text-gray-900'>Phone Number</label>
-                        <input
-                            className='input mb-2'
-                            placeholder='0123456789'
-                            type='phone'
-                            name='phone'
-                            value={formData.phone}
-                            onChange={handleChange}
-                        />
+
+                        <div className="flex items-center mb-2">
+                            <div className='badge badge-lg text-md rounded-md cursor-default mr-2'>+60</div>
+                            <input
+                                className='input'
+                                placeholder='123456789'
+                                type='phone'
+                                name='phone'
+                                value={formData.phone}
+                                onChange={handleChange}
+                            />
+                        </div>
                         {validationErrors.phone && (
                             <span className="text-red-500 text-sm">{validationErrors.phone.join(', ')}</span>
                         )}
@@ -157,7 +165,7 @@ function AddUser() {
                         <label className='mb-2 text-sm font-medium text-gray-900'>User Type/Role</label>
                         <div className="flex flex-col items-start gap-6">
                             {['staff', 'admin', 'super-admin'].map(role => (
-                                <label key={role} className="form-label flex items-center gap-3">
+                                <label key={role} className={`form-label flex items-center gap-3 ${role === 'admin' || role === 'super-admin' ? 'disabled' : '' }`}>
                                     <input
                                         className="radio radio-sm"
                                         name="type"
@@ -165,6 +173,7 @@ function AddUser() {
                                         checked={formData.type === role}
                                         value={role}
                                         onChange={handleChange}
+                                        disabled={role === 'admin' || role === 'super-admin' ? true : false }
                                     />
                                     <div className="flex flex-col">
                                         <span className="text-sm">{role.charAt(0).toUpperCase() + role.slice(1)}</span>

@@ -359,7 +359,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                         Fee Name: {fee.name}
                                                     </span>
                                                     <span className="text-base text-gray-900 mb-1">
-                                                        Fee Charge: {fee.valueType === 'percentage' ? `${fee.value * 100}% (RM ${((saleDetail.total_amount * formData.percentage) * fee.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})` : `RM ${fee.value}`}
+                                                        Fee Charge: {fee.valueType === 'percentage' ? `${(fee.value * 100).toFixed(2)}% (RM ${((saleDetail.total_amount * formData.percentage) * fee.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})` : `RM ${fee.value}`}
                                                     </span>
                                                 </div>
                                                 <div className="flex">

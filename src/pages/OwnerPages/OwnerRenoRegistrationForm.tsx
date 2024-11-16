@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchProperties, submitRegistrationForm, userDetail } from "../../services/ownerApi";
+import { submitRegistrationForm, userDetail } from "../../services/ownerApi";
 import { OwnerRegistrationForm, Property, User } from "../../types";
 import Loading from "../../components/Loading";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import OTPVerifyPage from "../OTPVerifyPage";
 import Resizer from 'react-image-file-resizer';
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
+import { getOwnerUser, getProperties } from "../../services/publicApi";
 
 interface FormErrors {
     [key: string]: string | undefined; // Use string or undefined for error messages
@@ -100,8 +101,9 @@ const acceptedFileTypes = [
     'image/gif' // gif
 ];
 
-// Max file size in bytes (5MB)
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+// Max file size in bytes (10MB)
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILES = 10;
 
 const initialFormData: OwnerRegistrationForm = {
     salutations: 'mr',
@@ -199,12 +201,8 @@ function OwnerRenoRegistrationForm() {
 
     useEffect(() => {
         KTComponent.init();
-        getProperties();
-
-        if (token) {
-            console.log(token);
-            loadUser();
-        }
+        getPropertiesSelection();
+        checkOwnerExists();
     }, []);
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -220,38 +218,49 @@ function OwnerRenoRegistrationForm() {
         });
     };
 
-    const loadUser = async () => {
+    const checkOwnerExists = async () => {
         try {
-            const response: User = await userDetail();
-            setOwner(response);
+            const response = await getOwnerUser();
 
-            setFormData((prevData) => ({
-                ...prevData,
-                name_first: response.name_first,
-                name_last: response.name_last,
-                name_preferred: response.name_preferred,
-                salutations: response.salutations,
-                email: response.email,
-                phone_no: response.phone_no,
-                ic: response.ic,
+            if (response.status === 401) {
+                //
+            } else {
+                try {
+                    const response: User = await userDetail();
+                    setOwner(response);
 
-                address_1: response.address.address_1,
-                address_2: response.address.address_2,
-                city: response.address.city,
-                state: response.address.state,
-                postcode: response.address.postcode,
-            }));
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        name_first: response.name_first,
+                        name_last: response.name_last,
+                        name_preferred: response.name_preferred,
+                        salutations: response.salutations,
+                        email: response.email,
+                        phone_no: response.phone_no,
+                        ic: response.ic,
 
+                        address_1: response.address.address_1,
+                        address_2: response.address.address_2,
+                        city: response.address.city,
+                        state: response.address.state,
+                        postcode: response.address.postcode,
+                    }));
+
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    setLoading(false);
+                }
+            }
         } catch (error) {
             console.error(error);
-        } finally {
-            setLoading(false);
         }
+
     };
 
-    const getProperties = async () => {
+    const getPropertiesSelection = async () => {
         try {
-            const response = await fetchProperties();
+            const response = await getProperties();
 
             if (response?.success) {
                 setProperties(response.data);
@@ -267,14 +276,55 @@ function OwnerRenoRegistrationForm() {
         }
     };
 
+    const formatICNumber = (value: string): string => {
+        // Remove all non-digit characters
+        const digits = value.replace(/\D/g, '');
+
+        // Limit to 12 digits
+        const truncated = digits.slice(0, 12);
+
+        // Add hyphens according to format
+        let formatted = '';
+        if (truncated.length > 0) {
+            // First 6 digits
+            formatted += truncated.slice(0, 6);
+
+            // Add first hyphen and next 2 digits
+            if (truncated.length > 6) {
+                formatted += '-' + truncated.slice(6, 8);
+
+                // Add second hyphen and last 4 digits
+                if (truncated.length > 8) {
+                    formatted += '-' + truncated.slice(8);
+                }
+            }
+        }
+
+        return formatted;
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
-        // Check if the name starts with 'questions'
-        if (name.startsWith('questions.')) {
-            const property = name.split('.')[1]; // Get the specific question property
+        // Special handling for IC input
+        if (name === 'ic') {
+            const formattedIC = formatICNumber(value);
+            setFormData((prevData) => ({
+                ...prevData,
+                ic: formattedIC,
+            }));
 
-            // Update the questions state
+            // Clear error for IC field
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                ic: '',
+            }));
+            return;
+        }
+
+        // Rest of your existing handleChange logic
+        if (name.startsWith('questions.')) {
+            const property = name.split('.')[1];
             setFormData((prevData) => ({
                 ...prevData,
                 questions: {
@@ -284,8 +334,6 @@ function OwnerRenoRegistrationForm() {
             }));
         } else if (name.startsWith('furnishing.')) {
             const [furnish, category, property] = name.split('.');
-
-            // Update the furnishing state
             setFormData((prevData) => ({
                 ...prevData,
                 furnishing: {
@@ -297,20 +345,17 @@ function OwnerRenoRegistrationForm() {
                 },
             }));
         } else {
-            // Handle other input and select changes
             setFormData((prevData) => ({
                 ...prevData,
                 [name]: value,
             }));
         }
 
-        // Clear errors for the updated field
         setErrors((prevErrors) => ({
             ...prevErrors,
             [name]: '',
         }));
 
-        // Specific logic for 'property_name'
         if (name === 'property_name' && value !== 'other') {
             setFormData((prevData) => ({
                 ...prevData,
@@ -332,10 +377,10 @@ function OwnerRenoRegistrationForm() {
         setAttanhmentErr(null);
 
         if (event.target.files) {
-            // Check if the total number of files exceeds 5
-            if (files.length + event.target.files.length > 5) {
-                setAttanhmentErr('You can upload a maximum of 5 files.');
-                notify('error', 'You can upload a maximum of 5 files.');
+            // Check if the total number of files exceeds MAX_FILES
+            if (files.length + event.target.files.length > MAX_FILES) {
+                setAttanhmentErr(`You can upload a maximum of ${MAX_FILES} files.`);
+                notify('error', `You can upload a maximum of ${MAX_FILES} files.`);
                 return;
             }
 
@@ -440,7 +485,6 @@ function OwnerRenoRegistrationForm() {
         if (!formData.city) newErrors.city = "City is required";
         if (!formData.state) newErrors.state = "State is required";
         if (!formData.postcode) newErrors.postcode = "Postal / Zip Code is required";
-        if (!formData.ic) newErrors.ic = "IC/ID number is required";
         if (!formData.property_name) newErrors.property_name = "Please select an option";
         if (!formData.block) newErrors.block = "Block is required";
         if (!formData.level) newErrors.level = "Level is required";
@@ -486,6 +530,36 @@ function OwnerRenoRegistrationForm() {
             if (!formData.other_property_name) newErrors.other_property_name = "Please fill the the other property name";
         }
 
+        if (!formData.ic) {
+            newErrors.ic = "IC number is required";
+        } else {
+            // Remove hyphens for validation
+            const cleanIC = formData.ic.replace(/-/g, '');
+
+            if (cleanIC.length !== 12) {
+                newErrors.ic = "IC number must be 12 digits";
+            } else {
+                // Check the format using regex
+                const icRegex = /^(\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])-(\d{2})-(\d{4})$/;
+
+                if (!icRegex.test(formData.ic)) {
+                    newErrors.ic = "Invalid IC Number format.";
+                } else {
+                    // Extract the date part
+                    const [datePart] = formData.ic.split('-');
+                    const year = parseInt(datePart.substring(0, 2));
+                    const month = parseInt(datePart.substring(2, 4));
+                    const day = parseInt(datePart.substring(4, 6));
+
+                    // Validate days in month
+                    const daysInMonth = new Date(2000, month, 0).getDate();
+                    if (day > daysInMonth) {
+                        newErrors.ic = "Invalid date in IC number";
+                    }
+                }
+            }
+        }
+
         return newErrors;
     };
 
@@ -523,6 +597,7 @@ function OwnerRenoRegistrationForm() {
     };
 
     const handleReadyToSubmit = () => {
+        console.log(formData);
         const validationErrors = validate();
 
         if (Object.keys(validationErrors).length > 0) {
@@ -749,6 +824,508 @@ function OwnerRenoRegistrationForm() {
                                             <span className="font-normal">Do you want to add partition room to your unit?</span>
                                             <span className="font-bold">{getLabel(formData.questions.quest_8, q8Options)}</span>
                                         </div>
+
+                                        <div className="flex flex-col flex-wrap mb-8">
+                                            <div className="card rounded-md mb-8">
+                                                <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                    <h2 className="">Foyer & entrance</h2>
+                                                </div>
+                                                <div className="card-body text-sm px-4">
+                                                    <div className="w-full">
+                                                        <div className="grid grid-cols-3 gap-4">
+                                                            {/* Header Row */}
+                                                            <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                            <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                            {/* Grille Door */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Grille door</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.foyer_entrance.grille_door === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.foyer_entrance.grille_door === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Digital Lock */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Digital lock</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.foyer_entrance.digital_lock === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.foyer_entrance.digital_lock === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Shoe Cabinet */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Shoe cabinet</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.foyer_entrance.shoe_cabinet === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.foyer_entrance.shoe_cabinet === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Lights */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.foyer_entrance.lights === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.foyer_entrance.lights === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col mb-8">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="furnishing.foyer_entrance.other">Remarks</label>
+                                                <span className="textarea">
+                                                    {formData.furnishing.foyer_entrance.other ? formData.furnishing.foyer_entrance.other : '-'}
+                                                </span>
+                                            </div>
+
+                                            <hr className="mb-8" />
+
+                                            <div className="card rounded-md mb-8">
+                                                <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                    <h2 className="">Kitchen</h2>
+                                                </div>
+                                                <div className="card-body text-sm px-4">
+                                                    <div className="w-full">
+                                                        <div className="grid grid-cols-3 gap-4">
+                                                            {/* Header Row */}
+                                                            <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                            <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                            {/* Kitchen Cabinet */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Kitchen cabinet</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.kitchen_cabinet === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.kitchen_cabinet === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Kitchen Island */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Kitchen island</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.kitchen_island === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.kitchen_island === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Sink & Tap */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Sink & tap</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.sink_tap === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.sink_tap === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Hood and Hob */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Hood and hob</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.hood_hob === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.hood_hob === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Microwave */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Microwave</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.microwave === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.microwave === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Oven */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Oven</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.oven === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.oven === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Water Dispenser / Water Purifier */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Water dispenser / water purifier</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.water_dispenser === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.water_dispenser === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Fridge */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Fridge</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.fridge === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.fridge === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Lights */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.lights === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.kitchen.lights === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col mb-8">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="kitchen.other">Remarks</label>
+                                                <span className="textarea">
+                                                    {formData.furnishing.kitchen.other ? formData.furnishing.kitchen.other : '-'}
+                                                </span>
+                                            </div>
+
+                                            <hr className="mb-8" />
+
+                                            <div className="card rounded-md mb-8">
+                                                <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                    <h2 className="">Yard</h2>
+                                                </div>
+                                                <div className="card-body text-sm px-4">
+                                                    <div className="w-full">
+                                                        <div className="grid grid-cols-3 gap-4">
+                                                            {/* Header Row */}
+                                                            <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                            <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                            {/* Washer */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Washer</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.yard.washer === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.yard.washer === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Dryer */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Dryer</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.yard.dryer === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.yard.dryer === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Lights */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.yard.lights === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.yard.lights === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col mb-8">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="yard.other">Remarks</label>
+                                                <span className="textarea">
+                                                    {formData.furnishing.yard.other ? formData.furnishing.yard.other : '-'}
+                                                </span>
+                                            </div>
+
+                                            <hr className="mb-8" />
+
+                                            <div className="card rounded-md mb-8">
+                                                <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                    <h2 className="">Dining</h2>
+                                                </div>
+                                                <div className="card-body text-sm px-4">
+                                                    <div className="w-full">
+                                                        <div className="grid grid-cols-3 gap-4">
+                                                            {/* Header Row */}
+                                                            <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                            <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                            {/* Dining Table & Chairs */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Dining table & chairs</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.dining.dining_table_chairs === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.dining.dining_table_chairs === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Lights */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.dining.lights === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.dining.lights === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Fan */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Fan</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.dining.fan === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.dining.fan === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col mb-8">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="dining.other">Remarks</label>
+                                                <span className="textarea">
+                                                    {formData.furnishing.dining.other ? formData.furnishing.dining.other : '-'}
+                                                </span>
+                                            </div>
+
+                                            <hr className="mb-8" />
+
+                                            <div className="card rounded-md mb-8">
+                                                <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                    <h2 className="">Living</h2>
+                                                </div>
+                                                <div className="card-body text-sm px-4">
+                                                    <div className="w-full">
+                                                        <div className="grid grid-cols-3 gap-4">
+                                                            {/* Header Row */}
+                                                            <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                            <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                            {/* Sofa */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Sofa</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.sofa === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.sofa === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Coffee Table */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Coffee table</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.coffee_table === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.coffee_table === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* TV */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">TV</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.tv === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.tv === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* TV Cabinet */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">TV cabinet</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.tv_cabinet === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.tv_cabinet === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Fan */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Fan</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.fan === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.fan === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* Lights */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.lights === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.lights === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+
+                                                            {/* AC */}
+                                                            <div className="flex items-center text-gray-900 font-semibold">AC</div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.ac === 'furnished' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                }
+                                                            </div>
+                                                            <div className="flex justify-center items-center">
+                                                                {formData.furnishing.living.ac === 'not-furnish' &&
+                                                                    <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col mb-8">
+                                                <label className="text-slate-900 mb-2 font-medium" htmlFor="living.other">Remarks</label>
+                                                <span className="textarea">
+                                                    {formData.furnishing.living.other ? formData.furnishing.living.other : '-'}
+                                                </span>
+                                            </div>
+
+                                            <hr />
+
+                                            <div className="flex flex-col mb-8">
+                                                {files.length > 0 && (
+                                                    <div className="mt-4">
+                                                        <h4 className="text-lg font-medium">Uploaded Files</h4>
+                                                        <ul className="mt-2 space-y-2">
+                                                            {files.map((uploadedFile) => (
+                                                                <div className="flex flex-col" key={uploadedFile.id}>
+                                                                    <div className="flex items-center space-x-4 mb-4">
+                                                                        <div className="flex justify-center items-center w-16 h-16 bg-gray-100 rounded">
+                                                                            {/* Check if file is an image, otherwise show an icon */}
+                                                                            {isImage(uploadedFile.file.type) ? (
+                                                                                <a
+                                                                                    href={uploadedFile.previewUrl}
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                >
+                                                                                    <img
+                                                                                        src={uploadedFile.previewUrl}
+                                                                                        alt={uploadedFile.file.name} // Use file name as alt text
+                                                                                        className="h-16 w-16 object-cover"
+                                                                                    />
+                                                                                </a>
+                                                                            ) : (
+                                                                                <i className="ki-filled ki-files text-4xl"></i> // Icon for non-image files
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="flex-1 flex flex-col">
+                                                                            {/* Display file name and size */}
+                                                                            <span className="text-slate-700">{uploadedFile.file.name}</span>
+                                                                            <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
+                                                                                <span>{formatFileSize(uploadedFile.file.size)}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <hr />
+                                                                </div>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             :
@@ -889,7 +1466,15 @@ function OwnerRenoRegistrationForm() {
 
                                     <div className="flex flex-col mb-8">
                                         <label className="text-slate-900 mb-2 font-medium" htmlFor="ic">IC / ID number (information needed for renovation agreement purpose)</label>
-                                        <input className={`input ${errors.ic ? 'border-danger' : ''}`} type="text" disabled={!!owner} name="ic" id="ic" value={formData.ic} onChange={handleChange} />
+                                        <input
+                                            className={`input ${errors.ic ? 'border-danger' : ''}`}
+                                            type="text"
+                                            disabled={!!owner}
+                                            name="ic"
+                                            id="ic"
+                                            value={formData.ic}
+                                            onChange={handleChange}
+                                        />
                                         {errors.ic && <span className="text-red-500 text-xs mt-2">{errors.ic}</span>}
                                     </div>
 
@@ -1204,8 +1789,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.foyer_entrance.lights"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.foyer_entrance.lights === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.foyer_entrance.lights === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1258,8 +1843,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.kitchen.kitchen_cabinet"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.kitchen.kitchen_cabinet === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.kitchen.kitchen_cabinet === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1281,8 +1866,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.kitchen.kitchen_island"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.kitchen.kitchen_island === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.kitchen.kitchen_island === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1304,8 +1889,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.kitchen.sink_tap"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.kitchen.sink_tap === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.kitchen.sink_tap === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1327,8 +1912,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.kitchen.hood_hob"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.kitchen.hood_hob === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.kitchen.hood_hob === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1350,8 +1935,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.kitchen.microwave"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.kitchen.microwave === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.kitchen.microwave === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1373,8 +1958,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.kitchen.oven"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.kitchen.oven === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.kitchen.oven === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1396,8 +1981,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.kitchen.water_dispenser"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.kitchen.water_dispenser === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.kitchen.water_dispenser === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1419,8 +2004,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.kitchen.fridge"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.kitchen.fridge === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.kitchen.fridge === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1442,8 +2027,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.kitchen.lights"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.kitchen.lights === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.kitchen.lights === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1496,8 +2081,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.yard.washer"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.yard.washer === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.yard.washer === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1519,8 +2104,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.yard.dryer"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.yard.dryer === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.yard.dryer === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1542,8 +2127,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.yard.lights"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.yard.lights === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.yard.lights === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1596,8 +2181,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.dining.dining_table_chairs"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.dining.dining_table_chairs === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.dining.dining_table_chairs === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1619,8 +2204,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.dining.lights"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.dining.lights === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.dining.lights === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1642,8 +2227,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.dining.fan"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.dining.fan === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.dining.fan === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1696,8 +2281,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.living.sofa"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.living.sofa === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.living.sofa === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1719,8 +2304,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.living.coffee_table"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.living.coffee_table === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.living.coffee_table === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1742,8 +2327,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.living.tv"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.living.tv === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.living.tv === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1765,8 +2350,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.living.tv_cabinet"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.living.tv_cabinet === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.living.tv_cabinet === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1788,8 +2373,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.living.fan"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.living.fan === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.living.fan === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1811,8 +2396,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.living.lights"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.living.lights === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.living.lights === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1834,8 +2419,8 @@ function OwnerRenoRegistrationForm() {
                                                             <input
                                                                 type="radio"
                                                                 name="furnishing.living.ac"
-                                                                value="not_furnish"
-                                                                checked={formData.furnishing.living.ac === 'not_furnish'}
+                                                                value="not-furnish"
+                                                                checked={formData.furnishing.living.ac === 'not-furnish'}
                                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                                 onChange={handleChange}
                                                             />
@@ -1895,7 +2480,7 @@ function OwnerRenoRegistrationForm() {
                                                                             <img
                                                                                 src={uploadedFile.previewUrl}
                                                                                 alt={uploadedFile.file.name} // Use file name as alt text
-                                                                                className="h-full w-full object-cover"
+                                                                                className="h-16 w-16 object-cover"
                                                                             />
                                                                         </a>
                                                                     ) : (

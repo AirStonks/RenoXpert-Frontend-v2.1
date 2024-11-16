@@ -91,6 +91,14 @@ function OwnerHome() {
                     </i>
                     <span>Form</span>
                 </button>
+                <button
+                    className={`btn ${activeTab === 'tab_1_3' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('tab_1_3')}
+                >
+                    <i className="ki-outline ki-calendar-tick">
+                    </i>
+                    <span>Reno Progress</span>
+                </button>
             </div>
             <div className={activeTab === 'tab_1_1' ? '' : 'hidden'} id="tab_1_1">
                 <div className="flex flex-col">
@@ -255,6 +263,19 @@ function OwnerHome() {
                             ))}
                         </div>
                     )}
+                </div>
+            </div>
+
+            <div className={activeTab === 'tab_1_3' ? '' : 'hidden'} id="tab_1_3">
+                <div className="flex justify-between items-center mb-2">
+                    <span className="text-lg font-bold text-slate-900">Reno Progress</span>
+                </div>
+
+                <div className="flex flex-col items-center">
+                    <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/9.svg" />
+                    <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/9.svg" />
+
+                    <h2 className="text-xl font-semibold text-slate-900">Reno Progress Features Comming Soon</h2>
                 </div>
             </div>
         </div>

@@ -1,6 +1,7 @@
 import LogoutButton from './Buttons/LogoutButton';
 import { useUser } from '../context/UserContext';
 import Loading from './Loading';
+import { Link } from 'react-router-dom';
 
 function Header() {
 
@@ -53,7 +54,7 @@ function Header() {
       </div>
       <div className="flex items-center gap-2 lg:gap-3.5">
         {/* Notification */}
-        <div
+        {/* <div
           className="dropdown"
           data-dropdown="true"
           data-dropdown-offset="70px, 10px"
@@ -1619,7 +1620,7 @@ function Header() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
         {/* Profile */}
         <div className="menu" data-menu="true">
           <div
@@ -1656,16 +1657,16 @@ function Header() {
                     </a>
                   </div>
                 </div>
-                <span className="badge badge-xs badge-primary badge-outline">
+                {/* <span className="badge badge-xs badge-primary badge-outline">
                   Admin
-                </span>
+                </span> */}
               </div>
               <div className="menu-separator"></div>
               <div className="flex flex-col">
-                <div className="menu-item">
+                <div className="menu-item disabled">
                   <a
-                    className="menu-link"
-                    href="html/demo1/account/home/user-profile.html"
+                    className="menu-link disabled"
+                    href="#"
                   >
                     <span className="menu-icon">
                       <i className="ki-filled ki-profile-circle"></i>
@@ -1673,7 +1674,18 @@ function Header() {
                     <span className="menu-title">My Profile</span>
                   </a>
                 </div>
-                <div
+                <div className="menu-item">
+                  <Link
+                    to={'/profile/change-password'}
+                    className="menu-link"
+                  >
+                    <span className="menu-icon">
+                      <i className="ki-filled ki-key-square"></i>
+                    </span>
+                    <span className="menu-title">Change Password</span>
+                  </Link>
+                </div>
+                {/* <div
                   className="menu-item"
                   data-menu-item-offset="-50px, 0"
                   data-menu-item-placement="left-start"
@@ -1784,7 +1796,7 @@ function Header() {
                       </a>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
               <div className="menu-separator"></div>
               <div className="flex flex-col">
