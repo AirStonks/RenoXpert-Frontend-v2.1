@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
+const API_URL = 'https://api.renoxpert.my/api/';
 
 export const getOwnerUser = async () => {
     try {
