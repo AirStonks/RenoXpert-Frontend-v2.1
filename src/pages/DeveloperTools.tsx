@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Slide, toast } from "react-toastify";
 import { KTModal } from "../metronic/core";
 
-const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
+const API_URL = 'https://api.renoxpert.my/api/';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
