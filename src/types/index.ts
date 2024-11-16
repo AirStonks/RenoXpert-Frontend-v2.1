@@ -119,6 +119,8 @@ export interface Order {
     user?: User,
     property_id?: string,
     property?: Property,
+    bedroom_count?: number,
+    bathroom_count?: number,
     sale?: Sale,
     quotation_id?: string,
     order_quotations?: OrderQuotation[],
@@ -130,6 +132,8 @@ export interface Order {
     description?: string,
     status?: string,
     metadata?: JSON,
+    created_by?: string,
+    updated_by?: string,
     created_at?: string,
     updated_at?: string,
 }
@@ -160,6 +164,7 @@ export interface Sale {
     total_amount?: number,
     remaining_amount?: number,
     remaining_percentage?: number,
+    paid_percentage?: number,
     status?: string,
     created_at?: string,
     updated_at?: string,
@@ -326,6 +331,8 @@ export interface OwnerRegistrationForm {
 }
 
 export interface DefectInspectionForm {
+    id?: string,
+    reno_progress_id?: string,
     date?: string,
     time?: string,
     owner_email?: string,
@@ -419,10 +426,13 @@ export interface DefectInspectionForm {
         }
     }
     status?: string,
+    created_at?: string,
+    updated_at?: string,
 }
 
 export interface QCForm {
     id?: string,
+    reno_progress_id?: string,
     date?: string,
     time?: string,
     property?: {
@@ -865,7 +875,10 @@ export interface JobTask {
         }
     },
     is_defect_form?: boolean,
+    is_qc_form?: boolean,
     status?: string,
+    owner_comment?: string,
+    internal_comment?: string,
     completed_at?: string,
     created_at?: string,
     updated_at?: string,

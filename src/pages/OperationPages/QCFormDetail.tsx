@@ -364,6 +364,10 @@ function QCFormDetail() {
         initFunctions();
     }, []);
 
+    const handleBackClick = () => {
+        navigate(-1);
+    }
+
     const mergeFormData = (formData: QCForm, responseData: any): QCForm => {
         // Recursive function to merge the formData and responseData
         const deepMerge = (data1: any, data2: any) => {
@@ -411,17 +415,15 @@ function QCFormDetail() {
         }
     };
 
-    const test = () => {
-        console.log(formData);
-    }
-
     return (
         <div className="card w-full" data-tabs="true">
             <div className="card-header py-2">
-                <button className="btn btn-primary btn-sm" onClick={test}>
-                    TEST
-                </button>
-                <h2 className="text-slate-900 text-lg font-semibold">QC Form</h2>
+                <div className="flex gap-4 items-center">
+                    <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
+                        <i className="ki-solid ki-arrow-left"></i>
+                    </button>
+                    <h2 className="text-slate-900 text-lg font-semibold">QC Form Detail</h2>
+                </div>
             </div>
             <div className="card-group">
                 <div className="flex flex-wrap justify-center items-center gap-4">
@@ -553,21 +555,13 @@ function QCFormDetail() {
                                             {formData.area.foyer[key].attachments && Object.entries(formData.area.foyer[key].attachments).map(([attachmentKey, uploadedFile]) => (
                                                 <div key={attachmentKey} className="flex items-center space-x-4 mb-4">
                                                     <div className="flex-1 flex flex-col">
-                                                        <a
-                                                            href={uploadedFile.file_url}
-                                                            className="text-slate-700"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            {uploadedFile.original_name}
-                                                        </a>
                                                         <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                             <span>{uploadedFile.file ? formatFileSize(uploadedFile.file.size) : '-'}</span>
                                                         </div>
                                                     </div>
                                                     <button
                                                         className="px-2 py-2 rounded"
-                                                        // onClick={() => handleDelete(attachmentKey, 'foyer', key)}
+                                                    // onClick={() => handleDelete(attachmentKey, 'foyer', key)}
                                                     >
                                                         <i className="ki-solid ki-trash-square text-4xl text-red-500 "></i>
                                                     </button>
@@ -615,13 +609,10 @@ function QCFormDetail() {
 
                                                     {/* Remark Input - move to next line on md screens */}
                                                     <div className="col-span-4 flex items-center mt-2">
-                                                        <input
-                                                            type="input"
-                                                            name={`area.foyer.${key}.${sectionKey}.remark`}
-                                                            value={formData.area.foyer[key][sectionKey].remark}
-                                                            className="input w-full"
-                                                            readOnly
-                                                        />
+                                                        <div className="flex flex-col w-full">
+                                                            <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                            <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.foyer[key][sectionKey].remark ? formData.area.foyer[key][sectionKey].remark : '-'}</span>
+                                                        </div>
                                                     </div>
                                                 </React.Fragment>
                                             )
@@ -633,22 +624,554 @@ function QCFormDetail() {
                     ))}
                 </div>
                 <div className="hidden" id="tab_3">
-                    3
+                    {Object.entries(formData.area.kitchen).map(([key, section]) => (
+                        <div className="card rounded-md mb-8" key={key}>
+                            <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                <h2 className="">{section.label}</h2>
+                            </div>
+                            <div className="card-body text-sm px-4">
+                                <div className="card w-auto mb-6">
+                                    <div className="card-body">
+                                        {/* <div className="badge">Add Attachments</div> */}
+                                        <div className="flex flex-col mb-4">
+                                            {formData.area.kitchen[key].attachments && Object.entries(formData.area.kitchen[key].attachments).map(([attachmentKey, uploadedFile]) => (
+                                                <div key={attachmentKey} className="flex items-center space-x-4 mb-4">
+                                                    <div className="flex-1 flex flex-col">
+                                                        <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
+                                                            <span>{uploadedFile.file ? formatFileSize(uploadedFile.file.size) : '-'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        className="px-2 py-2 rounded"
+                                                    // onClick={() => handleDelete(attachmentKey, 'kitchen', key)}
+                                                    >
+                                                        <i className="ki-solid ki-trash-square text-4xl text-red-500 "></i>
+                                                    </button>
+                                                </div>
+                                            ))}
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="w-full">
+                                    <div className="grid grid-cols-4 gap-4">
+                                        {/* Header Row */}
+                                        <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Acceptable</div>
+                                        <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Not Acceptable</div>
+                                        {/* <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Remark</div> */}
+
+                                        {Object.entries(section).map(([sectionKey, question]) => (
+                                            sectionKey.startsWith('q') && (
+                                                <React.Fragment key={sectionKey}>
+                                                    <div className="col-span-2 flex items-center text-gray-900 font-semibold">{question.label}</div>
+
+                                                    {/* Acceptable Radio */}
+                                                    <div className="flex justify-center items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name={`area.kitchen.${key}.${sectionKey}.value`}
+                                                            value="acceptable"
+                                                            checked={formData.area.kitchen[key][sectionKey].value === 'acceptable'}
+                                                            className="radio radio-lg h-4 w-4 text-blue-600"
+                                                            readOnly
+                                                        />
+                                                    </div>
+
+                                                    {/* Not Acceptable Radio */}
+                                                    <div className="flex justify-center items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name={`area.kitchen.${key}.${sectionKey}.value`}
+                                                            value="not_acceptable"
+                                                            checked={formData.area.kitchen[key][sectionKey].value === 'not_acceptable'}
+                                                            className="radio radio-lg h-4 w-4 text-blue-600"
+                                                            readOnly
+                                                        />
+                                                    </div>
+
+                                                    {/* Remark Input - move to next line on md screens */}
+                                                    <div className="col-span-4 flex items-center mt-2">
+                                                        <div className="flex flex-col w-full">
+                                                            <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                            <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.kitchen[key][sectionKey].remark ? formData.area.kitchen[key][sectionKey].remark : '-'}</span>
+                                                        </div>
+                                                    </div>
+                                                </React.Fragment>
+                                            )
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
                 <div className="hidden" id="tab_4">
-                    4
+                    {Object.entries(formData.area.laundry).map(([key, section]) => (
+                        <div className="card rounded-md mb-8" key={key}>
+                            <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                <h2 className="">{section.label}</h2>
+                            </div>
+                            <div className="card-body text-sm px-4">
+                                <div className="card w-auto mb-6">
+                                    <div className="card-body">
+                                        {/* <div className="badge">Add Attachments</div> */}
+                                        <div className="flex flex-col mb-4">
+                                            {formData.area.laundry[key].attachments && Object.entries(formData.area.laundry[key].attachments).map(([attachmentKey, uploadedFile]) => (
+                                                <div key={attachmentKey} className="flex items-center space-x-4 mb-4">
+                                                    <div className="flex-1 flex flex-col">
+                                                        <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
+                                                            <span>{uploadedFile.file ? formatFileSize(uploadedFile.file.size) : '-'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        className="px-2 py-2 rounded"
+                                                    // onClick={() => handleDelete(attachmentKey, 'laundry', key)}
+                                                    >
+                                                        <i className="ki-solid ki-trash-square text-4xl text-red-500 "></i>
+                                                    </button>
+                                                </div>
+                                            ))}
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="w-full">
+                                    <div className="grid grid-cols-4 gap-4">
+                                        {/* Header Row */}
+                                        <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Acceptable</div>
+                                        <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Not Acceptable</div>
+                                        {/* <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Remark</div> */}
+
+                                        {Object.entries(section).map(([sectionKey, question]) => (
+                                            sectionKey.startsWith('q') && (
+                                                <React.Fragment key={sectionKey}>
+                                                    <div className="col-span-2 flex items-center text-gray-900 font-semibold">{question.label}</div>
+
+                                                    {/* Acceptable Radio */}
+                                                    <div className="flex justify-center items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name={`area.laundry.${key}.${sectionKey}.value`}
+                                                            value="acceptable"
+                                                            checked={formData.area.laundry[key][sectionKey].value === 'acceptable'}
+                                                            className="radio radio-lg h-4 w-4 text-blue-600"
+                                                            readOnly
+                                                        />
+                                                    </div>
+
+                                                    {/* Not Acceptable Radio */}
+                                                    <div className="flex justify-center items-center">
+                                                        <input
+                                                            type="radio"
+                                                            name={`area.laundry.${key}.${sectionKey}.value`}
+                                                            value="not_acceptable"
+                                                            checked={formData.area.laundry[key][sectionKey].value === 'not_acceptable'}
+                                                            className="radio radio-lg h-4 w-4 text-blue-600"
+                                                            readOnly
+                                                        />
+                                                    </div>
+
+                                                    {/* Remark Input - move to next line on md screens */}
+                                                    <div className="col-span-4 flex items-center mt-2">
+                                                        <div className="flex flex-col w-full">
+                                                            <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                            <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.laundry[key][sectionKey].remark ? formData.area.laundry[key][sectionKey].remark : '-'}</span>
+                                                        </div>
+                                                    </div>
+                                                </React.Fragment>
+                                            )
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
                 <div className="hidden" id="tab_5">
-                    5
+                    {Object.entries(formData.area.dining).map(([key, section]) => (
+                        <div className="card rounded-md mb-8" key={key}>
+                            <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                <h2 className="">{section.label}</h2>
+                            </div>
+                            <div className="card-body text-sm px-4">
+                                <div className="card w-auto mb-6">
+                                    <div className="card-body">
+                                        {/* <div className="badge">Add Attachments</div> */}
+                                        <div className="flex flex-col mb-4">
+                                            {formData.area.dining[key].attachments && Object.entries(formData.area.dining[key].attachments).map(([attachmentKey, uploadedFile]) => (
+                                                <div key={attachmentKey} className="flex items-center space-x-4 mb-4">
+                                                    <div className="flex-1 flex flex-col">
+                                                        <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
+                                                            <span>{uploadedFile.file ? formatFileSize(uploadedFile.file.size) : '-'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        className="px-2 py-2 rounded"
+                                                    // onClick={() => handleDelete(attachmentKey, 'dining', key)}
+                                                    >
+                                                        <i className="ki-solid ki-trash-square text-4xl text-red-500 "></i>
+                                                    </button>
+                                                </div>
+                                            ))}
+
+                                        </div>
+                                    </div>
+                                </div>
+                                {'other' in section ? (
+                                    <>
+                                        <div className="col-span-4 flex items-center mt-2">
+                                            <div className="flex flex-col w-full">
+                                                <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.dining[key].other.remark ? formData.area.dining[key].other.remark : '-'}</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) :
+                                    <div className="w-full">
+                                        <div className="grid grid-cols-4 gap-4">
+                                            {/* Header Row */}
+                                            <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Acceptable</div>
+                                            <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Not Acceptable</div>
+                                            {/* <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Remark</div> */}
+
+                                            {Object.entries(section).map(([sectionKey, question]) => (
+                                                sectionKey.startsWith('q') && (
+                                                    <React.Fragment key={sectionKey}>
+                                                        <div className="col-span-2 flex items-center text-gray-900 font-semibold">{question.label}</div>
+
+                                                        {/* Acceptable Radio */}
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name={`area.dining.${key}.${sectionKey}.value`}
+                                                                value="acceptable"
+                                                                checked={formData.area.dining[key][sectionKey].value === 'acceptable'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                readOnly
+                                                            />
+                                                        </div>
+
+                                                        {/* Not Acceptable Radio */}
+                                                        <div className="flex justify-center items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name={`area.dining.${key}.${sectionKey}.value`}
+                                                                value="not_acceptable"
+                                                                checked={formData.area.dining[key][sectionKey].value === 'not_acceptable'}
+                                                                className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                readOnly
+                                                            />
+                                                        </div>
+
+                                                        {/* Remark Input - move to next line on md screens */}
+                                                        <div className="col-span-4 flex items-center mt-2">
+                                                            <div className="flex flex-col w-full">
+                                                                <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                                <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.dining[key][sectionKey].remark ? formData.area.dining[key][sectionKey].remark : '-'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </React.Fragment>
+                                                )
+                                            ))}
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    ))}
                 </div>
                 <div className="hidden" id="tab_6">
-                    6
+                    {formData.include_commune_living ?
+                        Object.entries(formData.area.commune).map(([key, section]) => (
+                            <div className="card rounded-md mb-8" key={key}>
+                                <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                    <h2 className="">{section.label}</h2>
+                                </div>
+                                <div className="card-body text-sm px-4">
+                                    <div className="card w-auto mb-6">
+                                        <div className="card-body">
+                                            {/* <div className="badge">Add Attachments</div> */}
+                                            <div className="flex flex-col mb-4">
+                                                {formData.area.commune[key].attachments && Object.entries(formData.area.commune[key].attachments).map(([attachmentKey, uploadedFile]) => (
+                                                    <div key={attachmentKey} className="flex items-center space-x-4 mb-4">
+                                                        <div className="flex-1 flex flex-col">
+                                                            <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
+                                                                <span>{uploadedFile.file ? formatFileSize(uploadedFile.file.size) : '-'}</span>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            className="px-2 py-2 rounded"
+                                                        // onClick={() => handleDelete(attachmentKey, 'commune', key)}
+                                                        >
+                                                            <i className="ki-solid ki-trash-square text-4xl text-red-500 "></i>
+                                                        </button>
+                                                    </div>
+                                                ))}
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {'other' in section ? (
+                                        <>
+                                            <div className="col-span-4 flex items-center mt-2">
+                                                <div className="flex flex-col w-full">
+                                                    <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                    <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.commune[key].other.remark ? formData.area.commune[key].other.remark : '-'}</span>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) :
+                                        <div className="w-full">
+                                            <div className="grid grid-cols-4 gap-4">
+                                                {/* Header Row */}
+                                                <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Acceptable</div>
+                                                <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Not Acceptable</div>
+                                                {/* <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Remark</div> */}
+
+                                                {Object.entries(section).map(([sectionKey, question]) => (
+                                                    sectionKey.startsWith('q') && (
+                                                        <React.Fragment key={sectionKey}>
+                                                            <div className="col-span-2 flex items-center text-gray-900 font-semibold">{question.label}</div>
+
+                                                            {/* Acceptable Radio */}
+                                                            <div className="flex justify-center items-center">
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`area.commune.${key}.${sectionKey}.value`}
+                                                                    value="acceptable"
+                                                                    checked={formData.area.commune[key][sectionKey].value === 'acceptable'}
+                                                                    className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                    readOnly
+                                                                />
+                                                            </div>
+
+                                                            {/* Not Acceptable Radio */}
+                                                            <div className="flex justify-center items-center">
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`area.commune.${key}.${sectionKey}.value`}
+                                                                    value="not_acceptable"
+                                                                    checked={formData.area.commune[key][sectionKey].value === 'not_acceptable'}
+                                                                    className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                    readOnly
+                                                                />
+                                                            </div>
+
+                                                            {/* Remark Input - move to next line on md screens */}
+                                                            <div className="col-span-4 flex items-center mt-2">
+                                                                <div className="flex flex-col w-full">
+                                                                    <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                                    <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.commune[key][sectionKey].remark ? formData.area.commune[key][sectionKey].remark : '-'}</span>
+                                                                </div>
+                                                            </div>
+                                                        </React.Fragment>
+                                                    )
+                                                ))}
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        ))
+                        :
+                        <div className="text-lg font-semibold text-center">The Commune Living is not included.</div>
+                    }
                 </div>
                 <div className="hidden" id="tab_7">
-                    7
+                    {Object.entries(formData.area.bedrooms).map(([key, bedroom]) => (
+                        <div key={key}>
+                            <h2 className="text-xl font-semibold capitalize mb-2">{key}</h2>
+                            {Object.entries(bedroom).map(([bedroomKey, section]) => (
+                                <div className="card rounded-md mb-8" key={bedroomKey}>
+                                    <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                        <h2 className="">{section.label}</h2>
+                                    </div>
+                                    <div className="card-body text-sm px-4">
+                                        <div className="card w-auto mb-6">
+                                            <div className="card-body">
+                                                {/* <div className="badge">Add Attachments</div> */}
+                                                <div className="flex flex-col mb-4">
+                                                    {formData.area.bedrooms[key][bedroomKey].attachments && Object.entries(formData.area.bedrooms[key][bedroomKey].attachments).map(([attachmentKey, uploadedFile]) => (
+                                                        <div key={attachmentKey} className="flex items-center space-x-4 mb-4">
+                                                            <div className="flex-1 flex flex-col">
+                                                                <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
+                                                                    <span>{uploadedFile.file ? formatFileSize(uploadedFile.file.size) : '-'}</span>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                className="px-2 py-2 rounded"
+                                                            // onClick={() => handleDelete(attachmentKey, 'bedrooms', key)}
+                                                            >
+                                                                <i className="ki-solid ki-trash-square text-4xl text-red-500 "></i>
+                                                            </button>
+                                                        </div>
+                                                    ))}
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {'other' in section ? (
+                                            <>
+                                                <div className="col-span-4 flex items-center mt-2">
+                                                    <div className="flex flex-col w-full">
+                                                        <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                        <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.bedrooms[key][bedroomKey].other.remark ? formData.area.bedrooms[key][bedroomKey].other.remark : '-'}</span>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) :
+                                            <div className="w-full">
+                                                <div className="grid grid-cols-4 gap-4">
+                                                    {/* Header Row */}
+                                                    <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Acceptable</div>
+                                                    <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Not Acceptable</div>
+                                                    {/* <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Remark</div> */}
+
+                                                    {Object.entries(section).map(([sectionKey, question]) => (
+                                                        sectionKey.startsWith('q') && (
+                                                            <React.Fragment key={sectionKey}>
+                                                                <div className="col-span-2 flex items-center text-gray-900 font-semibold">{question.label}</div>
+
+                                                                {/* Acceptable Radio */}
+                                                                <div className="flex justify-center items-center">
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`area.bedrooms.${key}.${bedroomKey}.${sectionKey}.value`}
+                                                                        value="acceptable"
+                                                                        checked={formData.area.bedrooms[key][bedroomKey][sectionKey].value === 'acceptable'}
+                                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                        readOnly
+                                                                    />
+                                                                </div>
+
+                                                                {/* Not Acceptable Radio */}
+                                                                <div className="flex justify-center items-center">
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`area.bedrooms.${key}.${sectionKey}.value`}
+                                                                        value="not_acceptable"
+                                                                        checked={formData.area.bedrooms[key][bedroomKey][sectionKey].value === 'not_acceptable'}
+                                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                        readOnly
+                                                                    />
+                                                                </div>
+
+                                                                {/* Remark Input - move to next line on md screens */}
+                                                                <div className="col-span-4 flex items-center mt-2">
+                                                                    <div className="flex flex-col w-full">
+                                                                        <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                                        <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.bedrooms[key][bedroomKey][sectionKey].remark ? formData.area.bedrooms[key][bedroomKey][sectionKey].remark : '-'}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </React.Fragment>
+                                                        )
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
                 </div>
                 <div className="hidden" id="tab_8">
-                    8
+                    {Object.entries(formData.area.bathrooms).map(([key, bathroom]) => (
+                        <div key={key}>
+                            <h2 className="text-xl font-semibold capitalize mb-2">{key}</h2>
+                            {Object.entries(bathroom).map(([bathroomKey, section]) => (
+                                <div className="card rounded-md mb-8" key={bathroomKey}>
+                                    <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                        <h2 className="">{section.label}</h2>
+                                    </div>
+                                    <div className="card-body text-sm px-4">
+                                        <div className="card w-auto mb-6">
+                                            <div className="card-body">
+                                                {/* <div className="badge">Add Attachments</div> */}
+                                                <div className="flex flex-col mb-4">
+                                                    {formData.area.bathrooms[key][bathroomKey].attachments && Object.entries(formData.area.bathrooms[key][bathroomKey].attachments).map(([attachmentKey, uploadedFile]) => (
+                                                        <div key={attachmentKey} className="flex items-center space-x-4 mb-4">
+                                                            <div className="flex-1 flex flex-col">
+                                                                <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
+                                                                    <span>{uploadedFile.file ? formatFileSize(uploadedFile.file.size) : '-'}</span>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                className="px-2 py-2 rounded"
+                                                            // onClick={() => handleDelete(attachmentKey, 'bathrooms', key)}
+                                                            >
+                                                                <i className="ki-solid ki-trash-square text-4xl text-red-500 "></i>
+                                                            </button>
+                                                        </div>
+                                                    ))}
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {'other' in section ? (
+                                            <>
+                                                <div className="col-span-4 flex items-center mt-2">
+                                                    <div className="flex flex-col w-full">
+                                                        <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                        <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.bathrooms[key][bathroomKey].other.remark ? formData.area.bathrooms[key][bathroomKey].other.remark : '-'}</span>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) :
+                                            <div className="w-full">
+                                                <div className="grid grid-cols-4 gap-4">
+                                                    {/* Header Row */}
+                                                    <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Acceptable</div>
+                                                    <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Not Acceptable</div>
+                                                    {/* <div className="col-start-4 text-xs text-center text-gray-900 font-semibold">Remark</div> */}
+
+                                                    {Object.entries(section).map(([sectionKey, question]) => (
+                                                        sectionKey.startsWith('q') && (
+                                                            <React.Fragment key={sectionKey}>
+                                                                <div className="col-span-2 flex items-center text-gray-900 font-semibold">{question.label}</div>
+
+                                                                {/* Acceptable Radio */}
+                                                                <div className="flex justify-center items-center">
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`area.bathrooms.${key}.${bathroomKey}.${sectionKey}.value`}
+                                                                        value="acceptable"
+                                                                        checked={formData.area.bathrooms[key][bathroomKey][sectionKey].value === 'acceptable'}
+                                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                        readOnly
+                                                                    />
+                                                                </div>
+
+                                                                {/* Not Acceptable Radio */}
+                                                                <div className="flex justify-center items-center">
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`area.bathrooms.${key}.${sectionKey}.value`}
+                                                                        value="not_acceptable"
+                                                                        checked={formData.area.bathrooms[key][bathroomKey][sectionKey].value === 'not_acceptable'}
+                                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                                        readOnly
+                                                                    />
+                                                                </div>
+
+                                                                {/* Remark Input - move to next line on md screens */}
+                                                                <div className="col-span-4 flex items-center mt-2">
+                                                                    <div className="flex flex-col w-full">
+                                                                        <span className="text-xs text-gray-900 font-semibold">Remark:</span>
+                                                                        <span className="text-xs border border-gray-300 rounded-md p-2">{formData.area.bathrooms[key][bathroomKey][sectionKey].remark ? formData.area.bathrooms[key][bathroomKey][sectionKey].remark : '-'}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </React.Fragment>
+                                                        )
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
                 </div>
             </div>
             <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2">

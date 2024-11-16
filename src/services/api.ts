@@ -778,3 +778,87 @@ export const toggleTaskInstall = async (renoProgressId: number, taskId: number) 
         throw error;
     }
 }
+
+export const changeOwnerComment = async (renoProgressId: number, taskId: number, comment: string) => {
+    try {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/owner-comment/change`, { owner_comment: comment }, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const changeInternalComment = async (renoProgressId: number, taskId: number, comment: string) => {
+    try {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/internal-comment/change`, { internal_comment: comment }, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const uploadTaskDocuments = async (renoProgressId: number, taskId: number, files: File[]) => {
+    try {
+        // Create a new FormData instance
+        const formData = new FormData();
+
+        // Append each file to the FormData object
+        files.forEach(file => {
+            formData.append('attachments[]', file);  // 'attachments[]' because your backend expects an array
+        });
+
+        // Make the API request
+        const response = await axios.post(
+            `${API_URL}reno-progress/${renoProgressId}/task/${taskId}/documents/upload`,
+            formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handle401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+};
+
+export const fetchTaskDocuments = async (renoProgressId: number, taskId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/documents/fetch`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const removeTaskDocument = async (renoProgressId: number, taskId: number, documentIndex: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/documents/${documentIndex}/remove`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+
+

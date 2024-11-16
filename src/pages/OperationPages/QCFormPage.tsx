@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Slide, toast } from "react-toastify";
 import React from 'react';
 import { Property, QCForm, User } from "../../types";
-import KTComponents from "../../metronic/core";
+import KTComponents, { KTTabs } from "../../metronic/core";
 import { KTStepper } from '../../metronic/core/components/stepper/stepper';
-import { fetchProperties, fetchQCForm, submitQCForm, user } from "../../services/operationApi";
+import { fetchProperties, fetchQCForm, fetchRenoProgressDetail, submitQCForm, user } from "../../services/operationApi";
 import Loading from "../../components/Loading";
 
 interface FormErrors {
@@ -383,6 +383,8 @@ function QCFormPage() {
 
     const [loading, setLoading] = useState<boolean>(true); // Loading state
 
+    const [successSubmit, setSuccessSubmit] = useState<boolean>(false);
+
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
             position: "top-center",
@@ -396,19 +398,26 @@ function QCFormPage() {
         });
     };
 
+
     useEffect(() => {
         const initFunctions = async () => {
             await KTComponents.init();
             await getUser();
             await getProperties();
 
+            if (renoProgressId) {
+                await handleSearchRenoProgress(renoProgressId);
+            }
+
             if (qcFormId) {
                 await getQCForm();
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1));
-            await KTStepper.init();
             await setLoading(false); // Set loading to false after fetching
+
+            await new Promise(resolve => setTimeout(resolve, 1));
+            KTStepper.init();
+            KTTabs.init();
         };
 
         initFunctions();
@@ -419,29 +428,28 @@ function QCFormPage() {
         setLoading(true); // Start loading immediately
 
         try {
-            const response = await fetchRenoProgress(Number(renoProgressId)); // Fetch reno progress data
-            const renoProgress: RenoProgress = response.data; // Extract reno progress data
+            const response = await fetchRenoProgressDetail(Number(renoProgressId)); // Fetch reno progress data
 
-            if (renoProgress) {
-                const res = await fetchSale(Number(renoProgress.sale_id)); // Fetch sale data based on reno progress
-                const sale: Sale = res.data; // Extract sale data
+            if (response?.success) {
+                console.log(response);
+                setFormData((prevData) => ({
+                    ...prevData,
+                    reno_progress_id: renoProgressId,
+                    property: {
+                        ...prevData.property,
+                        property_name: response.data.property.id,
+                        block: response.data.block,
+                        level: response.data.level,
+                        unit: response.data.unit,
+                    },
+                    bedroom_count: response.data.bedroom_count?.toString(),
+                    bathroom_count: response.data.bathroom_count.toString(),
+                }));
 
-                if (sale) {
-                    // Set form data based on the fetched sale data
-                    setFormData((prevData) => ({
-                        ...prevData,
-                        owner_email: sale.order.user.email,
-                        reno_progress_id: renoProgressId,
-                        property: {
-                            ...prevData.property,
-                            property_name: sale.order.property_id,
-                            block: sale.order.block,
-                            level: sale.order.floor,
-                            unit: sale.order.unit_no,
-                        },
-                    }));
-                }
+                handleDynamicBedroom(null, response.data.bedroom_count);
+                handleDynamicBathroom(null, response.data.bathroom_count);
             }
+
         } catch (error) {
             console.error('Error fetching reno progress or sale data:', error);
         } finally {
@@ -676,14 +684,21 @@ function QCFormPage() {
         }
     };
 
-    const handleDynamicBedroom = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const { value } = e.target;
-        const bedroomCount = parseInt(value);
+    const handleDynamicBedroom = async (e?: React.ChangeEvent<HTMLSelectElement>, bedroomsCount?: number) => {
+
+        let bedroomCount: number;
+
+        if (e) {
+            const { value } = e.target;
+            bedroomCount = parseInt(value);
+        } else if (bedroomsCount) {
+            bedroomCount = bedroomsCount;
+        }
 
         setErrors({});
 
         // Update the bathroom count and dynamically add/remove bedrooms in the form data
-        setFormData((prevFormData) => {
+        await setFormData((prevFormData) => {
             const updatedBedrooms = { ...prevFormData.area?.bedrooms };
 
             // Add or remove bathroom fields based on the new count
@@ -778,11 +793,20 @@ function QCFormPage() {
                 }
             };
         });
+
+        await KTTabs.init();
     }
 
-    const handleDynamicBathroom = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const { value } = e.target;
-        const bathroomCount = parseInt(value);
+    const handleDynamicBathroom = (e?: React.ChangeEvent<HTMLSelectElement>, bathroomsCount?: number) => {
+
+        let bathroomCount: number;
+
+        if (e) {
+            const { value } = e.target;
+            bathroomCount = parseInt(value);
+        } else if (bathroomsCount) {
+            bathroomCount = bathroomsCount;
+        }
 
         setErrors({});
 
@@ -857,6 +881,8 @@ function QCFormPage() {
                 }
             };
         });
+
+        KTTabs.init();
     }
 
     const isAcceptedFileType = (type: string) => acceptedFileTypes.includes(type);
@@ -1112,6 +1138,13 @@ function QCFormPage() {
 
     const handleSubmit = async () => {
         const validationErrors = validate();
+
+        if (renoProgressId) {
+            setFormData((prevData) => ({
+                ...prevData,
+                reno_progress_id: renoProgressId,
+            }));
+        }
 
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -1922,8 +1955,14 @@ function QCFormPage() {
                     }
                 </div>
                 <div className="hidden" id="stepper_7">
+                    {/* <div className="flex mb-4 flex-wrap justify-start gap-2">
+                            {Object.entries(formData.area.bedrooms).map(([key, bedroom]) => (
+                                <button className="btn btn-sm btn-dark" key={key} data-scrollto={`#scrollto_${key}`} data-scrollto-parent="#scrollable">{key}</button>
+                            ))}
+                        </div> */}
+
                     {Object.entries(formData.area.bedrooms).map(([key, bedroom]) => (
-                        <div key={key}>
+                        <div key={key} id={`scrollto_${key}`}>
                             <h2 className="text-xl font-semibold capitalize mb-2">{key}</h2>
                             {Object.entries(bedroom).map(([bedroomKey, section]) => (
                                 <div className="card rounded-md mb-8" key={bedroomKey}>
@@ -2040,6 +2079,7 @@ function QCFormPage() {
                             ))}
                         </div>
                     ))}
+
                 </div>
                 <div className="hidden" id="stepper_8">
                     {Object.entries(formData.area.bathrooms).map(([key, bathroom]) => (

@@ -103,6 +103,7 @@ const routes = [
   /*--- OPERATION SITE ---*/
   { path: '/op/login', element: <OperationLogin />, layout: null },
   { path: '/op/home', element: <OperationHome />, layout: OperationProtectedLayout },
+  { path: '/op', element: <OperationHome />, layout: OperationProtectedLayout },
   { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
@@ -111,6 +112,7 @@ const routes = [
   /*--- OWNER SITE ---*/
   { path: '/owner/login', element: <OwnerLogin />, layout: null },
   { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
+  { path: '/owner', element: <OwnerHome />, layout: OwnerProtectedLayout },
   { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
   { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
   { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },

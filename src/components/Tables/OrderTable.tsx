@@ -215,14 +215,6 @@ function OrderTable() {
                                     >
                                         <i class="ki-outline ki-notepad-edit"></i>
                                     </button>
-                                    <button 
-                                        class="btn-revoke btn btn-sm btn-danger"
-                                        data-tooltip="#revoke_tooltip"
-                                        data-action="revoke"
-                                        data-id="${data.id}"
-                                    >
-                                        Revoke
-                                    </button>
                                 ` : ''}
                 
                                 ${isRevoked ? `

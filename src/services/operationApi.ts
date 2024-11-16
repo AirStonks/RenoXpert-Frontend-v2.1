@@ -36,7 +36,43 @@ export const fetchProperties = async () => {
     }
 }
 
-export const submitDefectInspectionForm = async (formData) => {
+export const fetchRenoProgressDetail = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `op/reno/progress/${renoProgressId}/properties`, {
+            headers: getAuthHeaders(),
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const fetchDIForms = async () => {
+    try {
+        const response = await axios.get(API_URL + `op/reno/defect-inspection-forms`, {
+            headers: getAuthHeaders(),
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const fetchDIForm = async (formId: number) => {
+    try {
+        const response = await axios.get(API_URL + `op/reno/defect-inspection-forms/${formId}/fetch`, {
+            headers: getAuthHeaders(),
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const submitDIForm = async (formData) => {
     try {
         const response = await axios.post(API_URL + `op/reno/defect-inspection-form/submit`, formData, {
             headers: {

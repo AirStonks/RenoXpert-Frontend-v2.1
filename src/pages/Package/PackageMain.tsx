@@ -29,7 +29,7 @@ function PackageMain() {
                 </div>
 
 
-                <ActivityCenter />
+                {/* <ActivityCenter /> */}
 
                 <PackageTable />
             </div>

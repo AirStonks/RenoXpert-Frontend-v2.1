@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { userLogin } from '../services/auth';
 import KTComponent from '../metronic/core';
+import { ToastContainer } from 'react-toastify';
 
 interface LoginForm {
     email: string;
@@ -131,6 +132,8 @@ const Login: React.FC = () => {
                     </button>
                 </form>
             </div>
+
+            <ToastContainer />
         </>
     );
 };

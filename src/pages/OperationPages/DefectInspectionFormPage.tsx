@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { DefectInspectionForm, Property, RenoProgress, Sale } from '../../types';
 import KTComponents, { KTStepper } from '../../metronic/core';
 import { Slide, toast } from 'react-toastify';
-import { fetchProperties, submitDefectInspectionForm } from '../../services/operationApi';
+import { fetchProperties, fetchRenoProgressDetail, submitDIForm } from '../../services/operationApi';
 import Loading from '../../components/Loading';
 
 interface FormErrors {
@@ -350,28 +350,24 @@ function DefectInspectionFormPage() {
         setLoading(true); // Start loading immediately
 
         try {
-            const response = await fetchRenoProgress(Number(renoProgressId)); // Fetch reno progress data
-            const renoProgress: RenoProgress = response.data; // Extract reno progress data
+            const response = await fetchRenoProgressDetail(Number(renoProgressId)); // Fetch reno progress data
 
-            if (renoProgress) {
-                const res = await fetchSale(Number(renoProgress.sale_id)); // Fetch sale data based on reno progress
-                const sale: Sale = res.data; // Extract sale data
-
-                if (sale) {
-                    // Set form data based on the fetched sale data
-                    setFormData((prevData) => ({
-                        ...prevData,
-                        owner_email: sale.order.user.email,
-                        reno_progress_id: renoProgressId,
-                        property: {
-                            ...prevData.property,
-                            property_name: sale.order.property_id,
-                            block: sale.order.block,
-                            level: sale.order.floor,
-                            unit: sale.order.unit_no,
-                        },
-                    }));
-                }
+            if (response?.success) {
+                console.log(response);
+                setFormData((prevData) => ({
+                    ...prevData,
+                    owner_email: response.data.owner.email,
+                    reno_progress_id: renoProgressId,
+                    property: {
+                        ...prevData.property,
+                        property_name: response.data.property.id,
+                        block: response.data.block,
+                        level: response.data.level,
+                        unit: response.data.unit,
+                    },
+                    bedroom_count: response.data.bedroom_count?.toString(),
+                    bathroom_count: response.data.bathroom_count.toString(),
+                }));
             }
         } catch (error) {
             console.error('Error fetching reno progress or sale data:', error);
@@ -665,7 +661,7 @@ function DefectInspectionFormPage() {
             return;
         } else {
             try {
-                const response = await submitDefectInspectionForm(formData);
+                const response = await submitDIForm(formData);
 
                 console.log(response);
                 notify('success', 'Form successfully submitted.');

@@ -296,93 +296,53 @@ function RenoRegistrationFormDetail() {
                                     {/* Grille Door */}
                                     <div className="flex items-center text-gray-900 font-semibold">Grille door</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.foyer_entrance.grille_door"
-                                            value="furnished"
-                                            checked={form.furnishing.foyer_entrance.grille_door === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.foyer_entrance.grille_door === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.foyer_entrance.grille_door"
-                                            value="not-furnish"
-                                            checked={form.furnishing.foyer_entrance.grille_door === 'not-furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.foyer_entrance.grille_door === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Digital Lock */}
                                     <div className="flex items-center text-gray-900 font-semibold">Digital lock</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.foyer_entrance.digital_lock"
-                                            value="furnished"
-                                            checked={form.furnishing.foyer_entrance.digital_lock === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.foyer_entrance.digital_lock === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.foyer_entrance.digital_lock"
-                                            value="not-furnish"
-                                            checked={form.furnishing.foyer_entrance.digital_lock === 'not-furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.foyer_entrance.digital_lock === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Shoe Cabinet */}
                                     <div className="flex items-center text-gray-900 font-semibold">Shoe cabinet</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.foyer_entrance.shoe_cabinet"
-                                            value="furnished"
-                                            checked={form.furnishing.foyer_entrance.shoe_cabinet === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.foyer_entrance.shoe_cabinet === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.foyer_entrance.shoe_cabinet"
-                                            value="not-furnish"
-                                            checked={form.furnishing.foyer_entrance.shoe_cabinet === 'not-furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.foyer_entrance.shoe_cabinet === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Lights */}
                                     <div className="flex items-center text-gray-900 font-semibold">Lights</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.foyer_entrance.lights"
-                                            value="furnished"
-                                            checked={form.furnishing.foyer_entrance.lights === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.foyer_entrance.lights === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.foyer_entrance.lights"
-                                            value="not_furnish"
-                                            checked={form.furnishing.foyer_entrance.lights === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.foyer_entrance.lights === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -390,8 +350,10 @@ function RenoRegistrationFormDetail() {
                     </div>
 
                     <div className="flex flex-col mb-8">
-                        <span className="text-slate-900 mb-2 font-medium">Others</span>
-                        <span className="textarea text-slate-900 mb-2 font-medium">{form.furnishing.foyer_entrance.other}</span>
+                        <label className="text-slate-900 mb-2 font-medium" htmlFor="furnishing.foyer_entrance.other">Remarks</label>
+                        <span className="textarea">
+                            {form.furnishing.foyer_entrance.other ? form.furnishing.foyer_entrance.other : '-'}
+                        </span>
                     </div>
 
                     <hr className="mb-8" />
@@ -410,208 +372,118 @@ function RenoRegistrationFormDetail() {
                                     {/* Kitchen Cabinet */}
                                     <div className="flex items-center text-gray-900 font-semibold">Kitchen cabinet</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.kitchen_cabinet"
-                                            value="furnished"
-                                            checked={form.furnishing.kitchen.kitchen_cabinet === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.kitchen_cabinet === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.kitchen_cabinet"
-                                            value="not_furnish"
-                                            checked={form.furnishing.kitchen.kitchen_cabinet === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.kitchen_cabinet === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Kitchen Island */}
                                     <div className="flex items-center text-gray-900 font-semibold">Kitchen island</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.kitchen_island"
-                                            value="furnished"
-                                            checked={form.furnishing.kitchen.kitchen_island === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.kitchen_island === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.kitchen_island"
-                                            value="not_furnish"
-                                            checked={form.furnishing.kitchen.kitchen_island === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.kitchen_island === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Sink & Tap */}
                                     <div className="flex items-center text-gray-900 font-semibold">Sink & tap</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.sink_tap"
-                                            value="furnished"
-                                            checked={form.furnishing.kitchen.sink_tap === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.sink_tap === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.sink_tap"
-                                            value="not_furnish"
-                                            checked={form.furnishing.kitchen.sink_tap === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.sink_tap === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Hood and Hob */}
                                     <div className="flex items-center text-gray-900 font-semibold">Hood and hob</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.hood_hob"
-                                            value="furnished"
-                                            checked={form.furnishing.kitchen.hood_hob === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.hood_hob === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.hood_hob"
-                                            value="not_furnish"
-                                            checked={form.furnishing.kitchen.hood_hob === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.hood_hob === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Microwave */}
                                     <div className="flex items-center text-gray-900 font-semibold">Microwave</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.microwave"
-                                            value="furnished"
-                                            checked={form.furnishing.kitchen.microwave === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.microwave === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.microwave"
-                                            value="not_furnish"
-                                            checked={form.furnishing.kitchen.microwave === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.microwave === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Oven */}
                                     <div className="flex items-center text-gray-900 font-semibold">Oven</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.oven"
-                                            value="furnished"
-                                            checked={form.furnishing.kitchen.oven === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.oven === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.oven"
-                                            value="not_furnish"
-                                            checked={form.furnishing.kitchen.oven === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.oven === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Water Dispenser / Water Purifier */}
                                     <div className="flex items-center text-gray-900 font-semibold">Water dispenser / water purifier</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.water_dispenser"
-                                            value="furnished"
-                                            checked={form.furnishing.kitchen.water_dispenser === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.water_dispenser === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.water_dispenser"
-                                            value="not_furnish"
-                                            checked={form.furnishing.kitchen.water_dispenser === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.water_dispenser === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Fridge */}
                                     <div className="flex items-center text-gray-900 font-semibold">Fridge</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.fridge"
-                                            value="furnished"
-                                            checked={form.furnishing.kitchen.fridge === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.fridge === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.fridge"
-                                            value="not_furnish"
-                                            checked={form.furnishing.kitchen.fridge === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.fridge === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Lights */}
                                     <div className="flex items-center text-gray-900 font-semibold">Lights</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.lights"
-                                            value="furnished"
-                                            checked={form.furnishing.kitchen.lights === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.lights === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.kitchen.lights"
-                                            value="not_furnish"
-                                            checked={form.furnishing.kitchen.lights === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.kitchen.lights === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -619,8 +491,10 @@ function RenoRegistrationFormDetail() {
                     </div>
 
                     <div className="flex flex-col mb-8">
-                        <span className="text-slate-900 mb-2 font-medium">Others</span>
-                        <span className="textarea text-slate-900 mb-2 font-medium">{form.furnishing.kitchen.other}</span>
+                        <label className="text-slate-900 mb-2 font-medium" htmlFor="kitchen.other">Remarks</label>
+                        <span className="textarea">
+                            {form.furnishing.kitchen.other ? form.furnishing.kitchen.other : '-'}
+                        </span>
                     </div>
 
                     <hr className="mb-8" />
@@ -639,70 +513,40 @@ function RenoRegistrationFormDetail() {
                                     {/* Washer */}
                                     <div className="flex items-center text-gray-900 font-semibold">Washer</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.yard.washer"
-                                            value="furnished"
-                                            checked={form.furnishing.yard.washer === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.yard.washer === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.yard.washer"
-                                            value="not_furnish"
-                                            checked={form.furnishing.yard.washer === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.yard.washer === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Dryer */}
                                     <div className="flex items-center text-gray-900 font-semibold">Dryer</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.yard.dryer"
-                                            value="furnished"
-                                            checked={form.furnishing.yard.dryer === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.yard.dryer === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.yard.dryer"
-                                            value="not_furnish"
-                                            checked={form.furnishing.yard.dryer === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.yard.dryer === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Lights */}
                                     <div className="flex items-center text-gray-900 font-semibold">Lights</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.yard.lights"
-                                            value="furnished"
-                                            checked={form.furnishing.yard.lights === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.yard.lights === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.yard.lights"
-                                            value="not_furnish"
-                                            checked={form.furnishing.yard.lights === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.yard.lights === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -710,8 +554,10 @@ function RenoRegistrationFormDetail() {
                     </div>
 
                     <div className="flex flex-col mb-8">
-                        <span className="text-slate-900 mb-2 font-medium">Others</span>
-                        <span className="textarea text-slate-900 mb-2 font-medium">{form.furnishing.yard.other}</span>
+                        <label className="text-slate-900 mb-2 font-medium" htmlFor="yard.other">Remarks</label>
+                        <span className="textarea">
+                            {form.furnishing.yard.other ? form.furnishing.yard.other : '-'}
+                        </span>
                     </div>
 
                     <hr className="mb-8" />
@@ -730,70 +576,40 @@ function RenoRegistrationFormDetail() {
                                     {/* Dining Table & Chairs */}
                                     <div className="flex items-center text-gray-900 font-semibold">Dining table & chairs</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.dining.dining_table_chairs"
-                                            value="furnished"
-                                            checked={form.furnishing.dining.dining_table_chairs === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.dining.dining_table_chairs === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.dining.dining_table_chairs"
-                                            value="not_furnish"
-                                            checked={form.furnishing.dining.dining_table_chairs === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.dining.dining_table_chairs === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Lights */}
                                     <div className="flex items-center text-gray-900 font-semibold">Lights</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.dining.lights"
-                                            value="furnished"
-                                            checked={form.furnishing.dining.lights === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.dining.lights === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.dining.lights"
-                                            value="not_furnish"
-                                            checked={form.furnishing.dining.lights === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.dining.lights === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Fan */}
                                     <div className="flex items-center text-gray-900 font-semibold">Fan</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.dining.fan"
-                                            value="furnished"
-                                            checked={form.furnishing.dining.fan === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.dining.fan === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.dining.fan"
-                                            value="not_furnish"
-                                            checked={form.furnishing.dining.fan === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.dining.fan === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -801,8 +617,10 @@ function RenoRegistrationFormDetail() {
                     </div>
 
                     <div className="flex flex-col mb-8">
-                        <span className="text-slate-900 mb-2 font-medium">Others</span>
-                        <span className="textarea text-slate-900 mb-2 font-medium">{form.furnishing.dining.other}</span>
+                        <label className="text-slate-900 mb-2 font-medium" htmlFor="dining.other">Remarks</label>
+                        <span className="textarea">
+                            {form.furnishing.dining.other ? form.furnishing.dining.other : '-'}
+                        </span>
                     </div>
 
                     <hr className="mb-8" />
@@ -821,162 +639,92 @@ function RenoRegistrationFormDetail() {
                                     {/* Sofa */}
                                     <div className="flex items-center text-gray-900 font-semibold">Sofa</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.sofa"
-                                            value="furnished"
-                                            checked={form.furnishing.living.sofa === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.sofa === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.sofa"
-                                            value="not_furnish"
-                                            checked={form.furnishing.living.sofa === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.sofa === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Coffee Table */}
                                     <div className="flex items-center text-gray-900 font-semibold">Coffee table</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.coffee_table"
-                                            value="furnished"
-                                            checked={form.furnishing.living.coffee_table === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.coffee_table === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.coffee_table"
-                                            value="not_furnish"
-                                            checked={form.furnishing.living.coffee_table === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.coffee_table === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* TV */}
                                     <div className="flex items-center text-gray-900 font-semibold">TV</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.tv"
-                                            value="furnished"
-                                            checked={form.furnishing.living.tv === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.tv === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.tv"
-                                            value="not_furnish"
-                                            checked={form.furnishing.living.tv === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.tv === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* TV Cabinet */}
                                     <div className="flex items-center text-gray-900 font-semibold">TV cabinet</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.tv_cabinet"
-                                            value="furnished"
-                                            checked={form.furnishing.living.tv_cabinet === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.tv_cabinet === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.tv_cabinet"
-                                            value="not_furnish"
-                                            checked={form.furnishing.living.tv_cabinet === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.tv_cabinet === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Fan */}
                                     <div className="flex items-center text-gray-900 font-semibold">Fan</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.fan"
-                                            value="furnished"
-                                            checked={form.furnishing.living.fan === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.fan === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.fan"
-                                            value="not_furnish"
-                                            checked={form.furnishing.living.fan === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.fan === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* Lights */}
                                     <div className="flex items-center text-gray-900 font-semibold">Lights</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.lights"
-                                            value="furnished"
-                                            checked={form.furnishing.living.lights === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.lights === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.lights"
-                                            value="not_furnish"
-                                            checked={form.furnishing.living.lights === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.lights === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
 
                                     {/* AC */}
                                     <div className="flex items-center text-gray-900 font-semibold">AC</div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.ac"
-                                            value="furnished"
-                                            checked={form.furnishing.living.ac === 'furnished'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.ac === 'furnished' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                        }
                                     </div>
                                     <div className="flex justify-center items-center">
-                                        <input
-                                            type="radio"
-                                            name="furnishing.living.ac"
-                                            value="not_furnish"
-                                            checked={form.furnishing.living.ac === 'not_furnish'}
-                                            className="radio radio-lg h-4 w-4 text-blue-600"
-                                            readOnly={true}
-                                        />
+                                        {form.furnishing.living.ac === 'not-furnish' &&
+                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -984,11 +732,11 @@ function RenoRegistrationFormDetail() {
                     </div>
 
                     <div className="flex flex-col mb-8">
-                        <span className="text-slate-900 mb-2 font-medium">Others</span>
-                        <span className="textarea text-slate-900 mb-2 font-medium">{form.furnishing.dining.other}</span>
+                        <label className="text-slate-900 mb-2 font-medium" htmlFor="living.other">Remarks</label>
+                        <span className="textarea">
+                            {form.furnishing.living.other ? form.furnishing.living.other : '-'}
+                        </span>
                     </div>
-
-                    <hr />
                 </div>
 
                 <div className="flex flex-col mb-8">
@@ -1001,7 +749,7 @@ function RenoRegistrationFormDetail() {
                                 return (
                                     <li key={key}>
                                         {attachment.file_url ? (
-                                            <a href={'http://192.168.1.32:8000' + attachment.file_url} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
+                                            <a href={(window.location.hostname === 'localhost' ? import.meta.env.VITE_BACKEND_URL_LOCAL : import.meta.env.VITE_BACKEND_URL_LN) + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
                                                 {attachment.original_name}
                                             </a>
                                         ) : (

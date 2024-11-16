@@ -312,7 +312,7 @@ function EditPackage() {
                         </div>
                     </div>
 
-                    <div className="card bg-slate-50">
+                    {/* <div className="card bg-slate-50">
                         <div className="card-body">
                             <div className="flex flex-col mb-8">
                                 <label className='mb-2 text-sm font-medium text-gray-900'>
@@ -333,7 +333,7 @@ function EditPackage() {
                                 </textarea>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className='flex flex-col right-column flex-[7] gap-8'>
@@ -350,9 +350,9 @@ function EditPackage() {
                                 Add Products
                             </button>
 
-                            <div className="badge badge-lg badge-dark text-yellow-300 mb-4">
+                            {/* <div className="badge badge-lg badge-dark text-yellow-300 mb-4">
                                 The Internal Reference Note is not visible in Owner View
-                            </div>
+                            </div> */}
 
                             <div className="product-list flex flex-col">
                                 <div className="card min-w-full">
@@ -421,7 +421,7 @@ function EditPackage() {
                                                                 </button>
                                                             </td>
                                                         </tr>
-                                                        <tr>
+                                                        {/* <tr>
                                                             <td colSpan={8}>
                                                                 <input
                                                                     type="text"
@@ -430,7 +430,7 @@ function EditPackage() {
                                                                     onChange={(e) => handleNoteChange(product.id, e.target.value)}
                                                                 />
                                                             </td>
-                                                        </tr>
+                                                        </tr> */}
                                                     </React.Fragment>
                                                 ))}
                                             </tbody>

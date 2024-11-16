@@ -149,12 +149,32 @@ function SaleDetail() {
                             <div className="card-body">
                                 <div className="flex flex-col">
                                     <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (sale.remaining_percentage * 100)}% Payment Progress</span>
-                                    <div className="progress progress-success mb-4">
+                                    {/* Nested progress bar. Assume 20% is already paid */}
+                                    {/* <div className="progress progress-success mb-4">
                                         <div className="progress-bar" style={{
                                             width: `${100 - (sale.remaining_percentage * 100)}%`,
                                             height: '12px'
                                         }}>
                                         </div>
+                                    </div> */}
+                                    <div className="w-full bg-gray-200 rounded-full h-[12px] mb-4 relative overflow-hidden">
+                                        {/* Issued progress bar (outer) */}
+                                        <div
+                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
+                                            style={{
+                                                width: `${100 - (sale.remaining_percentage * 100)}%`,
+                                                height: '12px'
+                                            }}
+                                        />
+
+                                        {/* Paid progress bar (inner) */}
+                                        <div
+                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                            style={{
+                                                width: `${sale.paid_percentage * 100}%`,
+                                                height: '12px'
+                                            }}
+                                        />
                                     </div>
                                 </div>
                                 <div className="flex justify-between gap-2">
