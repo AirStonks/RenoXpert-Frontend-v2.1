@@ -364,6 +364,7 @@ function CreateOrder() {
     const handleSubmit = async () => {
         const newOrder: Order = {
             user_id: selectedUser.id,
+            form_id: formId,
             property_id: selectedProperty.id,
             quotation_id: selectedQuotation.id,
             total_amount: formData.totalAmount,
@@ -412,7 +413,7 @@ function CreateOrder() {
             </div>
 
             <div className="flex grow flex-col gap-3 lg:gap-6 lg:mr-[400px] lg:px-6">
-                <div className="div1 flex flex-col gap-8 mb-8">
+                <div className="flex flex-col gap-8 mb-8">
                     <div className="card ">
                         <div className="card-body">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Order</h2>

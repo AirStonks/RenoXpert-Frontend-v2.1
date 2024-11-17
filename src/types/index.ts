@@ -116,6 +116,7 @@ export interface Order {
     id?: string,
     order_no?: string,
     user_id?: string,
+    form_id?: string,
     user?: User,
     property_id?: string,
     property?: Property,
@@ -141,6 +142,7 @@ export interface Order {
 export interface OrderQuotation {
     id?: string,
     order_id?: string,
+    form_id?: string,
     order?: Order,
     quotation_id?: string,
     quotation_name?: string,
