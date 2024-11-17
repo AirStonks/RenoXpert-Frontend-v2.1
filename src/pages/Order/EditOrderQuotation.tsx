@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useFetchQuotation from "../../hook/useFetchQuotation";
 import Loading from "../../components/Loading";
-import { Package, Product } from "../../types";
+import { OwnerRegistrationForm, Package, Product } from "../../types";
 import { Slide, toast } from "react-toastify";
 import IncludeOrderQuotationPackageModal from "../../components/Modals/IncludeOrderQuotationPackageModal";
 import IncludeQuotationProductModal from "../../components/Modals/IncludeQuotationProductModal";
+import { fetchOrder, fetchRegistrationForm } from "../../services/api";
 
 
 function EditOrderQuotation() {
@@ -26,6 +27,7 @@ function EditOrderQuotation() {
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [selectedPackageId, setSelectedPackageId] = useState<number>();
     const [selectedProduct, setSelectedProduct] = useState([]);
+    const [formDetail, setFormDetail] = useState<OwnerRegistrationForm | null>(null);
 
     const [totalAmount, setTotalAmount] = useState<number>(0);
 
@@ -51,7 +53,7 @@ function EditOrderQuotation() {
     const handleSubmit = async () => {
         try {
             const storedPackages = localStorage.getItem('selected_quotation_packages');
-            const orderData = localStorage.getItem('create_order_data');
+            const orderData = localStorage.getItem('edit_order_data');
 
             if (orderData) {
                 // Parse the JSON string into an object
@@ -64,7 +66,7 @@ function EditOrderQuotation() {
                 const updatedOrderData = JSON.stringify(orderObject);
 
                 // Save the updated data back to localStorage
-                localStorage.setItem('create_order_data', updatedOrderData);
+                localStorage.setItem('e:edit_order_data', updatedOrderData);
             }
 
             localStorage.setItem('include_packages', storedPackages);
@@ -169,19 +171,19 @@ function EditOrderQuotation() {
 
     useEffect(() => {
         const includePackages = localStorage.getItem('include_packages');
-        const orderData = localStorage.getItem('create_order_data');
+        const orderData = localStorage.getItem('edit_order_data');
+
+        handleSearchForm();
 
         if (includePackages) {
             setSelectedPackages(JSON.parse(includePackages));
             localStorage.setItem('selected_quotation_packages', includePackages);
+            setTotalAmount(JSON.parse(orderData).totalAmount);
         } else if (quotationDetail) {
             const packages = JSON.stringify(quotationDetail.metadata);
             localStorage.setItem('include_packages', packages);
             setSelectedPackages(JSON.parse(packages));
             localStorage.setItem('selected_quotation_packages', packages);
-        }
-
-        if (quotationDetail) {
             setTotalAmount(quotationDetail.total_amount);
         }
 
@@ -190,6 +192,27 @@ function EditOrderQuotation() {
         // }
     }, [quotationDetail]);
 
+    const handleSearchForm = async () => {
+
+        try {
+            const orderRes = await fetchOrder(Number(orderId));
+
+            if (orderRes?.data?.form_id) {
+                const response = await fetchRegistrationForm(orderRes?.data?.form_id); // This returns AxiosResponse
+                const registrationForm: OwnerRegistrationForm = response.data.data; // Extract the data
+
+                if (registrationForm) {
+                    setFormDetail(registrationForm);
+                } else {
+                    toast.error("Registration form not found");
+                }
+            }
+
+        } catch (error) {
+            console.error("Error fetching registration form:", error);
+            toast.error("Failed to fetch registration form");
+        }
+    };
 
     const updateSelectedPackages = (packages) => {
         const updatedPackages = packages.map((prodPackage: Package) => {
@@ -418,7 +441,7 @@ function EditOrderQuotation() {
                 </div>
             </div>
 
-            <div className="flex flex-col flex-wrap mb-6">
+            <div className="flex flex-col flex-wrap lg:mr-[400px] lg:px-6 mb-6">
                 <div className="card mb-6">
                     <div className="card-body flex flex-col gap-4">
                         <span className="text-xl text-gray-900 font-semibold">
@@ -430,7 +453,7 @@ function EditOrderQuotation() {
                     </div>
                 </div>
 
-                <div className="card">
+                <div className="card mb-6">
                     <div className="card-body">
                         <div className="flex justify-between items-center flex-wrap mb-2">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Packages</h2>
@@ -610,18 +633,699 @@ function EditOrderQuotation() {
                         </div>
                     </div>
                 </div>
+
+                <div className="flex justify-end gap-6">
+                    <button className="btn btn-lg btn-light">
+                        Cancel
+                    </button>
+                    <button
+                        className="btn btn-lg btn-primary"
+                        onClick={handleSubmit} // Trigger form submission
+                    >
+                        Update
+                    </button>
+                </div>
             </div>
 
-            <div className="flex justify-end gap-6">
-                <button className="btn btn-lg btn-light">
-                    Cancel
-                </button>
-                <button
-                    className="btn btn-lg btn-primary"
-                    onClick={handleSubmit} // Trigger form submission
+            <div
+                className="w-[400px] drawer drawer-start grow fixed z-1 top-20 lg:top-20 bottom-12 lg:bottom-12 lg:right-8 lg:left-auto lg:translate-x-0 lg:flex flex-col items-stretch shrink-0 bg-[#fefefe] dark:bg-coal-500"
+                data-overlay="true"
+                data-overlay-enable="true|lg:false"
+                id="aside"
+            >
+                <div
+                    className="card flex flex-col shrink-0 px-3 scrollable-y-hover max-h-dvh"
+                    data-scrollable="true"
+                    data-scrollable-dependencies="#header"
+                    data-scrollable-height="auto"
+                    data-scrollable-offset="15px"
+                    data-scrollable-wrappers="#page"
+                    id="aside_content"
+                    style={{ height: 'calc(100vh - 11em)', maxHeight: 'calc(100vh - 11em)' }}
                 >
-                    Update
-                </button>
+                    {formDetail ?
+                        <>
+                            <div className="card-header px-2">
+                                <h2 className='text-base font-semibold'>Form Detail</h2>
+                            </div>
+                            <div className="card-body flex flex-col text-gray-900 px-2 py-4">
+                                <div className="flex flex-col mb-8">
+                                    <span className="font-medium">Status</span>
+                                    <span className={`badge badge-outline gap-1 items-center ${formDetail.status ===
+                                        'approved' ? 'badge-success' : ''}`}>
+                                        {formDetail.status.charAt(0).toUpperCase() + formDetail.status.slice(1)}
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Salutations</span>
+                                    <span className="font-semibold">{formDetail.user.salutations}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="name_f">Name</label>
+                                    <div className="flex gap-2">
+                                        <div className="flex flex-col w-full">
+                                            <span className="text-slate-400 font-medium">First Name</span>
+                                            <span className="font-semibold">{formDetail.user.name_first}</span>
+                                        </div>
+                                        <div className="flex flex-col w-full">
+                                            <span className="text-slate-400 font-medium">Last Name</span>
+                                            <span className="font-semibold">{formDetail.user.name_last}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Preferred Name</span>
+                                    <span className="font-semibold">{formDetail.user.name_preferred}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <div className="flex gap-2 flex-wrap">
+                                        <div className="flex flex-col flex-auto mb-6 md:mb-0">
+                                            <span className="text-slate-400 font-medium">Email</span>
+                                            <span className="font-semibold">{formDetail.user.email}</span>
+                                        </div>
+                                        <div className="flex flex-col flex-auto">
+                                            <span className="text-slate-400 font-medium">Phone Number</span>
+                                            <span className="font-semibold">+60 {formDetail.user.phone_no}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="address_1">Current residence address (information needed for renovation agreement purpose)</label>
+
+                                    <div className="flex flex-col mb-8">
+                                        <span className="text-slate-400 font-medium">Address Line 1</span>
+                                        <span className="font-semibold">{formDetail.address.address_1}</span>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <span className="text-slate-400 font-medium">Address Line 2</span>
+                                        <span className="font-semibold">{formDetail.address.address_2}</span>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <div className="flex gap-2 ">
+                                            <div className="flex flex-col w-full">
+                                                <span className="text-slate-400 font-medium">City</span>
+                                                <span className="font-semibold">{formDetail.address.city}</span>
+                                            </div>
+                                            <div className="flex flex-col w-full">
+                                                <span className="text-slate-400 font-medium">State</span>
+                                                <span className="font-semibold">{formDetail.address.state}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col">
+                                        <span className="text-slate-400 font-medium">Postal / Zip Code</span>
+                                        <span className="font-semibold">{formDetail.address.postcode}</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">IC / ID number</span>
+                                    <span className="font-semibold">{formDetail.user.ic}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Property to be renovated</span>
+                                    <span className="font-semibold">
+                                        {formDetail.property ? formDetail.property.property_name : "(Other) " + formDetail.other_property.property_name}
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <div className="flex flex-col w-full">
+                                        <span className="text-slate-400 font-medium">Unit</span>
+                                        <span className="font-semibold">{formDetail.property ?
+                                            `${formDetail.property.block}-${formDetail.property.level}-${formDetail.property.unit}` :
+                                            `${formDetail.other_property.block}-${formDetail.other_property.level}-${formDetail.other_property.unit}`
+                                        }</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Layout Type</span>
+                                    <span className="font-semibold">
+                                        {formDetail.property ?
+                                            `${formDetail.property.layout_type}` :
+                                            `${formDetail.other_property.layout_type}`
+                                        }
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Sqft</span>
+                                    <span className="font-semibold">
+                                        {formDetail.property ?
+                                            `${formDetail.property.sqft}` :
+                                            `${formDetail.other_property.sqft}`
+                                        }
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">What's your original number of rooms?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_1}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">What's the number of bathroom?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_2}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Already Vacant Possessions (VP)?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_3}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Already collect key?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_4}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Already done defect inspection?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_5}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Already submit defect submission to MO?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_6}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">MO has completed that defect rectification?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_7}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Do you want to add partition room to your unit?</span>
+                                    <span className="font-semibold">{formDetail.questions.quest_8}</span>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-sm text-gray-900 font-bold text-justify">
+                                        Please help us understand the furnishing condition of your unit for the following areas:
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col flex-wrap mb-8">
+                                    <div className="card rounded-md mb-8">
+                                        <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                            <h2 className="">Foyer & entrance</h2>
+                                        </div>
+                                        <div className="card-body text-sm px-4">
+                                            <div className="w-full">
+                                                <div className="grid grid-cols-3 gap-4">
+                                                    {/* Header Row */}
+                                                    <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                    <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                    {/* Grille Door */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Grille door</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.foyer_entrance.grille_door === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.foyer_entrance.grille_door === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Digital Lock */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Digital lock</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.foyer_entrance.digital_lock === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.foyer_entrance.digital_lock === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Shoe Cabinet */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Shoe cabinet</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.foyer_entrance.shoe_cabinet === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.foyer_entrance.shoe_cabinet === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Lights */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.foyer_entrance.lights === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.foyer_entrance.lights === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="furnishing.foyer_entrance.other">Remarks</label>
+                                        <span className="textarea">
+                                            {formDetail.furnishing.foyer_entrance.other ? formDetail.furnishing.foyer_entrance.other : '-'}
+                                        </span>
+                                    </div>
+
+                                    <hr className="mb-8" />
+
+                                    <div className="card rounded-md mb-8">
+                                        <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                            <h2 className="">Kitchen</h2>
+                                        </div>
+                                        <div className="card-body text-sm px-4">
+                                            <div className="w-full">
+                                                <div className="grid grid-cols-3 gap-4">
+                                                    {/* Header Row */}
+                                                    <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                    <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                    {/* Kitchen Cabinet */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Kitchen cabinet</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.kitchen_cabinet === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.kitchen_cabinet === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Kitchen Island */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Kitchen island</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.kitchen_island === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.kitchen_island === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Sink & Tap */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Sink & tap</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.sink_tap === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.sink_tap === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Hood and Hob */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Hood and hob</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.hood_hob === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.hood_hob === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Microwave */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Microwave</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.microwave === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.microwave === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Oven */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Oven</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.oven === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.oven === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Water Dispenser / Water Purifier */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Water dispenser / water purifier</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.water_dispenser === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.water_dispenser === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Fridge */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Fridge</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.fridge === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.fridge === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Lights */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.lights === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.kitchen.lights === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="kitchen.other">Remarks</label>
+                                        <span className="textarea">
+                                            {formDetail.furnishing.kitchen.other ? formDetail.furnishing.kitchen.other : '-'}
+                                        </span>
+                                    </div>
+
+                                    <hr className="mb-8" />
+
+                                    <div className="card rounded-md mb-8">
+                                        <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                            <h2 className="">Yard</h2>
+                                        </div>
+                                        <div className="card-body text-sm px-4">
+                                            <div className="w-full">
+                                                <div className="grid grid-cols-3 gap-4">
+                                                    {/* Header Row */}
+                                                    <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                    <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                    {/* Washer */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Washer</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.yard.washer === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.yard.washer === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Dryer */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Dryer</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.yard.dryer === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.yard.dryer === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Lights */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.yard.lights === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.yard.lights === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="yard.other">Remarks</label>
+                                        <span className="textarea">
+                                            {formDetail.furnishing.yard.other ? formDetail.furnishing.yard.other : '-'}
+                                        </span>
+                                    </div>
+
+                                    <hr className="mb-8" />
+
+                                    <div className="card rounded-md mb-8">
+                                        <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                            <h2 className="">Dining</h2>
+                                        </div>
+                                        <div className="card-body text-sm px-4">
+                                            <div className="w-full">
+                                                <div className="grid grid-cols-3 gap-4">
+                                                    {/* Header Row */}
+                                                    <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                    <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                    {/* Dining Table & Chairs */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Dining table & chairs</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.dining.dining_table_chairs === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.dining.dining_table_chairs === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Lights */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.dining.lights === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.dining.lights === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Fan */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Fan</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.dining.fan === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.dining.fan === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="dining.other">Remarks</label>
+                                        <span className="textarea">
+                                            {formDetail.furnishing.dining.other ? formDetail.furnishing.dining.other : '-'}
+                                        </span>
+                                    </div>
+
+                                    <hr className="mb-8" />
+
+                                    <div className="card rounded-md mb-8">
+                                        <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                            <h2 className="">Living</h2>
+                                        </div>
+                                        <div className="card-body text-sm px-4">
+                                            <div className="w-full">
+                                                <div className="grid grid-cols-3 gap-4">
+                                                    {/* Header Row */}
+                                                    <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                    <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                    {/* Sofa */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Sofa</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.sofa === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.sofa === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Coffee Table */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Coffee table</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.coffee_table === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.coffee_table === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* TV */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">TV</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.tv === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.tv === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* TV Cabinet */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">TV cabinet</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.tv_cabinet === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.tv_cabinet === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Fan */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Fan</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.fan === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.fan === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* Lights */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.lights === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.lights === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+
+                                                    {/* AC */}
+                                                    <div className="flex items-center text-gray-900 font-semibold">AC</div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.ac === 'furnished' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                        }
+                                                    </div>
+                                                    <div className="flex justify-center items-center">
+                                                        {formDetail.furnishing.living.ac === 'not-furnish' &&
+                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col mb-8">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="living.other">Remarks</label>
+                                        <span className="textarea">
+                                            {formDetail.furnishing.living.other ? formDetail.furnishing.living.other : '-'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <span className="text-slate-400 font-medium">Attachments</span>
+
+                                    {formDetail.attachments && Object.keys(formDetail.attachments).length > 0 ? (
+                                        <ul>
+                                            {Object.keys(formDetail.attachments).map((key) => {
+                                                const attachment = formDetail.attachments[key];
+                                                return (
+                                                    <li key={key}>
+                                                        {attachment.file_url ? (
+                                                            <a href={(window.location.hostname === 'localhost' ? import.meta.env.VITE_BACKEND_URL_LOCAL : import.meta.env.VITE_BACKEND_URL_LN) + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
+                                                                {attachment.original_name}
+                                                            </a>
+                                                        ) : (
+                                                            'No file available'
+                                                        )}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    ) : (
+                                        <p>No attachments found.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                        :
+                        <div className="card-body flex flex-col items-center justify-center">
+                            <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
+                            <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
+                            <span className="text-gray-800 text-lg font-semibold text-center">No Registration Form selected</span>
+                        </div>
+                    }
+                </div>
             </div>
 
             <IncludeOrderQuotationPackageModal
