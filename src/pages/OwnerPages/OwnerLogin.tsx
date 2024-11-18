@@ -7,7 +7,7 @@ import { fetchExistsUser } from '../../services/ownerApi';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
 
 const OwnerLogin: React.FC = () => {
     const navigate = useNavigate();
@@ -72,10 +72,7 @@ const OwnerLogin: React.FC = () => {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        console.log('yes');
-        
-        e.preventDefault(); // Prevent default form submission
+    const handleSubmitLogin = async () => {
 
         // Check for missing inputs
         if (otp.some(digit => digit === '')) {
@@ -196,7 +193,7 @@ const OwnerLogin: React.FC = () => {
                 <OTPVerifyPage
                     mobile={mobile}
                     countryCode={countryCode}
-                    handleSubmit={handleSubmit}
+                    handleSubmit={handleSubmitLogin}
                     otp={otp}
                     setOtp={setOtp} // Pass down the setter function
                 />

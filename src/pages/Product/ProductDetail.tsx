@@ -112,6 +112,28 @@ function ProductDetail() {
                             </table>
                         </div>
                     </div>
+
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Project Management
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Task Weightage:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {product.task_weightage}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
                 <div className='flex flex-col flex-[4] gap-8'>
                     <div className="card">

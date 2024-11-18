@@ -52,7 +52,11 @@ function DeleteModal({
                 modal.hide();
                 
                 // navigate(navigateUrl || '/', { replace: true }); // Navigate to the specified URL or default to /products
-                navigate(0);
+                if (navigateUrl) {
+                    navigate(navigateUrl, { replace: true });
+                } else {
+                    navigate(0);
+                }
                 
             } else {
                 notify('error', notifyError || 'Error occurred during deletion.');

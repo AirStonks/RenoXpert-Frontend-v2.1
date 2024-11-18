@@ -779,6 +779,19 @@ export const toggleTaskInstall = async (renoProgressId: number, taskId: number) 
     }
 }
 
+export const changeTaskStatus = async (renoProgressId: number, taskId: number, status: string) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/status/${status}`, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
 export const changeOwnerComment = async (renoProgressId: number, taskId: number, comment: string) => {
     try {
         const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/owner-comment/change`, { owner_comment: comment }, {

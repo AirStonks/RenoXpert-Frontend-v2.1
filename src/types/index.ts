@@ -70,6 +70,7 @@ export interface Product {
     type?: string;
     description?: string;
     uom?: string;
+    task_weightage?: number;
     status?: string;
     created_at?: string;
     updated_at?: string;
@@ -865,6 +866,7 @@ export interface JobTask {
     name?: string,
     phase_id?: string,
     priority?: number,
+    task_weightage?: number,
     is_supplied?: boolean,
     is_installed?: boolean,
     supply_date?: string,

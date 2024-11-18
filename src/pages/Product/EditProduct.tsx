@@ -54,7 +54,7 @@ const EditProduct: React.FC = () => {
 
         if (formData) {
             console.log(formData);
-            
+
         }
     }, [product]);
 
@@ -101,19 +101,25 @@ const EditProduct: React.FC = () => {
 
     const validate = (): FormErrors => {
         const newErrors: FormErrors = {};
+
+        console.log(formData.provisioning.install.cogs);
+        
+
         if (!formData.name) newErrors.name = "Name required";
         if (!formData.uom) newErrors.uom = "UOM required";
-        if (!formData.provisioning.supply.retail_price) newErrors.supply_retail_price = "Retail Price required";
-        if (!formData.provisioning.supply.cogs) newErrors.supply_cogs = "Cost of Good Sold required";
-        if (!formData.provisioning.supply.excluded_price) newErrors.supply_excluded_price = "Excluded Price required";
-        if (!formData.provisioning.install.retail_price) newErrors.install_retail_price = "Retail Price required";
-        if (!formData.provisioning.install.cogs) newErrors.install_cogs = "Cost of Good Sold required";
-        if (!formData.provisioning.install.excluded_price) newErrors.install_excluded_price = "Excluded Price required";
+        if (formData.provisioning.supply.retail_price < 0 || formData.provisioning.supply.retail_price === '') newErrors.supply_retail_price = "Retail Price required";
+        if (formData.provisioning.supply.cogs < 0 || formData.provisioning.supply.cogs === '') newErrors.supply_cogs = "Cost of Good Sold required";
+        if (formData.provisioning.supply.excluded_price < 0 || formData.provisioning.supply.excluded_price === '') newErrors.supply_excluded_price = "Excluded Price required";
+        if (formData.provisioning.install.retail_price < 0 || formData.provisioning.install.retail_price === '') newErrors.install_retail_price = "Retail Price required";
+        if (formData.provisioning.install.cogs < 0 || formData.provisioning.install.cogs === '') newErrors.install_cogs = "Cost of Good Sold required";
+        if (formData.provisioning.install.excluded_price < 0 || formData.provisioning.install.excluded_price === '') newErrors.install_excluded_price = "Excluded Price required";
 
         return newErrors;
     };
 
     const handleSubmit = async () => {
+        console.log(formData);
+        
         const validationErrors = validate();
 
         if (Object.keys(validationErrors).length > 0) {
@@ -134,10 +140,11 @@ const EditProduct: React.FC = () => {
         }
     };
 
-    const handleRemoveProduct = () => {
+    const handleRemoveProduct = () => {        
         setSelectedProduct({ id: productId, name: formData.name });
 
         const modal = document.querySelector('#delete_product_modal') as HTMLElement;
+
         if (modal) {
             modal.classList.add('open'); // Assuming you have some CSS to show the modal
         }
@@ -168,7 +175,7 @@ const EditProduct: React.FC = () => {
                     </span>
                 </div>
                 <div className="flex gap-3 flex-wrap">
-                    <button className="btn btn-sm btn-danger" data-action="delete" data-id={productId} data-name={formData.name} data-modal-toggle="#delete_product_modal" onClick={handleRemoveProduct}>
+                    <button className="btn btn-sm btn-danger" data-action="delete" data-id={productId} data-name={formData.name} data-modal-toggle="#delete_item_modal" onClick={handleRemoveProduct}>
                         <i className="ki-outline ki-trash"></i>
                         Remove Product
                     </button>
@@ -221,7 +228,31 @@ const EditProduct: React.FC = () => {
                             </div>
                         </div>
                     </div>
+
+                    <div className="card">
+                        <div className="card-body">
+                            <div className="flex flex-col">
+                                {/* Header */}
+                                <h1 className='text-xl mb-4 font-semibold text-gray-900'>Project Management</h1>
+
+                                {/* Task Weightage */}
+                                <div className="flex flex-col">
+                                    <InputFieldGroup
+                                        fieldTitle="Task Weightage"
+                                        description="Define the weightage of this task."
+                                        placeholder="0 - 10"
+                                        name="task_weightage"
+                                        type='number'
+                                        value={formData.task_weightage}
+                                        onChange={handleChange}
+                                        error={errors.task_weightage}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                
                 <div className='flex flex-col right-column flex-[5] gap-8'>
                     {/* General */}
                     <div className="card">

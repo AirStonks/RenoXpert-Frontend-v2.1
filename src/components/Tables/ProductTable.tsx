@@ -129,18 +129,12 @@ function ProductTable() {
                         cell.classList.add('text-center');
                     },
                 },
-                // product_retail_price: {
-                //     title: 'Retail Price',
-                //     render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
-                // },
-                // product_cost_of_good_sold: {
-                //     title: 'Cost of Good Sold',
-                //     render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
-                // },
-                // product_excluded_price: {
-                //     title: 'Excluded Price',
-                //     render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
-                // },
+                task_weightage: {
+                    title: 'Task Weightage',
+                    createdCell(cell: HTMLElement) {
+                        cell.classList.add('text-center');
+                    },
+                },
                 id: {
                     title: 'Actions',
                     render: (item: number, data: Product) => `
@@ -264,24 +258,12 @@ function ProductTable() {
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            {/* <th className="w-[120px] text-center" data-datatable-column="price">
+                                            <th className="w-[80px] text-center" data-datatable-column="task_weightage">
                                                 <span className="sort">
-                                                    <span className="sort-label">Retail Price</span>
+                                                    <span className="sort-label">Task Weightage</span>
                                                     <span className="sort-icon"></span>
                                                 </span>
                                             </th>
-                                            <th className="w-[120px] text-center" data-datatable-column="price">
-                                                <span className="sort">
-                                                    <span className="sort-label">Cost of Good Sold</span>
-                                                    <span className="sort-icon"></span>
-                                                </span>
-                                            </th>
-                                            <th className="w-[120px] text-center" data-datatable-column="price">
-                                                <span className="sort">
-                                                    <span className="sort-label">Excluded Price</span>
-                                                    <span className="sort-icon"></span>
-                                                </span>
-                                            </th> */}
                                             <th className="w-[120px] text-center" data-datatable-column="created_at">
                                                 <span className="sort">
                                                     <span className="sort-label">Action</span>

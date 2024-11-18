@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Slide, toast, ToastContainer } from "react-toastify";
 
-const API_URL = 'http://' + window.location.hostname + ':8000/api/';
+const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
 
-const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmit: (e: React.FormEvent) => void, otp: string[], setOtp: React.Dispatch<React.SetStateAction<string[]>> }> = ({ 
+const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmit: (mobile?: string, otp?: string[]) => void, otp: string[], setOtp: React.Dispatch<React.SetStateAction<string[]>> }> = ({ 
     mobile, 
     countryCode, 
     handleSubmit, 
@@ -171,7 +171,7 @@ const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmi
                         <button
                             className="btn btn-primary flex justify-center grow"
                             type="button"
-                            onClick={handleSubmit}
+                            onClick={() => handleSubmit(mobile, otp)}
                         >
                             Continue
                         </button>
