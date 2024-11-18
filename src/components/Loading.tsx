@@ -13,7 +13,7 @@ const Loading: React.FC = () => {
                 Loading...
             </div>
         </div>
-    );    
+    );
 };
 
 export default Loading;

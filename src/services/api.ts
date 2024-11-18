@@ -108,6 +108,22 @@ export const fetchData = async () => {
     }
 };
 
+export const productIndex = async (size: number = 5, page: number = 1, searchTerm?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'products', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const createProduct = async (productData: Product) => {
     try {
         const response = await axios.post(API_URL + 'products', productData, {
