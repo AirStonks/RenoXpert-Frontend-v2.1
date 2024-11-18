@@ -13,6 +13,7 @@ interface LoginForm {
 
 const Login: React.FC = () => {
     useEffect(() => {
+        document.title = 'Login | RenoXpert';
         KTComponent.init();
     }, []);
     const [formData, setFormData] = useState<LoginForm>({ email: '', password: '' });
