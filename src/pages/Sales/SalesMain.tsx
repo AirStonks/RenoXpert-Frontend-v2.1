@@ -7,7 +7,7 @@ import SalesTable from '../../components/Tables/SalesTable';
 
 function SalesMain() {
     useEffect(() => {
-        //
+        document.title = "Sales | RenoXpert";
     }, []);
 
     return (

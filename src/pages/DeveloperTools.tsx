@@ -2,6 +2,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Slide, toast } from "react-toastify";
 import { KTModal } from "../metronic/core";
+import { useEffect } from "react";
 
 const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
 
@@ -27,6 +28,10 @@ function DeveloperTool() {
             transition: Slide,
         });
     };
+
+    useEffect(() => {
+        document.title = 'DEV Tools | RenoXpert';
+    }, []);
 
     const handleRefreshDatabase = async () => {
         try {

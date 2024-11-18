@@ -50,6 +50,31 @@ function EditQuotation() {
         });
     };
 
+    useEffect(() => {
+        document.title = "Edit Quotation | RenoXpert";
+
+        if (quotationDetail) {
+
+            console.log(quotationDetail);
+
+            localStorage.setItem('include_packages', JSON.stringify(quotationDetail.metadata));
+            const storedPackages = localStorage.getItem('include_packages');
+
+            if (storedPackages) {
+                setSelectedPackages(JSON.parse(storedPackages));
+            }
+
+            setFormData({
+                quotationName: quotationDetail.name || '',
+                quotationPrice: quotationDetail.total_amount || 0,
+                description: quotationDetail.description || ''
+            });
+
+            setTotalAmount(quotationDetail.total_amount);
+        }
+
+    }, [quotationDetail]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -199,29 +224,7 @@ function EditQuotation() {
         }
     };
 
-    useEffect(() => {
-        if (quotationDetail) {
 
-            console.log(quotationDetail);
-
-
-            localStorage.setItem('include_packages', JSON.stringify(quotationDetail.metadata));
-            const storedPackages = localStorage.getItem('include_packages');
-
-            if (storedPackages) {
-                setSelectedPackages(JSON.parse(storedPackages));
-            }
-
-            setFormData({
-                quotationName: quotationDetail.name || '',
-                quotationPrice: quotationDetail.total_amount || 0,
-                description: quotationDetail.description || ''
-            });
-
-            setTotalAmount(quotationDetail.total_amount);
-        }
-
-    }, [quotationDetail]);
 
     const updateSelectedPackages = (packages) => {
         const updatedPackages = packages.map((prodPackage: Package) => {

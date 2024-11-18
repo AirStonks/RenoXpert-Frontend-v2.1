@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import KTComponents, { KTAccordion } from "../../metronic/core";
+import KTComponents from "../../metronic/core";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { useEffect } from "react";
@@ -24,6 +24,8 @@ function DefectInspectionReport() {
     };
 
     useEffect(() => {
+        document.title = "DIR | RenoXpert";
+
         KTComponents.init();
 
         const clipboard = new ClipboardJS('.copy-link');

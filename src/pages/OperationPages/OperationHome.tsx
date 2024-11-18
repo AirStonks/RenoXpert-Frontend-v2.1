@@ -11,6 +11,7 @@ function OperationHome() {
     const [diForms, setDIForms] = useState<DefectInspectionForm[] | null>(null);
 
     useEffect(() => {
+        document.title = "Operation Home | RenoXpert";
         KTComponents.init();
 
         const initFunction = async () => {

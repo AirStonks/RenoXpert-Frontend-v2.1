@@ -46,6 +46,29 @@ function CreateQuotation() {
         });
     };
 
+    useEffect(() => {
+        document.title = "Create Quotation | RenoXpert";
+
+        const storedPackages = localStorage.getItem('include_packages');
+
+        if (storedPackages) {
+            const selectedPackages: Package[] = JSON.parse(storedPackages);
+            setSelectedPackages(selectedPackages);
+
+            const totalAmount = selectedPackages.reduce((sum, prodPackage) => {
+                return sum + prodPackage.total_price;
+            }, 0);
+
+            setTotalAmount(totalAmount);
+        }
+
+        setFormData(prevData => ({
+            ...prevData,
+            quotationPrice: totalAmount, // Sync quotationPrice with totalAmount
+        }));
+
+    }, [totalAmount]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -115,7 +138,7 @@ function CreateQuotation() {
             total_amount: formData.quotationPrice,
             metadata: newMetadata,
         }
-        
+
         const response = await createQuotation(quotationData);
 
         if (response?.success) {
@@ -187,31 +210,12 @@ function CreateQuotation() {
         }
     };
 
-    useEffect(() => {
-        const storedPackages = localStorage.getItem('include_packages');
 
-        if (storedPackages) {
-            const selectedPackages: Package[] = JSON.parse(storedPackages);
-            setSelectedPackages(selectedPackages);
-            
-            const totalAmount = selectedPackages.reduce((sum, prodPackage) => {
-                return sum + prodPackage.total_price;
-            }, 0);
-        
-            setTotalAmount(totalAmount);
-        }
-
-        setFormData(prevData => ({
-            ...prevData,
-            quotationPrice: totalAmount, // Sync quotationPrice with totalAmount
-        }));
-
-    }, [totalAmount]);
 
     const updateSelectedPackages = (packages) => {
         const updatedPackages = packages.map((prodPackage: Package) => {
             const totalPrice = prodPackage.products.reduce((sum, product) => {
-                
+
                 return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
             }, 0);
 
@@ -537,7 +541,7 @@ function CreateQuotation() {
                                                                                 type="text"
                                                                                 placeholder="Add a internal reference note"
                                                                                 className="input w-full border p-2"
-                                                                                // onChange={(e) => handleNoteChange(product.id, e.target.value)}
+                                                                            // onChange={(e) => handleNoteChange(product.id, e.target.value)}
                                                                             />
                                                                         </td>
                                                                     </tr>

@@ -169,6 +169,8 @@ function EditNewOrderQuotation() {
     };
 
     useEffect(() => {
+        document.title = "Edit Order Quotation | RenoXpert";
+
         const includePackages = localStorage.getItem('include_packages');
         const orderData = localStorage.getItem('create_order_data');
 

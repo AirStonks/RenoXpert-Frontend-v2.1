@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 
 function PackageMain() {
     useEffect(() => {
+        document.title = "Packages | RenoXpert";
         KTComponent.init();
     }, []);
 

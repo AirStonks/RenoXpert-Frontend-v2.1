@@ -6,6 +6,8 @@ import { useEffect } from 'react';
 
 function QuotationMain() {
     useEffect(() => {
+        document.title = "Quotations | RenoXpert";
+
         // Cleanup function to clear localStorage on unmount
         return () => {
             localStorage.removeItem('include_packages');

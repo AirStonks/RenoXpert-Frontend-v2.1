@@ -2,10 +2,13 @@
 
 import { Link } from "react-router-dom";
 import UserTable from "../../components/Tables/UserTable";
+import { useEffect } from "react";
 
 function UsersMain() {
 
-    // Register User
+    useEffect(() => {
+        document.title = "Users | RenoXpert";
+    }, []);
 
     return (
         <>

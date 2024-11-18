@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 function Dashboard() {
 
     useEffect(() => {
+        document.title = "Dashboard | RenoXpert";
         KTComponent.init();
     }, []);
 

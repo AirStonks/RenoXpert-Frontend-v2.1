@@ -9,6 +9,7 @@ function PaymentError() {
     const location = useLocation();
 
     useEffect(() => {
+        document.title = "Error | RenoXpert";
         // Parse query parameters
         const queryParams = new URLSearchParams(location.search);
         const errorDataStr = queryParams.get('errorData');

@@ -45,6 +45,7 @@ function OrderOverview() {
       };
 
     useEffect(() => {
+        document.title = "Order Overview | RenoXpert";
         KTComponent.init();
     }, []);
 

@@ -11,7 +11,7 @@ function PackageDetail() {
     const { packageDetail, loading, error } = useFetchPackage(packageId);
 
     useEffect(() => {
-        console.log('Package ID:', packageId);
+        document.title = "Package Detail | RenoXpert";
     }, [packageId]);
 
     const handleBackClick = () => {

@@ -22,6 +22,8 @@ function SaleDetail() {
     const [sale, setSale] = useState<Sale | null>(null);
 
     useEffect(() => {
+        document.title = "Sale Detail | RenoXpert";
+
         if (saleDetail) {
             setSale(saleDetail);
         }

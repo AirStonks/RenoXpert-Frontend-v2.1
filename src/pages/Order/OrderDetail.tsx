@@ -30,6 +30,8 @@ function OrderDetail() {
     };
 
     useEffect(() => {
+        document.title = "Order Detail | RenoXpert";
+
         KTAccordion.init();
 
         // if (orderDetail) {

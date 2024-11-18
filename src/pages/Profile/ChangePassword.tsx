@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Slide, toast } from "react-toastify";
 import { changePassword } from "../../services/api";
 
@@ -24,6 +24,10 @@ function ChangePassword() {
             transition: Slide,
         });
     };
+
+    useEffect(() => {
+        document.title = "Change Password | RenoXpert";
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;

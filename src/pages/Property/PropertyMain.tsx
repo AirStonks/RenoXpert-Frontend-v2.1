@@ -6,7 +6,7 @@ import PropertyTable from '../../components/Tables/PropertyTable';
 
 function PropertyMain() {
     useEffect(() => {
-        //
+        document.title = "Property | RenoXpert";
     }, []);
 
     return (

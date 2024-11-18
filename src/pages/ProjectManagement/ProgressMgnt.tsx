@@ -42,6 +42,8 @@ function ProgressMgnt() {
     };
 
     useEffect(() => {
+        document.title = "Project Detail | RenoXpert";
+
         const initFunctions = async () => {
             if (renoProgressDetail) {
                 await setRenoProgress(renoProgressDetail); // Assign renoProgressDetail to renoProgress

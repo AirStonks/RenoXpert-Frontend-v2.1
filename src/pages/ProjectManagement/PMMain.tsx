@@ -1,6 +1,11 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 function PMMain() {
+
+    useEffect(() => {
+        document.title = "Project Management | RenoXpert";
+    })
     return (
         <>
             <div className="flex justify-between items-center flex-wrap mb-6">

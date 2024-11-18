@@ -7,6 +7,7 @@ import ProductTable from '../../components/Tables/ProductTable';
 
 function ProductMain() {
     useEffect(() => {
+        document.title = "Products | RenoXpert";
         KTComponent.init();
     }, []);
 

@@ -47,6 +47,43 @@ function EditPackage() {
         });
     };
 
+    useEffect(() => {
+        document.title = "Edit Package | RenoXpert";
+
+        if (packageDetail) {
+
+            setFormData((prev) => ({
+                ...prev,
+                packageName: packageDetail.name,
+                description: packageDetail.description
+            }));
+
+            const selectedProducts = [];
+
+            packageDetail.products.forEach(({ id, name, pivot, provisioning, description }) => {
+                selectedProducts.push({
+                    id,
+                    name,
+                    quantity: pivot.quantity,
+                    visibility: pivot.visibility,
+                    price: provisioning.install.retail_price + provisioning.supply.retail_price,
+                    description
+                });
+            });
+
+            localStorage.setItem('include_prod_selected_products', JSON.stringify(selectedProducts));
+
+            updateSelectedProducts(selectedProducts);
+        }
+        const storedProducts = localStorage.getItem('include_prod_selected_products');
+        if (storedProducts) {
+            const parsedProducts = JSON.parse(storedProducts);
+            setSelectedProducts(parsedProducts);
+            const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+            setTotalPrice(initialTotalPrice);
+        }
+    }, [packageDetail]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -149,41 +186,7 @@ function EditPackage() {
         }
     };
 
-    useEffect(() => {
 
-        if (packageDetail) {
-
-            setFormData((prev) => ({
-                ...prev,
-                packageName: packageDetail.name,
-                description: packageDetail.description
-            }));
-
-            const selectedProducts = [];
-
-            packageDetail.products.forEach(({ id, name, pivot, provisioning, description }) => {
-                selectedProducts.push({
-                    id,
-                    name,
-                    quantity: pivot.quantity,
-                    visibility: pivot.visibility,
-                    price: provisioning.install.retail_price + provisioning.supply.retail_price,
-                    description
-                });
-            });
-
-            localStorage.setItem('include_prod_selected_products', JSON.stringify(selectedProducts));
-
-            updateSelectedProducts(selectedProducts);
-        }
-        const storedProducts = localStorage.getItem('include_prod_selected_products');
-        if (storedProducts) {
-            const parsedProducts = JSON.parse(storedProducts);
-            setSelectedProducts(parsedProducts);
-            const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
-            setTotalPrice(initialTotalPrice);
-        }
-    }, [packageDetail]);
 
     const updateSelectedProducts = (products: Product[]) => {
         setSelectedProducts(products);

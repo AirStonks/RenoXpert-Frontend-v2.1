@@ -13,6 +13,7 @@ const OwnerLogin: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        document.title = "Login | RenoXpert";
         KTComponent.init();
         setCountryCode('+60');
     }, []);

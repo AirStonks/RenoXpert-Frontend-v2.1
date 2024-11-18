@@ -6,7 +6,7 @@ import AddDiscountFeeModal from '../../components/Modals/AddDiscountFeeModal';
 
 function DiscountFeeMain() {
     useEffect(() => {
-        //
+        document.title = "Discount & Fee Management | RenoXpert";
     }, []);
 
     return (

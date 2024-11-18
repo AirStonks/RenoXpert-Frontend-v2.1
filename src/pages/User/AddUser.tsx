@@ -1,6 +1,6 @@
 // src/pages/User/AddUser.tsx
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "../../types";
 import { addUser } from "../../services/api";
@@ -35,6 +35,10 @@ function AddUser() {
     const handleBackClick = () => {
         navigate('/users');
     }
+
+    useEffect(() => {
+        document.title = "Add User | RenoXpert";
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;

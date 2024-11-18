@@ -63,6 +63,7 @@ function EditOrder() {
     };
 
     useEffect(() => {
+        document.title = "Revise Order | RenoXpert";
 
         if (orderDetail) {
 

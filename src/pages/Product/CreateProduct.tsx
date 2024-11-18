@@ -63,7 +63,7 @@ function CreateProduct() {
     };
 
     useEffect(() => {
-
+        document.title = "Create Product | RenoXpert";
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

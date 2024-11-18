@@ -10,6 +10,7 @@ function PaymentSuccess() {
     const location = useLocation();
 
     useEffect(() => {
+        document.title = "Success | RenoXpert";
         // Parse query parameters
         const queryParams = new URLSearchParams(location.search);
         const dataStr = queryParams.get('data');

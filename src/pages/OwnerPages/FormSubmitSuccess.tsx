@@ -1,8 +1,13 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const token = localStorage.getItem('o_token');
 
 function FormSubmitSuccess() {
+
+    useEffect(() => {
+        document.title = "Success | RenoXpert";
+    }, []);
 
     return (
         <main className="grow pt-5 items-center" id="content" role="content">

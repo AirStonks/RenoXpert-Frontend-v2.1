@@ -79,7 +79,7 @@ function UserTable() {
                         <div class="flex flex-col gap-1">
                             <span>${item}</span>
                             <span class="text-xs text-slate-400">${data.email}</span>
-                            <span class="text-xs text-slate-700">${data.phone_no}</span>
+                            <span class="text-xs text-slate-700">+60 ${data.phone_no}</span>
                         </div>
                     `,
                 },
