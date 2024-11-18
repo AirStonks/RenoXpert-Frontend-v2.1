@@ -8,7 +8,7 @@ import OrderTable from '../../components/Tables/OrderTable';
 
 function OrderMain() {
     useEffect(() => {
-        //
+        document.title = "Orders | RenoXpert";
     }, []);
 
     return (

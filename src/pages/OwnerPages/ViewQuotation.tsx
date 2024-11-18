@@ -17,6 +17,7 @@ function ViewQuotation() {
     const { invoiceDetail, loading, error } = useFetchPublicInvoice(invoiceId);
 
     useEffect(() => {
+        document.title = "Invoice | RenoXpert";
         KTComponent.init();
     });
 

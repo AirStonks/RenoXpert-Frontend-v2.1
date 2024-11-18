@@ -19,6 +19,7 @@ function OwnerHome() {
     const [activeTab, setActiveTab] = useState('tab_1_1');
 
     useEffect(() => {
+        document.title = "Home | RenoXpert";
         KTComponent.init();
         KTTabs.init();
         loadUser();

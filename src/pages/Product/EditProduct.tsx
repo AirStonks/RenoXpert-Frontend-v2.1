@@ -47,6 +47,7 @@ const EditProduct: React.FC = () => {
     };
 
     useEffect(() => {
+        document.title = "Edit Product | RenoXpert";
         if (product) {
             setFormData(product);
         }

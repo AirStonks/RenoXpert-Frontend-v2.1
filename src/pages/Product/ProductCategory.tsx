@@ -4,9 +4,14 @@ import ProductCategoryTable from "../../components/Tables/ProductCategoryTable";
 import AddProductCategoryModal from '../../components/Modals/AddProductCategoryModal';
 import { KTDataTable } from "../../metronic/core";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 function ProductCategory() {
     const navigate = useNavigate();
+
+    useEffect(() => {        
+        document.title = "Product Category | RenoXpert";
+    })
 
     const handleBackClick = () => {
         navigate('/products');

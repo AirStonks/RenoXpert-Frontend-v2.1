@@ -22,11 +22,6 @@ function CreatePackage() {
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [totalPrice, setTotalPrice] = useState<number>(0);
 
-    const handleBackClick = () => {
-        localStorage.removeItem('include_prod_selected_products');
-        navigate('/packages');
-    };
-
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
             position: "top-center",
@@ -39,7 +34,25 @@ function CreatePackage() {
             transition: Slide,
         });
     };
+    const handleBackClick = () => {
+        localStorage.removeItem('include_prod_selected_products');
+        navigate('/packages');
+    };
++
+    useEffect(() => {
+        document.title = "Create Package | RenoXpert";
 
+        const storedProducts = localStorage.getItem('include_prod_selected_products');
+        if (storedProducts) {
+            const parsedProducts = JSON.parse(storedProducts);
+            console.log(parsedProducts);
+
+            setSelectedProducts(parsedProducts);
+
+            const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+            setTotalPrice(initialTotalPrice);
+        }
+    }, []);
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -145,18 +158,7 @@ function CreatePackage() {
         }
     };
 
-    useEffect(() => {
-        const storedProducts = localStorage.getItem('include_prod_selected_products');
-        if (storedProducts) {
-            const parsedProducts = JSON.parse(storedProducts);
-            console.log(parsedProducts);
-            
-            setSelectedProducts(parsedProducts);
 
-            const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
-            setTotalPrice(initialTotalPrice);
-        }
-    }, []);
 
     const updateSelectedProducts = (products: Product[]) => {
         setSelectedProducts(products);
@@ -167,7 +169,7 @@ function CreatePackage() {
         localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
-    const updateTotalPrice = (price: number, operator: string) => {        
+    const updateTotalPrice = (price: number, operator: string) => {
         setTotalPrice(prevTotal => {
             switch (operator) {
                 case '+':

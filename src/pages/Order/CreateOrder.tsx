@@ -64,6 +64,8 @@ function CreateOrder() {
     };
 
     useEffect(() => {
+        document.title = "Create Order | RenoXpert";
+
         const sessionData = localStorage.getItem('create_order_data');
 
         if (formId) {

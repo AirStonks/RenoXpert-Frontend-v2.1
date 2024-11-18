@@ -292,6 +292,7 @@ function DefectInspectionFormPage() {
     const [loading, setLoading] = useState<boolean>(true); // Loading state
 
     useEffect(() => {
+        document.title = "DI Form | RenoXpert";
         const initFunctions = async () => {
             await KTComponents.init();
             await getProperties();

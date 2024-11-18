@@ -200,6 +200,7 @@ function OwnerRenoRegistrationForm() {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
 
     useEffect(() => {
+        document.title = "Reno Registration Form | RenoXpert";
         KTComponent.init();
         getPropertiesSelection();
         checkOwnerExists();

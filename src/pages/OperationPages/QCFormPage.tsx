@@ -400,6 +400,7 @@ function QCFormPage() {
 
 
     useEffect(() => {
+        document.title = "QC Form | RenoXpert";
         const initFunctions = async () => {
             await KTComponents.init();
             await getUser();

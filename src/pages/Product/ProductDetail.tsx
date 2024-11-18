@@ -2,12 +2,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import useFetchProduct from "../../hook/useFetchProduct";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 function ProductDetail() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const productId = id ? parseInt(id, 10) : null;
     const { product, loading, error } = useFetchProduct(productId);
+
+    useEffect(() => {
+        document.title = 'Product Detail | RenoXpert';
+    }, []);
 
     const handleBackClick = () => {
         navigate('/products');

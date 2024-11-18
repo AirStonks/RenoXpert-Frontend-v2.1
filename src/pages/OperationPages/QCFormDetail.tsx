@@ -355,6 +355,7 @@ function QCFormDetail() {
     const [formData, setFormData] = useState<QCForm>(initQCForm);
 
     useEffect(() => {
+        document.title = "OC Form Detail | RenoXpert";
 
         const initFunctions = async () => {
             await getQCForm();

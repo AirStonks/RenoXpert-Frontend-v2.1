@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import useFetchOwnerRegistrationForm from "../../hook/useFetchOwnerRegistrationForm";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 
 
@@ -70,6 +71,10 @@ function RenoRegistrationFormDetail() {
     const formId = id ? parseInt(id, 10) : null;
 
     const { form, loading, error } = useFetchOwnerRegistrationForm(formId);
+
+    useEffect(() => {
+        document.title = "Reno Registration Form Detail | RenoXpert";
+    })
 
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;

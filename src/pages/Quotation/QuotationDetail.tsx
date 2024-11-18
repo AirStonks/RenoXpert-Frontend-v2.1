@@ -15,6 +15,7 @@ function QuotationDetail() {
     const [selectedPackages, setSelectedPackages] = useState([]);
 
     useEffect(() => {
+        document.title = "Quotation Detail | RenoXpert";
         KTAccordion.init();
 
         if (quotationDetail) {
