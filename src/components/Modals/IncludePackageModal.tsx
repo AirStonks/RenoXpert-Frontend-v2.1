@@ -24,6 +24,9 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
     const handleTableClick = useCallback((event: MouseEvent) => {
         const target = event.target as HTMLElement;
 
+        console.log(target);
+        
+
         // Find the select button element
         const selectBtn = target.closest('[data-action="select"], [data-action="remove"]') as HTMLElement;
 

@@ -180,7 +180,7 @@ function EditRegistrationForm() {
             }
 
             setFormData(updatedFormData);
-            
+
             getProperties();
         }
     }, [formDetail]);
@@ -203,12 +203,54 @@ function EditRegistrationForm() {
         }
     };
 
+    const formatICNumber = (value: string): string => {
+        // Remove all non-digit characters
+        const digits = value.replace(/\D/g, '');
+
+        // Limit to 12 digits
+        const truncated = digits.slice(0, 12);
+
+        // Add hyphens according to format
+        let formatted = '';
+        if (truncated.length > 0) {
+            // First 6 digits
+            formatted += truncated.slice(0, 6);
+
+            // Add first hyphen and next 2 digits
+            if (truncated.length > 6) {
+                formatted += '-' + truncated.slice(6, 8);
+
+                // Add second hyphen and last 4 digits
+                if (truncated.length > 8) {
+                    formatted += '-' + truncated.slice(8);
+                }
+            }
+        }
+
+        return formatted;
+    };
+
     const handleBackClick = () => {
         navigate('/registration-forms/' + formId);
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+
+        if (name === 'ic') {
+            const formattedIC = formatICNumber(value);
+            setFormData((prevData) => ({
+                ...prevData,
+                ic: formattedIC,
+            }));
+
+            // Clear error for IC field
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                ic: '',
+            }));
+            return;
+        }
 
         // Check if the name starts with 'questions'
         if (name.startsWith('questions.')) {
@@ -304,7 +346,7 @@ function EditRegistrationForm() {
 
     const handleSubmit = async () => {
         // console.log(formData);
-        
+
         // const validationErrors = validate();
 
         // if (Object.keys(validationErrors).length > 0) {
@@ -316,7 +358,7 @@ function EditRegistrationForm() {
             const response = await updateRegistrationForm(formData);
 
             if (response?.success) {
-                console.log(response);
+                notify('success', 'Registration Form updated successfully');
                 navigate('/registration-forms/' + formId);
             } else {
                 console.log('error');
@@ -769,8 +811,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.foyer_entrance.lights"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.foyer_entrance.lights === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.foyer_entrance.lights === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -788,7 +830,7 @@ function EditRegistrationForm() {
                                     id="furnishing.foyer_entrance.other"
                                     rows={5}
                                     onChange={handleChange}
-                                    value={formData.furnishing.foyer_entrance.other}
+                                    value={formData.furnishing.foyer_entrance.other || ''}
                                 ></textarea>
                             </div>
 
@@ -821,8 +863,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.kitchen.kitchen_cabinet"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.kitchen.kitchen_cabinet === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.kitchen.kitchen_cabinet === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -844,8 +886,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.kitchen.kitchen_island"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.kitchen.kitchen_island === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.kitchen.kitchen_island === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -867,8 +909,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.kitchen.sink_tap"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.kitchen.sink_tap === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.kitchen.sink_tap === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -890,8 +932,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.kitchen.hood_hob"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.kitchen.hood_hob === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.kitchen.hood_hob === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -913,8 +955,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.kitchen.microwave"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.kitchen.microwave === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.kitchen.microwave === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -936,8 +978,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.kitchen.oven"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.kitchen.oven === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.kitchen.oven === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -959,8 +1001,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.kitchen.water_dispenser"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.kitchen.water_dispenser === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.kitchen.water_dispenser === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -982,8 +1024,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.kitchen.fridge"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.kitchen.fridge === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.kitchen.fridge === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1005,8 +1047,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.kitchen.lights"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.kitchen.lights === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.kitchen.lights === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1024,7 +1066,7 @@ function EditRegistrationForm() {
                                     id="kitchen.other"
                                     rows={5}
                                     onChange={handleChange}
-                                    value={formData.furnishing.kitchen.other}
+                                    value={formData.furnishing.kitchen.other || ''}
                                 ></textarea>
                             </div>
 
@@ -1057,8 +1099,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.yard.washer"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.yard.washer === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.yard.washer === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1080,8 +1122,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.yard.dryer"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.yard.dryer === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.yard.dryer === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1103,8 +1145,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.yard.lights"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.yard.lights === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.yard.lights === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1122,7 +1164,7 @@ function EditRegistrationForm() {
                                     id="yard.other"
                                     rows={5}
                                     onChange={handleChange}
-                                    value={formData.furnishing.yard.other}
+                                    value={formData.furnishing.yard.other || ''}
                                 ></textarea>
                             </div>
 
@@ -1155,8 +1197,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.dining.dining_table_chairs"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.dining.dining_table_chairs === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.dining.dining_table_chairs === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1178,8 +1220,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.dining.lights"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.dining.lights === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.dining.lights === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1201,8 +1243,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.dining.fan"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.dining.fan === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.dining.fan === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1220,7 +1262,7 @@ function EditRegistrationForm() {
                                     id="dining.other"
                                     rows={5}
                                     onChange={handleChange}
-                                    value={formData.furnishing.dining.other}
+                                    value={formData.furnishing.dining.other || ''}
                                 ></textarea>
                             </div>
 
@@ -1253,8 +1295,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.living.sofa"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.living.sofa === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.living.sofa === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1276,8 +1318,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.living.coffee_table"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.living.coffee_table === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.living.coffee_table === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1299,8 +1341,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.living.tv"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.living.tv === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.living.tv === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1322,8 +1364,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.living.tv_cabinet"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.living.tv_cabinet === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.living.tv_cabinet === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1345,8 +1387,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.living.fan"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.living.fan === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.living.fan === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1368,8 +1410,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.living.lights"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.living.lights === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.living.lights === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1391,8 +1433,8 @@ function EditRegistrationForm() {
                                                 <input
                                                     type="radio"
                                                     name="furnishing.living.ac"
-                                                    value="not_furnish"
-                                                    checked={formData.furnishing.living.ac === 'not_furnish'}
+                                                    value="not-furnish"
+                                                    checked={formData.furnishing.living.ac === 'not-furnish'}
                                                     className="radio radio-lg h-4 w-4 text-blue-600"
                                                     onChange={handleChange}
                                                 />
@@ -1410,7 +1452,7 @@ function EditRegistrationForm() {
                                     id="living.other"
                                     rows={5}
                                     onChange={handleChange}
-                                    value={formData.furnishing.living.other}
+                                    value={formData.furnishing.living.other || ''}
                                 >
                                 </textarea>
                             </div>

@@ -535,7 +535,7 @@ function CreateQuotation() {
                                                                             </button>
                                                                         </td>
                                                                     </tr>
-                                                                    <tr>
+                                                                    {/* <tr>
                                                                         <td colSpan={8}>
                                                                             <input
                                                                                 type="text"
@@ -544,7 +544,7 @@ function CreateQuotation() {
                                                                             // onChange={(e) => handleNoteChange(product.id, e.target.value)}
                                                                             />
                                                                         </td>
-                                                                    </tr>
+                                                                    </tr> */}
                                                                 </React.Fragment>
                                                             ))}
                                                         </tbody>

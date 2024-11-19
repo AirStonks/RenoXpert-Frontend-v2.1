@@ -7,6 +7,8 @@ import DeleteModal from '../../components/Modals/DeleteModal';
 import Loading from '../../components/Loading';
 import { useNavigate } from 'react-router-dom';
 
+type SortOrder = 'asc' | 'desc' | null;
+
 function ProductMain() {
     const navigate = useNavigate();
 
@@ -14,29 +16,33 @@ function ProductMain() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);
-    const [size, setSize] = useState<number>(5);
+    const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [sortField, setSortField] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
     const [selectedProduct, setSelectedProduct] = useState<{ id: number | string, name: string } | null>(null);
 
     useEffect(() => {
         document.title = "Products | RenoXpert";
         KTComponent.init();
-        initProductTable(page, size);
-    }, [page, size]);
+        initProductTable(page, size, searchTerm, sortOrder, sortField);
+    }, [page, size, searchTerm, sortOrder, sortField]);
 
-    const initProductTable = async (page: number, size: number) => {
+    const initProductTable = async (
+        page: number,
+        size: number,
+        searchTerm?: string,
+        order?: string,
+        field?: string
+    ) => {
         try {
             setIsLoading(true);
-            const response = await productIndex(size, page);
-
-            // Ensure the API response is valid and contains 'products'
-            const data = response?.data || []; // Default to an empty array if undefined
+            const response = await productIndex(size, page, searchTerm, order, field);
+            const data = response?.data || [];
             setProducts(data);
-
-            // Ensure the totalItems field exists in the response
-            setTotalItems(response?.totalCount || 0); // Default to 0 if undefined
+            setTotalItems(response?.totalCount || 0);
         } catch (error) {
             console.error('Error fetching products:', error);
             setError('Failed to load products');
@@ -46,7 +52,7 @@ function ProductMain() {
     };
 
     const handleRefreshTable = async () => {
-        initProductTable(page, size);
+        initProductTable(page, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +74,6 @@ function ProductMain() {
         }
     };
 
-
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
@@ -77,6 +82,38 @@ function ProductMain() {
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+    };
+
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            // Cycle through states: null -> asc -> desc -> null
+            if (sortOrder === null) {
+                setSortOrder('asc');
+            } else if (sortOrder === 'asc') {
+                setSortOrder('desc');
+            } else {
+                setSortOrder(null);
+                setSortField('');
+            }
+        } else {
+            // New field, start with ascending
+            setSortField(field);
+            setSortOrder('asc');
+        }
+    };
+
+    const getSortIcon = (field: string) => {
+        if (sortField !== field) {
+            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+        switch (sortOrder) {
+            case 'asc':
+                return <i className="ki-outline ki-arrow-up text-primary" />;
+            case 'desc':
+                return <i className="ki-outline ki-arrow-down text-primary" />;
+            default:
+                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
     };
 
     const handleViewProduct = (productId: string | number) => {
@@ -133,7 +170,7 @@ function ProductMain() {
                 <div className="card">
                     <div className="card-header flex-wrap gap-2">
                         <div className="card-title">
-                            Project Overview
+                            Product Overview
                         </div>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button
@@ -181,19 +218,64 @@ function ProductMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[300px] text-center'>Name</th>
-                                    <th className='w-[100px] text-center'>SKU</th>
-                                    <th className='w-[100px] text-center'>Selling Price</th>
-                                    <th className='w-[120px] text-center'>PM Category</th>
-                                    <th className='w-[120px] text-center'>Type</th>
-                                    <th className='w-[80px] text-center'>Task Weightage</th>
+                                    <th
+                                        className='w-[300px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Name {getSortIcon('name')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('sku')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            SKU {getSortIcon('sku')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('price')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Selling Price {getSortIcon('price')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[120px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('pm_category_id')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            PM Category {getSortIcon('pm_category_id')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[120px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('type')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Type {getSortIcon('type')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('task_weightage')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Task Weightage {getSortIcon('task_weightage')}
+                                        </div>
+                                    </th>
                                     <th className='w-[120px] text-center'>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {products.length > 0 ? (
                                     products.map((product, prodIndex) => (
-                                        <tr key={prodIndex}>
+                                        <tr
+                                            key={prodIndex}
+                                            className={`${prodIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
+                                        >
                                             <td>
                                                 <div className="flex flex-col">
                                                     <span>{product.name}</span>
@@ -218,7 +300,7 @@ function ProductMain() {
                                                         View
                                                     </button>
                                                     <button
-                                                        className="btn-delete btn btn-sm btn-icon btn-clear btn-light"
+                                                        className="btn-delete btn btn-sm btn-icon btn-danger"
                                                         data-modal-toggle="#delete_item_modal"
                                                         onClick={() => setSelectedProduct({ id: product.id, name: product.name })}
                                                     >
