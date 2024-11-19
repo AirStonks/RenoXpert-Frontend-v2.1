@@ -1010,4 +1010,44 @@ export const removeTaskDocument = async (renoProgressId: number, taskId: number,
 };
 
 
+export const renoProgressIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'reno-progress', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
 
+export const changeRenoProgressStartDate = async (renoProgressId: number, startDate: string) => {
+    try {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/start-date`, { start_date: startDate }, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const changeRenoProgressEndDate = async (renoProgressId: number, endDate: string) => {
+    try {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/end-date`, { end_date: endDate }, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
