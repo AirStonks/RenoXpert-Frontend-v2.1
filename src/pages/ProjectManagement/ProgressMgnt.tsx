@@ -331,7 +331,8 @@ function ProgressMgnt() {
         // Define the status weightages
         const statusWeights = {
             not_started: 0,
-            started: 0.5,
+            started: 0.25,
+            in_progress: 0.75,
             completed: 1,
         };
 
@@ -371,48 +372,85 @@ function ProgressMgnt() {
                 <div className="card flex-1">
                     <div className="card-header">
                         <div className="card-title">
-                            Property
+                            Project Completion
                         </div>
                     </div>
                     <div className="card-body">
-                        {/* <table className="table-auto">
-                            <tbody>
-                                <tr>
-                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                        Property Name:
-                                    </td>
-                                    <td className="text-sm text-gray-900 pb-3">
-                                        {orderDetail.property.name}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                        Unit:
-                                    </td>
-                                    <td className="text-sm text-gray-900 pb-3">
-                                        {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                        Address:
-                                    </td>
-                                    <td className="text-sm text-gray-900 pb-3">
-                                        {[
-                                            orderDetail.property.address,
-                                            orderDetail.property.street,
-                                            orderDetail.property.postcode,
-                                            orderDetail.property.city,
-                                            orderDetail.property.state,
-                                        ]
-                                            .filter(Boolean)
-                                            .join(', ')
-                                        }
-                                    </td>
+                        <div className="flex flex-col mb-4">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-lg font-semibold">Pre Reno</span>
+                                <span className="text-xs">{(renoProgress.pre_reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
+                                {/* Issued progress bar (outer) */}
+                                <div
+                                    className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
+                                    style={{
+                                        width: `${renoProgress.pre_reno_completion * 100}%`,
+                                        height: '8px'
+                                    }}
+                                />
 
-                                </tr>
-                            </tbody>
-                        </table> */}
+                                {/* Paid progress bar (inner) */}
+                                <div
+                                    className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                    style={{
+                                        width: `${renoProgress.pre_reno_completion * 100}%`,
+                                        height: '8px'
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex flex-col mb-4">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-lg font-semibold">Reno</span>
+                                <span className="text-xs">{(renoProgress.reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
+                                {/* Issued progress bar (outer) */}
+                                <div
+                                    className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
+                                    style={{
+                                        width: `${renoProgress.reno_completion * 100}%`,
+                                        height: '8px'
+                                    }}
+                                />
+
+                                {/* Paid progress bar (inner) */}
+                                <div
+                                    className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                    style={{
+                                        width: `${renoProgress.reno_completion * 100}%`,
+                                        height: '8px'
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex flex-col">
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="text-lg font-semibold">Post Reno</span>
+                                <span className="text-xs">{(renoProgress.post_reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
+                                {/* Issued progress bar (outer) */}
+                                <div
+                                    className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
+                                    style={{
+                                        width: `${renoProgress.post_reno_completion * 100}%`,
+                                        height: '8px'
+                                    }}
+                                />
+
+                                {/* Paid progress bar (inner) */}
+                                <div
+                                    className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                    style={{
+                                        width: `${renoProgress.post_reno_completion * 100}%`,
+                                        height: '8px'
+                                    }}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="card flex-1">
@@ -529,6 +567,7 @@ function ProgressMgnt() {
                                                                                 >
                                                                                     <option value="not_started">Not Started</option>
                                                                                     <option value="started">Started</option>
+                                                                                    <option value="in_progress">In Progress</option>
                                                                                     <option value="completed">Completed</option>
                                                                                 </select>
                                                                             }
@@ -636,6 +675,7 @@ function ProgressMgnt() {
                                                                             >
                                                                                 <option value="not_started">Not Started</option>
                                                                                 <option value="started">Started</option>
+                                                                                <option value="in_progress">In Progress</option>
                                                                                 <option value="completed">Completed</option>
                                                                             </select>
                                                                         </div>
@@ -758,6 +798,7 @@ function ProgressMgnt() {
                                                                                 >
                                                                                     <option value="not_started">Not Started</option>
                                                                                     <option value="started">Started</option>
+                                                                                    <option value="in_progress">In Progress</option>
                                                                                     <option value="completed">Completed</option>
                                                                                 </select>
                                                                             }

@@ -115,6 +115,8 @@ function PMMain() {
 
             if (error.status === 400) {
                 notify('error', error.response.data.message);
+            } else {
+                notify('error', 'Something went wrong');
             }
 
         }
@@ -137,6 +139,8 @@ function PMMain() {
         } catch (error) {
             if (error.status === 400) {
                 notify('error', error.response.data.message);
+            } else {
+                notify('error', 'Something went wrong');
             }
         }
     }
@@ -191,6 +195,8 @@ function PMMain() {
                                         <td className="text-center">
                                             <Link
                                                 to={'/sales/' + progress.sale_id}
+                                                state={{ fromUrl: '/reno-progress' }}
+                                                onClick={(e) => e.stopPropagation()} // Prevent tr onClick
                                                 className="link text-orange-500"
                                             >
                                                 {progress.sale.sales_no}
@@ -227,7 +233,7 @@ function PMMain() {
                                             <input
                                                 type="date"
                                                 className="input input-sm"
-                                                value={progress.start_date}
+                                                value={progress.start_date || ''}
                                                 onChange={(e) => handleChangeStartDate(e, Number(progress.id))}
                                                 onClick={(e) => e.stopPropagation()} // Prevent tr onClick
                                             />
@@ -236,13 +242,21 @@ function PMMain() {
                                             <input
                                                 type="date"
                                                 className="input input-sm"
-                                                value={progress.end_date}
+                                                value={progress.end_date || ''}
                                                 onChange={(e) => handleChangeEndDate(e, Number(progress.id))}
                                                 onClick={(e) => e.stopPropagation()} // Prevent tr onClick
                                             />
                                         </td>
                                         <td className="text-center">
-                                            {Math.ceil((new Date(progress.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days
+                                            {/* Add warning icon if remaining date is less than 7 days */}
+                                            <div className="flex gap-2 justify-center items-center">
+                                                {Math.ceil((new Date(progress.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) < 7 && (
+                                                    <i className="ki-filled ki-information-3 text-danger text-xl"></i>
+                                                )}
+                                                <span>
+                                                    {progress.end_date ? `${Math.ceil((new Date(progress.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} day${Math.ceil((new Date(progress.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) > 1 ? 's' : ''}` : '-'}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="text-center">
                                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
@@ -308,7 +322,7 @@ function PMMain() {
                                                     }}
                                                 />
                                             </div>
-                                            <span className="text-xs">{progress.post_reno_completion * 100}%</span>
+                                            <span className="text-xs">{(progress.post_reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
                                         </td>
                                         <td className="text-center">
                                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
@@ -336,7 +350,7 @@ function PMMain() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={7} className="text-center text-gray-500">
+                                    <td colSpan={10} className="text-center text-gray-500">
                                         No Project available
                                     </td>
                                 </tr>
