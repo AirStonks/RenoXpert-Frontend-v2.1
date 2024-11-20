@@ -5,13 +5,19 @@ import { useNavigate } from "react-router-dom";
 import { User } from "../../types";
 import { addUser } from "../../services/api";
 import { Slide, toast } from "react-toastify";
+import ClipboardJS from "clipboard";
+import { useUser } from "../../context/UserContext";
 
 function AddUser() {
     const navigate = useNavigate();
+
+    const { currentUser, loading, error } = useUser();
+
     const [formData, setFormData] = useState({
-        name: '',
+        name_first: '',
+        name_last: '',
         email: '',
-        type: 'staff',
+        type: '',
         phone: ''
     });
 
@@ -38,6 +44,18 @@ function AddUser() {
 
     useEffect(() => {
         document.title = "Add User | RenoXpert";
+
+        const clipboard = new ClipboardJS('.copy-link');
+
+        clipboard.on('success', function (e) {
+            notify('success', 'Copied to clipboard!');
+            e.clearSelection();
+        });
+
+        return () => {
+            clipboard.destroy();
+        };
+
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -54,7 +72,7 @@ function AddUser() {
     };
 
     const handleSubmit = async () => {
-        if (!formData.name || !formData.email || !formData.phone) {
+        if (!formData.name_first || !formData.name_last || !formData.email || !formData.phone) {
             notify('error', 'Please fill in all fields.');
             return;
         }
@@ -63,8 +81,9 @@ function AddUser() {
         setValidationErrors({}); // Reset previous errors
         try {
             const userData: User = {
-                name: formData.name,
-                email: formData.email,
+                name_first: formData.name_first,
+                name_last: formData.name_last,
+                email: formData.email.trim() + '@belive.asia',
                 type: formData.type,
                 phone_no: formData.phone,
             };
@@ -73,6 +92,11 @@ function AddUser() {
 
             if (response?.success) {
                 setNewPassword(response.data.new_password);
+                setFormData({
+                    ...formData,
+                    email: response.data[0].email
+                });
+                notify('success', 'User Created Successfully!');
             } else {
                 console.log(response.data);
 
@@ -92,17 +116,37 @@ function AddUser() {
         <div className="flex flex-wrap gap-8 mb-8">
             <div className="card w-full flex justify-center items-center">
                 <div className="card-body py-6 flex flex-col items-center max-w-3xl w-full">
-                    <div className="flex flex-col mb-4 w-full">
-                        <label className='text-sm font-medium text-gray-900 mb-1'>Name:</label>
-                        <span>{formData.name}</span>
+                    <div className="flex flex-col mb-6 w-full">
+                        <span className="text-2xl font-bold">
+                            New User Information
+                        </span>
+
                     </div>
-                    <div className="flex flex-col mb-4 w-full">
+                    <div className="flex flex-col mb-6 w-full">
+                        <label className='text-sm font-medium text-gray-900 mb-1'>Name:</label>
+                        <span>{formData.name_first} {formData.name_last}</span>
+                    </div>
+                    <div className="flex flex-col mb-6 w-full">
                         <label className='text-sm font-medium text-gray-900 mb-1'>Email:</label>
                         <span>{formData.email}</span>
                     </div>
-                    <div className="flex flex-col mb-4 w-full">
+                    <div className="flex flex-col w-full">
                         <label className='text-sm font-medium text-gray-900 mb-1'>Password:</label>
-                        <span>{newPassword}</span>
+
+                        <div className="flex items-center mb-2">
+                            <span className="mb-1 mr-2">{newPassword}</span>
+                            <button
+                                className="btn btn-sm btn-icon copy-link flex justify-center gap-2"
+                                data-clipboard-text={newPassword}
+                            >
+                                <i className="ki-filled ki-copy"></i>
+                            </button>
+                        </div>
+
+                        <div className="flex badge text-sm badge-dark gap-2 items-center">
+                            <i className="ki-filled ki-information-2 text-warning text-lg" />
+                            <span className="">Please ask the user to change the password</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -116,19 +160,35 @@ function AddUser() {
                     <div className="flex mb-4 w-full">
                         <span className="text-xl font-bold">User Detail</span>
                     </div>
-                    <div className="flex flex-col mb-4 w-full">
-                        <label className='mb-2 text-sm font-medium text-gray-900'>Name</label>
-                        <input
-                            className='input mb-2 w-full'
-                            placeholder='John Doe'
-                            type='text'
-                            name='name'
-                            value={formData.name}
-                            onChange={handleChange}
-                        />
-                        {validationErrors.name && (
-                            <span className="text-red-500 text-sm">{validationErrors.name.join(', ')}</span>
-                        )}
+                    <div className="flex mb-4 gap-4 w-full">
+                        <div className="flex flex-col w-full">
+                            <label className='mb-2 text-sm font-medium text-gray-900'>First Name</label>
+                            <input
+                                className='input mb-2 w-full'
+                                placeholder='John'
+                                type='text'
+                                name='name_first'
+                                value={formData.name_first}
+                                onChange={handleChange}
+                            />
+                            {validationErrors.name_first && (
+                                <span className="text-red-500 text-sm">{validationErrors.name_first.join(', ')}</span>
+                            )}
+                        </div>
+                        <div className="flex flex-col w-full">
+                            <label className='mb-2 text-sm font-medium text-gray-900'>Last Name</label>
+                            <input
+                                className='input mb-2 w-full'
+                                placeholder='Doe'
+                                type='text'
+                                name='name_last'
+                                value={formData.name_last}
+                                onChange={handleChange}
+                            />
+                            {validationErrors.name_last && (
+                                <span className="text-red-500 text-sm">{validationErrors.name_last.join(', ')}</span>
+                            )}
+                        </div>
                     </div>
                     <div className="flex flex-col mb-4 w-full">
                         <label className='mb-2 text-sm font-medium text-gray-900'>Email</label>
@@ -169,7 +229,10 @@ function AddUser() {
                         <label className='mb-2 text-sm font-medium text-gray-900'>User Type/Role</label>
                         <div className="flex flex-col items-start gap-6">
                             {['staff', 'admin', 'super-admin'].map(role => (
-                                <label key={role} className={`form-label flex items-center gap-3 ${role === 'admin' || role === 'super-admin' ? 'disabled' : '' }`}>
+                                <label
+                                    key={role}
+                                    className={`form-label flex items-center gap-3 ${role === 'super-admin' ? 'disabled' : ''}`}
+                                >
                                     <input
                                         className="radio radio-sm"
                                         name="type"
@@ -177,7 +240,12 @@ function AddUser() {
                                         checked={formData.type === role}
                                         value={role}
                                         onChange={handleChange}
-                                        disabled={role === 'admin' || role === 'super-admin' ? true : false }
+                                        // Disable based on currentUser.type and the role being rendered
+                                        disabled={
+                                            (currentUser?.type === 'super-admin' && role === 'super-admin') ||
+                                            (currentUser?.type === 'admin' && (role === 'super-admin' || role === 'admin')) ||
+                                            (currentUser?.type === 'staff')
+                                        }
                                     />
                                     <div className="flex flex-col">
                                         <span className="text-sm">{role.charAt(0).toUpperCase() + role.slice(1)}</span>

@@ -202,6 +202,7 @@ function RegistrationFormMain() {
                                 <tr>
                                     <th className='w-[20px] text-center'>ID</th>
                                     <th className='w-[150px] text-center'>Owner Name</th>
+                                    <th className='w-[80px]'>Form No</th>
                                     <th className='w-[100px] text-center'>Phone No.</th>
                                     <th className='w-[150px] text-center'>Email</th>
                                     <th className='w-[100px] text-center'>Status</th>
@@ -221,6 +222,9 @@ function RegistrationFormMain() {
                                             </td>
                                             <td>
                                                 {regForm.user.name_first} {regForm.user.name_last}
+                                            </td>
+                                            <td>
+                                                {regForm.form_no}
                                             </td>
                                             <td className='text-center'>
                                                 {regForm.user.country_code} {regForm.user.phone_no}

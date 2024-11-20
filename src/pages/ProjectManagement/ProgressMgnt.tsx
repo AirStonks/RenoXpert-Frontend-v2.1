@@ -4,7 +4,7 @@ import Loading from "../../components/Loading";
 import { useCallback, useEffect, useRef, useState } from "react";
 import KTComponents, { KTAccordion, KTTabs } from "../../metronic/core";
 import { JobTask, PhaseJob, RenoProgress } from "../../types";
-import { changeInternalComment, changeOwnerComment, changeTaskStatus, fetchTaskDocuments, removeTaskDocument, toggleTaskInstall, toggleTaskSupply, uploadTaskDocuments } from "../../services/api";
+import { changeInternalComment, changeOwnerComment, changeTaskStatus, fetchRenoProgress, fetchTaskDocuments, removeTaskDocument, toggleTaskInstall, toggleTaskSupply, uploadTaskDocuments } from "../../services/api";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -81,6 +81,20 @@ function ProgressMgnt() {
             navigate('/reno-progress');
         }
     };
+
+    const handleRefresh = async () => {
+        
+        try {
+            const response = await fetchRenoProgress(renoProgressId);
+            
+            if (response?.success) {
+                setRenoProgress(response.data);
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     const handleOwnerCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
         const { name, value } = e.target;
@@ -176,27 +190,28 @@ function ProgressMgnt() {
             if (response?.success) {
                 notify('success', 'Status updated successfully');
 
-                setRenoProgress((prevData) => {
-                    if (!prevData) return null;
+                handleRefresh();
+                // setRenoProgress((prevData) => {
+                //     if (!prevData) return null;
 
-                    // Update the state immutably
-                    return {
-                        ...prevData,
-                        phases: prevData.phases?.map(phase => ({
-                            ...phase,
-                            jobs: phase.jobs?.map(job => ({
-                                ...job,
-                                tasks: job.tasks?.map(task => {
-                                    if (Number(task.id) === id) {
-                                        // Toggle the correct property (either is_supplied or is_installed)
-                                        return response.data;
-                                    }
-                                    return task; // Return the task unchanged if it's not the one to update
-                                }),
-                            })),
-                        })),
-                    };
-                });
+                //     // Update the state immutably
+                //     return {
+                //         ...prevData,
+                //         phases: prevData.phases?.map(phase => ({
+                //             ...phase,
+                //             jobs: phase.jobs?.map(job => ({
+                //                 ...job,
+                //                 tasks: job.tasks?.map(task => {
+                //                     if (Number(task.id) === id) {
+                //                         // Toggle the correct property (either is_supplied or is_installed)
+                //                         return response.data;
+                //                     }
+                //                     return task; // Return the task unchanged if it's not the one to update
+                //                 }),
+                //             })),
+                //         })),
+                //     };
+                // });
             }
         } catch (error) {
             notify('error', 'Failed to update status');

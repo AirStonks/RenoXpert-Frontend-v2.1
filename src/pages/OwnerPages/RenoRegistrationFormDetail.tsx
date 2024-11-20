@@ -80,9 +80,6 @@ function RenoRegistrationFormDetail() {
     if (error) return <div>{error}</div>;
     if (!form) return <div>An unexpected error occured</div>;
 
-    console.log(form);
-
-
     return (
         <div className="card w-full">
             <div className="card-header flex justify-between">
@@ -104,6 +101,11 @@ function RenoRegistrationFormDetail() {
                         'approved' ? 'badge-success' : ''}`}>
                         {form.status.charAt(0).toUpperCase() + form.status.slice(1)}
                     </span>
+                </div>
+
+                <div className="flex flex-col mb-8">
+                    <span className="text-slate-400 font-medium">Form No.</span>
+                    <span className="font-semibold">{form.form_no}</span>
                 </div>
 
                 <div className="flex flex-col mb-8">

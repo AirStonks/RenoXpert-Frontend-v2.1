@@ -5,7 +5,7 @@ import { user as fetchUser } from '../services/api'; // Adjust the path if neces
 import { User } from '../types'; // Adjust the path if necessary
 
 interface UserContextType {
-    user: User | null;
+    currentUser: User | null;
     loading: boolean;
     error: string | null;
 }
@@ -13,7 +13,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +21,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         const fetchUserData = async () => {
             try {
                 const data = await fetchUser();
-                setUser(data);
+                setCurrentUser(data);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -33,7 +33,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     return (
-        <UserContext.Provider value={{ user, loading, error }}>
+        <UserContext.Provider value={{ currentUser, loading, error }}>
             {children}
         </UserContext.Provider>
     );

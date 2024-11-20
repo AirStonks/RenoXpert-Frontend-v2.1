@@ -43,6 +43,18 @@ function RegistrationFormDetail() {
                 <div className="flex flex-col gap-4 w-full md:w-1/3">
                     <div className="card">
                         <div className="card-header">
+                            <h3 className="card-title">General Information</h3>
+                        </div>
+                        <div className="card-body flex flex-col gap-6 text-gray-900">
+                            <div className="flex flex-col">
+                                <span className="font-normal">Form No:</span>
+                                <span className="font-semibold">{formDetail.form_no}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
                             <h3 className="card-title">Property Information</h3>
                         </div>
                         <div className="card-body flex flex-col gap-6 text-gray-900">
