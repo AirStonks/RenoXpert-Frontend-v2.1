@@ -111,7 +111,7 @@ function RegistrationFormMain() {
         } catch (error) {
             notify('error', 'Registration form approval failed');
             console.log(error);
-        }   
+        }
     }
 
     const handleRejectRegForm = async (id: number) => {

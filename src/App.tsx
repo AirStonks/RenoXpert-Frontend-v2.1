@@ -93,7 +93,6 @@ const OperationProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) 
 
 const routes = [
   { path: '/login', element: <Login />, layout: null },
-  { path: '/', element: <Navigate to="/dashboard" replace />, layout: ProtectedLayout },
   { path: '/dashboard', element: <Dashboard />, layout: ProtectedLayout },
 
 
@@ -111,6 +110,7 @@ const routes = [
 
   /*--- OWNER SITE ---*/
   { path: '/owner/login', element: <OwnerLogin />, layout: null },
+  { path: '/', element: <OwnerHome />, layout: OwnerProtectedLayout },
   { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
   { path: '/owner', element: <OwnerHome />, layout: OwnerProtectedLayout },
   { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
