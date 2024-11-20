@@ -257,17 +257,18 @@ function RegistrationFormMain() {
 
                                                     {regForm.status !== 'approved' && regForm.status !== 'rejected' ?
                                                         <>
-                                                            <button
-                                                                className="btn-delete btn btn-sm btn-success ${!regForm.property ? 'disabled' : ''}"
-                                                                data-tooltip="#${!data.property ? 'disabled_tooltip' : 'approve_tooltip'}"
-                                                                data-action="approve"
-                                                                data-id="${data.id}"
-                                                                data-modal-toggle="#confirm_item_modal"
-                                                                onClick={() => handleApproveRegForm(Number(regForm.id))}
-                                                            >
-                                                                Approve
-                                                            </button>
-
+                                                            {regForm.other_property === null &&
+                                                                <button
+                                                                    className="btn-delete btn btn-sm btn-success ${!regForm.property ? 'disabled' : ''}"
+                                                                    data-tooltip="#${!data.property ? 'disabled_tooltip' : 'approve_tooltip'}"
+                                                                    data-action="approve"
+                                                                    data-id="${data.id}"
+                                                                    data-modal-toggle="#confirm_item_modal"
+                                                                    onClick={() => handleApproveRegForm(Number(regForm.id))}
+                                                                >
+                                                                    Approve
+                                                                </button>
+                                                            }
                                                             <button
                                                                 className="btn-delete btn btn-sm btn-danger"
                                                                 onClick={() => handleRejectRegForm(Number(regForm.id))}
