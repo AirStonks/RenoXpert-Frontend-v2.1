@@ -68,7 +68,7 @@ var Mailgun = /** @class */ (function (_super) {
                     },
                     message: this.opts.message,
                     name: 'address',
-                    url: 'https://api.mailgun.net/v3/address/validate',
+                    url: 'https://sapi.mailgun.net/v3/address/validate',
                     validKey: 'is_valid',
                 },
             },

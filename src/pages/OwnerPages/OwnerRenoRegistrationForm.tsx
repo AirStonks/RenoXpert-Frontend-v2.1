@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 import { getOwnerUser, getProperties } from "../../services/publicApi";
 import axios from "axios";
 
-const API_URL = 'https://api.renoxpert.my/api/';
+const API_URL = 'https://sapi.renoxpert.my/api/';
 
 interface FormErrors {
     [key: string]: string | undefined; // Use string or undefined for error messages

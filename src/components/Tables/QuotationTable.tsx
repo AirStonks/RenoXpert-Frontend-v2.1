@@ -65,7 +65,7 @@ function QuotationTable () {
     };
 
     const initPackageTable = useCallback(() => {
-        const apiUrl = `https://api.renoxpert.my/api/quotations`;
+        const apiUrl = `https://sapi.renoxpert.my/api/quotations`;
         const element = document.querySelector('#quotation_table') as HTMLElement;
         const token = localStorage.getItem('token');
 

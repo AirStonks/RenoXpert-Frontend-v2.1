@@ -4,7 +4,7 @@ import { Slide, toast } from "react-toastify";
 import { KTModal } from "../metronic/core";
 import { useEffect } from "react";
 
-const API_URL = 'https://api.renoxpert.my/api/';
+const API_URL = 'https://sapi.renoxpert.my/api/';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');

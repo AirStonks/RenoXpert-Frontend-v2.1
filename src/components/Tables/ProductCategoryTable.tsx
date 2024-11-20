@@ -41,7 +41,7 @@ function ProductCategoryTable() {
     }, []);
 
     const initProdTable = () => {
-        const apiUrl = 'https://api.renoxpert.my/api/product/category';
+        const apiUrl = 'https://sapi.renoxpert.my/api/product/category';
         const element = document.querySelector('#product_cat_data_table') as HTMLElement;
         const token = localStorage.getItem('token');
 

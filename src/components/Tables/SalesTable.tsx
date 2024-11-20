@@ -94,7 +94,7 @@ function SalesTable() {
     }, []);
 
     const initSaleTable = () => {
-        const apiUrl = 'https://api.renoxpert.my/api/sales';
+        const apiUrl = 'https://sapi.renoxpert.my/api/sales';
         element = document.querySelector('#sales_table') as HTMLElement;
         const token = localStorage.getItem('token');
 

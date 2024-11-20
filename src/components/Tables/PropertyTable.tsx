@@ -52,7 +52,7 @@ function PropertyTable() {
     }, []);
 
     const initPropertyTable = () => {
-        const apiUrl = 'https://api.renoxpert.my/api/properties';
+        const apiUrl = 'https://sapi.renoxpert.my/api/properties';
         element = document.querySelector('#property_table') as HTMLElement;
         const token = localStorage.getItem('token');
 

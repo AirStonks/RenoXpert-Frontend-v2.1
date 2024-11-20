@@ -1475,7 +1475,7 @@ function CreateOrder() {
                                                 return (
                                                     <li key={key}>
                                                         {attachment.file_url ? (
-                                                            <a href={'https://api.renoxpert.my/api' + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
+                                                            <a href={'https://sapi.renoxpert.my/api' + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
                                                                 {attachment.original_name}
                                                             </a>
                                                         ) : (

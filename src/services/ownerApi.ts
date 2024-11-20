@@ -3,7 +3,7 @@
 import axios, { AxiosError } from 'axios';
 import { handleOwner401Error } from '../utils/error401';
 
-const API_URL = 'https://api.renoxpert.my/api/';
+const API_URL = 'https://sapi.renoxpert.my/api/';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('o_token');

@@ -9,7 +9,7 @@ import { Order } from '../../types';
 import { Slide, toast } from 'react-toastify';
 import ClipboardJS from 'clipboard';
 
-const APP_URL = 'https://api.renoxpert.my/api/';
+const APP_URL = 'https://sapi.renoxpert.my/api/';
 
 function OrderMain() {
     const navigate = useNavigate();

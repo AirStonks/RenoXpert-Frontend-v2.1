@@ -50,7 +50,7 @@ function PackageTable() {
     }, [handleTableClick]);
 
     const initPackageTable = () => {
-        const apiUrl = `https://api.renoxpert.my/api/packages`;
+        const apiUrl = `https://sapi.renoxpert.my/api/packages`;
         const element = document.querySelector('#package_table') as HTMLElement;
         const token = localStorage.getItem('token');
 

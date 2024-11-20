@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'https://api.renoxpert.my/api/';
+const API_URL = 'https://sapi.renoxpert.my/api/';
 
 export class SessionManager {
     static async checkSession(mobile: string, orderId: string): Promise<boolean> {

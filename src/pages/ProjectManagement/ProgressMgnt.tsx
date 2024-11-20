@@ -1064,7 +1064,7 @@ function ProgressMgnt() {
                                                         <div className="flex flex-col">
                                                             <a
                                                                 className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px"
-                                                                href={'https://api.renoxpert.my/api' + (item.file_url)}
+                                                                href={'https://sapi.renoxpert.my/api' + (item.file_url)}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                             >

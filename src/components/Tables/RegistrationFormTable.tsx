@@ -73,7 +73,7 @@ function RegistrationFormTable() {
     }, []);
 
     const initContactTable = () => {
-        const apiUrl = 'https://api.renoxpert.my/api/owner/reno-registration-form';
+        const apiUrl = 'https://sapi.renoxpert.my/api/owner/reno-registration-form';
         element = document.querySelector('#registration_form_table') as HTMLElement;
         const token = localStorage.getItem('token');
 

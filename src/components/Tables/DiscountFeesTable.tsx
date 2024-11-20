@@ -88,7 +88,7 @@ function DiscountFeesTable() {
     }, []);
 
     const initDiscountFeeTable = () => {
-        const apiUrl = 'https://api.renoxpert.my/api/discountFees';
+        const apiUrl = 'https://sapi.renoxpert.my/api/discountFees';
         element = document.querySelector('#discount_fee_table') as HTMLElement;
         const token = localStorage.getItem('token');
 

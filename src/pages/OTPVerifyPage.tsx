@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Slide, toast, ToastContainer } from "react-toastify";
 
-const API_URL = 'https://api.renoxpert.my/api/';
+const API_URL = 'https://sapi.renoxpert.my/api/';
 
 const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmit: (mobile?: string, otp?: string[]) => void, otp: string[], setOtp: React.Dispatch<React.SetStateAction<string[]>> }> = ({ 
     mobile, 
