@@ -7,7 +7,7 @@ import { fetchExistsUser } from '../../services/ownerApi';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
+const API_URL = 'https://api.renoxpert.my/api/';
 
 const OwnerLogin: React.FC = () => {
     const navigate = useNavigate();

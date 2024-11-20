@@ -131,7 +131,7 @@ function DefectInspectionReport() {
                                         <td className="text-sm text-gray-900 pb-3">
                                             <button
                                                 className="btn btn-info btn-sm btn-outline copy-link"
-                                                data-clipboard-text={`${location.protocol}//${window.location.host}/reno/defect-inspection-form?progressId=${renoProgressId}`}
+                                                data-clipboard-text={`${location.protocol}/${window.location.host}/reno/defect-inspection-form?progressId=${renoProgressId}`}
                                             >
                                                 Defect Inspection Form
                                             </button>

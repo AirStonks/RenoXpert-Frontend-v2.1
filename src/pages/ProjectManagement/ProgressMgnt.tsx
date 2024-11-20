@@ -1049,7 +1049,7 @@ function ProgressMgnt() {
                                                         <div className="flex flex-col">
                                                             <a
                                                                 className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px"
-                                                                href={(window.location.hostname === 'localhost' ? import.meta.env.VITE_BACKEND_URL_LOCAL : import.meta.env.VITE_BACKEND_URL_LN) + (item.file_url)}
+                                                                href={'https://api.renoxpert.my/api' + (item.file_url)}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                             >

@@ -9,7 +9,7 @@ import { Order } from '../../types';
 import { Slide, toast } from 'react-toastify';
 import ClipboardJS from 'clipboard';
 
-const APP_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_APP_URL_LOCAL : import.meta.env.VITE_APP_URL_LN;
+const APP_URL = 'https://api.renoxpert.my/api/';
 
 function OrderMain() {
     const navigate = useNavigate();

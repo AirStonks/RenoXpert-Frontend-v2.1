@@ -1304,7 +1304,7 @@ function EditOrderQuotation() {
                                                 return (
                                                     <li key={key}>
                                                         {attachment.file_url ? (
-                                                            <a href={(window.location.hostname === 'localhost' ? import.meta.env.VITE_BACKEND_URL_LOCAL : import.meta.env.VITE_BACKEND_URL_LN) + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
+                                                            <a href={'https://api.renoxpert.my/api' + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
                                                                 {attachment.original_name}
                                                             </a>
                                                         ) : (
