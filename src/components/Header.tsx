@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 function Header() {
 
-  const { user, loading, error } = useUser();
+  const { currentUser, loading, error } = useUser();
 
   if (loading) return <Loading />;
   if (error) return <div>Error: {error}</div>;
@@ -1647,13 +1647,13 @@ function Header() {
                   />
                   <div className="flex flex-col gap-1.5">
                     <span className="text-sm text-gray-800 font-semibold leading-none">
-                      {user.name}
+                      {currentUser.name}
                     </span>
                     <a
                       className="text-xs text-gray-600 hover:text-primary font-medium leading-none"
-                      href="html/demo1/account/home/get-started.html"
+                      href=""
                     >
-                      {user.email}
+                      {currentUser.email}
                     </a>
                   </div>
                 </div>

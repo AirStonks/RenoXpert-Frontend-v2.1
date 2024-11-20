@@ -116,6 +116,32 @@ export const addUser = async (userData: User) => {
     }
 }
 
+export const resetUserPassword = async (userId: number) => {
+    try {
+        const response = await axios.get(API_URL + `users/${userId}/password/reset`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const deactivateUser = async (userId: number) => {
+    try {
+        const response = await axios.get(API_URL + `users/${userId}/deactivate`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+
+
 export const fetchData = async () => {
     try {
         const response = await axios.get(API_URL + 'data', {

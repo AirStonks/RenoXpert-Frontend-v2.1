@@ -1,20 +1,23 @@
 // src\pages\User\UsersMain.tsx
 
 import { Link, useNavigate } from "react-router-dom";
-import UserTable from "../../components/Tables/UserTable";
 import { useEffect, useState } from "react";
 import { User } from "../../types";
-import { userIndex } from "../../services/api";
+import { deactivateUser, userIndex } from "../../services/api";
 import Loading from "../../components/Loading";
+import { useUser } from "../../context/UserContext";
+import { Slide, toast } from "react-toastify";
+import { KTModal } from "../../metronic/core";
 
 type SortOrder = 'asc' | 'desc' | null;
 
 function UsersMain() {
     const navigate = useNavigate();
 
+    const { currentUser, loading, error } = useUser();
+
     const [users, setUsers] = useState<User[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
@@ -22,7 +25,20 @@ function UsersMain() {
     const [sortField, setSortField] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
-    const [selectedUser, setSelectedUser] = useState<{ id: number | string, name: string } | null>(null);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
 
     useEffect(() => {
         document.title = "Users | RenoXpert";
@@ -67,7 +83,6 @@ function UsersMain() {
             setTotalItems(response?.totalCount || 0);
         } catch (error) {
             console.error('Error searching users:', error);
-            setError('Failed to search users');
         } finally {
             setIsLoading(false);
         }
@@ -117,6 +132,25 @@ function UsersMain() {
 
     const totalPages = Math.ceil(totalItems / size);
 
+    const handleDeactivateUser = async (userId: number) => {
+        try {
+            const response = await deactivateUser(userId);
+
+            if (response?.success) {
+                initUserTable(page, size, searchTerm);
+                notify('success', 'User deactivated successfully!');
+
+                const deactiveModalEL = document.getElementById('deactive_user_modal') as HTMLElement;
+                const deactiveModal = KTModal.getInstance(deactiveModalEL);
+
+                deactiveModal.hide();
+            }
+
+        } catch (error) {
+            console.error('Error deactivating user:', error);
+        }
+    };
+
     return (
         <>
             {/* Loading Overlay */}
@@ -128,12 +162,22 @@ function UsersMain() {
                         User Overview
                     </span>
                 </div>
-                <Link
-                    to={'/users/add'}
-                    className="btn btn-info btn-sm"
-                >
-                    Add User
-                </Link>
+                <div className="flex gap-2">
+                    <Link
+                        to={'/users/add'}
+                        className="btn btn-info btn-sm"
+                    >
+                        Add User
+                    </Link>
+                    
+                    <Link
+                        to={'/users/add/owner'}
+                        className="btn btn-warning btn-sm disabled"
+                    >
+                        Add Owner
+                    </Link>
+                    
+                </div>
             </div>
 
             <div className="card">
@@ -201,6 +245,22 @@ function UsersMain() {
                                     </div>
                                 </th>
                                 <th
+                                    className='w-[175px] text-center cursor-pointer hover:bg-gray-50'
+                                    onClick={() => handleSort('phone_no')}
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        Phone No. {getSortIcon('phone_no')}
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[175px] text-center cursor-pointer hover:bg-gray-50'
+                                    onClick={() => handleSort('email')}
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        Email {getSortIcon('email')}
+                                    </div>
+                                </th>
+                                <th
                                     className='w-[150px] text-center cursor-pointer hover:bg-gray-50'
                                     onClick={() => handleSort('type')}
                                 >
@@ -226,43 +286,44 @@ function UsersMain() {
                                         key={userIndex}
                                         className={`${userIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
                                     >
+                                        <td></td>
                                         <td>
-
+                                            <span>{user.name}</span>
                                         </td>
                                         <td>
-                                            <div className="flex flex-col gap-1">
-                                                <span>{user.name}</span>
-                                                <span className="text-xs text-slate-400">{user.email}</span>
-                                                <span className="text-xs text-slate-700">+60 {user.phone_no}</span>
-                                            </div>
+                                            +60 {user.phone_no}
                                         </td>
                                         <td>
+                                            {user.email}
+                                        </td>
+                                        <td className="text-center">
                                             {user.type}
                                         </td>
-                                        <td>
-
+                                        <td className="text-center">
+                                            {user.status}
                                         </td>
                                         <td>
                                             <div className="flex justify-around gap-2">
-                                                <button
-                                                    className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                                    data-tooltip="#edit_tooltip"
-                                                    data-action="edit"
-                                                    data-id="${data.id}"
-                                                    data-modal-toggle="#edit_contact_modal"
+                                                <Link
+                                                    to={'/users/' + user.id}
+                                                    className="btn btn-sm btn-light"
                                                 >
-                                                    <i className="ki-outline ki-notepad-edit"></i>
-                                                </button>
+                                                    View
+                                                </Link>
 
-                                                <button
-                                                    className="btn-delete btn btn-sm btn-icon btn-clear btn-light"
-                                                    data-tooltip="#remove_tooltip"
-                                                    data-action="delete"
-                                                    data-id="${data.id}"
-                                                    data-name="${data.name}"
-                                                    data-modal-toggle="#delete_item_modal">
-                                                    <i className="ki-outline ki-trash"></i>
-                                                </button>
+                                                {/* do not display it if user.status === 'deactivated' */}
+                                                {((currentUser?.type === 'super-admin' && user.type !== 'super-admin') ||
+                                                    (currentUser?.type === 'admin' && user.type === 'staff')) &&
+                                                    user.status !== 'deactivated' && (
+                                                        <button
+                                                            className="btn btn-sm btn-danger"
+                                                            data-tooltip="#remove_tooltip"
+                                                            data-modal-toggle="#deactive_user_modal"
+                                                            onClick={() => setSelectedUser(user)}
+                                                        >
+                                                            Deactivate
+                                                        </button>
+                                                    )}
                                             </div>
                                         </td>
                                     </tr>
@@ -370,7 +431,48 @@ function UsersMain() {
                 </div>
             </div>
 
-            {/* <UserTable /> */}
+            <div className="modal" data-modal="true" id="deactive_user_modal">
+                <div className="modal-content max-w-[600px] top-[20%]">
+                    <div className="modal-header">
+                        <h3 className="modal-title">
+                            Deactivate User
+                        </h3>
+                        <button className="btn btn-xs btn-icon btn-light" data-modal-dismiss="true">
+                            <i className="ki-outline ki-cross">
+                            </i>
+                        </button>
+                    </div>
+                    <div className="modal-body mb-4">
+                        <h3 className="text-lg font-medium text-gray-900 text-center my-6">
+                            <i className="ki-solid ki-information-3 text-7xl text-warning"></i>
+                        </h3>
+
+                        <div className="text-2sm text-center text-gray-700 mb-2">
+                            Are you sure to deactivate this user?
+                        </div>
+
+                        <div className="text-2sm text-center font-bold text-gray-700 mb-6">
+                            <div className="flex flex-col">
+                                <span>{selectedUser?.name_first} {selectedUser?.name_last}</span>
+                                <span className="font-semibold text-gray-500">{selectedUser?.email}</span>
+                                <span className="font-semibold text-gray-700">+60 {selectedUser?.phone_no}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-center items-center gap-4">
+                            <button className="btn btn-light" data-modal-dismiss="true">
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-danger"
+                                onClick={() => handleDeactivateUser(Number(selectedUser?.id))}
+                            >
+                                Deactivate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </>
     );
 }

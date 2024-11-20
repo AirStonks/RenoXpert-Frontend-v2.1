@@ -1,6 +1,6 @@
 // src\App.tsx
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import KTComponent from './metronic/core';
 import KTLayout from './metronic/app/layouts/demo1';
@@ -67,6 +67,8 @@ import OperationHome from './pages/OperationPages/OperationHome';
 import QCFormDetail from './pages/OperationPages/QCFormDetail';
 import DefectInspectionFormPage from './pages/OperationPages/DefectInspectionFormPage';
 import QCFormPage from './pages/OperationPages/QCFormPage';
+import UserDetail from './pages/User/UsesrDetail';
+import AddOwner from './pages/User/AddOwner';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -98,7 +100,7 @@ const routes = [
 
   { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
 
-  
+
   /*--- OPERATION SITE ---*/
   { path: '/op/login', element: <OperationLogin />, layout: null },
   { path: '/op/home', element: <OperationHome />, layout: OperationProtectedLayout },
@@ -122,8 +124,6 @@ const routes = [
 
   /*--- TEST ---*/
   { path: '/test', element: <Test />, layout: null },
-  { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
-  { path: '/users/add', element: <AddUser />, layout: ProtectedLayout },
 
 
 
@@ -141,7 +141,7 @@ const routes = [
 
   /*--- PROFILE ---*/
   { path: '/profile/change-password', element: <ChangePassword />, layout: ProtectedLayout },
-  
+
 
   /*--- PRODUCT ---*/
   { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
@@ -197,6 +197,13 @@ const routes = [
   { path: '/reno-progress', element: <PMMain />, layout: ProtectedLayout },
   { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
   { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
+
+
+  /*--- USERS ---*/
+  { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
+  { path: '/users/:id', element: <UserDetail />, layout: ProtectedLayout },
+  { path: '/users/add', element: <AddUser />, layout: ProtectedLayout },
+  { path: '/users/add/owner', element: <AddOwner />, layout: ProtectedLayout },
 
 
   /*--- DEVELOPER TOOLS ---*/

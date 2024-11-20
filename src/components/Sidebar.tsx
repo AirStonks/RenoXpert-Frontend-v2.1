@@ -3,7 +3,7 @@ import { useUser } from '../context/UserContext';
 import Loading from './Loading';
 
 function Sidebar() {
-  const { user, loading, error } = useUser();
+  const { currentUser, loading, error } = useUser();
 
   if (loading) return <Loading />;
   if (error) return <div>Error: {error}</div>;

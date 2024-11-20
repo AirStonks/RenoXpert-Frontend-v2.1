@@ -250,7 +250,7 @@ function PMMain() {
                                         <td className="text-center">
                                             {/* Add warning icon if remaining date is less than 7 days */}
                                             <div className="flex gap-2 justify-center items-center">
-                                                {Math.ceil((new Date(progress.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) < 7 && (
+                                                {Math.ceil((new Date(progress.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) < 7 && progress.end_date !== null && (
                                                     <i className="ki-filled ki-information-3 text-danger text-xl"></i>
                                                 )}
                                                 <span>

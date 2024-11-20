@@ -30,6 +30,7 @@ export interface User {
     email?: string;
     phone_no?: string;
     type?: string;
+    status?: string;
     address?: Address;
     password?: string;
     created_at?: string;
@@ -218,6 +219,7 @@ export interface Payment {
 
 export interface OwnerRegistrationForm {
     id?: string;
+    form_no?: string;
     salutations?: string;
     name_first?: string;
     name_last?: string;
