@@ -39,7 +39,7 @@ const Login: React.FC = () => {
         try {
             const userData = await userLogin(emailWithDomain, formData.password);
             if (userData) {
-                navigate('/'); // Redirect to dashboard on successful userLogin
+                navigate('/dashboard'); // Redirect to dashboard on successful userLogin
             }
         } catch (err) {
             setError('Invalid userLogin credentials. Please try again.');

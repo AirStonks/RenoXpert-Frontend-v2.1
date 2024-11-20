@@ -19,7 +19,7 @@ function Sidebar() {
       className="sidebar-header hidden lg:flex items-center relative justify-center mt-4 px-3 lg:px-6 shrink-0"
       id="sidebar_header"
     >
-      <Link className="dark:hidden" to="/">
+      <Link className="dark:hidden" to="/dashboard">
         <img
           className="default-logo min-h-[22px] h-[65px] max-w-none"
           src="/app/RenoExpert_logo-01.svg"
@@ -29,7 +29,7 @@ function Sidebar() {
           src="/app/RenoExpert_icon-01.svg"
         />
       </Link>
-      <Link className="hidden dark:block" to="/">
+      <Link className="hidden dark:block" to="/dashboard">
         <img
           className="default-logo min-h-[22px] h-[65px] max-w-none"
           src="/app/RenoExpert_logo-01.svg"
@@ -68,7 +68,7 @@ function Sidebar() {
           id="sidebar_menu"
         >
           <div className="menu-item">
-            <Link to="/" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
+            <Link to="/dashboard" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
               <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
                 <i className="ki-filled ki-element-11 text-lg"></i>
               </span>

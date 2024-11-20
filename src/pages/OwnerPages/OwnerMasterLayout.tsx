@@ -15,7 +15,7 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
         <main className="grow pt-5 items-center" id="content" role="content">
             <div className="flex flex-col items-center">
                 <div className="container relative flex items-center justify-center" id="content_container">
-                    <div className="flex flex-col flex-wrap gap-6 pb-28 justify-center items-center w-full max-w-4xl">
+                    <div className="flex flex-col flex-wrap gap-6 pb-40 justify-center items-center w-full max-w-4xl">
                         <Link
                             to={'/owner/home'}
                         >

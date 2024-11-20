@@ -1175,7 +1175,7 @@ function QCFormDetail() {
                     ))}
                 </div>
             </div>
-            <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2">
+            <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2">
             </div>
         </div>
     )

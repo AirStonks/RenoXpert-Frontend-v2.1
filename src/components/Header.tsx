@@ -752,7 +752,7 @@ function Header() {
                               <div className="flex">
                                 <img
                                   className="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6"
-                                  src="/media/avatars/300-2.png"
+                                  src="/media/avatars/default-user.png"
                                 />
                               </div>
                             </div>
@@ -955,7 +955,7 @@ function Header() {
                               <div className="flex">
                                 <img
                                   className="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6"
-                                  src="/media/avatars/300-2.png"
+                                  src="/media/avatars/default-user.png"
                                 />
                               </div>
                               <div className="flex">
@@ -1634,7 +1634,7 @@ function Header() {
               <img
                 alt=""
                 className="size-9 rounded-full border-2 border-success shrink-0"
-                src="/media/avatars/300-2.png"
+                src="/media/avatars/default-user.png"
               />
             </div>
             <div className="menu-dropdown menu-default light:border-gray-300 w-full max-w-[250px]">
@@ -1643,7 +1643,7 @@ function Header() {
                   <img
                     alt=""
                     className="size-9 rounded-full border-2 border-success"
-                    src="/media/avatars/300-2.png"
+                    src="/media/avatars/default-user.png"
                   />
                   <div className="flex flex-col gap-1.5">
                     <span className="text-sm text-gray-800 font-semibold leading-none">
