@@ -6,7 +6,7 @@ import { Slide, toast, ToastContainer } from "react-toastify";
 
 const API_URL = 'https://api.renoxpert.my/api/';
 
-const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmit: (e: React.FormEvent) => void, otp: string[], setOtp: React.Dispatch<React.SetStateAction<string[]>> }> = ({ 
+const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmit: (mobile?: string, otp?: string[]) => void, otp: string[], setOtp: React.Dispatch<React.SetStateAction<string[]>> }> = ({ 
     mobile, 
     countryCode, 
     handleSubmit, 
@@ -171,7 +171,7 @@ const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmi
                         <button
                             className="btn btn-primary flex justify-center grow"
                             type="button"
-                            onClick={handleSubmit}
+                            onClick={() => handleSubmit(mobile, otp)}
                         >
                             Continue
                         </button>

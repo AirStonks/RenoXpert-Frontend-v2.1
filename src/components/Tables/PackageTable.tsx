@@ -65,7 +65,7 @@ function PackageTable() {
             requestHeaders: {
                 'Authorization': `Bearer ${token}`,
             },
-            pageSize: 5,
+            pageSize: 2,
             stateSave: false,
             columns: {
                 id: { title: 'ID' },

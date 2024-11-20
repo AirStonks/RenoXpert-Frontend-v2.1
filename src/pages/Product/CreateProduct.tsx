@@ -34,6 +34,7 @@ const initProductData: Product = {
             excluded_price: 0,
         }
     },
+    task_weightage: null,
     status: 'available'
 }
 
@@ -128,7 +129,7 @@ function CreateProduct() {
             setErrors(validationErrors);
             return;
         }
-        
+
         try {
             const response = await createProduct(formData);
 
@@ -207,6 +208,29 @@ function CreateProduct() {
                                     <span className="text-xs text-gray-600 tracking-wide">
                                         Set the product status.
                                     </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-body">
+                            <div className="flex flex-col">
+                                {/* Header */}
+                                <h1 className='text-xl mb-4 font-semibold text-gray-900'>Project Management</h1>
+
+                                {/* Task Weightage */}
+                                <div className="flex flex-col">
+                                    <InputFieldGroup
+                                        fieldTitle="Task Weightage"
+                                        description="Define the weightage of this task."
+                                        placeholder="0 - 10"
+                                        name="task_weightage"
+                                        type='number'
+                                        value={formData.task_weightage}
+                                        onChange={handleChange}
+                                        error={errors.task_weightage}
+                                    />
                                 </div>
                             </div>
                         </div>

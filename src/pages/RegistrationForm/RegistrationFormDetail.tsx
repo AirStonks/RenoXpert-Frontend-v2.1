@@ -337,8 +337,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.foyer_entrance.lights"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.foyer_entrance.lights === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.foyer_entrance.lights === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -384,8 +384,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.kitchen.kitchen_cabinet"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.kitchen.kitchen_cabinet === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.kitchen.kitchen_cabinet === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -409,8 +409,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.kitchen.kitchen_island"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.kitchen.kitchen_island === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.kitchen.kitchen_island === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -434,8 +434,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.kitchen.sink_tap"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.kitchen.sink_tap === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.kitchen.sink_tap === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -459,8 +459,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.kitchen.hood_hob"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.kitchen.hood_hob === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.kitchen.hood_hob === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -484,8 +484,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.kitchen.microwave"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.kitchen.microwave === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.kitchen.microwave === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -509,8 +509,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.kitchen.oven"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.kitchen.oven === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.kitchen.oven === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -534,8 +534,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.kitchen.water_dispenser"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.kitchen.water_dispenser === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.kitchen.water_dispenser === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -559,8 +559,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.kitchen.fridge"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.kitchen.fridge === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.kitchen.fridge === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -584,8 +584,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.kitchen.lights"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.kitchen.lights === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.kitchen.lights === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -631,8 +631,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.yard.washer"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.yard.washer === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.yard.washer === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -656,8 +656,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.yard.dryer"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.yard.dryer === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.yard.dryer === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -681,8 +681,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.yard.lights"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.yard.lights === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.yard.lights === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -727,8 +727,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.dining.dining_table_chairs"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.dining.dining_table_chairs === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.dining.dining_table_chairs === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -752,8 +752,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.dining.lights"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.dining.lights === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.dining.lights === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -777,8 +777,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.dining.fan"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.dining.fan === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.dining.fan === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -824,8 +824,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.living.sofa"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.living.sofa === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.living.sofa === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -849,8 +849,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.living.coffee_table"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.living.coffee_table === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.living.coffee_table === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -874,8 +874,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.living.tv"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.living.tv === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.living.tv === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -899,8 +899,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.living.tv_cabinet"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.living.tv_cabinet === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.living.tv_cabinet === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -924,8 +924,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.living.fan"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.living.fan === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.living.fan === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -949,8 +949,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.living.lights"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.living.lights === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.living.lights === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 
@@ -974,8 +974,8 @@ function RegistrationFormDetail() {
                                             <input
                                                 type="radio"
                                                 name="furnishing.living.ac"
-                                                value="not_furnish"
-                                                checked={formDetail.furnishing.living.ac === 'not_furnish'}
+                                                value="not-furnish"
+                                                checked={formDetail.furnishing.living.ac === 'not-furnish'}
                                                 className="radio radio-lg h-4 w-4 text-blue-600"
                                                 readOnly
 

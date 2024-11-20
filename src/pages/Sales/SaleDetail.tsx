@@ -1,6 +1,6 @@
 // src\pages\Sales\SaleDetail.tsx
 
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchSale from "../../hook/useFetchSale";
 import Loading from "../../components/Loading";
 import GenerateInvoiceModal from "../../components/Modals/GenerateInvoiceModal";
@@ -13,6 +13,7 @@ import { testGenerateProgress } from "../../services/api";
 
 function SaleDetail() {
     const navigate = useNavigate();
+    const { state } = useLocation();
     const { id } = useParams<{ id: string }>();
     const saleId = id ? parseInt(id, 10) : null;
 
@@ -30,7 +31,11 @@ function SaleDetail() {
     }, [saleDetail]);
 
     const handleBackClick = () => {
-        navigate('/sales');
+        if (state) {
+            navigate(state.fromUrl);
+        } else {
+            navigate('/sales');
+        }
     };
 
     const handleUpdateSale = (updatedSale: Sale) => {

@@ -5,7 +5,7 @@ import { DiscountFee, Invoice, Sale } from "../../types";
 import { createInvoice, fetchDiscountFees } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { KTModal } from "../../metronic/core";
+import { KTDropdown, KTModal } from "../../metronic/core";
 
 interface GenerateInvoiceModalProps {
     saleDetail: Sale;
@@ -46,7 +46,25 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
             ...prev,
             saleId: saleDetail.id,
         }));
+
+        initDropdown();
+
     }, [saleDetail]);
+
+    const initDropdown = async () => {
+        const discountFeeDropdownEl = document.querySelector('#discount_fee_dropdown') as HTMLElement;
+        const discountFeeDropdown = KTDropdown.getInstance(discountFeeDropdownEl);
+
+        discountFeeDropdown.on('shown', async () => {
+            try {
+                const data = await fetchDiscountFees('', 6, 'fee');
+                setAvailableDiscountFees(data.data);
+
+            } catch (error) {
+                console.error('Error fetching available fees:', error);
+            }
+        });
+    }
 
     const handlePercentageSelect = useCallback(async (event: React.MouseEvent<HTMLButtonElement>) => {
         const target = event.currentTarget as HTMLElement;

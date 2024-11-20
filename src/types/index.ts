@@ -70,6 +70,7 @@ export interface Product {
     type?: string;
     description?: string;
     uom?: string;
+    task_weightage?: number;
     status?: string;
     created_at?: string;
     updated_at?: string;
@@ -830,8 +831,14 @@ export interface Attachment {
 export interface RenoProgress {
     id?: string,
     sale_id?: string,
+    sale?: Sale,
     phases?: ProgressPhase[],
     status?: string,
+    start_date?: string,
+    end_date?: string,
+    pre_reno_completion?: number,
+    reno_completion?: number,
+    post_reno_completion?: number,
     completed_at?: string,
     created_at?: string,
     updated_at?: string,
@@ -865,6 +872,7 @@ export interface JobTask {
     name?: string,
     phase_id?: string,
     priority?: number,
+    task_weightage?: number,
     is_supplied?: boolean,
     is_installed?: boolean,
     supply_date?: string,

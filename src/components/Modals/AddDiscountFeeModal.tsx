@@ -6,14 +6,18 @@ import { KTModal } from "../../metronic/core";
 import { DiscountFee } from "../../types";
 import { createDiscountFee } from "../../services/api";
 
-function AddDiscountFeeModal() {
+interface AddDiscountFeeModalProps {
+    refreshTableFunction: () => void;  // Assuming this function type
+  }
+
+  
+function AddDiscountFeeModal({ refreshTableFunction }: AddDiscountFeeModalProps) {
     const [formData, setFormData] = useState({
         name: '',
         type: 'discount',
         method: 'byPercentage',
         value: '',
     });
-
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -55,6 +59,8 @@ function AddDiscountFeeModal() {
                 const addDiscountFeeModal = KTModal.getInstance(addDiscountFeeModalEl);
 
                 addDiscountFeeModal.hide();
+
+                refreshTableFunction();
             }
 
         } catch (error) {

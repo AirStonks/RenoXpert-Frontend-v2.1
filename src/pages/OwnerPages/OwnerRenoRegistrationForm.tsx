@@ -9,6 +9,9 @@ import Resizer from 'react-image-file-resizer';
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { getOwnerUser, getProperties } from "../../services/publicApi";
+import axios from "axios";
+
+const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
 
 interface FormErrors {
     [key: string]: string | undefined; // Use string or undefined for error messages
@@ -614,14 +617,13 @@ function OwnerRenoRegistrationForm() {
         setValidateOtp(true);
     }
 
-    const handleSubmit = async () => {
-
+    const handleSubmit = async (mobile: string, otp: string[]) => {
         const validationErrors = validate();
         const formDataToSend = new FormData();
+        const code = otp.join('');
 
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
-            console.log('chk1');
             return;
         }
 
@@ -632,62 +634,56 @@ function OwnerRenoRegistrationForm() {
             }
         }
 
-        // Append other form data from your state (formData)
-        for (const key in formData) {
-            if (formData.hasOwnProperty(key)) {
-                const value = formData[key];
-
-                // Check if the value is an object
-                if (typeof value === 'object' && value !== null) {
-                    // Convert the object to a JSON string
-                    formDataToSend.append(key, JSON.stringify(value));
-                } else {
-                    // Append the value as is
-                    formDataToSend.append(key, value);
-                }
-            }
-        }
-
-        // Append files to the FormData
-        files.forEach((file) => {
-            formDataToSend.append('attachments[]', file.file);
-        });
-
         try {
-            const response = await submitRegistrationForm(formDataToSend);
+            const requestBody = {
+                mobile: mobile,
+                otp_code: code
+            };
 
-            if (response?.success) {
-                console.log(response);
-                navigate('/owner/reno-registration-form/success');
+            const res = await axios.post(`${API_URL}sms-otp/verify`, requestBody);
+
+            if (res.data.status === 'verified') {
+                notify('success', 'OTP has been verified successfully.');
+                // Append other form data from your state (formData)
+                for (const key in formData) {
+                    if (formData.hasOwnProperty(key)) {
+                        const value = formData[key];
+
+                        // Check if the value is an object
+                        if (typeof value === 'object' && value !== null) {
+                            // Convert the object to a JSON string
+                            formDataToSend.append(key, JSON.stringify(value));
+                        } else {
+                            // Append the value as is
+                            formDataToSend.append(key, value);
+                        }
+                    }
+                }
+
+                // Append files to the FormData
+                files.forEach((file) => {
+                    formDataToSend.append('attachments[]', file.file);
+                });
+
+                try {
+                    const response = await submitRegistrationForm(formDataToSend);
+
+                    if (response?.success) {
+                        console.log(response);
+                        navigate('/owner/reno-registration-form/success');
+                    } else {
+                        console.log('error');
+                    }
+
+                } catch (error) {
+                    console.log(error);
+                }
             } else {
-                console.log('error');
+                notify('error', 'Invalid OTP');
             }
-
         } catch (error) {
-            console.log(error);
+            notify('error', 'Invalid OTP');
         }
-
-
-        // const metadataString = JSON.stringify(formData.furnishing)
-
-        // setFormData((prevData) => ({
-        //     ...prevData,
-        //     metadata: metadataString,
-        // }));
-
-        // const attachments = files.reduce((acc, file) => {
-        //     acc[file.id] = {
-        //         id: file.id,
-        //         file: file.file,
-        //         fileUrl: file.previewUrl, // Optional, depending on your needs
-        //     };
-        //     return acc;
-        // }, {} as { [key: string]: { id?: number; file?: File; fileUrl?: string } });
-
-        // const updatedFormData: OwnerRegistrationForm = {
-        //     ...formData,
-        //     attachments,
-        // };
     };
 
     const getLabel = (value, options) => {

@@ -1,18 +1,133 @@
 // src\pages\Order\OrderMain.tsx
 
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import OrderTable from '../../components/Tables/OrderTable';
-// import CreatePropertyModal from '../../components/Modals/CreatePropertyModal';
-// import PropertyTable from '../../components/Tables/PropertyTable';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { orderIndex, removeOrder } from '../../services/api';
+import DeleteModal from '../../components/Modals/DeleteModal';
+import Loading from '../../components/Loading';
+import { Order } from '../../types';
+import { Slide, toast } from 'react-toastify';
+import ClipboardJS from 'clipboard';
+
+const APP_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_APP_URL_LOCAL : import.meta.env.VITE_APP_URL_LN;
 
 function OrderMain() {
+    const navigate = useNavigate();
+
+    const [orders, setOrders] = useState<Order[]>([]); // Initialize as an empty array
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState<number>(1);
+    const [size, setSize] = useState<number>(10);
+    const [totalItems, setTotalItems] = useState<number>(0);
+    const [searchTerm, setSearchTerm] = useState<string>('');
+
+    const [selectedOrder, setSelectedOrder] = useState<{ id: number | string, name: string } | null>(null);
+
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
+
     useEffect(() => {
         document.title = "Orders | RenoXpert";
-    }, []);
+        initOrderTable(page, size);
+
+        const clipboard = new ClipboardJS('.copy-link');
+
+        clipboard.on('success', function (e) {
+            notify('success', 'Copied to clipboard!');
+            e.clearSelection();
+        });
+
+        // Cleanup the ClipboardJS instance
+        return () => {
+            clipboard.destroy();
+        };
+
+    }, [page, size]);
+
+    const initOrderTable = async (page: number, size: number, searchTerm?: string) => {
+        try {
+            setIsLoading(true);
+            const response = await orderIndex(size, page, searchTerm);
+
+            const data = response?.data || [];
+            setOrders(data);
+
+            setTotalItems(response?.totalCount || 0);
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            setError('Failed to load orders');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRefreshTable = async () => {
+        initOrderTable(page, size, searchTerm);
+    };
+
+    const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        setSearchTerm(value);
+
+        try {
+            setIsLoading(true);
+            const response = await orderIndex(size, page, value);
+
+            const data = response?.data || [];
+            setOrders(data);
+            setTotalItems(response?.totalCount || 0);
+        } catch (error) {
+            console.error('Error searching orders:', error);
+            setError('Failed to search orders');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
+        setPage(newPage);
+    };
+
+    const handleSizeChange = (newSize: number) => {
+        setSize(newSize);
+        setPage(1); // Reset to the first page when changing the page size
+    };
+
+    const totalPages = Math.ceil(totalItems / size);
+
+    const handleRemoveOrder = async (orderId: number) => {
+        try {
+            const response = await removeOrder(orderId);
+
+            if (response?.success) {
+                initOrderTable(page, size);
+                return { success: true };
+            }
+            return { success: false };
+
+        } catch (error) {
+            console.log(error);
+            return { success: false, message: 'Quotation removal failed' };
+        }
+    }
 
     return (
         <>
+            {/* Loading Overlay */}
+            {isLoading && <Loading />}
+
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center flex-wrap">
                     <span className="text-2xl font-bold text-gray-900">
@@ -30,9 +145,285 @@ function OrderMain() {
                     </div>
                 </div>
 
-                <OrderTable  />
-                {/* <CreatePropertyModal /> */}
+                <div className="card">
+                    <div className="card-header flex-wrap gap-2">
+                        <div className="card-title">
+                            Order Overview
+                        </div>
+                        <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
+                            <button
+                                className="btn-refresh"
+                                onClick={handleRefreshTable}
+                            >
+                                <i className="ki-solid ki-arrows-circle text-lg"></i>
+                            </button>
+                            <div className="flex">
+                                <label className="input input-sm">
+                                    <i className="ki-filled ki-magnifier"></i>
+                                    <input
+                                        placeholder="Search packages"
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={handleSearch}
+                                    />
+                                </label>
+                            </div>
+                            <div className="flex flex-wrap gap-2.5">
+                                {/* <select className="select select-sm w-28">
+                                    <option value="1">
+                                        Latest
+                                    </option>
+                                    <option value="2">
+                                        Older
+                                    </option>
+                                    <option value="3">
+                                        Oldest
+                                    </option>
+                                </select>
+                                <button className="btn btn-sm btn-outline btn-primary">
+                                    <i className="ki-filled ki-setting-4">
+                                    </i>
+                                    Filters
+                                </button>
+                                <label className="switch switch-sm">
+                                    <input className="order-2" name="check" type="checkbox" value="1" />
+                                    <span className="switch-label order-1">Push Alerts</span>
+                                </label> */}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="card-table">
+                        <table className="table align-middle text-gray-700 font-medium text-sm">
+                            <thead>
+                                <tr>
+                                    <th className='w-[100px]'>Order No.</th>
+                                    <th className='w-[100px] text-center'>Status</th>
+                                    <th className='w-[120px] text-center'>Owner</th>
+                                    <th className='w-[80px] text-center'>Unit</th>
+                                    <th className='w-[150px] text-center'>Property</th>
+                                    <th className='w-[120px] text-center'>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {orders.length > 0 ? (
+                                    orders.map((order, orderIndex) => (
+                                        <tr
+                                            key={orderIndex}
+                                            className={`${orderIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
+                                        >
+                                            <td>
+                                                <div className="flex flex-col gap-1">
+                                                    <Link
+                                                        to={`/orders/${order.id}`}
+                                                        className="cursor-pointer text-orange-500"
+                                                    >
+                                                        {order.order_no}
+                                                    </Link>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <span className={`badge badge-pill p-2 cursor-default
+                                                    ${order.status === 'confirmed' ? 'badge-success' : ''} 
+                                                    ${order.status === 'revoked' ? 'badge-danger' : ''} 
+                                                    badge-outline`}
+                                                >
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="flex flex-col gap-1">
+                                                    <span>{order.user.name}</span>
+                                                    <span className="text-xs text-slate-400">{order.user.email}</span>
+                                                    <span className="text-xs text-slate-700">+60 {order.user.phone_no}</span>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col gap-1">
+                                                    <span>{order.block}-{order.floor}-{order.unit_no}</span>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col gap-1">
+                                                    <span>{order.property.name}</span>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex justify-around gap-2">
+                                                    <button
+                                                        className="btn btn-sm btn-outline btn-info copy-link"
+                                                        data-clipboard-text={`${APP_URL}owner/order/overview/id/${order.id}`}
+                                                    >
+                                                        Copy Link
+                                                    </button>
+
+                                                    {order.status !== 'confirmed' && order.status !== 'revoked' ?
+                                                        <>
+                                                            <button
+                                                                className="btn-confirm btn btn-xs btn-success"
+                                                                data-tooltip="#confirm_tooltip"
+                                                                data-action="confirm"
+                                                                data-id="${data.id}"
+                                                            >
+                                                                C
+                                                            </button>
+                                                            <Link
+                                                                to={`/orders/edit/${order.id}`}
+                                                                className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
+                                                            >
+                                                                <i className="ki-outline ki-notepad-edit"></i>
+                                                            </Link>
+                                                            <button
+                                                                className="btn-delete btn btn-sm btn-icon btn-clear btn-light"
+                                                                data-modal-toggle="#delete_item_modal"
+                                                                onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
+                                                            >
+                                                                <i className="ki-outline ki-trash"></i>
+                                                            </button>
+                                                        </>
+                                                        :
+                                                        ''
+                                                    }
+
+                                                    {order.status === 'confirmed' ?
+                                                        <Link
+                                                            to={`/orders/edit/${order.id}`}
+                                                            className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
+                                                        >
+                                                            <i className="ki-outline ki-notepad-edit"></i>
+                                                        </Link>
+                                                        :
+                                                        ''
+                                                    }
+
+                                                    {order.status === 'revoked' ?
+                                                        <button
+                                                            className="btn-regenerate btn btn-sm btn-warning"
+                                                            data-tooltip="#regenerate_tooltip"
+                                                            data-action="regenerate"
+                                                            data-id="${data.id}"
+                                                        >
+                                                            Regenerate Order
+                                                        </button>
+                                                        :
+                                                        ''
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={7} className="text-center text-gray-500">
+                                            No orders available
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="card-footer justify-center md:justify-between flex-col md:flex-row gap-3 text-gray-600 text-2sm font-medium">
+                        <div className="flex items-center gap-2">
+                            Show
+                            <select
+                                className="select select-sm w-16"
+                                name="perpage"
+                                value={size}
+                                onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                            >
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                                <option value="50">50</option>
+                            </select>
+                            per page
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span>
+                            <div className="pagination">
+                                {/* Previous Page Button */}
+                                <button
+                                    className={`btn ${page === 1 ? 'disabled' : ''}`}
+                                    onClick={() => handlePageChange(page - 1)}
+                                >
+                                    <i className="ki-outline ki-black-left"></i>
+                                </button>
+
+                                {/* Page Number Buttons with Ellipses */}
+                                {totalPages > 0 && (
+                                    <>
+                                        {page > 3 && (
+                                            <>
+                                                <button
+                                                    className="btn"
+                                                    onClick={() => handlePageChange(1)}
+                                                >
+                                                    1
+                                                </button>
+                                                <span className="btn btn-disabled">...</span>
+                                            </>
+                                        )}
+
+                                        {Array.from({
+                                            length: Math.min(3, totalPages)
+                                        }, (_, index) => {
+                                            // Determine the start of the 3-page window
+                                            const startPage = Math.max(1,
+                                                Math.min(
+                                                    page - 1,
+                                                    totalPages - 2
+                                                )
+                                            );
+
+                                            const currentPage = startPage + index;
+                                            return (
+                                                <button
+                                                    key={currentPage}
+                                                    className={`btn ${page === currentPage ? 'active' : ''}`}
+                                                    onClick={() => handlePageChange(currentPage)}
+                                                >
+                                                    {currentPage}
+                                                </button>
+                                            );
+                                        })}
+
+                                        {page < totalPages - 2 && (
+                                            <>
+                                                <span className="btn btn-disabled">...</span>
+                                                <button
+                                                    className="btn"
+                                                    onClick={() => handlePageChange(totalPages)}
+                                                >
+                                                    {totalPages}
+                                                </button>
+                                            </>
+                                        )}
+                                    </>
+                                )}
+
+                                {/* Next Page Button */}
+                                <button
+                                    className={`btn ${page === totalPages ? 'disabled' : ''}`}
+                                    onClick={() => handlePageChange(page + 1)}
+                                >
+                                    <i className="ki-outline ki-black-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <DeleteModal
+                item={selectedOrder}
+                modalTitle='Remove Order'
+                modalPrompt='Are you sure to permanently remove this order:'
+                notifySuccess='Order Removed Successfully!'
+                notifyError='Order remove failed'
+                navigateUrl='/orders'
+                deleteFunction={handleRemoveOrder}
+            />
         </>
     );
 }

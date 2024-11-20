@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { KTModal } from '../../metronic/core';
 
 interface DeleteModalProps {
-    item: { id: number, name: string } | null;
+    item: { id: number |string, name: string } | null;
     modalTitle?: string;
     modalPrompt?: string;
     notifySuccess?: string;
@@ -52,7 +52,11 @@ function DeleteModal({
                 modal.hide();
                 
                 // navigate(navigateUrl || '/', { replace: true }); // Navigate to the specified URL or default to /products
-                navigate(0);
+                if (navigateUrl) {
+                    navigate(navigateUrl, { replace: true });
+                } else {
+                    navigate(0);
+                }
                 
             } else {
                 notify('error', notifyError || 'Error occurred during deletion.');

@@ -6,7 +6,7 @@ interface InputFieldGroupProps {
     placeholder?: string;
     type?: string;
     name: string;
-    value?: string | number;  // Value could be string or undefined
+    value?: string | number;  // Value can be a string, number, or undefined
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     error?: string;  // Add error prop to display validation errors
 }
@@ -17,31 +17,52 @@ const InputFieldGroup: React.FC<InputFieldGroupProps> = ({
     placeholder = "Text...",
     type = "text",
     name,
-    value = '',  // Default to empty string to avoid null issues
+    value = '',  // Default to empty string if no value provided
     onChange,
     error
 }) => {
+    // Handle input change for type number
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let newValue = e.target.value;
+
+        if (type === 'number') {
+            // If the value is empty, allow it to be an empty string
+            if (newValue === '') {
+                newValue = '';
+            } else {
+                // Parse value as a number and check for NaN
+                const parsedValue = parseFloat(newValue);
+                // If parsedValue is NaN, we do not change the value
+                newValue = isNaN(parsedValue) ? '' : parsedValue;
+            }
+        }
+
+        // Call the passed onChange handler with the updated value
+        onChange(e as React.ChangeEvent<HTMLInputElement>);
+    };
+
+    // Ensure the value is either a string or number (for type="number")
+    const displayValue = type === 'number' && value === 0 ? '0' : value || '';
+
     return (
         <div className="flex flex-col mb-8">
-            <label className='mb-2 text-sm font-medium text-gray-900'>
+            <label className="mb-2 text-sm font-medium text-gray-900">
                 {fieldTitle}
             </label>
 
-            {description
-                &&
+            {description && (
                 <span className="text-xs text-gray-600 tracking-wide mb-2">
                     {description}
                 </span>
-            }
-
+            )}
 
             <input
                 className={`input mb-2 ${error ? 'border-red-500' : ''}`}
                 placeholder={placeholder}
                 type={type}
                 name={name}
-                value={value || ''}  // Ensure value is always a string
-                onChange={onChange}
+                value={displayValue}  // Display value as a string, but handle 0 properly
+                onChange={handleChange}
             />
 
             {error && <label className="text-red-500 text-xs">{error}</label>}

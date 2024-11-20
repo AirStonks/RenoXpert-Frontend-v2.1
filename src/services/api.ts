@@ -13,6 +13,7 @@ const getAuthHeaders = () => {
     };
 };
 
+
 export const testGenerateProgress = async () => {
     try {
         const response = await axios.get(API_URL + 'tmp/progress/generate', {
@@ -41,6 +42,24 @@ export const changePassword = async (formData) => {
             headers: {
                 ...getAuthHeaders(),
                 'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const userIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'users', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
             }
         });
         return response.data;
@@ -101,6 +120,24 @@ export const fetchData = async () => {
     try {
         const response = await axios.get(API_URL + 'data', {
             headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const productIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'products', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
         });
         return response.data;
     } catch (error) {
@@ -217,6 +254,22 @@ export const removeProductCategory = async (productCategoryId: number) => {
     }
 }
 
+export const packageIndex = async (size: number = 5, page: number = 1, searchTerm?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'packages', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const createPackage = async (packageData: Package) => {
     try {
         const response = await axios.post(API_URL + 'packages', packageData, {
@@ -285,6 +338,22 @@ export const removePackage = async (packageId: number) => {
         throw error; // Ensure to throw the error if needed
     }
 }
+
+export const quotationIndex = async (size: number = 5, page: number = 1, searchTerm?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'quotations', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
 
 export const createQuotation = async (quotationData: Quotation) => {
     try {
@@ -428,6 +497,22 @@ export const removeProperty = async (propertyId: number) => {
     }
 }
 
+export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'orders', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const createOrder = async (orderData: Order) => {
     try {
         const response = await axios.post(API_URL + 'orders', orderData, {
@@ -514,6 +599,24 @@ export const confirmOrder = async (orderId: number) => {
     }
 };
 
+export const salesIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'sales', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const fetchSale = async (saleId: number) => {
     try {
         const response = await axios.get(API_URL + `sales/${saleId}`, {
@@ -532,6 +635,24 @@ export const updateSale = async (saleData: Sale) => {
             headers: {
                 ...getAuthHeaders(),
                 'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const discountFeeIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'discountFees', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
             }
         });
         return response.data;
@@ -686,6 +807,21 @@ export const testSms = async () => {
     }
 }
 
+export const registrationFormIndex = async (size: number = 5, page: number = 1, searchTerm?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'owner/reno-registration-form', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
 
 export const fetchRegistrationForm = async (formId: number, originalForm: boolean = false) => {
     try {
@@ -779,6 +915,19 @@ export const toggleTaskInstall = async (renoProgressId: number, taskId: number) 
     }
 }
 
+export const changeTaskStatus = async (renoProgressId: number, taskId: number, status: string) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/status/${status}`, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
 export const changeOwnerComment = async (renoProgressId: number, taskId: number, comment: string) => {
     try {
         const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/owner-comment/change`, { owner_comment: comment }, {
@@ -861,4 +1010,44 @@ export const removeTaskDocument = async (renoProgressId: number, taskId: number,
 };
 
 
+export const renoProgressIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'reno-progress', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
 
+export const changeRenoProgressStartDate = async (renoProgressId: number, startDate: string) => {
+    try {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/start-date`, { start_date: startDate }, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const changeRenoProgressEndDate = async (renoProgressId: number, endDate: string) => {
+    try {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/end-date`, { end_date: endDate }, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
