@@ -5725,7 +5725,7 @@ function DefectInspectionFormPage() {
                 </div>
             </div>
 
-            <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2">
+            <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2">
                 <button
                     className="btn btn-lg btn-secondary rounded-3xl shadow-lg mr-4 stepper-first:hidden"
                     data-stepper-back="true"
