@@ -13,7 +13,7 @@ const API_URL =
 
 export const userLogin = async (email: string, password: string) => {
   try {
-    const response = await axios.post(API_URL + '/login', { email, password });
+    const response = await axios.post(API_URL + 'login', { email, password });
     if (response.data.success) {
       localStorage.setItem('token', response.data.data.token); // Store the token
       return response.data.data;
