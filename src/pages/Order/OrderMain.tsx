@@ -265,14 +265,14 @@ function OrderMain() {
 
                                                     {order.status !== 'confirmed' && order.status !== 'revoked' ?
                                                         <>
-                                                            <button
+                                                            {/* <button
                                                                 className="btn-confirm btn btn-xs btn-success"
                                                                 data-tooltip="#confirm_tooltip"
                                                                 data-action="confirm"
                                                                 data-id="${data.id}"
                                                             >
                                                                 C
-                                                            </button>
+                                                            </button> */}
                                                             <Link
                                                                 to={`/orders/edit/${order.id}`}
                                                                 className="btn-edit btn btn-sm btn-icon btn-clear btn-light"

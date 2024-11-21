@@ -171,6 +171,7 @@ function PMMain() {
                             <tr>
                                 <th className='w-[10px] text-center'>ID</th>
                                 <th className='w-[100px] text-center'>Sales</th>
+                                <th className='w-[100px] text-center'>Payment Progress</th>
                                 <th className='w-[100px] text-center'>Condo</th>
                                 <th className='w-[100px] text-center'>Start Date</th>
                                 <th className='w-[100px] text-center'>End Date</th>
@@ -201,7 +202,9 @@ function PMMain() {
                                             >
                                                 {progress.sale.sales_no}
                                             </Link>
-                                            <div className="w-full bg-gray-200 rounded-full h-[8px] mt-1 mb-1 relative overflow-hidden">
+                                        </td>
+                                        <td className="text-center">
+                                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
                                                 {/* Issued progress bar (outer) */}
                                                 <div
                                                     className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
@@ -219,6 +222,10 @@ function PMMain() {
                                                         height: '8px'
                                                     }}
                                                 />
+                                            </div>
+                                            <div className="flex gap-2 justify-center">
+                                                <span className="text-xs badge badge-xs badge-pill badge-outline badge-success">{progress.sale.paid_percentage * 100}%</span>
+                                                <span className="text-xs badge badge-xs badge-pill badge-outline border-blue-200 bg-blue-50 text-blue-400">{100 - (progress.sale.remaining_percentage * 100)}%</span>
                                             </div>
                                         </td>
                                         <td className="text-center">
