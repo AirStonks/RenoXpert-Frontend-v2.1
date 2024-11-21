@@ -11,6 +11,15 @@ import { KTDataTableConfigInterface } from '../../metronic/core/components/datat
 import { Slide, toast } from 'react-toastify';
 import ClipboardJS from 'clipboard';
 
+const APP_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_APP_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_APP_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? import.meta.env.VITE_LOCAL_APP_URL
+                : null;
+
 function OrderTable() {
     const navigate = useNavigate();
     const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -173,7 +182,7 @@ function OrderTable() {
                             <div class="flex justify-around gap-2">
                                     <button
                                         class="btn btn-sm btn-outline btn-info copy-link"
-                                        data-clipboard-text="${location.protocol}//${window.location.host}/owner/order/overview/id/${data.id}"
+                                        data-clipboard-text="${APP_URL}/owner/order/overview/id/${data.id}"
                                     >
                                         Copy Link
                                     </button>

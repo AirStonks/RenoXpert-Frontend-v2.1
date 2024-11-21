@@ -7,6 +7,15 @@ import { OwnerRegistrationForm } from "../../types";
 import { approveRegistrationForm, registrationFormIndex, rejectRegistrationForm } from "../../services/api";
 import { Link } from "react-router-dom";
 
+const APP_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_APP_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_APP_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? import.meta.env.VITE_LOCAL_APP_URL
+                : null;
+
 function RegistrationFormMain() {
     const navigate = useNavigate();
 
@@ -141,7 +150,7 @@ function RegistrationFormMain() {
                     <div className="flex gap-3 flex-wrap">
                         <button
                             className="btn btn-sm btn-outline btn-info copy-link flex justify-center gap-2"
-                            data-clipboard-text={`${location.protocol}/${window.location.host}/owner/reno-registration-form`}
+                            data-clipboard-text={`${APP_URL}/owner/reno-registration-form`}
                         >
                             <i className="ki-filled ki-copy"></i>
                             <span>Copy Registration Link</span>

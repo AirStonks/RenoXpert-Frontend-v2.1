@@ -4,7 +4,14 @@ import axios, { AxiosError } from 'axios';
 import { handleOperation401Error } from '../utils/error401';
 import { QCForm } from '../types';
 
-const API_URL = 'https://sapi.renoxpert.my/api/';
+const API_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_API_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_API_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? import.meta.env.VITE_LOCAL_API_URL
+                : null;
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('p_token');

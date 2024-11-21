@@ -2,11 +2,18 @@
 
 import axios from 'axios';
 
-const API_URL = 'https://sapi.renoxpert.my/api/';
+const API_URL = 
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_API_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_API_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? import.meta.env.VITE_LOCAL_API_URL
+                : null;
 
 export const userLogin = async (email: string, password: string) => {
   try {
-    const response = await axios.post(API_URL + 'login', { email, password });
+    const response = await axios.post(API_URL + '/login', { email, password });
     if (response.data.success) {
       localStorage.setItem('token', response.data.data.token); // Store the token
       return response.data.data;

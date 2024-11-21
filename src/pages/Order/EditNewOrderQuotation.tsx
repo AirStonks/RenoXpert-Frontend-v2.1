@@ -10,6 +10,12 @@ import IncludeOrderQuotationPackageModal from "../../components/Modals/IncludeOr
 import IncludeQuotationProductModal from "../../components/Modals/IncludeQuotationProductModal";
 import { fetchRegistrationForm } from "../../services/api";
 
+const AWS_S3_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
 
 function EditNewOrderQuotation() {
     const navigate = useNavigate();
@@ -1301,7 +1307,7 @@ function EditNewOrderQuotation() {
                                                 return (
                                                     <li key={key}>
                                                         {attachment.file_url ? (
-                                                            <a href={'https://sapi.renoxpert.my/api' + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
+                                                            <a href={AWS_S3_URL + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
                                                                 {attachment.original_name}
                                                             </a>
                                                         ) : (

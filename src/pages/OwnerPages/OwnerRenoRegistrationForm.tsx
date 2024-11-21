@@ -11,7 +11,14 @@ import { Link } from "react-router-dom";
 import { getOwnerUser, getProperties } from "../../services/publicApi";
 import axios from "axios";
 
-const API_URL = 'https://sapi.renoxpert.my/api/';
+const API_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_API_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_API_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? import.meta.env.VITE_LOCAL_API_URL
+                : null;
 
 interface FormErrors {
     [key: string]: string | undefined; // Use string or undefined for error messages
