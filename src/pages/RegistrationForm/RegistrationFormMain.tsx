@@ -150,7 +150,7 @@ function RegistrationFormMain() {
                     <div className="flex gap-3 flex-wrap">
                         <button
                             className="btn btn-sm btn-outline btn-info copy-link flex justify-center gap-2"
-                            data-clipboard-text={`${APP_URL}/owner/reno-registration-form`}
+                            data-clipboard-text={`${APP_URL}owner/reno-registration-form`}
                         >
                             <i className="ki-filled ki-copy"></i>
                             <span>Copy Registration Link</span>
