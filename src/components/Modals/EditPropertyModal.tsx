@@ -1,24 +1,18 @@
-// src\components\Modals\AddProductCategoryModal.tsx
+// src\components\Modals\EditPropertyModal.tsx
 
 import { useEffect, useState } from "react";
 import { Slide, toast } from "react-toastify";
-import {  Property } from "../../types";
-import { KTCollapse } from "../../metronic/core";
+import { Property } from "../../types";
+import { KTCollapse, KTModal } from "../../metronic/core";
 import { updateProperty } from "../../services/api";
-import Loading from "../Loading";
-import useFetchProperty from "../../hook/useFetchProperty";
 
 interface EdiPropertyModalProps {
-    propertyId: number | null;
+    property: Property;
+    onUpdateSuccess?: () => void;
 }
 
-function EditPropertyModal({ propertyId }: EdiPropertyModalProps) {
-    const { propertyDetail, loading, error } = useFetchProperty(propertyId);
-    const [isOpen, setIsOpen] = useState(false);
-
-    let content;
-
-    const [formData, setFormData] = useState({
+function EditPropertyModal({ property, onUpdateSuccess }: EdiPropertyModalProps) {
+    const [formData, setFormData] = useState<Property>({
         name: '',
         address: '',
         street: '',
@@ -51,27 +45,27 @@ function EditPropertyModal({ propertyId }: EdiPropertyModalProps) {
 
     useEffect(() => {
         KTCollapse.init();
-        console.log('Property ID:', propertyId);
 
-        if (propertyDetail) {
+        if (property) {
             setFormData({
-                name: propertyDetail.name,
-                address: propertyDetail.address,
-                street: propertyDetail.street,
-                postcode: propertyDetail.postcode,
-                city: propertyDetail.city,
-                state: propertyDetail.state,
-                description: propertyDetail.description,
+                name: property.name,
+                address: property.address,
+                street: property.street,
+                postcode: property.postcode,
+                city: property.city,
+                state: property.state,
+                description: property.description,
             });
         }
-    }, [propertyId, propertyDetail]);
 
-    if (!propertyId) return null; // Early return for null packageId
+    }, [property]);
+
+    if (!property) return null; // Early return for null packageId
 
     const handleSubmit = async () => {
         try {
             const propertyData: Property = {
-                id: propertyDetail.id,
+                id: property.id,
                 name: formData.name,
                 address: formData.address,
                 street: formData.street,
@@ -82,12 +76,16 @@ function EditPropertyModal({ propertyId }: EdiPropertyModalProps) {
             };
 
             const response = await updateProperty(propertyData);
-
             if (response?.success) {
+                // Close Modal
+                const element = document.querySelector('#edit_property_modal') as HTMLElement;
+                const modal = KTModal.getInstance(element);
+                modal.hide();
                 notify('success', "Property Updated Successfully!");
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
 
+                // Call the onUpdateSuccess callback if provided
+                onUpdateSuccess?.();
+            }
         } catch (error) {
             if (error.response?.status === 422) {
                 notify('error', "Property creation unsuccessful. Check the errors below.");
@@ -97,19 +95,11 @@ function EditPropertyModal({ propertyId }: EdiPropertyModalProps) {
         }
     };
 
-    if (loading) {
-        content = <Loading />;
-    } else if (error) {
-        content = <div className="text-red-600">Something went wrong: {error}</div>;
-    } else if (!propertyDetail) {
-        content = (
-            <div className="modal-body p-6 scrollable overflow-y-auto">
-                Contact not found
-            </div>
-        );
-    } else {
-        content = (
-            <>
+
+
+    return (
+        <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="edit_property_modal">
+            <div className="modal-content modal-center-y max-w-[600px] max-h-[95%]">
                 <div className="modal-header py-4 px-5">
                     <span className="text-lg text-gray-900 font-bold">Edit Contact</span>
                     <button
@@ -220,14 +210,6 @@ function EditPropertyModal({ propertyId }: EdiPropertyModalProps) {
                         </button>
                     </div>
                 </div>
-            </>
-        );
-    }
-
-    return (
-        <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="edit_property_modal">
-            <div className="modal-content modal-center-y max-w-[600px] max-h-[95%]">
-                {content}
             </div>
         </div>
     );

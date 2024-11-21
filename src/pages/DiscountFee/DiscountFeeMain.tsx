@@ -1,7 +1,6 @@
 // src\pages\DiscountFee\DiscountFeeMain.tsx
 
 import { useEffect, useState } from 'react';
-import DiscountFeesTable from '../../components/Tables/DiscountFeesTable';
 import AddDiscountFeeModal from '../../components/Modals/AddDiscountFeeModal';
 import { DiscountFee } from '../../types';
 import { discountFeeIndex } from '../../services/api';
