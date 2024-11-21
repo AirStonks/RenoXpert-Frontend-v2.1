@@ -459,6 +459,24 @@ export const removeQuotation = async (quotationId: number) => {
     }
 }
 
+export const propertyIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'properties', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const createProperty = async (propertyData: Property) => {
     try {
         const response = await axios.post(API_URL + 'properties', propertyData, {
