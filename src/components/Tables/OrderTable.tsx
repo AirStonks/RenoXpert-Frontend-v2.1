@@ -182,7 +182,7 @@ function OrderTable() {
                             <div class="flex justify-around gap-2">
                                     <button
                                         class="btn btn-sm btn-outline btn-info copy-link"
-                                        data-clipboard-text="${APP_URL}/owner/order/overview/id/${data.id}"
+                                        data-clipboard-text="${APP_URL}owner/order/overview/id/${data.id}"
                                     >
                                         Copy Link
                                     </button>
