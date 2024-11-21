@@ -9,6 +9,13 @@ import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
+const AWS_S3_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
+
 function ProgressMgnt() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -83,10 +90,10 @@ function ProgressMgnt() {
     };
 
     const handleRefresh = async () => {
-        
+
         try {
             const response = await fetchRenoProgress(renoProgressId);
-            
+
             if (response?.success) {
                 setRenoProgress(response.data);
             }
@@ -1064,7 +1071,7 @@ function ProgressMgnt() {
                                                         <div className="flex flex-col">
                                                             <a
                                                                 className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px"
-                                                                href={(window.location.hostname === 'localhost' ? import.meta.env.VITE_BACKEND_URL_LOCAL : import.meta.env.VITE_BACKEND_URL_LN) + (item.file_url)}
+                                                                href={AWS_S3_URL + (item.file_url)}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                             >

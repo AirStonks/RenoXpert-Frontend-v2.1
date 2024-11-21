@@ -10,6 +10,13 @@ import { Link } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
 import Loading from '../../components/Loading';
 
+const AWS_S3_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
+
 function CreateOrder() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -1475,7 +1482,7 @@ function CreateOrder() {
                                                 return (
                                                     <li key={key}>
                                                         {attachment.file_url ? (
-                                                            <a href={(window.location.hostname === 'localhost' ? import.meta.env.VITE_BACKEND_URL_LOCAL : import.meta.env.VITE_BACKEND_URL_LN) + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
+                                                            <a href={AWS_S3_URL + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2">
                                                                 {attachment.original_name}
                                                             </a>
                                                         ) : (

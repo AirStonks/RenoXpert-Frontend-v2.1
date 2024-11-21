@@ -9,7 +9,14 @@ import { Order } from '../../types';
 import { Slide, toast } from 'react-toastify';
 import ClipboardJS from 'clipboard';
 
-const APP_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_APP_URL_LOCAL : import.meta.env.VITE_APP_URL_LN;
+const APP_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_APP_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_APP_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? import.meta.env.VITE_LOCAL_APP_URL
+                : null;
 
 function OrderMain() {
     const navigate = useNavigate();

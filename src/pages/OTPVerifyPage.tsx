@@ -4,7 +4,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Slide, toast, ToastContainer } from "react-toastify";
 
-const API_URL = window.location.hostname === 'localhost' ? import.meta.env.VITE_API_URL_LOCAL : import.meta.env.VITE_API_URL_LN;
+const API_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_API_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_API_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? import.meta.env.VITE_LOCAL_API_URL
+                : null;
 
 const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmit: (mobile?: string, otp?: string[]) => void, otp: string[], setOtp: React.Dispatch<React.SetStateAction<string[]>> }> = ({ 
     mobile, 

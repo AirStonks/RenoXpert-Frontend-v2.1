@@ -3,6 +3,14 @@ import useFetchRegistrationForm from "../../hook/useFetchRegistrationForm";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
 
+const AWS_S3_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
+                
+
 function RegistrationFormDetail() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -1021,7 +1029,7 @@ function RegistrationFormDetail() {
                                             return (
                                                 <li key={key}>
                                                     {attachment.file_url ? (
-                                                        <a href={(window.location.hostname === 'localhost' ? import.meta.env.VITE_BACKEND_URL_LOCAL : import.meta.env.VITE_BACKEND_URL_LN) + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2 break-words">
+                                                        <a href={AWS_S3_URL + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2 break-words">
                                                             Attachment {Number(key) + 1}
                                                         </a>
                                                     ) : (
