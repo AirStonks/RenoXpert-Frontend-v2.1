@@ -686,7 +686,7 @@ function Sidebar() {
               </span>
             </Link>
           </div> */}
-          <div className="menu-item">
+          {/* <div className="menu-item">
             <Link to="/developer-tools" className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg">
               <span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
                 <i className="ki-filled ki-code text-lg"></i>
@@ -695,7 +695,7 @@ function Sidebar() {
                 Developer Tools
               </span>
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
