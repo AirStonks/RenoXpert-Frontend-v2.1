@@ -32,7 +32,6 @@ function CreateOrder() {
     const [quotations, setQuotations] = useState<Quotation[]>([]);
     const [formDetail, setFormDetail] = useState<OwnerRegistrationForm | null>(null);
 
-
     const [loading, setLoading] = useState(false);
 
     const inputUserRef = useRef(null);
@@ -184,8 +183,6 @@ function CreateOrder() {
         });
 
         quotationDropdown.on('shown', async () => {
-            console.log('ysaydysd');
-
             inputQuotationRef.current.focus();
             try {
                 const data = await fetchQuotations('', 6);
@@ -241,7 +238,6 @@ function CreateOrder() {
     };
 
     const handleEditQuotation = () => {
-        console.log(formData);
         localStorage.setItem('create_order_data', JSON.stringify(formData));
     };
 
@@ -362,7 +358,6 @@ function CreateOrder() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        console.log(name, value);
 
         setFormData((prevData) => ({
             ...prevData,
@@ -386,9 +381,6 @@ function CreateOrder() {
             metadata: JSON.parse(localStorage.getItem('include_packages')),
         }
 
-        console.log(newOrder);
-
-
         const response = await createOrder(newOrder);
 
         if (response?.success) {
@@ -399,7 +391,6 @@ function CreateOrder() {
             navigate('/orders');
         } else {
             console.log(response);
-
         }
     }
 

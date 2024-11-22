@@ -68,13 +68,6 @@ function UserDetail() {
         }
     }
 
-
-    if (userDetail) {
-        const modalEl = document.querySelector('#reset_password_modal') as HTMLElement;
-        const modal = KTModal.getInstance(modalEl);
-        console.log(modal);
-    }
-
     return (
         <>
             {/* Loading Overlay */}

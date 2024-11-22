@@ -106,8 +106,6 @@ function EditOrder() {
 
             if (localStorage.getItem('e:edit_order_data')) {
                 
-                console.log('yes');
-
                 setFormData((prevData) => ({
                     ...prevData,
                     totalAmount: JSON.parse(localStorage.getItem('e:edit_order_data')).totalAmount,
@@ -249,7 +247,6 @@ function EditOrder() {
     };
 
     const handleEditQuotation = () => {
-        console.log(formData);
         localStorage.setItem('edit_order_data', JSON.stringify(formData));
     };
 
@@ -331,8 +328,6 @@ function EditOrder() {
         try {
             const latestQuotation = orderDetail.latest_quotation.quotation;
             latestQuotation.metadata = orderDetail.latest_quotation.metadata;
-
-            console.log('OrderDetail: ', orderDetail);
 
             let storedPackages = localStorage.getItem('include_packages');
 

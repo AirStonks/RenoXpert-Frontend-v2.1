@@ -608,7 +608,6 @@ function OwnerRenoRegistrationForm() {
     };
 
     const handleReadyToSubmit = () => {
-        console.log(formData);
         const validationErrors = validate();
 
         if (Object.keys(validationErrors).length > 0) {
@@ -676,7 +675,6 @@ function OwnerRenoRegistrationForm() {
                     const response = await submitRegistrationForm(formDataToSend);
 
                     if (response?.success) {
-                        console.log(response);
                         navigate('/owner/reno-registration-form/success');
                     } else {
                         console.log('error');

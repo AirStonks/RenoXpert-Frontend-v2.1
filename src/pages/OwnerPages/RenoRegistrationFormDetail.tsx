@@ -11,65 +11,6 @@ const AWS_S3_URL =
             ? import.meta.env.VITE_STAGING_AWS_S3_URL
             : null
 
-const salutationOptions = [
-    { value: 'mr', label: 'Mr' },
-    { value: 'ms', label: 'Ms' },
-    { value: 'mrs', label: 'Mrs' },
-    { value: 'doctor', label: 'Doctor' },
-    { value: 'datuk', label: 'Datuk' },
-    { value: 'dato', label: 'Dato' },
-    { value: 'datin', label: 'Datin' },
-    { value: 'datuk_seri', label: 'Datuk Seri' },
-    { value: 'dato_seri', label: 'Dato Seri' },
-    { value: 'datin_seri', label: 'Datin Seri' },
-];
-
-const q1Options = [
-    { value: '1', label: '1' },
-    { value: '2', label: '2' },
-    { value: '3', label: '3' },
-    { value: '4', label: '4' },
-    { value: '5', label: '5' },
-];
-
-const q2Options = [
-    { value: '1', label: '1' },
-    { value: '2', label: '2' },
-    { value: '3', label: '3' },
-];
-
-const q3Options = [
-    { value: 'done', label: 'Done' },
-    { value: 'not_yet', label: 'Not Yet' },
-];
-
-const q4Options = [
-    { value: 'done', label: 'Done' },
-    { value: 'not_yet', label: 'Not Yet' },
-];
-
-const q5Options = [
-    { value: 'done', label: 'Done' },
-    { value: 'not_yet', label: 'Not Yet' },
-];
-
-const q6Options = [
-    { value: 'done', label: 'Done' },
-    { value: 'not_yet', label: 'Not Yet' },
-    { value: 'in_progress', label: 'In Progress' },
-];
-
-const q7Options = [
-    { value: 'done', label: 'Done' },
-    { value: 'not_yet', label: 'Not Yet' },
-    { value: 'no_defect', label: 'No Defect' },
-];
-
-const q8Options = [
-    { value: 'yes', label: 'Yes' },
-    { value: 'no', label: 'No' },
-];
-
 function RenoRegistrationFormDetail() {
     // const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -95,9 +36,9 @@ function RenoRegistrationFormDetail() {
                     </Link>
                     <span className="text-lg font-semibold">[Reno] Registration Form</span>
                 </div>
-                <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
+                {/* <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
                     <i className="ki-filled ki-printer"></i>
-                </button>
+                </button> */}
             </div>
             <div className="card-body">
                 <div className="flex flex-col mb-8">
@@ -226,37 +167,86 @@ function RenoRegistrationFormDetail() {
 
                 <div className="flex flex-col mb-8">
                     <span className="text-slate-400 font-medium">What's your original number of rooms?</span>
-                    <span className="font-semibold">{form.questions.quest_1}</span>
+                    <span className="font-semibold">
+                        {form.questions.quest_1
+                            .replace(/_/g, ' ')
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ')
+                        }
+                    </span>
                 </div>
 
                 <div className="flex flex-col mb-8">
                     <span className="text-slate-400 font-medium">What's the number of bathroom?</span>
-                    <span className="font-semibold">{form.questions.quest_2}</span>
+                    <span className="font-semibold">
+                        {form.questions.quest_2
+                            .replace(/_/g, ' ')
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ')
+                        }
+                    </span>
                 </div>
 
                 <div className="flex flex-col mb-8">
                     <span className="text-slate-400 font-medium">Already Vacant Possessions (VP)?</span>
-                    <span className="font-semibold">{form.questions.quest_3}</span>
+                    <span className="font-semibold">
+                        {form.questions.quest_3
+                            .replace(/_/g, ' ')
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ')
+                        }
+                    </span>
                 </div>
 
                 <div className="flex flex-col mb-8">
                     <span className="text-slate-400 font-medium">Already collect key?</span>
-                    <span className="font-semibold">{form.questions.quest_4}</span>
+                    <span className="font-semibold">
+                        {form.questions.quest_4
+                            .replace(/_/g, ' ')
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ')
+                        }
+                    </span>
                 </div>
 
                 <div className="flex flex-col mb-8">
                     <span className="text-slate-400 font-medium">Already done defect inspection?</span>
-                    <span className="font-semibold">{form.questions.quest_5}</span>
+                    <span className="font-semibold">
+                        {form.questions.quest_5
+                            .replace(/_/g, ' ')
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ')
+                        }
+                    </span>
                 </div>
 
                 <div className="flex flex-col mb-8">
                     <span className="text-slate-400 font-medium">Already submit defect submission to MO?</span>
-                    <span className="font-semibold">{form.questions.quest_6}</span>
+                    <span className="font-semibold">
+                        {form.questions.quest_6
+                            .replace(/_/g, ' ')
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ')
+                        }
+                    </span>
                 </div>
 
                 <div className="flex flex-col mb-8">
                     <span className="text-slate-400 font-medium">MO has completed that defect rectification?</span>
-                    <span className="font-semibold">{form.questions.quest_7}</span>
+                    <span className="font-semibold">
+                        {form.questions.quest_7
+                            .replace(/_/g, ' ')
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(' ')
+                        }
+                    </span>
                 </div>
 
                 <div className="flex flex-col mb-8">

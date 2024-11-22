@@ -6,7 +6,6 @@ import { useParams } from "react-router-dom";
 import Loading from "../../components/Loading";
 import useFetchPublicInvoice from "../../hook/useFetchPublicInvoice";
 import { makePaymentIntent } from "../../services/api";
-import { Package, Product } from "../../types";
 import { Link } from "react-router-dom";
 
 function ViewQuotation() {
@@ -57,9 +56,9 @@ function ViewQuotation() {
                         </Link>
                         <span className="text-lg font-semibold">Payment Invoice</span>
                     </div>
-                    <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
+                    {/* <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
                         <i className="ki-filled ki-printer"></i>
-                    </button>
+                    </button> */}
                 </div>
                 <div className="card-body pt-2">
                     <div className="tabs mb-5" data-tabs="true">

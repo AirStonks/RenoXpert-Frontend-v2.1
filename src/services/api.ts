@@ -287,14 +287,16 @@ export const removeProductCategory = async (productCategoryId: number) => {
     }
 }
 
-export const packageIndex = async (size: number = 5, page: number = 1, searchTerm?: string) => {
+export const packageIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
         const response = await axios.get(API_URL + 'packages', {
             headers: getAuthHeaders(),
             params: {
                 size: size,
                 page: page,
-                search: searchTerm
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
             }
         });
         return response.data;

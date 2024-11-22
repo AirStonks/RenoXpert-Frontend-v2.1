@@ -369,10 +369,6 @@ function EditRegistrationForm() {
         }
     }
 
-    const test = () => {
-        console.log(formData);
-    }
-
     if (fetchLoading || loading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!formDetail) return <div>An unexpected error occured</div>;

@@ -96,7 +96,7 @@ function AddOwner() {
                 });
                 notify('success', 'User Created Successfully!');
             } else {
-                console.log(response.data);
+                console.log(response);
 
                 setValidationErrors(response.data);
             }

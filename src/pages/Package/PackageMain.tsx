@@ -93,7 +93,6 @@ function PackageMain() {
             return { success: false };
 
         } catch (error) {
-            console.log(error);
             return { success: false, message: 'Package removal failed' };
         }
     }

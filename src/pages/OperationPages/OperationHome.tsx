@@ -48,11 +48,6 @@ function OperationHome() {
         }
     }
 
-    const test = () => {
-        console.log(qcForms);
-        console.log(diForms);
-    }
-
     return (
         <>
             <div className="flex flex-col w-full px-4">
@@ -60,7 +55,6 @@ function OperationHome() {
                     <div className="btn-tabs mb-4">
                         <button className="btn active" data-tab-toggle="#tab_1">DI Form</button>
                         <button className="btn" data-tab-toggle="#tab_2">QC Form</button>
-                        <button className="btn" onClick={test}>TEST</button>
                     </div>
 
 

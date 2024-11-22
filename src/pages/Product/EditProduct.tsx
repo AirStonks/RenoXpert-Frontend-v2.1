@@ -51,11 +51,6 @@ const EditProduct: React.FC = () => {
         if (product) {
             setFormData(product);
         }
-
-        if (formData) {
-            console.log(formData);
-
-        }
     }, [product]);
 
 
@@ -102,9 +97,6 @@ const EditProduct: React.FC = () => {
     const validate = (): FormErrors => {
         const newErrors: FormErrors = {};
 
-        console.log(formData.provisioning.install.cogs);
-        
-
         if (!formData.name) newErrors.name = "Name required";
         if (!formData.uom) newErrors.uom = "UOM required";
         if (formData.provisioning.supply.retail_price < 0 || formData.provisioning.supply.retail_price === '') newErrors.supply_retail_price = "Retail Price required";
@@ -118,8 +110,6 @@ const EditProduct: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        console.log(formData);
-        
         const validationErrors = validate();
 
         if (Object.keys(validationErrors).length > 0) {

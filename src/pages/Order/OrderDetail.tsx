@@ -43,7 +43,6 @@ function OrderDetail() {
         clipboard.on('success', function (e) {
             notify('success', 'Copied to clipboard!');
             e.clearSelection();
-            console.log('yeet');
         });
 
         return () => {

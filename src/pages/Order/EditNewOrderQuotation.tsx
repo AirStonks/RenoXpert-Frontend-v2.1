@@ -9,6 +9,7 @@ import { Slide, toast } from "react-toastify";
 import IncludeOrderQuotationPackageModal from "../../components/Modals/IncludeOrderQuotationPackageModal";
 import IncludeQuotationProductModal from "../../components/Modals/IncludeQuotationProductModal";
 import { fetchRegistrationForm } from "../../services/api";
+import { KTAccordion } from "../../metronic/core";
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -198,13 +199,13 @@ function EditNewOrderQuotation() {
             // Parse the JSON string into an object
             const orderObject = JSON.parse(orderData);
 
-            console.log(orderObject.totalAmount);
             setTotalAmount(orderObject.totalAmount);
         }
 
         // if (quotationDetail) {  // Check if quotationDetail is not null
         //     setTotalAmount(quotationDetail.total_amount);
         // }
+        KTAccordion.init();
     }, [quotationDetail, formId]);
 
     const handleSearchForm = async (formId: string) => {
@@ -425,9 +426,6 @@ function EditNewOrderQuotation() {
                     prodSum += (product.provisioning.install.retail_price * product.pivot.quantity);
                 }
 
-                // console.log('prodSum Instalkl: ', prodSum);
-
-
                 return prodSum;
             }, 0)
 
@@ -478,16 +476,9 @@ function EditNewOrderQuotation() {
                             </button>
                         </div>
 
-
                         <div className="flex flex-col gap-5 mb-4" data-accordion="true">
                             {selectedPackages.map((prodPackage: Package) => (
                                 <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
-                                    <button
-                                        className='mr-4'
-                                        onClick={() => handleRemovePackage(prodPackage.id)}
-                                    >
-                                        <i className="ki-solid ki-cross-square text-danger text-2xl"></i>
-                                    </button>
                                     <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
                                         <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
                                             <div className="flex flex-col items-start">
@@ -501,10 +492,20 @@ function EditNewOrderQuotation() {
                                                     {prodPackage.description}
                                                 </span>
                                             </div>
-                                            <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
-                                            </i>
-                                            <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
-                                            </i>
+
+                                            <div className="flex items-center gap-8">
+                                                <button
+                                                    className="btn btn-sm btn-danger"
+                                                    onClick={() => handleRemovePackage(prodPackage.id)}
+                                                >
+                                                    Remove
+                                                    {/* <i className="ki-solid ki-cross-square text-danger text-2xl"></i> */}
+                                                </button>
+                                                <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
+                                                </i>
+                                                <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
+                                                </i>
+                                            </div>
                                         </button>
                                         <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
                                             <div className="flex justify-end my-2 mr-3">
