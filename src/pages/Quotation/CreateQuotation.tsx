@@ -112,7 +112,6 @@ function CreateQuotation() {
     const handleSubmit = async () => {
         const storedPackages = localStorage.getItem('include_packages');
         const parsedPackages = JSON.parse(storedPackages);
-        console.log(storedPackages);
 
         // const metadata;
         const newMetadata = parsedPackages.map((pkg: Package) => ({
@@ -128,7 +127,6 @@ function CreateQuotation() {
                 ...prevState,
                 metadata: newMetadata
             };
-            console.log('Updated FormData:', updatedState);
             return updatedState;
         });
 
@@ -145,15 +143,8 @@ function CreateQuotation() {
             notify('success', "Quotation Created Successfully!");
             localStorage.removeItem('include_packages');
             navigate('/quotations');
-            console.log(response);
         } else {
             console.log(response);
-        }
-
-        try {
-            console.log('FormData:', formData);
-        } catch (error) {
-            console.error("Error submitting form data:", error);
         }
     };
 
@@ -189,8 +180,6 @@ function CreateQuotation() {
                 includeInstall: true,
                 description: product.description || "N/A" // Using "N/A" for null descriptions
             }));
-
-            console.log(selectedProducts);
 
             localStorage.setItem('selected_quotation_packages', includePackages);
             localStorage.setItem('quotation:selected_package_id', JSON.stringify(selectedPackage.id))
@@ -310,10 +299,11 @@ function CreateQuotation() {
         });
     };
 
-    const handleRemoveProduct = (packId: number, prodId: number) => {
+    const handleRemoveProduct = (prodId: number, packId: number) => {
+        
         setSelectedPackages((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage: Package) => {
-                if (prodPackage.id === packId) {
+                if (Number(prodPackage.id) === packId) {
                     const updatedProducts = prodPackage.products.filter((product: Product) => product.id !== prodId);
 
                     const newTotalPrice = updatedProducts.reduce((sum, product) => {

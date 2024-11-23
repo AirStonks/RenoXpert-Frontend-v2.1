@@ -105,7 +105,6 @@ function ProgressMgnt() {
 
     const handleOwnerCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
         const { name, value } = e.target;
-        console.log(name, value);
 
         // Clear the previous timeout if there was any
         if (debounceTimeout.current) {
@@ -116,7 +115,7 @@ function ProgressMgnt() {
         debounceTimeout.current = setTimeout(async () => {
             try {
                 const response = await changeOwnerComment(renoProgressId, taskId, value);
-                console.log(response);
+                
             } catch (error) {
                 console.log(error);
             }
@@ -125,7 +124,6 @@ function ProgressMgnt() {
 
     const handleInternalCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
         const { name, value } = e.target;
-        console.log(name, value);
 
         // Clear the previous timeout if there was any
         if (debounceTimeout.current) {
@@ -136,7 +134,7 @@ function ProgressMgnt() {
         debounceTimeout.current = setTimeout(async () => {
             try {
                 const response = await changeInternalComment(renoProgressId, taskId, value);
-                console.log(response);
+                
             } catch (error) {
                 console.log(error);
             }
@@ -144,10 +142,6 @@ function ProgressMgnt() {
     };
 
     const toggleProperty = async (id: number, phaseId: number, jobId: number, property: 'supply' | 'install') => {
-
-        console.log('triggered');
-
-
         try {
             let response;
             if (property === 'supply') {
@@ -294,14 +288,11 @@ function ProgressMgnt() {
 
     // Upload files (placeholder function)
     const uploadFiles = async (taskId: number) => {
-        console.log('Uploading files:', pendingUploadItems);
-
+        
         try {
             const response = await uploadTaskDocuments(renoProgressId, taskId, pendingUploadItems);
 
             if (response?.success) {
-                console.log(response);
-
                 setDocumentItems(response.data);
                 setPendingUploadItems([]);
 
@@ -375,7 +366,6 @@ function ProgressMgnt() {
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!renoProgress) return <div>An unexpected error occured</div>;
-    console.log(documentItems);
 
     return (
         <>

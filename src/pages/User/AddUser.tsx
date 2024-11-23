@@ -105,7 +105,6 @@ function AddUser() {
 
 
         } catch (error) {
-            console.log(error.response?.data?.data);
             setValidationErrors(error.response?.data?.data);
         } finally {
             setIsLoading(false);

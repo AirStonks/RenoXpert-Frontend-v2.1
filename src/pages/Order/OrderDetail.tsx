@@ -43,7 +43,6 @@ function OrderDetail() {
         clipboard.on('success', function (e) {
             notify('success', 'Copied to clipboard!');
             e.clearSelection();
-            console.log('yeet');
         });
 
         return () => {
@@ -135,8 +134,7 @@ function OrderDetail() {
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Preview Link:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <button
-                                                className="btn btn-outline btn-sm btn-primary"
-                                                onClick={() => { window.open(`https://staging.renoxpert.my/preview/owner/order/overview/id/${orderDetail.id}`, '_blank'); }}
+                                                className="btn btn-outline btn-sm btn-primary disabled"
                                             >
                                                 View Order Overview
                                             </button>

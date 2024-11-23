@@ -45,7 +45,6 @@ function CreatePackage() {
         const storedProducts = localStorage.getItem('include_prod_selected_products');
         if (storedProducts) {
             const parsedProducts = JSON.parse(storedProducts);
-            console.log(parsedProducts);
 
             setSelectedProducts(parsedProducts);
 
@@ -118,8 +117,6 @@ function CreatePackage() {
                 products: newProducts,
                 description_internal: formData.description_internal
             };
-
-            console.log(packageData);
 
             const response = await createPackage(packageData);
 
@@ -205,8 +202,6 @@ function CreatePackage() {
 
     const handleRemoveProduct = (id: number) => {
         setSelectedProducts((prevProducts) => {
-            console.log('Previous: ', prevProducts);
-
             const updatedProducts = prevProducts.filter(product => product.id !== id);
             const removedProduct = prevProducts.find(product => product.id === id);
             if (removedProduct) {

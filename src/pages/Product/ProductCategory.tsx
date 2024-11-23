@@ -24,8 +24,6 @@ function ProductCategory() {
         const datatableEl = document.querySelector('#product_cat_data_table') as HTMLElement;
         const datatable = KTDataTable.getInstance(datatableEl);
 
-        console.log(datatable);
-
         datatable.reload();
         datatable.showSpinner();
     }

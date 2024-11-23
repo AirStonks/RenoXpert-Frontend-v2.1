@@ -54,9 +54,6 @@ function EditQuotation() {
         document.title = "Edit Quotation | RenoXpert";
 
         if (quotationDetail) {
-
-            console.log(quotationDetail);
-
             localStorage.setItem('include_packages', JSON.stringify(quotationDetail.metadata));
             const storedPackages = localStorage.getItem('include_packages');
 
@@ -119,7 +116,6 @@ function EditQuotation() {
         try {
             const storedPackages = localStorage.getItem('include_packages');
             const parsedPackages = JSON.parse(storedPackages);
-            console.log(storedPackages);
 
             // const metadata;
             const newMetadata = parsedPackages.map((pkg: Package) => ({
@@ -135,7 +131,7 @@ function EditQuotation() {
                     ...prevState,
                     metadata: newMetadata
                 };
-                console.log('Updated FormData:', updatedState);
+
                 return updatedState;
             });
 
@@ -203,8 +199,6 @@ function EditQuotation() {
                 includeInstall: true,
                 description: product.description || "N/A" // Using "N/A" for null descriptions
             }));
-
-            console.log(selectedProducts);
 
             localStorage.setItem('selected_quotation_packages', includePackages);
             localStorage.setItem('quotation:selected_package_id', JSON.stringify(selectedPackage.id))
@@ -518,7 +512,7 @@ function EditQuotation() {
                                                                             </button>
                                                                         </td>
                                                                     </tr>
-                                                                    <tr>
+                                                                    {/* <tr>
                                                                         <td colSpan={8}>
                                                                             <input
                                                                                 type="text"
@@ -527,7 +521,7 @@ function EditQuotation() {
                                                                             // onChange={(e) => handleNoteChange(product.id, e.target.value)}
                                                                             />
                                                                         </td>
-                                                                    </tr>
+                                                                    </tr> */}
                                                                 </React.Fragment>
                                                             ))}
                                                         </tbody>
@@ -551,7 +545,7 @@ function EditQuotation() {
                     className="btn btn-lg btn-primary"
                     onClick={handleSubmit} // Trigger form submission
                 >
-                    Edit
+                    Update
                 </button>
             </div>
 

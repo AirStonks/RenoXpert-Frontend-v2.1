@@ -25,7 +25,7 @@ function MasterLayout({ children }: MasterLayoutProps) {
                 <Sidebar />
                 <div className="wrapper flex grow flex-col">
                     <Header />
-                    <main className="grow content pt-5 scrollable" id="content" role="content">
+                    <main className="grow content scrollable" id="content" role="content">
                         <div className="container-fluid" id="content_container">
                             {children}
                         </div>

@@ -282,9 +282,9 @@ function OrderOverview() {
                         }
 
                     </div>
-                    <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
+                    {/* <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
                         <i className="ki-filled ki-printer"></i>
-                    </button>
+                    </button> */}
                 </div>
                 <div className="card-body pt-2">
                     <div className="tabs mb-5">

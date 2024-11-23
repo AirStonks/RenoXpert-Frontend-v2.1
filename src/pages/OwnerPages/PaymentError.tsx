@@ -26,9 +26,6 @@ function PaymentError() {
         return <Loading />; // Show loading state if data is not yet available
     }
 
-    console.log(errorData);
-    
-
     return (
         <div className="container-fluid" id="content_container">
             <div className="flex flex-col items-center justify-center h-[95%]">

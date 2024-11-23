@@ -5,7 +5,7 @@ import KTComponent from '../../metronic/core';
 import OTPVerifyPage from '../OTPVerifyPage';
 import { fetchExistsUser } from '../../services/ownerApi';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -18,12 +18,19 @@ const API_URL =
 
 const OwnerLogin: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         document.title = "Login | RenoXpert";
         KTComponent.init();
         setCountryCode('+60');
-    }, []);
+
+        const searchParams = new URLSearchParams(location.search);
+        const redirectUrl = location.state?.from || searchParams.get('redirect') || '/owner/home';
+
+        console.log(redirectUrl);
+
+    }, [location.search, location.state]);
 
     const [mobile, setMobile] = useState<string>('');
     const [countryCode, setCountryCode] = useState<string>('+60');
@@ -60,7 +67,7 @@ const OwnerLogin: React.FC = () => {
     };
 
     const handleToOtpVerify = async () => {
-        
+
         if (!mobile) {
             setError('Please enter your mobile number.');
             return;
@@ -99,11 +106,15 @@ const OwnerLogin: React.FC = () => {
 
             const response = await axios.post(`${API_URL}sms-otp/verify/login`, requestBody); // Add your API endpoint here
 
-            console.log(response);
-
             if (response.data.status === 'verified') {
                 localStorage.setItem('o_token', response.data.o_token);
-                navigate(`/owner/home`);
+
+                // Get the redirect URL from location state or query parameters
+                const searchParams = new URLSearchParams(location.search);
+                const redirectUrl = location.state?.from || searchParams.get('redirect') || '/owner/home';
+
+                // Navigate to the previous URL or fall back to home
+                navigate(redirectUrl);
             } else {
                 console.log('Invalid');
             }

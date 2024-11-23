@@ -354,7 +354,6 @@ function DefectInspectionFormPage() {
             const response = await fetchRenoProgressDetail(Number(renoProgressId)); // Fetch reno progress data
 
             if (response?.success) {
-                console.log(response);
                 setFormData((prevData) => ({
                     ...prevData,
                     owner_email: response.data.owner.email,
@@ -662,9 +661,8 @@ function DefectInspectionFormPage() {
             return;
         } else {
             try {
-                const response = await submitDIForm(formData);
+                await submitDIForm(formData);
 
-                console.log(response);
                 notify('success', 'Form successfully submitted.');
 
             } catch (error) {
@@ -895,9 +893,6 @@ function DefectInspectionFormPage() {
     };
 
     if (loading) return <Loading />;
-
-    console.log(errors);
-
 
     return (
         <div className="card w-full" data-stepper="true" id="my_stepper">
