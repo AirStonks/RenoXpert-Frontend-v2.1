@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useFetchQuotation from "../../hook/useFetchQuotation";
 import Loading from "../../components/Loading";
-import { OwnerRegistrationForm, Package, Product } from "../../types";
+import { OwnerRegistrationForm, Package, Product, Quotation } from "../../types";
 import { Slide, toast } from "react-toastify";
 import IncludeOrderQuotationPackageModal from "../../components/Modals/IncludeOrderQuotationPackageModal";
 import IncludeQuotationProductModal from "../../components/Modals/IncludeQuotationProductModal";
-import { fetchOrder, fetchRegistrationForm } from "../../services/api";
+import { fetchOrder, fetchQuotation, fetchRegistrationForm } from "../../services/api";
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -24,8 +24,6 @@ function EditOrderQuotation() {
     const orderId = id ? parseInt(id, 10) : null;
     const quotationId = quoteId ? parseInt(quoteId, 10) : null;
 
-    const { quotationDetail, loading, error } = useFetchQuotation(quotationId);
-
     const qtyBtnRef = useRef(null);
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -33,6 +31,7 @@ function EditOrderQuotation() {
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [selectedPackageId, setSelectedPackageId] = useState<number>();
     const [selectedProduct, setSelectedProduct] = useState([]);
+    const [selectedQuotation, setSelectedQuotation] = useState<Quotation>(null);
     const [formDetail, setFormDetail] = useState<OwnerRegistrationForm | null>(null);
 
     const [totalAmount, setTotalAmount] = useState<number>(0);
@@ -182,23 +181,21 @@ function EditOrderQuotation() {
         const orderData = localStorage.getItem('edit_order_data');
 
         handleSearchForm();
+        handleSelectedQuotation();
 
         if (includePackages) {
             setSelectedPackages(JSON.parse(includePackages));
             localStorage.setItem('selected_quotation_packages', includePackages);
             setTotalAmount(JSON.parse(orderData).totalAmount);
-        } else if (quotationDetail) {
-            const packages = JSON.stringify(quotationDetail.metadata);
+        } else if (selectedQuotation) {
+            const packages = JSON.stringify(selectedQuotation.metadata);
             localStorage.setItem('include_packages', packages);
             setSelectedPackages(JSON.parse(packages));
             localStorage.setItem('selected_quotation_packages', packages);
-            setTotalAmount(quotationDetail.total_amount);
+            setTotalAmount(selectedQuotation.total_amount);
         }
 
-        // if (quotationDetail) {  // Check if quotationDetail is not null
-        //     setTotalAmount(quotationDetail.total_amount);
-        // }
-    }, [quotationDetail]);
+    }, []);
 
     const handleSearchForm = async () => {
 
@@ -221,6 +218,36 @@ function EditOrderQuotation() {
             toast.error("Failed to fetch registration form");
         }
     };
+
+    const handleSelectedQuotation = async () => {
+        try {
+            const response = await fetchOrder(Number(orderId));
+
+            if (response?.success) {
+                const orderDetail = response.data
+
+                if (orderDetail.latest_quotation.quotation) {
+                    setSelectedQuotation(orderDetail.latest_quotation.quotation);
+                } else {
+                    const pastQuotation: Quotation = {
+                        id: orderDetail.latest_quotation.id,
+                        name: orderDetail.latest_quotation.quotation_name,
+                        description: orderDetail.latest_quotation.description,
+                        total_amount: orderDetail.latest_quotation.total_amount,
+                        valid_from: orderDetail.latest_quotation.from,
+                        valid_until: orderDetail.latest_quotation.valid_until,
+                        metadata: orderDetail.latest_quotation.metadata
+                    }
+
+                    setSelectedQuotation(pastQuotation);
+                }
+            }
+
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
 
     const updateSelectedPackages = (packages) => {
         const updatedPackages = packages.map((prodPackage: Package) => {
@@ -432,9 +459,7 @@ function EditOrderQuotation() {
         }, 0);
     };
 
-    if (loading) return <Loading />;
-    if (error) return <div>{error}</div>;
-    if (!quotationDetail) return <div>Quotation not found</div>;
+    if (!selectedQuotation) return <Loading />;
 
     return (
         <>
@@ -453,7 +478,7 @@ function EditOrderQuotation() {
                 <div className="card mb-6">
                     <div className="card-body flex flex-col gap-4">
                         <span className="text-xl text-gray-900 font-semibold">
-                            Quotation: {quotationDetail.name}
+                            Quotation: {selectedQuotation.name}
                         </span>
                         <span className="text-xl text-gray-900 font-semibold">
                             Total Amount: RM {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

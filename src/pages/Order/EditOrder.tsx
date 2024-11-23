@@ -105,7 +105,7 @@ function EditOrder() {
             }
 
             if (localStorage.getItem('e:edit_order_data')) {
-                
+
                 setFormData((prevData) => ({
                     ...prevData,
                     totalAmount: JSON.parse(localStorage.getItem('e:edit_order_data')).totalAmount,
@@ -326,19 +326,40 @@ function EditOrder() {
 
     const handleSelectQuotationtById = async () => {
         try {
-            const latestQuotation = orderDetail.latest_quotation.quotation;
-            latestQuotation.metadata = orderDetail.latest_quotation.metadata;
-
             let storedPackages = localStorage.getItem('include_packages');
 
-            if (!storedPackages) {
-                localStorage.setItem('include_packages', JSON.stringify(orderDetail.latest_quotation.metadata));
+            if (orderDetail.latest_quotation.quotation) {
+                const latestQuotation = orderDetail.latest_quotation.quotation;
+                latestQuotation.metadata = orderDetail.latest_quotation.metadata;
 
-                storedPackages = JSON.stringify(orderDetail.latest_quotation.metadata);
+                if (!storedPackages) {
+                    localStorage.setItem('include_packages', JSON.stringify(orderDetail.latest_quotation.metadata));
+
+                    storedPackages = JSON.stringify(orderDetail.latest_quotation.metadata);
+                }
+
+                setSelectedQuotation(latestQuotation);
+                setSelectedPackages(JSON.parse(storedPackages));
+            } else {
+
+                const pastQuotation: Quotation = {
+                    id: orderDetail.latest_quotation.id,
+                    name: orderDetail.latest_quotation.quotation_name,
+                    description: orderDetail.latest_quotation.description,
+                    total_amount: orderDetail.latest_quotation.total_amount,
+                    valid_from: orderDetail.latest_quotation.from,
+                    valid_until: orderDetail.latest_quotation.valid_until,
+                    metadata: orderDetail.latest_quotation.metadata
+                }
+
+                setSelectedQuotation(pastQuotation);
+                setSelectedPackages(JSON.parse(orderDetail.latest_quotation.metadata));
             }
 
-            setSelectedQuotation(latestQuotation);
-            setSelectedPackages(JSON.parse(storedPackages));
+
+            if (storedPackages) {
+                setSelectedPackages(JSON.parse(storedPackages));
+            }
 
         } catch (error) {
             console.error('Error fetching latest quotation:', error);
@@ -515,49 +536,92 @@ function EditOrder() {
                                                 </div>
                                             </div>
 
-                                            <div className="flex gap-4">
-                                                <div className="flex flex-col">
-                                                    <span className='text-sm font-semibold text-gray-900'>
-                                                        Block
-                                                    </span>
+                                            <div className="flex flex-col">
+                                                <div className="flex gap-4">
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm font-semibold text-gray-900'>
+                                                            Block
+                                                        </span>
 
-                                                    <input
-                                                        className='input mb-2'
-                                                        type='text'
-                                                        name='block'
-                                                        value={formData.block}
-                                                        onChange={handleChange}
-                                                    />
+                                                        <input
+                                                            className='input mb-2'
+                                                            type='text'
+                                                            name='block'
+                                                            value={formData.block}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm font-semibold text-gray-900'>
+                                                            Floor
+                                                        </span>
+
+                                                        <input
+                                                            className='input mb-2'
+                                                            type='text'
+                                                            name='floor'
+                                                            value={formData.floor || ''}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm font-semibold text-gray-900'>
+                                                            Unit No
+                                                        </span>
+
+                                                        <input
+                                                            className='input mb-2'
+                                                            type='text'
+                                                            name='unitNo'
+                                                            value={formData.unitNo}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </div>
                                                 </div>
 
-                                                <div className="flex flex-col">
-                                                    <span className='text-sm font-semibold text-gray-900'>
-                                                        Floor
-                                                    </span>
+                                                <div className="flex gap-8">
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm font-semibold text-gray-900'>
+                                                            Total Bedroom
+                                                        </span>
 
-                                                    <input
-                                                        className='input mb-2'
-                                                        type='text'
-                                                        name='floor'
-                                                        value={formData.floor || ''}
-                                                        onChange={handleChange}
-                                                    />
-                                                </div>
+                                                        <select
+                                                            className={`select`}
+                                                            name="bedroom_count"
+                                                            id="bedroom_count"
+                                                            onChange={handleChange}
+                                                            value={formData.bedroom_count}
+                                                        >
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                        </select>
+                                                    </div>
 
-                                                <div className="flex flex-col">
-                                                    <span className='text-sm font-semibold text-gray-900'>
-                                                        Unit No
-                                                    </span>
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm font-semibold text-gray-900'>
+                                                            Total Bathroom
+                                                        </span>
 
-                                                    <input
-                                                        className='input mb-2'
-                                                        type='text'
-                                                        name='unitNo'
-                                                        value={formData.unitNo}
-                                                        onChange={handleChange}
-                                                    />
+                                                        <select
+                                                            className={`select`}
+                                                            name="bathroom_count"
+                                                            id="bathroom_count"
+                                                            onChange={handleChange}
+                                                            value={formData.bathroom_count}
+                                                        >
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                        </select>
+                                                    </div>
                                                 </div>
                                             </div>
+
                                         </>
                                     )}
                                 </div>
