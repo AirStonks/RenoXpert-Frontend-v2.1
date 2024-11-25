@@ -895,3 +895,25 @@ export interface JobTask {
     created_at?: string,
     updated_at?: string,
 }
+
+export interface RenoAccetanceForm {
+    id?: string,
+    is_accepted?: boolean,
+    date?: string,
+    property?: {
+        property_name?: string,
+        block?: string,
+        level?: string,
+        unit?: string,
+    },
+    user?: {
+        id?: string;
+        name?: string,
+        email?: string;
+        phone_no?: string;
+    };
+    signature?: Attachment,
+    status?: string,
+    created_at?: string,
+    updated_at?: string,
+}

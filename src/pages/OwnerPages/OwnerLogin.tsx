@@ -127,16 +127,6 @@ const OwnerLogin: React.FC = () => {
         <>
             {!showOtpForm ? (
                 <>
-                    <div className="absolute top-5 right-5">
-                        <button className="btn btn-icon btn-light dark:hidden" data-theme-toggle="true" data-tooltip="#theme_mode_dark">
-                            <i className="ki-outline ki-sun"></i>
-                        </button>
-                        <button className="btn btn-icon btn-light hidden dark:flex" data-theme-toggle="true" data-tooltip="#theme_mode_light">
-                            <i className="ki-outline ki-moon"></i>
-                        </button>
-                        <div className="tooltip" id="theme_mode_light">Switch to Light mode</div>
-                        <div className="tooltip" id="theme_mode_dark">Switch to Dark mode</div>
-                    </div>
                     <div className="flex flex-col items-center justify-center grow bg-center bg-no-repeat page-bg">
                         <img className="default-logo min-h-[22px] h-[52px] max-w-none mb-6" src="/app/RenoExpert_logo-01.svg"></img>
                         <form className="card max-w-[370px] w-full p-10 gap-5">

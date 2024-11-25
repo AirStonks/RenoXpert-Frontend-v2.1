@@ -69,6 +69,7 @@ import DefectInspectionFormPage from './pages/OperationPages/DefectInspectionFor
 import QCFormPage from './pages/OperationPages/QCFormPage';
 import UserDetail from './pages/User/UsesrDetail';
 import AddOwner from './pages/User/AddOwner';
+import RenoAcceptanceForm from './pages/OwnerPages/RenoAcceptanceForm';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -108,6 +109,7 @@ const routes = [
   { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
+  { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
 
 
   /*--- OWNER SITE ---*/
