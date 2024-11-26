@@ -1,11 +1,24 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import KTComponent, { KTStepper } from "../metronic/core";
+import SignatureCanvas from 'react-signature-canvas';
 
 function Test() {
 
+    const [signature, setSignature] = useState();
+
     useEffect(() => {
+        document.title = "Dashboard | RenoXpert";
         KTComponent.init();
-    });
+    }, []);
+
+    const handleClearSignature = (ref) => {
+        signature.clear();
+    }
+
+    const handleSaveSignature = () => {
+        const res = signature.getTrimmedCanvas().toDataURL('image/png');
+        console.log(res);
+    }
 
     // const handleGoTo = (step: number) => {
     //     const stepperEl = document.querySelector('#my_stepper') as HTMLElement;
@@ -17,32 +30,34 @@ function Test() {
 
     return (
         <>
-            <div>
-                <div className="tabs mb-5" data-tabs="true">
-                    <button className="tab active" data-tab-toggle="#tab_1_1">
-                        Tab 1
-                    </button>
-                    <button className="tab" data-tab-toggle="#tab_1_2">
-                        Tab 2
-                    </button>
-                    <button className="tab" data-tab-toggle="#tab_1_3">
-                        Tab 3
-                    </button>
-                </div>
-                <div className="" id="tab_1_1">
-                    Tab 1 content.
-                </div>
-                <div className="hidden" id="tab_1_2">
-                    Tab 2 content.
-                </div>
-                <div className="hidden" id="tab_1_3">
-                    Tab 3 content.
+            <div className="card">
+                <div className="card-body flex flex-col items-center gap-2.5 py-7.5">
+                    <div className="flex">
+                        <div className="flex border">
+                            <SignatureCanvas
+                                ref={(ref) => setSignature(ref)}
+                                penColor='green'
+                                canvasProps={{ width: 200, height: 120, className: 'sigCanvas' }} />
+                        </div>
+                        <div className="flex">
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleClearSignature}
+                            >
+                                Clear
+                            </button>
+                            <button
+                                className="btn btn-success"
+                                onClick={handleSaveSignature}
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </>
-
     );
-
 }
 
 export default Test;

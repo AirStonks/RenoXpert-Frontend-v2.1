@@ -70,7 +70,7 @@ function EditOrder() {
     };
 
     useEffect(() => {
-        document.title = "Revise Order | RenoXpert";
+        document.title = "Revise Quotation Order | RenoXpert";
 
         if (orderDetail) {
 
@@ -118,7 +118,7 @@ function EditOrder() {
 
 
             if (!localStorage.getItem('include_packages')) {
-                localStorage.setItem('include_packages', JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)));
+                localStorage.setItem('include_packages', JSON.stringify(orderDetail.latest_quotation.packages));
             }
 
 
@@ -349,11 +349,11 @@ function EditOrder() {
                     total_amount: orderDetail.latest_quotation.total_amount,
                     valid_from: orderDetail.latest_quotation.from,
                     valid_until: orderDetail.latest_quotation.valid_until,
-                    metadata: orderDetail.latest_quotation.metadata
+                    metadata: orderDetail.latest_quotation.packages
                 }
 
                 setSelectedQuotation(pastQuotation);
-                setSelectedPackages(JSON.parse(orderDetail.latest_quotation.metadata));
+                setSelectedPackages(orderDetail.latest_quotation.packages);
             }
 
 
@@ -394,7 +394,7 @@ function EditOrder() {
             const response = await updateOrder(newOrder);
 
             if (response?.success) {
-                notify('success', "Quotation Created Successfully!");
+                notify('success', "Quotation Updated Successfully!");
                 localStorage.removeItem('edit_order_data');
                 localStorage.removeItem('include_packages');
                 localStorage.removeItem('selected_quotation_packages');

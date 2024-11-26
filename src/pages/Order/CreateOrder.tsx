@@ -70,7 +70,7 @@ function CreateOrder() {
     };
 
     useEffect(() => {
-        document.title = "Create Order | RenoXpert";
+        document.title = "Create Quotation Order | RenoXpert";
 
         const sessionData = localStorage.getItem('create_order_data');
 
@@ -366,6 +366,26 @@ function CreateOrder() {
     };
 
     const handleSubmit = async () => {
+        if (!selectedUser) {
+            notify('error', 'Please select a user.');
+            return;
+        }
+
+        if (!selectedProperty) {
+            notify('error', 'Please select a property.');
+            return;
+        }
+
+        if (!formData.block || !formData.floor || !formData.unitNo) {
+            notify('error', 'Please enter block, floor and unit no.');
+            return;
+        }
+
+        if (!selectedQuotation) {
+            notify('error', 'Please select a quotation.');
+            return;
+        }
+
         const newOrder: Order = {
             user_id: selectedUser.id,
             form_id: formId,

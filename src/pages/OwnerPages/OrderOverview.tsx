@@ -42,7 +42,7 @@ function OrderOverview() {
         const [day, month, year] = dateStr.split("/");
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         return `${day} ${monthNames[parseInt(month) - 1]} ${year}`;
-      };
+    };
 
     useEffect(() => {
         document.title = "Order Overview | RenoXpert";
@@ -276,9 +276,9 @@ function OrderOverview() {
                             className="ki-solid ki-arrow-left items-center">
                         </Link>
                         {orderDetail.status === 'confirmed' ?
-                            <span className="text-lg font-semibold">Order Overview</span>
+                            <span className="text-lg font-semibold">Quotation Order Overview</span>
                             :
-                            <span className="text-lg font-semibold">Order Agreement</span>
+                            <span className="text-lg font-semibold">Quotation Order Agreement</span>
                         }
 
                     </div>
@@ -295,7 +295,7 @@ function OrderOverview() {
                             {orderDetail.status === 'confirmed' ?
                                 'Overview'
                                 :
-                                'Quotation'
+                                'Quotation Order'
                             }
                         </button>
                         {orderDetail.status === 'confirmed' ?
@@ -303,7 +303,7 @@ function OrderOverview() {
                                 className={`tab ${activeTab === 'tab_1_4' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('tab_1_4')}
                             >
-                                Quotation
+                                Quotation Order
                             </button>
                             :
                             ''
@@ -325,13 +325,42 @@ function OrderOverview() {
                         <div className="overflow-x-auto">
                             {orderDetail.status === 'confirmed' &&
                                 <div className="flex flex-col flex-1 mb-4">
-                                    <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (orderDetail.sale.remaining_percentage * 100)}% Order Invoice Issued</span>
-                                    <div className="progress progress-success">
-                                        <div className="progress-bar" style={{
-                                            width: `${100 - (orderDetail.sale.remaining_percentage * 100)}%`,
-                                            height: '12px'
-                                        }}>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (orderDetail.sale.remaining_percentage * 100)}% Invoice Issued</span>
+                                        <div className="flex">
+                                            <div className="badge badge-success badge-outline text-md mb-2">
+                                                {orderDetail.sale.invoices.reduce((sum, invoice) => {
+                                                    if (invoice.status === 'paid') {
+                                                        return sum + invoice.percentage;
+                                                    }
+                                                    return sum;
+                                                }, 0) * 100}% Paid
+                                            </div>
                                         </div>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-[12px] mb-4 relative overflow-hidden">
+                                        {/* Issued progress bar (outer) */}
+                                        <div
+                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
+                                            style={{
+                                                width: `${100 - (orderDetail.sale.remaining_percentage * 100)}%`,
+                                                height: '12px'
+                                            }}
+                                        />
+
+                                        {/* Paid progress bar (inner) */}
+                                        <div
+                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                            style={{
+                                                width: `${orderDetail.sale.invoices.reduce((sum, invoice) => {
+                                                    if (invoice.status === 'paid') {
+                                                        return sum + invoice.percentage;
+                                                    }
+                                                    return sum;
+                                                }, 0) * 100}%`,
+                                                height: '12px'
+                                            }}
+                                        />
                                     </div>
                                 </div>
                             }
@@ -341,7 +370,7 @@ function OrderOverview() {
                                 <div className="card flex-1 sm:mb-0 mb-2 mr-2">
                                     <div className="card-header py-0 flex justify-between">
                                         <h2 className="card-title">
-                                            Order Detail
+                                            Quotation Order Detail
                                         </h2>
                                         <span className={`badge badge-sm p-2 cursor-default
                                                         ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
@@ -355,7 +384,7 @@ function OrderOverview() {
                                         <div className="flex justify-between flex-wrap gap-8">
                                             <div className="flex flex-col">
                                                 {/* <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span> */}
-                                                <span className='text-sm text-gray-600'>Order Number:</span>
+                                                <span className='text-sm text-gray-600'>QUO Number:</span>
                                                 <span className='text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span>
                                             </div>
                                             <div className="flex flex-col">
@@ -651,7 +680,7 @@ function OrderOverview() {
                         onClick={handleAgreeOrder}
                         disabled={isButtonDisabled}
                     >
-                        Agree Order
+                        Agree Quotation Order
                     </button>
                 </div>
                 :

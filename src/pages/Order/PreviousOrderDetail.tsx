@@ -5,15 +5,15 @@ import Loading from "../../components/Loading";
 import useFetchOrder from "../../hook/useFetchOrder";
 import { KTAccordion } from "../../metronic/core";
 import { OrderQuotation, Package } from "../../types";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 
-function OrderDetail() {
+function PreviousOrderDetail() {
     const navigate = useNavigate();
-    const { state } = useLocation();
-    const { id } = useParams<{ id: string }>();
+    const { id, verId } = useParams<{ id: string, verId: string }>();
     const orderId = id ? parseInt(id, 10) : null;
+    const versionId = verId ? parseInt(verId, 10) : null;
 
     const { orderDetail, loading, error } = useFetchOrder(orderId);
 
@@ -31,7 +31,7 @@ function OrderDetail() {
     };
 
     useEffect(() => {
-        document.title = "Quotation Order Detail | RenoXpert";
+        document.title = "Quotation Order Detail History | RenoXpert";
 
         KTAccordion.init();
 
@@ -55,20 +55,19 @@ function OrderDetail() {
     if (!orderId) return null; // Early return for null orderId
 
     const handleBackClick = () => {
-        if (state) {
-            navigate(state.fromUrl);
-        } else {
-            navigate('/orders');
-        }
+        navigate('/orders/' + orderId);
     };
 
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!orderDetail) return <div>Order not found</div>;
 
-    // console.log(orderDetail);
-    const selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation)) as OrderQuotation;
-    const selectedPackages = JSON.parse(JSON.stringify(orderDetail.latest_quotation.packages)) as Package[];
+    // get the order_quotations.version is match with versionId
+    const selectedQuotation = orderDetail.order_quotations.find((quotation: OrderQuotation) => quotation.version === versionId);
+    const selectedPackages = selectedQuotation?.packages as Package[];
+
+    // const selectedQuotation = orderDetail.latest_quotation as OrderQuotation;
+    // const selectedPackages = orderDetail.latest_quotation.packages as Package[];
     // console.log(selectedQuotation);
 
     return (
@@ -79,21 +78,25 @@ function OrderDetail() {
                         <i className="ki-solid ki-arrow-left"></i>
                     </button>
                     <span className="text-2xl font-bold text-gray-900">
-                        Quotation Order Detail
+                        Quotation Order Detail (History)
                     </span>
                 </div>
                 <div className="flex">
                     <Link
                         to={`/orders/edit/${orderId}`}
-                        className="btn btn-sm btn-info"
+                        className="btn btn-sm btn-info disabled"
                         data-tooltip="#edit_tooltip"
                         data-action="edit"
                         data-id={orderId}
                     >
                         <i className="ki-outline ki-notepad-edit"></i>
-                        Edit Order Quotation
+                        Edit from this Version
                     </Link>
                 </div>
+            </div>
+
+            <div className="badge text-lg w-full mb-4 badge-warning badge-outline">
+                You are viewing the previous version of the quotation order
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
@@ -120,45 +123,21 @@ function OrderDetail() {
                                             Total Amount:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            {`RM ${selectedQuotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Status:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <span className={`badge badge-sm p-2 cursor-default
-                                                ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
-                                                ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
-                                                badge-outline`}
-                                            >
-                                                {orderDetail.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    {/* <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Preview Link:</td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <button
-                                                className="btn btn-outline btn-sm btn-primary disabled"
-                                            >
-                                                View Order Overview
-                                            </button>
-                                        </td>
-                                    </tr> */}
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Version:</td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.latest_quotation.version ?
-                                                String.fromCharCode(64 + orderDetail.latest_quotation.version)
+                                            {selectedQuotation.version ?
+                                                String.fromCharCode(64 + selectedQuotation.version)
                                                 : "N/A"}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated by:</td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.latest_quotation.created_by.name}
+                                            {selectedQuotation.created_by.name}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -264,43 +243,6 @@ function OrderDetail() {
                             </table>
                         </div>
                     </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Revision History
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <div className="grid gap-2.5">
-                                {orderDetail.order_quotations.length > 0 ?
-                                    orderDetail.order_quotations.slice().reverse().map((orderQuotation: OrderQuotation, index: number) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center justify-between flex-wrap border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5"
-                                        >
-                                            <div className="flex flex-col">
-                                                <Link
-                                                    to={`ver/${orderQuotation.id}`}
-                                                    className="flex items-center flex-wrap gap-3.5 cursor-pointer text-orange-500 font-semibold text-sm">
-                                                    {orderDetail.order_no}-{String.fromCharCode(64 + orderQuotation.version)}
-                                                </Link>
-                                                <span className="text-xs text-gray-600">
-                                                    Updated By:
-                                                    <span className="font-semibold ml-1">{orderQuotation.created_by.name}</span>
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center flex-wrap gap-3.5">
-                                                <button className="btn btn-outline btn-info btn-sm disabled">
-                                                    Revise
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))
-                                    :
-                                    <div className="text-sm text-gray-600">No Revision History on this Quotation Order</div>}
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div className='flex flex-col right-column flex-[6] gap-4'>
@@ -338,7 +280,7 @@ function OrderDetail() {
                                     {selectedPackages.map((prodPackage: Package) => (
                                         <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
                                             <div className="accordion-item active border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
-                                                <button className="accordion-toggle flex justify-between p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
+                                                <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
                                                     <div className="flex flex-col items-start">
                                                         <span className="text-base text-gray-900 font-medium">
                                                             {prodPackage.name}
@@ -350,10 +292,6 @@ function OrderDetail() {
                                                             {prodPackage.description}
                                                         </span>
                                                     </div>
-                                                    <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block">
-                                                    </i>
-                                                    <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden">
-                                                    </i>
                                                 </button>
                                                 <div className="accordion-content active border-t" id={"package_content_" + prodPackage.id.toString()}>
                                                     <div className="product-list flex flex-col">
@@ -452,4 +390,4 @@ function OrderDetail() {
     )
 }
 
-export default OrderDetail;
+export default PreviousOrderDetail;

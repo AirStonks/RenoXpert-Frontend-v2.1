@@ -275,7 +275,7 @@ function Sidebar() {
                 <i className="ki-filled ki-tablet-text-down text-lg"></i>
               </span>
               <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
-                Quotations
+                Quotation Template
               </span>
             </Link>
           </div>
@@ -439,7 +439,7 @@ function Sidebar() {
                 <i className="ki-filled ki-delivery-door text-lg"></i>
               </span>
               <span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
-                Orders
+                Quotation Orders
               </span>
             </Link>
           </div>

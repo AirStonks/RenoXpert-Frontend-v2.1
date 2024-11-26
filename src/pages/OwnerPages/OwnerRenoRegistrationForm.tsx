@@ -489,7 +489,6 @@ function OwnerRenoRegistrationForm() {
         if (!formData.salutations) newErrors.salutations = "Please select an option";
         if (!formData.name_first) newErrors.name_first = "First Name is required";
         if (!formData.name_last) newErrors.name_last = "Last Name is required";
-        if (!formData.name_preferred) newErrors.name_preferred = "Preferred Name is required";
         if (!formData.email) newErrors.email = "Email is required";
         if (!formData.phone_no) newErrors.phone_no = "Phone Number is required";
         if (!formData.address_1) newErrors.address_1 = "Address Line 1 is required";

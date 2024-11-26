@@ -4,7 +4,7 @@
 import { Link } from 'react-router-dom';
 import KTLayout from '../metronic/app/layouts/demo1';
 import KTComponent from '../metronic/core';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 function Dashboard() {
 
@@ -12,7 +12,6 @@ function Dashboard() {
         document.title = "Dashboard | RenoXpert";
         KTComponent.init();
     }, []);
-
     return (
         <div className="card">
             <div className="card-body flex flex-col items-center gap-2.5 py-7.5">

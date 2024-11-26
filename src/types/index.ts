@@ -152,7 +152,12 @@ export interface OrderQuotation {
     total_amount?: number,
     description?: string,
     version: number,
+    packages?: Package[],
     metadata?: JSON,
+    created_by?: User,
+    updated_by?: string,
+    created_at?: string,
+    updated_at?: string,
 }
 
 export interface Sale {
@@ -892,6 +897,28 @@ export interface JobTask {
     owner_comment?: string,
     internal_comment?: string,
     completed_at?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface RenoAccetanceForm {
+    id?: string,
+    is_accepted?: boolean,
+    date?: string,
+    property?: {
+        property_name?: string,
+        block?: string,
+        level?: string,
+        unit?: string,
+    },
+    user?: {
+        id?: string;
+        name?: string,
+        email?: string;
+        phone_no?: string;
+    };
+    signature?: Attachment,
+    status?: string,
     created_at?: string,
     updated_at?: string,
 }

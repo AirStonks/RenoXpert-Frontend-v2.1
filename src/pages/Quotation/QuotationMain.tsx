@@ -111,7 +111,7 @@ function QuotationMain() {
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center flex-wrap">
                     <span className="text-2xl font-bold text-gray-900">
-                        Quotation Overview
+                        Quotation Template Overview
                     </span>
                     <div className="flex gap-3 flex-wrap">
                         <Button
@@ -126,7 +126,7 @@ function QuotationMain() {
                 <div className="card">
                     <div className="card-header flex-wrap gap-2">
                         <div className="card-title">
-                            Quotation Overview
+                            Quotation Template Overview
                         </div>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button

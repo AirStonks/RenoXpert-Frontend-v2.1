@@ -89,7 +89,13 @@ function SaleDetail() {
                                                 Order No.:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
-                                                {sale.order.order_no}
+                                                <Link
+                                                    to={`/orders/${sale.order_id}`}
+                                                    state={{ fromUrl: '/sales/' + sale.id }}
+                                                    className="cursor-pointer text-orange-500 font-semibold"
+                                                >
+                                                    {sale.order.order_no}
+                                                </Link>
                                             </td>
                                         </tr>
                                         <tr>
@@ -139,9 +145,6 @@ function SaleDetail() {
                                                     :
                                                     <>
                                                         Not Started
-                                                        <button className="btn btn-sm btn-secondary" onClick={test}>
-                                                            DEV [Generate Progress]
-                                                        </button>
                                                     </>
                                                 }
                                             </td>
@@ -155,15 +158,14 @@ function SaleDetail() {
                         <div className="card">
                             <div className="card-body">
                                 <div className="flex flex-col">
-                                    <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (sale.remaining_percentage * 100)}% Payment Progress</span>
-                                    {/* Nested progress bar. Assume 20% is already paid */}
-                                    {/* <div className="progress progress-success mb-4">
-                                        <div className="progress-bar" style={{
-                                            width: `${100 - (sale.remaining_percentage * 100)}%`,
-                                            height: '12px'
-                                        }}>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (sale.remaining_percentage * 100)}% Invoice Issued</span>
+                                        <div className="flex">
+                                            <div className="badge badge-success badge-outline text-md mb-2">
+                                                {sale.paid_percentage * 100}% Paid
+                                            </div>
                                         </div>
-                                    </div> */}
+                                    </div>
                                     <div className="w-full bg-gray-200 rounded-full h-[12px] mb-4 relative overflow-hidden">
                                         {/* Issued progress bar (outer) */}
                                         <div
@@ -198,16 +200,31 @@ function SaleDetail() {
                                     <div className="card min-w-48">
                                         <div className="card-body flex flex-col justify-center items-center">
                                             <div className="amnt text-gray-900 text-lg font-semibold mb-2">
+                                                RM {(sale.total_amount - sale.remaining_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </div>
+                                            <span className="text-gray-900 text-base">
+                                                Issued Amount
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="card min-w-48">
+                                        <div className="card-body flex flex-col justify-center items-center">
+                                            <div className="amnt text-gray-900 text-lg font-semibold mb-2">
+                                                RM {(sale.paid_percentage * sale.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </div>
+                                            <span className="text-gray-900 text-base">
+                                                Paid Amount
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="card min-w-48">
+                                        <div className="card-body flex flex-col justify-center items-center">
+                                            <div className="amnt text-gray-900 text-lg font-semibold mb-2">
                                                 RM {sale.remaining_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </div>
                                             <span className="text-gray-900 text-base">
                                                 Balance (Amount)
                                             </span>
-                                        </div>
-                                    </div>
-                                    <div className="card min-w-48">
-                                        <div className="card-body">
-
                                         </div>
                                     </div>
                                 </div>
@@ -307,6 +324,7 @@ function SaleDetail() {
                             ))}
                         </div>
                     </div>
+                    <div className="border-l-2 border-gray-300"></div>
                     <div className="flex flex-col flex-1">
 
                         <div className="flex justify-between items-center flex-wrap mb-4">

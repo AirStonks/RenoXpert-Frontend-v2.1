@@ -175,7 +175,7 @@ function EditOrderQuotation() {
     };
 
     useEffect(() => {
-        document.title = "Edit Order Quotation | RenoXpert";
+        document.title = "Edit Quotation Order | RenoXpert";
 
         const includePackages = localStorage.getItem('include_packages');
         const orderData = localStorage.getItem('edit_order_data');
@@ -300,7 +300,7 @@ function EditOrderQuotation() {
                                 ...product,
                                 pivot: {
                                     ...product.pivot,
-                                    [key]: product.pivot ? !product.pivot[key] : true, // handle case if pivot is undefined
+                                    [key]: product.pivot ? (product.pivot[key] ? 0 : 1) : 1, // handle case if pivot is undefined
                                 },
                             };
                         }

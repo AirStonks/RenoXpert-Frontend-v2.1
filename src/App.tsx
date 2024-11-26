@@ -69,6 +69,8 @@ import DefectInspectionFormPage from './pages/OperationPages/DefectInspectionFor
 import QCFormPage from './pages/OperationPages/QCFormPage';
 import UserDetail from './pages/User/UsesrDetail';
 import AddOwner from './pages/User/AddOwner';
+import RenoAcceptanceForm from './pages/OwnerPages/RenoAcceptanceForm';
+import PreviousOrderDetail from './pages/Order/PreviousOrderDetail';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -108,6 +110,7 @@ const routes = [
   { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
+  { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
 
 
   /*--- OWNER SITE ---*/
@@ -156,7 +159,7 @@ const routes = [
   { path: '/packages/:id', element: <PackageDetail />, layout: ProtectedLayout },
   { path: '/packages/edit/:id', element: <EditPackage />, layout: ProtectedLayout },
 
-  /*--- QUOTATION ---*/
+  /*--- QUOTATION TEMPLATE ---*/
   { path: '/quotations', element: <QuotationMain />, layout: ProtectedLayout },
   { path: '/quotations/create', element: <CreateQuotation />, layout: ProtectedLayout },
   { path: '/quotations/edit/:id', element: <EditQuotation />, layout: ProtectedLayout },
@@ -172,9 +175,10 @@ const routes = [
   { path: '/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
 
 
-  /*--- ORDER ---*/
+  /*--- QUOTATION ORDER ---*/
   { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },
   { path: '/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
+  { path: '/orders/:id/ver/:verId', element: <PreviousOrderDetail />, layout: ProtectedLayout },
   { path: '/orders/create', element: <CreateOrder />, layout: ProtectedLayout },
   { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation />, layout: ProtectedLayout },
   { path: '/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },

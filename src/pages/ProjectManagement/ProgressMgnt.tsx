@@ -104,81 +104,117 @@ function ProgressMgnt() {
     }
 
     const handleOwnerCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
-        const { name, value } = e.target;
+        const { value } = e.target;
 
-        // Clear the previous timeout if there was any
+        // More efficient state update
+        setRenoProgress(prevRenoProgress => {
+            const updatedPhases = prevRenoProgress.phases.map(phase => ({
+                ...phase,
+                jobs: phase.jobs.map(job => ({
+                    ...job,
+                    tasks: job.tasks.map(task =>
+                        task.id === taskId.toString()
+                            ? { ...task, owner_comment: value }
+                            : task
+                    )
+                }))
+            }));
+
+            return {
+                ...prevRenoProgress,
+                phases: updatedPhases
+            };
+        });
+
+        // Debounce logic remains the same
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
 
-        // Set a new timeout
         debounceTimeout.current = setTimeout(async () => {
             try {
-                const response = await changeOwnerComment(renoProgressId, taskId, value);
-                
+                await changeOwnerComment(renoProgressId, taskId, value);
             } catch (error) {
-                console.log(error);
-            }
-        }, 1000); // 1 second debounce
-    };
+                console.error('Error updating internal comment:', error);
 
-    const handleInternalCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
-        const { name, value } = e.target;
+                // Optional: Revert the local state if the API call fails
+                setRenoProgress(prevRenoProgress => {
+                    const revertedPhases = prevRenoProgress.phases.map(phase => ({
+                        ...phase,
+                        jobs: phase.jobs.map(job => ({
+                            ...job,
+                            tasks: job.tasks.map(task =>
+                                task.id === taskId.toString()
+                                    ? { ...task, internal_comment: task.owner_comment }
+                                    : task
+                            )
+                        }))
+                    }));
 
-        // Clear the previous timeout if there was any
-        if (debounceTimeout.current) {
-            clearTimeout(debounceTimeout.current);
-        }
-
-        // Set a new timeout
-        debounceTimeout.current = setTimeout(async () => {
-            try {
-                const response = await changeInternalComment(renoProgressId, taskId, value);
-                
-            } catch (error) {
-                console.log(error);
-            }
-        }, 1000); // 1 second debounce
-    };
-
-    const toggleProperty = async (id: number, phaseId: number, jobId: number, property: 'supply' | 'install') => {
-        try {
-            let response;
-            if (property === 'supply') {
-                response = await toggleTaskSupply(renoProgressId, id);
-            } else {
-                response = await toggleTaskInstall(renoProgressId, id);
-            }
-
-            // const response = await toggleTaskSupply(renoProgressId, id);
-
-            if (response?.success) {
-                setRenoProgress((prevData) => {
-                    if (!prevData) return null;
-
-                    // Update the state immutably
                     return {
-                        ...prevData,
-                        phases: prevData.phases?.map(phase => ({
-                            ...phase,
-                            jobs: phase.jobs?.map(job => ({
-                                ...job,
-                                tasks: job.tasks?.map(task => {
-                                    if (Number(task.id) === id) {
-                                        // Toggle the correct property (either is_supplied or is_installed)
-                                        return response.data;
-                                    }
-                                    return task; // Return the task unchanged if it's not the one to update
-                                }),
-                            })),
-                        })),
+                        ...prevRenoProgress,
+                        phases: revertedPhases
                     };
                 });
             }
+        }, 1000);
+    };
 
-        } catch (error) {
-            console.log(error);
+    const handleInternalCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
+        const { value } = e.target;
+
+        // More efficient state update
+        setRenoProgress(prevRenoProgress => {
+            const updatedPhases = prevRenoProgress.phases.map(phase => ({
+                ...phase,
+                jobs: phase.jobs.map(job => ({
+                    ...job,
+                    tasks: job.tasks.map(task =>
+                        task.id === taskId.toString()
+                            ? { ...task, internal_comment: value }
+                            : task
+                    )
+                }))
+            }));
+
+            return {
+                ...prevRenoProgress,
+                phases: updatedPhases
+            };
+        });
+
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            try {
+                await changeInternalComment(renoProgressId, taskId, value);
+            } catch (error) {
+                console.error('Error updating internal comment:', error);
+
+                // Optional: Revert the local state if the API call fails
+                setRenoProgress(prevRenoProgress => {
+                    const revertedPhases = prevRenoProgress.phases.map(phase => ({
+                        ...phase,
+                        jobs: phase.jobs.map(job => ({
+                            ...job,
+                            tasks: job.tasks.map(task =>
+                                task.id === taskId.toString()
+                                    ? { ...task, internal_comment: task.internal_comment }
+                                    : task
+                            )
+                        }))
+                    }));
+
+                    return {
+                        ...prevRenoProgress,
+                        phases: revertedPhases
+                    };
+                });
+            }
+        }, 1000);
     };
 
     const handleChangeStatus = async (e: React.ChangeEvent<HTMLSelectElement>, id: number) => {
@@ -189,9 +225,8 @@ function ProgressMgnt() {
             const response = await changeTaskStatus(renoProgressId, id, status);
 
             if (response?.success) {
-                notify('success', 'Status updated successfully');
-
-                handleRefresh();
+                await handleRefresh();
+                await notify('success', 'Status updated successfully');
                 // setRenoProgress((prevData) => {
                 //     if (!prevData) return null;
 
@@ -288,7 +323,7 @@ function ProgressMgnt() {
 
     // Upload files (placeholder function)
     const uploadFiles = async (taskId: number) => {
-        
+
         try {
             const response = await uploadTaskDocuments(renoProgressId, taskId, pendingUploadItems);
 
@@ -613,7 +648,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`0.jobs.${jobIndex}.tasks.${taskIndex}.owner_comment`}
-                                                                            value={task.owner_comment || ""}
+                                                                            value={task.owner_comment}
                                                                             onChange={(e) => handleOwnerCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -622,7 +657,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`0.jobs.${jobIndex}.tasks.${taskIndex}.internal_comment`}
-                                                                            value={task.internal_comment || ""}
+                                                                            value={task.internal_comment}
                                                                             onChange={(e) => handleInternalCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -715,7 +750,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`1.jobs.${jobIndex}.tasks.${taskIndex}.owner_comment`}
-                                                                            value={task.owner_comment || ""}
+                                                                            value={task.owner_comment}
                                                                             onChange={(e) => handleOwnerCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -724,7 +759,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`1.jobs.${jobIndex}.tasks.${taskIndex}.internal_comment`}
-                                                                            value={task.internal_comment || ""}
+                                                                            value={task.internal_comment}
                                                                             onChange={(e) => handleInternalCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -843,7 +878,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`2.jobs.${jobIndex}.tasks.${taskIndex}.owner_comment`}
-                                                                            value={task.owner_comment || ""}
+                                                                            value={task.owner_comment}
                                                                             onChange={(e) => handleOwnerCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -852,7 +887,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`2.jobs.${jobIndex}.tasks.${taskIndex}.internal_comment`}
-                                                                            value={task.internal_comment || ""}
+                                                                            value={task.internal_comment}
                                                                             onChange={(e) => handleInternalCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
