@@ -1,24 +1,24 @@
-import { useEffect, useRef, useState } from "react";
-import KTComponent, { KTStepper } from "../metronic/core";
-import SignatureCanvas from 'react-signature-canvas';
+// import { useEffect, useRef, useState } from "react";
+// import KTComponent, { KTStepper } from "../metronic/core";
+// import SignatureCanvas from 'react-signature-canvas';
 
 function Test() {
 
-    const [signature, setSignature] = useState();
+    // const [signature, setSignature] = useState();
 
-    useEffect(() => {
-        document.title = "Dashboard | RenoXpert";
-        KTComponent.init();
-    }, []);
+    // useEffect(() => {
+    //     document.title = "Dashboard | RenoXpert";
+    //     KTComponent.init();
+    // }, []);
 
-    const handleClearSignature = (ref) => {
-        signature.clear();
-    }
+    // const handleClearSignature = (ref) => {
+    //     signature.clear();
+    // }
 
-    const handleSaveSignature = () => {
-        const res = signature.getTrimmedCanvas().toDataURL('image/png');
-        console.log(res);
-    }
+    // const handleSaveSignature = () => {
+    //     const res = signature.getTrimmedCanvas().toDataURL('image/png');
+    //     console.log(res);
+    // }
 
     // const handleGoTo = (step: number) => {
     //     const stepperEl = document.querySelector('#my_stepper') as HTMLElement;
@@ -30,7 +30,7 @@ function Test() {
 
     return (
         <>
-            <div className="card">
+            {/* <div className="card">
                 <div className="card-body flex flex-col items-center gap-2.5 py-7.5">
                     <div className="flex">
                         <div className="flex border">
@@ -55,7 +55,7 @@ function Test() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
         </>
     );
 }
