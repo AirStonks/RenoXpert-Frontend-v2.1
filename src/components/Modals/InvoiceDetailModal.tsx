@@ -11,6 +11,15 @@ interface InvoiceDetailModalProps {
     invoiceId: number | null;
 }
 
+const APP_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_APP_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_APP_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? import.meta.env.VITE_LOCAL_APP_URL
+                : null;
+
 function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
     const { invoiceDetail, loading, error } = useFetchInvoice(invoiceId);
     const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -162,7 +171,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
-                                    <tr>
+                                    {/* <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Link Status:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <select
@@ -175,7 +184,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                                 <option value="deactivate">Deactivate</option>
                                             </select>
                                         </td>
-                                    </tr>
+                                    </tr> */}
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Payment Link:</td>
                                         <td className="text-sm text-gray-900 pb-3">
@@ -185,8 +194,8 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                                     id="clipboard_1_target"
                                                     placeholder="Copy to clipboard"
                                                     type="text"
-                                                    value={`http://${window.location.hostname}:5173/invoice/${invoiceDetail.id}/view`}
-                                                    onClick={() => { window.open(`http://${window.location.hostname}:5173/invoice/${invoiceDetail.id}/view`, '_blank'); }}
+                                                    value={`${APP_URL}invoice/${invoiceDetail.id}/view`}
+                                                    onClick={() => { window.open(`${APP_URL}invoice/${invoiceDetail.id}/view`, '_blank'); }}
                                                     readOnly
                                                 />
                                                 <button className="btn btn-icon" id="clipboard_1_button">

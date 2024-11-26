@@ -152,7 +152,12 @@ export interface OrderQuotation {
     total_amount?: number,
     description?: string,
     version: number,
+    packages?: Package[],
     metadata?: JSON,
+    created_by?: User,
+    updated_by?: string,
+    created_at?: string,
+    updated_at?: string,
 }
 
 export interface Sale {

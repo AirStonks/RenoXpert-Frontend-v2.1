@@ -173,6 +173,14 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
 
             modal.hide();
 
+            setFees([]);
+            setDiscounts([]);
+            setFormData((prev) => ({
+                ...prev,
+                percentage: null
+            }));
+
+
             navigate('/sales/' + saleDetail.id);
         } else {
             console.log(response);

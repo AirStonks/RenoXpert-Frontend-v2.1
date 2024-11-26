@@ -5,25 +5,13 @@ import { Link } from 'react-router-dom';
 import KTLayout from '../metronic/app/layouts/demo1';
 import KTComponent from '../metronic/core';
 import { useEffect, useState } from 'react';
-import SignatureCanvas from 'react-signature-canvas';
 
 function Dashboard() {
-    const [signature, setSignature] = useState();
 
     useEffect(() => {
         document.title = "Dashboard | RenoXpert";
         KTComponent.init();
     }, []);
-
-    const handleClearSignature = (ref) => {
-        signature.clear();
-    }
-
-    const handleSaveSignature = () => {
-        const res = signature.getTrimmedCanvas().toDataURL('image/png');
-        console.log(res);
-    }
-
     return (
         <div className="card">
             <div className="card-body flex flex-col items-center gap-2.5 py-7.5">
@@ -65,28 +53,6 @@ function Dashboard() {
                         >
                             Quotations
                         </Link>
-                    </div>
-                    <div className="flex">
-                        <div className="flex border">
-                            <SignatureCanvas
-                                ref={(ref) => setSignature(ref)}
-                                penColor='green'
-                                canvasProps={{ width: 200, height: 120, className: 'sigCanvas' }} />
-                        </div>
-                        <div className="flex">
-                            <button
-                                className="btn btn-primary"
-                                onClick={handleClearSignature}
-                            >
-                                Clear
-                            </button>
-                            <button
-                                className="btn btn-success"
-                                onClick={handleSaveSignature}
-                            >
-                                Save
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>

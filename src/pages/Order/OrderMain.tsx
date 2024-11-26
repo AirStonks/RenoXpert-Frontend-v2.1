@@ -45,7 +45,7 @@ function OrderMain() {
     };
 
     useEffect(() => {
-        document.title = "Orders | RenoXpert";
+        document.title = "Quotation Orders | RenoXpert";
         initOrderTable(page, size);
 
         const clipboard = new ClipboardJS('.copy-link');
@@ -138,7 +138,7 @@ function OrderMain() {
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center flex-wrap">
                     <span className="text-2xl font-bold text-gray-900">
-                        Orders
+                        Quotation Orders
                     </span>
                     <div className="flex gap-3 flex-wrap">
                         <Link
@@ -147,7 +147,7 @@ function OrderMain() {
                             data-modal-toggle="#create_order_modal"
                         >
                             <i className="ki-outline ki-plus-squared"></i>
-                            Add New Order
+                            Add New Quotation Order
                         </Link>
                     </div>
                 </div>
@@ -155,7 +155,7 @@ function OrderMain() {
                 <div className="card">
                     <div className="card-header flex-wrap gap-2">
                         <div className="card-title">
-                            Order Overview
+                            Quotation Orders Overview
                         </div>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button

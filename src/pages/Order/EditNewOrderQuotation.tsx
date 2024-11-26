@@ -176,7 +176,7 @@ function EditNewOrderQuotation() {
     };
 
     useEffect(() => {
-        document.title = "Edit Order Quotation | RenoXpert";
+        document.title = "Create Quotation Order | RenoXpert";
 
         const includePackages = localStorage.getItem('include_packages');
         const orderData = localStorage.getItem('create_order_data');
