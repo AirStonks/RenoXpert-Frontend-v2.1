@@ -75,7 +75,7 @@ function RenoRegistrationFormDetail() {
 
                 <div className="flex flex-col mb-8">
                     <span className="text-slate-400 font-medium">Preferred Name</span>
-                    <span className="font-semibold">{form.user.name_preferred}</span>
+                    <span className="font-semibold">{form.user.name_preferred === 'null' ? '-' : form.user.name_preferred}</span>
                 </div>
 
                 <div className="flex flex-col mb-8">

@@ -2542,7 +2542,7 @@ function OwnerRenoRegistrationForm() {
 
                                     <button
                                         className="btn btn-lg btn-primary rounded-3xl shadow-lg"
-                                        onClick={owner ? handleSubmit : handleConfirmForm}
+                                        onClick={handleConfirmForm}
                                     >
                                         Confirm
                                     </button>

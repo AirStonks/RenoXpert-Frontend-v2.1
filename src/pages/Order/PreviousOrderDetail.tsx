@@ -66,6 +66,9 @@ function PreviousOrderDetail() {
     const selectedQuotation = orderDetail.order_quotations.find((quotation: OrderQuotation) => quotation.version === versionId);
     const selectedPackages = selectedQuotation?.packages as Package[];
 
+    console.log(orderDetail);
+    
+
     // const selectedQuotation = orderDetail.latest_quotation as OrderQuotation;
     // const selectedPackages = orderDetail.latest_quotation.packages as Package[];
     // console.log(selectedQuotation);
