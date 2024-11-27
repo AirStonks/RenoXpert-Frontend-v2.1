@@ -106,6 +106,9 @@ function ProgressMgnt() {
     const handleOwnerCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
         const { value } = e.target;
 
+        console.log(value);
+        
+
         // More efficient state update
         setRenoProgress(prevRenoProgress => {
             const updatedPhases = prevRenoProgress.phases.map(phase => ({
@@ -113,7 +116,7 @@ function ProgressMgnt() {
                 jobs: phase.jobs.map(job => ({
                     ...job,
                     tasks: job.tasks.map(task =>
-                        task.id === taskId.toString()
+                        task.id.toString() === taskId.toString()
                             ? { ...task, owner_comment: value }
                             : task
                     )
@@ -134,6 +137,8 @@ function ProgressMgnt() {
         debounceTimeout.current = setTimeout(async () => {
             try {
                 await changeOwnerComment(renoProgressId, taskId, value);
+                console.log(renoProgress);
+                
             } catch (error) {
                 console.error('Error updating internal comment:', error);
 
@@ -170,7 +175,7 @@ function ProgressMgnt() {
                 jobs: phase.jobs.map(job => ({
                     ...job,
                     tasks: job.tasks.map(task =>
-                        task.id === taskId.toString()
+                        task.id.toString() === taskId.toString()
                             ? { ...task, internal_comment: value }
                             : task
                     )

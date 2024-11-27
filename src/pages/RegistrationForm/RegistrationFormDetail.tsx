@@ -126,7 +126,7 @@ function RegistrationFormDetail() {
 
                             <div className="flex flex-col">
                                 <span className="font-normal">Preferred Name:</span>
-                                <span className="font-semibold">{formDetail.user.name_preferred}</span>
+                                <span className="font-semibold">{formDetail.user.name_preferred === 'null' ? '-' : formDetail.user.name_preferred}</span>
                             </div>
 
                             <div className="flex flex-col">
