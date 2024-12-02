@@ -6,6 +6,7 @@ import OTPVerifyPage from '../OTPVerifyPage';
 import { fetchExistsUser } from '../../services/ownerApi';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -129,8 +130,17 @@ const OwnerLogin: React.FC = () => {
                 <>
                     <div className="flex flex-col items-center justify-center grow bg-center bg-no-repeat page-bg">
                         <img className="default-logo min-h-[22px] h-[52px] max-w-none mb-6" src="/app/RenoExpert_logo-01.svg"></img>
-                        <form className="card max-w-[370px] w-full p-10 gap-5">
-                            <div className="text-center mb-2.5">
+                        <form className="card max-w-[370px] w-full gap-5">
+                            <div className="flex justify-end mt-2 mr-2">
+                                <Link
+                                    to={ '/login'}
+                                    className="btn btn-light btn-sm"
+                                >
+                                    Staff Login
+                                </Link>
+                            </div>
+
+                            <div className="text-center mb-2.5 px-10">
                                 <h3 className="text-lg font-medium text-gray-900 leading-none mb-2">
                                     Sign in
                                 </h3>
@@ -149,7 +159,7 @@ const OwnerLogin: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-1 px-10">
                                 <label className="form-label font-normal text-gray-900">Phone Number</label>
                                 <div className="flex">
                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
@@ -185,7 +195,7 @@ const OwnerLogin: React.FC = () => {
                                 {error && <p className="text-sm text-red-500">{error}</p>}
                             </div>
                             <button
-                                className="btn btn-primary flex justify-center grow"
+                                className="btn btn-primary flex justify-center mx-10 mb-10 grow"
                                 type="button"
                                 onClick={handleToOtpVerify}
                             >
