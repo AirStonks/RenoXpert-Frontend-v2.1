@@ -9,7 +9,7 @@ const AWS_S3_URL =
         : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
             ? import.meta.env.VITE_STAGING_AWS_S3_URL
             : null
-                
+
 
 function RegistrationFormDetail() {
     const navigate = useNavigate();
@@ -47,8 +47,8 @@ function RegistrationFormDetail() {
                 )}
             </div>
 
-            <div className="flex flex-wrap justify-between">
-                <div className="flex flex-col gap-4 w-full md:w-1/3">
+            <div className="flex flex-wrap gap-8">
+                <div className="flex flex-col gap-4 w-full flex-1">
                     <div className="card">
                         <div className="card-header">
                             <h3 className="card-title">General Information</h3>
@@ -126,7 +126,7 @@ function RegistrationFormDetail() {
 
                             <div className="flex flex-col">
                                 <span className="font-normal">Preferred Name:</span>
-                                <span className="font-semibold">{formDetail.user.name_preferred}</span>
+                                <span className="font-semibold">{formDetail.user.name_preferred === 'null' ? '-' : formDetail.user.name_preferred}</span>
                             </div>
 
                             <div className="flex flex-col">
@@ -253,9 +253,39 @@ function RegistrationFormDetail() {
                             </div>
                         </div>
                     </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">Attachments</h3>
+                        </div>
+                        <div className="card-body">
+                            <div className="flex flex-col">
+                                {formDetail.attachments && Object.keys(formDetail.attachments).length > 0 ? (
+                                    <ul>
+                                        {Object.keys(formDetail.attachments).map((key) => {
+                                            const attachment = formDetail.attachments[key];
+                                            return (
+                                                <li key={key}>
+                                                    {attachment.file_url ? (
+                                                        <a href={AWS_S3_URL + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2 break-words">
+                                                            Attachment {Number(key) + 1}
+                                                        </a>
+                                                    ) : (
+                                                        'No file available'
+                                                    )}
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                ) : (
+                                    <p>No attachments found.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex flex-col gap-4 w-full md:w-1/3">
+                <div className="flex flex-col gap-4 w-full flex-1">
                     <div className="flex flex-col flex-wrap mb-8">
                         <div className="card rounded-md mb-4">
                             <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
@@ -1015,35 +1045,428 @@ function RegistrationFormDetail() {
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-4 w-full md:w-1/4">
-                    <div className="card">
-                        <div className="card-header">
-                            <h3 className="card-title">Attachments</h3>
-                        </div>
-                        <div className="card-body">
-                            <div className="flex flex-col">
-                                {formDetail.attachments && Object.keys(formDetail.attachments).length > 0 ? (
-                                    <ul>
-                                        {Object.keys(formDetail.attachments).map((key) => {
-                                            const attachment = formDetail.attachments[key];
-                                            return (
-                                                <li key={key}>
-                                                    {attachment.file_url ? (
-                                                        <a href={AWS_S3_URL + (attachment.file_url)} target="_blank" rel="noopener noreferrer" className="badge badge-lg mb-2 break-words">
-                                                            Attachment {Number(key) + 1}
-                                                        </a>
-                                                    ) : (
-                                                        'No file available'
-                                                    )}
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                ) : (
-                                    <p>No attachments found.</p>
-                                )}
-                            </div>
-                        </div>
+                <div className="flex flex-col gap-4 w-full flex-1">
+                    <div className="flex flex-col flex-wrap mb-8">
+                        {Object.keys(formDetail.furnishing.bedrooms || {}).map((bedroomKey) => {
+                            const bedroom = formDetail.furnishing.bedrooms[bedroomKey];
+
+                            return (
+                                <div className="card rounded-md mb-4" key={bedroomKey}>
+                                    <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                        <h2 className="">{bedroomKey}</h2>
+                                    </div>
+                                    <div className="card-body text-sm px-4">
+                                        <div className="w-full">
+                                            <div className="grid grid-cols-3 gap-4">
+                                                {/* Header Row */}
+                                                <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                {/* Bedframe */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Bedframe</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.bedframe`}
+                                                        value="furnished"
+                                                        checked={bedroom.bedframe === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.bedframe`}
+                                                        value="not-furnish"
+                                                        checked={bedroom.bedframe === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+
+                                                {/* Wardrobe */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Wardrobe</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.wardrobe`}
+                                                        value="furnished"
+                                                        checked={bedroom.wardrobe === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.wardrobe`}
+                                                        value="not-furnish"
+                                                        checked={bedroom.wardrobe === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                {/* Study Table */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Study Table</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.study_table`}
+                                                        value="furnished"
+                                                        checked={bedroom.study_table === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.study_table`}
+                                                        value="not-furnish"
+                                                        checked={bedroom.study_table === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                {/* Writing Chair */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Writing Chair</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.writing_chair`}
+                                                        value="furnished"
+                                                        checked={bedroom.writing_chair === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.writing_chair`}
+                                                        value="not-furnish"
+                                                        checked={bedroom.writing_chair === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                {/* Curtain */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Curtain</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.curtain`}
+                                                        value="furnished"
+                                                        checked={bedroom.curtain === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.curtain`}
+                                                        value="not-furnish"
+                                                        checked={bedroom.curtain === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                {/* Lights */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.lights`}
+                                                        value="furnished"
+                                                        checked={bedroom.lights === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.lights`}
+                                                        value="not-furnish"
+                                                        checked={bedroom.lights === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                {/* Fan */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Fan</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.fan`}
+                                                        value="furnished"
+                                                        checked={bedroom.fan === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.fan`}
+                                                        value="not-furnish"
+                                                        checked={bedroom.fan === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                {/* AC */}
+                                                <div className="flex items-center text-gray-900 font-semibold">AC</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.ac`}
+                                                        value="furnished"
+                                                        checked={bedroom.ac === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.ac`}
+                                                        value="not-furnish"
+                                                        checked={bedroom.ac === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                {/* Other */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Other</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.other`}
+                                                        value="furnished"
+                                                        checked={bedroom.other === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bedroomKey}.other`}
+                                                        value="not-furnish"
+                                                        checked={bedroom.other === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <hr className="my-4" />
+
+                                            <div className="flex flex-col w-full">
+                                                <span className="text-slate-900 mb-2 font-medium">Remark</span>
+                                                <span className="textarea text-slate-900 mb-2 font-medium">{bedroom.remark}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+
+                        {Object.keys(formDetail.furnishing.bathrooms || {}).map((bathroomKey) => {
+                            const bathroom = formDetail.furnishing.bathrooms[bathroomKey];
+                            return (
+                                <div className="card rounded-md mb-4" key={bathroomKey}>
+                                    <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                        <h2 className="">{bathroomKey}</h2>
+                                    </div>
+                                    <div className="card-body text-sm px-4">
+                                        <div className="w-full">
+                                            <div className="grid grid-cols-3 gap-4">
+                                                {/* Header Row */}
+                                                <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                {/* Water Heater */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Water Heater</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.water_heater`}
+                                                        value="furnished"
+                                                        checked={bathroom.water_heater === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.water_heater`}
+                                                        value="not-furnish"
+                                                        checked={bathroom.water_heater === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+
+                                                {/* Bidet */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Bidet</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.bidet`}
+                                                        value="furnished"
+                                                        checked={bathroom.bidet === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.bidet`}
+                                                        value="not-furnish"
+                                                        checked={bathroom.bidet === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+
+                                                {/* Mirror */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Mirror</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.mirror`}
+                                                        value="furnished"
+                                                        checked={bathroom.mirror === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.mirror`}
+                                                        value="not-furnish"
+                                                        checked={bathroom.mirror === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+
+                                                {/* Shower Screen */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Shower Screen </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.shower_screen`}
+                                                        value="furnished"
+                                                        checked={bathroom.shower_screen === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.shower_screen`}
+                                                        value="not-furnish"
+                                                        checked={bathroom.shower_screen === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+
+                                                {/* Lights */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Lights </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.lights`}
+                                                        value="furnished"
+                                                        checked={bathroom.lights === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.lights`}
+                                                        value="not-furnish"
+                                                        checked={bathroom.lights === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+
+                                                {/* Other */}
+                                                <div className="flex items-center text-gray-900 font-semibold">Other</div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.other`}
+                                                        value="furnished"
+                                                        checked={bathroom.other === 'furnished'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                                <div className="flex justify-center items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name={`furnishing.bedrooms.${bathroomKey}.other`}
+                                                        value="not-furnish"
+                                                        checked={bathroom.other === 'not-furnish'}
+                                                        className="radio radio-lg h-4 w-4 text-blue-600"
+                                                        readOnly
+
+                                                    />
+                                                </div>
+                                            </div>
+                                            <hr className="my-4" />
+                                            <div className="flex flex-col w-full">
+                                                <span className="text-slate-900 mb-2 font-medium">Remark</span>
+                                                <span className="textarea text-slate-900 mb-2 font-medium">{bathroom.remark}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
             </div>
