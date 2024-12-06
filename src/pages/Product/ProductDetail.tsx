@@ -123,6 +123,36 @@ function ProductDetail() {
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
+                                Product Creator
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Created By:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {product.created_by ? product.created_by.name : 'N/A'}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Date Created:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {product.created_at}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
                                 Project Management
                             </h3>
                         </div>

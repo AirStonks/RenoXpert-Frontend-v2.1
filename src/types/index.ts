@@ -73,6 +73,7 @@ export interface Product {
     uom?: string;
     task_weightage?: number;
     status?: string;
+    created_by?: User;
     created_at?: string;
     updated_at?: string;
 }
