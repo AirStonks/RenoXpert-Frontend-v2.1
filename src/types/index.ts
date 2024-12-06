@@ -276,8 +276,8 @@ export interface OwnerRegistrationForm {
     sqft?: string;
     metadata?: string;
     questions?: {
-        quest_1?: string;
-        quest_2?: string;
+        quest_1?: string | number;
+        quest_2?: string | number;
         quest_3?: string;
         quest_4?: string;
         quest_5?: string;
@@ -327,6 +327,31 @@ export interface OwnerRegistrationForm {
             lights?: string;
             ac?: string;
             other?: string;
+        }
+        bedrooms?: {
+            [bedroom: string]: {
+                bedframe?: string,
+                wardrobe?: string,
+                study_table?: string,
+                writing_chair?: string,
+                curtain?: string,
+                lights?: string,
+                fan?: string,
+                ac?: string,
+                other?: string,
+                remark?: string,
+            }
+        },
+        bathrooms?: {
+            [bathroom: string]: {
+                water_heater?: string,
+                bidet?: string,
+                mirror?: string,
+                shower_screen?: string,
+                lights?: string,
+                other?: string,
+                remark?: string,
+            }
         }
     }
     attachments?: {
@@ -878,6 +903,7 @@ export interface JobTask {
     id?: string,
     name?: string,
     phase_id?: string,
+    qty?: number,
     priority?: number,
     task_weightage?: number,
     is_supplied?: boolean,
@@ -921,4 +947,69 @@ export interface RenoAccetanceForm {
     status?: string,
     created_at?: string,
     updated_at?: string,
+}
+
+export interface Inventory {
+    id?: string,
+    product_id?: string,
+    product?: Product,
+    alert_level?: number,
+    total_stock?: number,
+    current_stock?: number,
+    coming_stock?: number,
+    total_available_stock?: number,
+    total_required_stock?: number,
+    utilized_stock?: number,
+    required_stock?: number,
+    current_balance?: number,
+    total_balance?: number,
+    status?: string,
+    created_by?: string,
+    updated_by?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface PurchaseOrder {
+    id?: string,
+    po_no?: string,
+    sale_id?: string,
+    sale?: Sale,
+    vendor_id?: string,
+    vendor?: User,
+    items?: POItem[],
+    total_amount?: number,
+    shipping_date?: string,
+    shipped_date?: string,
+    delivery_date?: string,
+    delivered_date?: string,
+    payment_status?: string,
+    order_status?: string,
+    description?: string,
+    internal_note?: string,
+    created_by?: string,
+    updated_by?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface POItem {
+    id?: string,
+    product_id?: string,
+    product_name?: string,
+    product_desc?: string,
+    qty?: number,
+    supply?: boolean,
+    install?: boolean,
+    unit_price?: number,
+    supply_price?: number,
+    install_price?: number,
+    total_price?: number,
+    status?: string,
+    shipping_date?: string,
+    shipped_date?: string,
+    delivery_date?: string,
+    delivered_date?: string,
+    created_by?: string,
+    updated_by?: string,
 }
