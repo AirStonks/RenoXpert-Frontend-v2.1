@@ -276,8 +276,8 @@ export interface OwnerRegistrationForm {
     sqft?: string;
     metadata?: string;
     questions?: {
-        quest_1?: string;
-        quest_2?: string;
+        quest_1?: string | number;
+        quest_2?: string | number;
         quest_3?: string;
         quest_4?: string;
         quest_5?: string;
@@ -327,6 +327,31 @@ export interface OwnerRegistrationForm {
             lights?: string;
             ac?: string;
             other?: string;
+        }
+        bedrooms?: {
+            [bedroom: string]: {
+                bedframe?: string,
+                wardrobe?: string,
+                study_table?: string,
+                writing_chair?: string,
+                curtain?: string,
+                lights?: string,
+                fan?: string,
+                ac?: string,
+                other?: string,
+                remark?: string,
+            }
+        },
+        bathrooms?: {
+            [bathroom: string]: {
+                water_heater?: string,
+                bidet?: string,
+                mirror?: string,
+                shower_screen?: string,
+                lights?: string,
+                other?: string,
+                remark?: string,
+            }
         }
     }
     attachments?: {
