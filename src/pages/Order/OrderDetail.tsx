@@ -69,7 +69,7 @@ function OrderDetail() {
     // console.log(orderDetail);
     const selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation)) as OrderQuotation;
     const selectedPackages = JSON.parse(JSON.stringify(orderDetail.latest_quotation.packages)) as Package[];
-    // console.log(selectedQuotation);
+    console.log(selectedQuotation);
 
     return (
         <>

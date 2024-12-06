@@ -30,7 +30,7 @@ function ProductDetail() {
 
     return (
         <>
-            <div className="flex justify-between items-center flex-wrap mb-6">
+            <div className="flex justify-between items-center flex-wrap mb-4">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
                         <i className="ki-solid ki-arrow-left"></i>
@@ -49,6 +49,11 @@ function ProductDetail() {
                 </div>
             </div>
 
+            <div className="flex mb-4 gap-2 items-center text-center badge badge-lg badge-pill">
+                <i className="ki-filled ki-information-2 text-success"></i>
+                <span className="font-semibold">Owner can only see this information</span>
+            </div>
+
             <div className="flex flex-wrap gap-8 mb-8">
                 <div className="flex flex-col flex-[3] gap-8">
                     <div className="card">
@@ -64,8 +69,9 @@ function ProductDetail() {
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Product Name:
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {product.name}
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center text-center">
+                                            <span>{product.name}</span>
+                                            <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>
                                     <tr>
@@ -80,8 +86,9 @@ function ProductDetail() {
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Description:
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {product.description ? product.description : '-'}
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
+                                            <span>{product.description ? product.description : '-'}</span>
+                                            <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>
                                     <tr>
@@ -145,31 +152,33 @@ function ProductDetail() {
                         <div className="card-body">
                             <table className="table-auto mb-4">
                                 <tbody>
-                                    <tr>
+                                    <tr className="flex items-center">
                                         <td className="pb-3">
                                             <div className="flex flex-col pe-1">
-                                                <span className="">UOM</span>
+                                                <span className="text-gray-900">UOM</span>
                                                 <span className="text-xs text-gray-500">Unit of Measurement</span>
                                             </div>
                                         </td>
                                         <td className="pb-3">
-                                            :
+                                            <span className="text-gray-900">:</span>
                                         </td>
-                                        <td className="ps-2 lg:ps-4 pb-3">
-                                            {product.uom}
+                                        <td className="pb-3 ps-2 lg:ps-4 flex gap-2 items-center text-center">
+                                            <span className="text-gray-900">{product.uom}</span>
+                                            <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td className="">
+                                    <tr className="flex items-center">
+                                        <td>
                                             <div className="flex flex-col pe-1">
-                                                <span className="">Total Retail Price</span>
+                                                <span className="text-gray-900">Total Retail Price</span>
                                             </div>
                                         </td>
                                         <td>
-                                            :
+                                            <span className="text-gray-900">:</span>
                                         </td>
-                                        <td className="ps-2 lg:ps-4">
-                                            RM {product.provisioning.supply.retail_price + product.provisioning.install.retail_price}
+                                        <td className="ps-2 lg:ps-4 flex gap-2 items-center text-center">
+                                            <span className="text-gray-900">RM {product.provisioning.supply.retail_price + product.provisioning.install.retail_price}</span>
+                                            <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>
                                 </tbody>

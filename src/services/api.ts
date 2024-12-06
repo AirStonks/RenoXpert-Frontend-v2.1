@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { DiscountFee, Invoice, Order, OwnerRegistrationForm, Package, PMCategory, Product, Property, QCForm, Quotation, Sale, User } from '../types';
+import { DiscountFee, Invoice, Order, OwnerRegistrationForm, Package, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -682,6 +682,22 @@ export const fetchSale = async (saleId: number) => {
     }
 };
 
+export const fetchSales = async (searchTerm = '', length = 5) => {
+    try {
+        const response = await axios.get(API_URL + `sales`, {
+            headers: getAuthHeaders(),
+            params: {
+                search: searchTerm,
+                size: length
+            }
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
 export const updateSale = async (saleData: Sale) => {
     try {
         const response = await axios.put(API_URL + `sales/${saleData.id}`, saleData, {
@@ -1104,3 +1120,78 @@ export const changeRenoProgressEndDate = async (renoProgressId: number, endDate:
         throw error;
     }
 }
+
+export const createPurchaseOrder = async (purchaseOrderData: PurchaseOrder) => {
+    try {
+        const response = await axios.post(API_URL + 'purchase-orders', purchaseOrderData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+
+export const POIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'purchase-orders', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchPO = async (poId: number) => {
+    try {
+        const response = await axios.get(API_URL + `purchase-orders/${poId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const markPOItemAsDelivered = async (poId: number) => {
+    try {
+        const response = await axios.get(API_URL + `purchase-orders/${poId}/delivery/status/delivered`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const inventoryIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'inventory', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};

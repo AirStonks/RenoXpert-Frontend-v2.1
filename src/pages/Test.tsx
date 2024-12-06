@@ -30,30 +30,27 @@ function Test() {
 
     return (
         <>
-            <div className="card">
-                <div className="card-body flex flex-col items-center gap-2.5 py-7.5">
-                    <div className="flex">
-                        <div className="flex border">
-                            <SignatureCanvas
-                                ref={(ref) => setSignature(ref)}
-                                penColor='green'
-                                canvasProps={{ width: 200, height: 120, className: 'sigCanvas' }} />
-                        </div>
-                        <div className="flex">
-                            <button
-                                className="btn btn-primary"
-                                onClick={handleClearSignature}
-                            >
-                                Clear
-                            </button>
-                            <button
-                                className="btn btn-success"
-                                onClick={handleSaveSignature}
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </div>
+            <div className="flex flex-col mb-8">
+                <div className="flex">
+                    <SignatureCanvas
+                        ref={(ref) => setSignature(ref)}
+                        penColor='black'
+                        canvasProps={{ width: 250, height: 120, className: 'sigCanvas border-slate-300 border-2' }}
+                    />
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        className="btn btn-primary"
+                        onClick={handleClearSignature}
+                    >
+                        Clear
+                    </button>
+                    <button
+                        className="btn btn-success"
+                        onClick={handleSaveSignature}
+                    >
+                        Save
+                    </button>
                 </div>
             </div>
         </>

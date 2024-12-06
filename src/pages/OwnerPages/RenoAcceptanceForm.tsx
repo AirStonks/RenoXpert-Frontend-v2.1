@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { RenoAccetanceForm } from "../../types";
 import useFetchRenoProgress from '../../hook/useFetchRenoProgress';
 import Loading from "../../components/Loading";
+import SignatureCanvas from 'react-signature-canvas';
 
 const initialFormData: RenoAccetanceForm = {
     is_accepted: false,
@@ -29,6 +30,7 @@ function RenoAcceptanceForm() {
     const renoProgressId = id ? parseInt(id, 10) : null;
     const { renoProgressDetail, loading, error } = useFetchRenoProgress(renoProgressId);
     const [formData, setFormData] = useState(initialFormData);
+    const [signature, setSignature] = useState();
 
     // $renovatedProperty = Get renoProgress.sale.order.property
     // Block
@@ -59,6 +61,10 @@ function RenoAcceptanceForm() {
             });
         }
     }, [renoProgressDetail])
+
+    const handleClearSignature = (ref) => {
+        signature.clear();
+    }
 
     return (
         <>
@@ -152,6 +158,68 @@ function RenoAcceptanceForm() {
                                         />
                                         Yes
                                     </label>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <div className="flex gap-6 mb-2">
+                                        <span>
+                                            Signature:
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-4 mb-2">
+                                        <SignatureCanvas
+                                            ref={(ref) => setSignature(ref)}
+                                            penColor='black'
+                                            canvasProps={{ width: 250, height: 120, className: 'sigCanvas border-slate-300 border-2' }}
+                                        />
+                                    </div>
+                                    <div className="flex">
+                                        <button
+                                            className="btn btn-sm btn-secondary"
+                                            onClick={handleClearSignature}
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <div className="flex gap-6 mb-2">
+                                        <span>
+                                            Owner Name:
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-6 mb-2">
+                                        <span>
+                                            {formData.user.name}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <div className="flex gap-6 mb-2">
+                                        <span>
+                                            Phone No:
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-6 mb-2">
+                                        <span>
+                                           +60 {formData.user.phone_no}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col mb-8">
+                                    <div className="flex gap-6 mb-2">
+                                        <span>
+                                            Email:
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-6 mb-2">
+                                        <span>
+                                            {formData.user.email}
+                                        </span>
+                                    </div>
                                 </div>
                             </>
 
