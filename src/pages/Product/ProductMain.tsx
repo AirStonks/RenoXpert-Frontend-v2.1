@@ -266,6 +266,19 @@ function ProductMain() {
                                             Task Weightage {getSortIcon('task_weightage')}
                                         </div>
                                     </th>
+                                    <th className='w-[80px] text-center'>
+                                        <div className="flex items-center justify-center gap-2">
+                                            Created By
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('created_at')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Created Date {getSortIcon('created_at')}
+                                        </div>
+                                    </th>
                                     <th className='w-[120px] text-center'>Action</th>
                                 </tr>
                             </thead>
@@ -291,6 +304,8 @@ function ProductMain() {
                                             <td className='text-center capitalize'>{product.pm_category}</td>
                                             <td className='text-center capitalize'>{product.type}</td>
                                             <td className='text-center'>{product.task_weightage}</td>
+                                            <td className='text-center'>{product.created_by ? product.created_by.name : '-'}</td>
+                                            <td className='text-center'>{product.created_at}</td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
                                                     <button
@@ -312,7 +327,7 @@ function ProductMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="text-center text-gray-500">
+                                        <td colSpan={9} className="text-center text-gray-500">
                                             No products available
                                         </td>
                                     </tr>
