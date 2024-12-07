@@ -558,11 +558,20 @@ function ProgressMgnt() {
                 <div className="card flex-1">
                     <div className="card-header">
                         <div className="card-title">
-                            {/* Reno Progress Statistic */}
+                            Date Management
                         </div>
                     </div>
                     <div className="card-body">
 
+                    </div>
+                    <div className="card-footer flex justify-center items-center">
+                        <Link
+                            to={'#date-management'}
+                            className="btn-link"
+                            data-modal-toggle="#date_management_modal"
+                        >
+                            View more
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -1172,6 +1181,221 @@ function ProgressMgnt() {
                                     :
                                     <Loading />
                                 }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="date_management_modal">
+                <div className="modal-content h-full max-w-[900px]">
+                    <div className="modal-header py-4 px-5">
+                        <span className="text-lg text-gray-900 font-bold">Date Management</span>
+                        <button
+                            className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
+                            data-modal-dismiss="true"
+                        >
+                            <i className="ki-filled ki-cross"></i>
+                        </button>
+                    </div>
+                    <div className="modal-body overflow-y-auto scrollable-y flex gap-4">
+                        <div className="card flex-1">
+                            <div className="card-header">
+                                <div className="card-title">
+                                    Contractual
+                                </div>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P1 Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P1 End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P2 Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P2 End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            QC Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            QC End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Post Cleaning Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Post Cleaning End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Hand Over Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                        </div>
+
+                        <div className="card flex-1">
+                            <div className="card-header">
+                                <div className="card-title">
+                                    Contractor
+                                </div>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P1 Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P1 End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P2 Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P2 End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            QC Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            QC End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Post Cleaning Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Post Cleaning End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Hand Over Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
                             </div>
                         </div>
                     </div>

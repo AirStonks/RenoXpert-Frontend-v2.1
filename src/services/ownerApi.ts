@@ -89,6 +89,18 @@ export const fetchOwnerOrders = async () => {
     }
 };
 
+export const fetchOwnerRenoProgresses = async () => {
+    try {
+        const response = await axios.get(API_URL + `owner/reno-progresses`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOwner401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
 export const submitRegistrationForm = async (formData) => {
     try {
         const response = await axios.post(API_URL + `owner/reno-registration-form/overview/submit`, formData, {
@@ -102,7 +114,7 @@ export const submitRegistrationForm = async (formData) => {
         handleOwner401Error(error as AxiosError);
         throw error; // Ensure to throw the error if needed
     }
-}
+};
 
 export const retrieveRegistrationForms = async () => {
     try {
@@ -114,7 +126,7 @@ export const retrieveRegistrationForms = async () => {
         handleOwner401Error(error as AxiosError);
         throw error; // Ensure to throw the error if needed
     }
-}
+};
 
 export const fetchRegistrationForm = async (formId: number) => {
     try {
