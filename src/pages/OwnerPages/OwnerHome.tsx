@@ -8,10 +8,12 @@ import { Link } from "react-router-dom";
 import { logoutOwner } from "../../services/auth";
 import { toSvg } from "jdenticon/standalone";
 import useFetchOwnerRegistrationForms from "../../hook/useFetchOwnerRegistrationForms";
+import useFetchOwnerRenoProgresses from "../../hook/useFetchOwnerRenoProgresses";
 
 function OwnerHome() {
     const { orders, loading: ordersLoading, error: ordersError } = useFetchOwnerOrders();
     const { forms, loading: formsLoading, error: formsError } = useFetchOwnerRegistrationForms();
+    const { renoProgresses, loading: renoProgressesLoading, error: renoProgressesError } = useFetchOwnerRenoProgresses();
     const [owner, setOwner] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [userError, setUserError] = useState<string | null>(null);
@@ -48,8 +50,9 @@ function OwnerHome() {
         }
     };
 
-    if (ordersLoading || formsLoading || loading) return <Loading />;
+    if (ordersLoading || formsLoading || renoProgressesLoading || loading) return <Loading />;
     if (ordersError) return <div>Error fetching orders: {ordersError}</div>;
+    if (renoProgressesError) return <div>Error fetching orders: {ordersError}</div>;
     if (formsError) return <div>Error fetching orders: {ordersError}</div>;
     if (userError) return <div>{userError}</div>;
     if (!orders || !owner || !forms) return <div>An unexpected error occurred</div>;
@@ -281,10 +284,10 @@ function OwnerHome() {
                 </div> */}
 
                 <div className="flex flex-wrap gap-4">
-                    {forms.map((form, index) => (
+                    {renoProgresses.map((progress, index) => (
                         <Link
                             // to={'/owner/reno-progress/' + renoProgress.id}
-                            to={'/owner/form/reno-registration-forms/' + form.id}
+                            to={'/owner/reno/progress/' + progress.id}
                             className="card w-full sm:w-[calc(50%-0.5rem)] cursor-pointer"
                             key={index}
                         >
@@ -303,15 +306,15 @@ function OwnerHome() {
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <h3 className="text-gray-900 text-sm font-medium">
-                                            B-12-19
+                                            {progress.property.block}-{progress.property.floor}-{progress.property.unit_no}
                                         </h3>
                                         <div className="flex">
-                                            
+                                            <span>{progress.property.name}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="status">
-                                    [00]% Completed
+                                    {(((progress.pre_reno_completion * 0.2) + (progress.reno_completion * 0.7) + (progress.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% Completed
                                 </div>
                             </div>
                         </Link>

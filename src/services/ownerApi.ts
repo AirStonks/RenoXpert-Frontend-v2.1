@@ -139,3 +139,27 @@ export const fetchRegistrationForm = async (formId: number) => {
         throw error; // Ensure to throw the error if needed
     }
 };
+
+export const retrieveRenoProgresses = async () => {
+    try {
+        const response = await axios.get(API_URL + `owner/reno/progresses`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOwner401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const fetchRenoProgress = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `owner/reno/progresses/${renoProgressId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOwner401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};

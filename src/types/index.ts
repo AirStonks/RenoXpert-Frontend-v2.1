@@ -866,6 +866,13 @@ export interface RenoProgress {
     sale_id?: string,
     sale?: Sale,
     phases?: ProgressPhase[],
+    property?: {
+        id?: string,
+        name?: string
+        block?: string,
+        floor?: string,
+        unit_no?: string,
+    }
     status?: string,
     start_date?: string,
     end_date?: string,

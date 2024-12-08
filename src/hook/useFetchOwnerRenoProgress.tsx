@@ -1,10 +1,10 @@
 // src/hooks/useFetchOrder.ts
 
 import { useState, useEffect } from 'react';
-import { fetchRenoProgress } from '../services/api';
 import { RenoProgress } from '../types';
+import { fetchRenoProgress } from '../services/ownerApi';
 
-const useFetchRenoProgress = (renoProgressId: number | null) => {
+const useFetchOwnerRenoProgress = (renoProgressId: number | null) => {
     const [renoProgressDetail, setRenoProgress] = useState<RenoProgress | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -32,4 +32,4 @@ const useFetchRenoProgress = (renoProgressId: number | null) => {
     return { renoProgressDetail, loading, error };
 };
 
-export default useFetchRenoProgress;
+export default useFetchOwnerRenoProgress;

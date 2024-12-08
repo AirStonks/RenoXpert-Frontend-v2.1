@@ -76,6 +76,7 @@ import AddUser from './pages/User/AddUser';
 import InventoryMain from './pages/Inventory/InventoryMain';
 import PODetail from './pages/PO/PODetail';
 import POFulfillment from './pages/PO/POFulfillment';
+import RenoProgressDetail from './pages/OwnerPages/RenoProgressDetail';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -128,6 +129,7 @@ const routes = [
   { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
   { path: '/owner/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
   { path: '/owner/reno-registration-form/success', element: <FormSubmitSuccess />, layout: null },
+  { path: '/owner/reno/progress/:id', element: <RenoProgressDetail />, layout: OwnerProtectedLayout },
 
 
   /*--- TEST ---*/
