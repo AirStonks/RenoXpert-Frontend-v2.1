@@ -273,14 +273,14 @@ function OwnerHome() {
                     <span className="text-lg font-bold text-slate-900">Reno Progress</span>
                 </div>
 
-                {/* <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center">
                     <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/9.svg" />
                     <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/9.svg" />
 
                     <h2 className="text-xl font-semibold text-slate-900">Reno Progress Features Comming Soon</h2>
-                </div> */}
+                </div>
 
-                <div className="flex flex-wrap gap-4">
+                {/* <div className="flex flex-wrap gap-4">
                     {forms.map((form, index) => (
                         <Link
                             // to={'/owner/reno-progress/' + renoProgress.id}
@@ -316,7 +316,7 @@ function OwnerHome() {
                             </div>
                         </Link>
                     ))}
-                </div>
+                </div> */}
             </div>
         </div>
     )
