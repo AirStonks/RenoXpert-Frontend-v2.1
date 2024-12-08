@@ -334,7 +334,8 @@ function SaleDetail() {
 
                             <div className="flex gap-4">
                                 <Link
-                                    to={`/sales/${saleId}/purchase-order/create`}
+                                    to={`/purchase-orders/create?saleId=${sale.id}`}
+                                    state={{ fromUrl: location.pathname }}
                                     className="btn btn-xs btn-info flex gap-2 items-center"
                                     data-modal-toggle="#create-addon-inv-modal"
                                 >

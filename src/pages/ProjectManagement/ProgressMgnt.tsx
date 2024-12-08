@@ -23,6 +23,7 @@ function ProgressMgnt() {
     const renoProgressId = id ? parseInt(id, 10) : null;
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
     const [activeTab, setActiveTab] = useState('pre_reno_tab');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const { renoProgressDetail, loading, error } = useFetchRenoProgress(renoProgressId);
     const [renoProgress, setRenoProgress] = useState<RenoProgress | null>(null);
@@ -106,6 +107,9 @@ function ProgressMgnt() {
     const handleOwnerCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
         const { value } = e.target;
 
+        console.log(value);
+
+
         // More efficient state update
         setRenoProgress(prevRenoProgress => {
             const updatedPhases = prevRenoProgress.phases.map(phase => ({
@@ -113,7 +117,7 @@ function ProgressMgnt() {
                 jobs: phase.jobs.map(job => ({
                     ...job,
                     tasks: job.tasks.map(task =>
-                        task.id === taskId.toString()
+                        task.id.toString() === taskId.toString()
                             ? { ...task, owner_comment: value }
                             : task
                     )
@@ -134,6 +138,8 @@ function ProgressMgnt() {
         debounceTimeout.current = setTimeout(async () => {
             try {
                 await changeOwnerComment(renoProgressId, taskId, value);
+                console.log(renoProgress);
+
             } catch (error) {
                 console.error('Error updating internal comment:', error);
 
@@ -170,7 +176,7 @@ function ProgressMgnt() {
                 jobs: phase.jobs.map(job => ({
                     ...job,
                     tasks: job.tasks.map(task =>
-                        task.id === taskId.toString()
+                        task.id.toString() === taskId.toString()
                             ? { ...task, internal_comment: value }
                             : task
                     )
@@ -220,6 +226,7 @@ function ProgressMgnt() {
     const handleChangeStatus = async (e: React.ChangeEvent<HTMLSelectElement>, id: number) => {
 
         const status = e.target.value;
+        setIsLoading(true);
 
         try {
             const response = await changeTaskStatus(renoProgressId, id, status);
@@ -227,6 +234,7 @@ function ProgressMgnt() {
             if (response?.success) {
                 await handleRefresh();
                 await notify('success', 'Status updated successfully');
+                setIsLoading(false);
                 // setRenoProgress((prevData) => {
                 //     if (!prevData) return null;
 
@@ -251,6 +259,7 @@ function ProgressMgnt() {
             }
         } catch (error) {
             notify('error', 'Failed to update status');
+            setIsLoading(false);
         }
     }
 
@@ -404,6 +413,9 @@ function ProgressMgnt() {
 
     return (
         <>
+            {/* Loading Overlay */}
+            {isLoading && <Loading />}
+
             <div className="flex justify-between items-center flex-wrap mb-6">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
@@ -503,21 +515,63 @@ function ProgressMgnt() {
                 <div className="card flex-1">
                     <div className="card-header">
                         <div className="card-title">
-                            {/* Payment progress and status */}
+                            Property
                         </div>
                     </div>
-                    <div className="card-body flex flex-col">
-
+                    <div className="card-body">
+                        <table className="table-auto">
+                            <tbody>
+                                <tr>
+                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                        Property:
+                                    </td>
+                                    <td className="text-sm text-gray-900 pb-3">
+                                        {renoProgress.sale.order.property.name}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                        Unit:
+                                    </td>
+                                    <td className="text-sm text-gray-900 pb-3">
+                                        {renoProgress.sale.order.block}-{renoProgress.sale.order.floor}-{renoProgress.sale.order.unit_no}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                        Address:
+                                    </td>
+                                    <td className="text-sm text-gray-900 pb-3">
+                                        {renoProgress.sale.order.property.address}, {renoProgress.sale.order.property.street}, {renoProgress.sale.order.property.postcode}, {renoProgress.sale.order.property.city}, {renoProgress.sale.order.property.state}
+                                    </td>
+                                </tr>
+                                <tr>
+                                </tr>
+                                <tr>
+                                </tr>
+                                <tr>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 <div className="card flex-1">
                     <div className="card-header">
                         <div className="card-title">
-                            {/* Reno Progress Statistic */}
+                            Date Management
                         </div>
                     </div>
                     <div className="card-body">
 
+                    </div>
+                    <div className="card-footer flex justify-center items-center">
+                        <Link
+                            to={'#date-management'}
+                            className="btn-link"
+                            data-modal-toggle="#date_management_modal"
+                        >
+                            View more
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -701,6 +755,7 @@ function ProgressMgnt() {
                                                         <thead>
                                                             <tr>
                                                                 <th className='w-[220px]'>Product</th>
+                                                                <th className='w-[60px] text-center'>Quantity</th>
                                                                 <th className='w-[100px] text-center'>Status</th>
                                                                 <th className='w-[100px] text-center'>Last Update Date</th>
                                                                 <th className='w-[100px] text-center'>Documents</th>
@@ -712,6 +767,9 @@ function ProgressMgnt() {
                                                             {job.tasks.map((task, taskIndex) => (
                                                                 <tr key={taskIndex}>
                                                                     <td>{task.name}</td>
+                                                                    <td className="text-center">
+                                                                        {task.qty}
+                                                                    </td>
                                                                     <td>
                                                                         <div className="flex flex-col items-center">
                                                                             <select
@@ -1123,6 +1181,221 @@ function ProgressMgnt() {
                                     :
                                     <Loading />
                                 }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="date_management_modal">
+                <div className="modal-content h-full max-w-[900px]">
+                    <div className="modal-header py-4 px-5">
+                        <span className="text-lg text-gray-900 font-bold">Date Management</span>
+                        <button
+                            className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
+                            data-modal-dismiss="true"
+                        >
+                            <i className="ki-filled ki-cross"></i>
+                        </button>
+                    </div>
+                    <div className="modal-body overflow-y-auto scrollable-y flex gap-4">
+                        <div className="card flex-1">
+                            <div className="card-header">
+                                <div className="card-title">
+                                    Contractual
+                                </div>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P1 Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P1 End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P2 Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P2 End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            QC Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            QC End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Post Cleaning Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Post Cleaning End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Hand Over Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                        </div>
+
+                        <div className="card flex-1">
+                            <div className="card-header">
+                                <div className="card-title">
+                                    Contractor
+                                </div>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P1 Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P1 End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P2 Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            P2 End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            QC Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            QC End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Post Cleaning Start Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Post Cleaning End Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </div>
+                            <div className="card-group">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Hand Over Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            2024-10-01
+                                        </td>
+                                    </tr>
+                                </tbody>
                             </div>
                         </div>
                     </div>

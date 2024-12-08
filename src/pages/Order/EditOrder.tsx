@@ -383,7 +383,7 @@ function EditOrder() {
                 quotation_id: selectedQuotation.id,
                 total_amount: formData.totalAmount,
                 block: formData.block,
-                floor: formData.floor,
+                floor: formData.floor, 
                 unit_no: formData.unitNo,
                 bedroom_count: formData.bedroom_count,
                 bathroom_count: formData.bathroom_count,
@@ -399,7 +399,7 @@ function EditOrder() {
                 localStorage.removeItem('include_packages');
                 localStorage.removeItem('selected_quotation_packages');
                 localStorage.removeItem('e:edit_order_data');
-                navigate('/orders');
+                navigate('/orders/' + orderId);
             } else {
                 console.log(response);
             }

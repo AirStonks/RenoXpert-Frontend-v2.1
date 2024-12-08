@@ -42,7 +42,7 @@ import OwnerMasterLayout from './pages/OwnerPages/OwnerMasterLayout';
 import OwnerHome from './pages/OwnerPages/OwnerHome';
 import OwnerLogin from './pages/OwnerPages/OwnerLogin';
 import UsersMain from './pages/User/UsersMain';
-import AddUser from './pages/User/AddUser';
+import AddInternalUser from './pages/User/AddInternalUser';
 import OrderPreview from './pages/Order/OrderPreview';
 import OwnerRenoRegistrationForm from './pages/OwnerPages/OwnerRenoRegistrationForm';
 import FormSubmitSuccess from './pages/OwnerPages/FormSubmitSuccess';
@@ -67,10 +67,15 @@ import OperationHome from './pages/OperationPages/OperationHome';
 import QCFormDetail from './pages/OperationPages/QCFormDetail';
 import DefectInspectionFormPage from './pages/OperationPages/DefectInspectionFormPage';
 import QCFormPage from './pages/OperationPages/QCFormPage';
-import UserDetail from './pages/User/UsesrDetail';
+import UserDetail from './pages/User/UserDetail';
 import AddOwner from './pages/User/AddOwner';
 import RenoAcceptanceForm from './pages/OwnerPages/RenoAcceptanceForm';
 import PreviousOrderDetail from './pages/Order/PreviousOrderDetail';
+import POMain from './pages/PO/POMain';
+import AddUser from './pages/User/AddUser';
+import InventoryMain from './pages/Inventory/InventoryMain';
+import PODetail from './pages/PO/PODetail';
+import POFulfillment from './pages/PO/POFulfillment';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -191,7 +196,11 @@ const routes = [
 
 
   /*--- PO---*/
-  { path: '/sales/:id/purchase-order/create', element: <CreatePO />, layout: ProtectedLayout },
+  { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
+  { path: '/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
+  { path: '/purchase-orders/:id', element: <PODetail />, layout: ProtectedLayout },
+  { path: '/purchase-orders/edit/:id', element: <PODetail />, layout: ProtectedLayout },
+  { path: '/purchase-orders/fulfillment/:id', element: <POFulfillment />, layout: ProtectedLayout },
 
   /*--- DISCOUNT AND FEE ---*/
   { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
@@ -206,8 +215,13 @@ const routes = [
   /*--- USERS ---*/
   { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
   { path: '/users/:id', element: <UserDetail />, layout: ProtectedLayout },
+  { path: '/users/internal/add', element: <AddInternalUser />, layout: ProtectedLayout },
   { path: '/users/add', element: <AddUser />, layout: ProtectedLayout },
   { path: '/users/add/owner', element: <AddOwner />, layout: ProtectedLayout },
+
+
+  /*--- INVENTORY ---*/
+  { path: '/inventory', element: <InventoryMain />, layout: ProtectedLayout },
 
 
   /*--- DEVELOPER TOOLS ---*/

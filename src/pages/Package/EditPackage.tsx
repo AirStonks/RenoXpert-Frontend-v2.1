@@ -154,7 +154,7 @@ function EditPackage() {
             if (response?.success) {
                 notify('success', "Package Updated Successfully!");
                 localStorage.removeItem('include_prod_selected_products');
-                navigate('/packages');
+                navigate('/packages/' + packageData.id);
             }
 
         } catch (error) {

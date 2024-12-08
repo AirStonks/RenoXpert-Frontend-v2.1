@@ -173,9 +173,6 @@ function PMMain() {
                                 <th className='w-[100px] text-center'>Sales</th>
                                 <th className='w-[100px] text-center'>Payment Progress</th>
                                 <th className='w-[100px] text-center'>Condo</th>
-                                <th className='w-[100px] text-center'>Start Date</th>
-                                <th className='w-[100px] text-center'>End Date</th>
-                                <th className='w-[100px] text-center'>Remaining Date</th>
                                 <th className='w-[100px] text-center'>Pre-Reno</th>
                                 <th className='w-[100px] text-center'>Reno</th>
                                 <th className='w-[100px] text-center'>Post-Reno</th>
@@ -233,35 +230,6 @@ function PMMain() {
                                                 <span className="font-semibold mb-1">{progress.sale.order.property.name}</span>
                                                 <span className="badge badge-xs badge-pill text-xs text-gray-600">
                                                     {progress.sale.order.block}-{progress.sale.order.floor}-{progress.sale.order.unit_no}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="text-center">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={progress.start_date || ''}
-                                                onChange={(e) => handleChangeStartDate(e, Number(progress.id))}
-                                                onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                        <td className="text-center">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={progress.end_date || ''}
-                                                onChange={(e) => handleChangeEndDate(e, Number(progress.id))}
-                                                onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                        <td className="text-center">
-                                            {/* Add warning icon if remaining date is less than 7 days */}
-                                            <div className="flex gap-2 justify-center items-center">
-                                                {Math.ceil((new Date(progress.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) < 7 && progress.end_date !== null && (
-                                                    <i className="ki-filled ki-information-3 text-danger text-xl"></i>
-                                                )}
-                                                <span>
-                                                    {progress.end_date ? `${Math.ceil((new Date(progress.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} day${Math.ceil((new Date(progress.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) > 1 ? 's' : ''}` : '-'}
                                                 </span>
                                             </div>
                                         </td>

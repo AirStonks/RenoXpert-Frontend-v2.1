@@ -171,10 +171,10 @@ function UsersMain() {
                     </Link>
                     
                     <Link
-                        to={'/users/add/owner'}
-                        className="btn btn-warning btn-sm disabled"
+                        to={'/users/internal/add'}
+                        className="btn btn-warning btn-sm"
                     >
-                        Add Owner
+                        Add Internal User
                     </Link>
                     
                 </div>
