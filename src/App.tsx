@@ -116,7 +116,6 @@ const routes = [
   { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
-  { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
 
 
   /*--- OWNER SITE ---*/
@@ -130,6 +129,7 @@ const routes = [
   { path: '/owner/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
   { path: '/owner/reno-registration-form/success', element: <FormSubmitSuccess />, layout: null },
   { path: '/owner/reno/progress/:id', element: <RenoProgressDetail />, layout: OwnerProtectedLayout },
+  { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
 
 
   /*--- TEST ---*/

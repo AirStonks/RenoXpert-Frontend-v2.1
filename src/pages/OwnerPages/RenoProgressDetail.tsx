@@ -89,19 +89,17 @@ function RenoProgressDetail() {
                                             {phase.jobs
                                                 .sort((a, b) => b.priority - a.priority) // Sort jobs by priority (higher number comes first)
                                                 .map((job, jobIndex) => {
-                                                    const jobProgress = calculateJobProgress(job);
-
                                                     return (
                                                         <div className="flex flex-col" key={jobIndex}>
                                                             <div className="flex">
                                                                 <span className="text-md font-semibold">{job.name}</span>
                                                             </div>
-                                                            <span>Progress: {jobProgress.toFixed(2)}%</span>
+                                                            <span>Progress: {job.completion.toFixed(2)}%</span>
                                                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
                                                                 <div
                                                                     className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
                                                                     style={{
-                                                                        width: `${jobProgress}%`,
+                                                                        width: `${job.completion}%`,
                                                                         height: '8px'
                                                                     }}
                                                                 />

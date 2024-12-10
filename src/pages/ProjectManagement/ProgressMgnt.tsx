@@ -4,7 +4,7 @@ import Loading from "../../components/Loading";
 import { useCallback, useEffect, useRef, useState } from "react";
 import KTComponents, { KTAccordion, KTTabs } from "../../metronic/core";
 import { JobTask, PhaseJob, RenoProgress } from "../../types";
-import { changeInternalComment, changeOwnerComment, changeTaskStatus, fetchRenoProgress, fetchTaskDocuments, removeTaskDocument, toggleTaskInstall, toggleTaskSupply, uploadTaskDocuments } from "../../services/api";
+import { changeInternalComment, changeOwnerComment, changeRenoProgressContractorDate, changeRenoProgressContractorHandoverDate, changeRenoProgressContractualDate, changeRenoProgressContractualHandoverDate, changeTaskStatus, fetchRenoProgress, fetchTaskDocuments, removeTaskDocument, toggleTaskInstall, toggleTaskSupply, toggleTaskVisibility, uploadTaskDocuments } from "../../services/api";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -263,6 +263,37 @@ function ProgressMgnt() {
         }
     }
 
+    const handleToggleVisibility = async (taskId: number) => {
+        setIsLoading(true);
+        try {
+            const response = await toggleTaskVisibility(renoProgressId, taskId);
+            if (response?.success) {
+                const updatedRenoProgress = { ...renoProgress };
+
+                // Loop through the phases, jobs, and tasks to find the task by ID
+                updatedRenoProgress.phases?.forEach(phase => {
+                    phase.jobs?.forEach(job => {
+                        const task = job.tasks?.find(t => Number(t.id) === taskId);
+                        if (task) {
+                            // Toggle the visibility
+                            task.is_visible = !task.is_visible;
+                        }
+                    });
+                });
+
+                // Set the updated renoProgress state
+                setRenoProgress(updatedRenoProgress);
+
+
+                await notify('success', 'Status updated successfully');
+                setIsLoading(false);
+            }
+        } catch (error) {
+            notify('error', 'Failed to update status');
+            setIsLoading(false);
+        }
+    }
+
     // Handle file selection from input
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(event.target.files ?? []);
@@ -406,6 +437,53 @@ function ProgressMgnt() {
         // Return the progress percentage (multiply by 100 to get percentage)
         return totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0;
     };
+
+    const handleChangeDate = async (event: React.ChangeEvent<HTMLInputElement>, renoProgressId: number, userType: string, dateType: string = 'date', datePoint: string = 'start') => {
+        const date = event.target.value;
+        setIsLoading(true);
+        try {
+            let response;
+
+            if (userType === 'contractual') {
+                if (dateType === 'date') {
+                    response = await changeRenoProgressContractualHandoverDate(renoProgressId, date);
+                } else {
+                    if (datePoint === 'start') {
+                        response = await changeRenoProgressContractualDate(renoProgressId, dateType, date);
+                    } else {
+                        response = await changeRenoProgressContractualDate(renoProgressId, dateType, null, date);
+                    }
+                }
+            } else if (userType === 'contractor') {
+                if (dateType === 'date') {
+                    response = await changeRenoProgressContractorHandoverDate(renoProgressId, date);
+                } else {
+                    if (datePoint === 'start') {
+                        response = await changeRenoProgressContractorDate(renoProgressId, dateType, date);
+                    } else {
+                        response = await changeRenoProgressContractorDate(renoProgressId, dateType, null, date);
+                    }
+                }
+            }
+
+            if (response?.success) {
+                notify('success', 'Date updated successfully');
+                setRenoProgress(response.data);
+            }
+
+            setIsLoading(false);
+
+        } catch (error) {
+
+            if (error.status === 400) {
+                notify('error', error.response.data.message);
+            } else {
+                notify('error', 'Something went wrong');
+            }
+
+            setIsLoading(false);
+        }
+    }
 
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
@@ -601,6 +679,12 @@ function ProgressMgnt() {
                         >
                             Post Reno
                         </button>
+                        <button
+                            className={`tab ${activeTab === 'rpm_handover_tab' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('rpm_handover_tab')}
+                        >
+                            RPM Handover
+                        </button>
                     </div>
 
                     <div className={activeTab === 'pre_reno_tab' ? '' : 'hidden'} id="pre_reno_tab">
@@ -632,6 +716,7 @@ function ProgressMgnt() {
                                                         <thead>
                                                             <tr>
                                                                 <th className='w-[220px]'>Product</th>
+                                                                <th className='w-[80px] text-center'>Owner Visibility</th>
                                                                 <th className='w-[100px] text-center'>Status</th>
                                                                 <th className='w-[100px] text-center'>Last Update Date</th>
                                                                 <th className='w-[100px] text-center'>Documents</th>
@@ -643,6 +728,17 @@ function ProgressMgnt() {
                                                             {job.tasks.map((task, taskIndex) => (
                                                                 <tr key={taskIndex}>
                                                                     <td>{task.name}</td>
+                                                                    <td>
+                                                                        <label className="switch flex justify-center">
+                                                                            <input
+                                                                                name="visibility"
+                                                                                type="checkbox"
+                                                                                checked={task.is_visible}
+                                                                                value={`${task.is_visible}`}
+                                                                                onChange={() => handleToggleVisibility(Number(task.id))}
+                                                                            />
+                                                                        </label>
+                                                                    </td>
                                                                     <td>
                                                                         <div className="flex flex-col items-center">
                                                                             {task.is_defect_form ?
@@ -755,6 +851,7 @@ function ProgressMgnt() {
                                                         <thead>
                                                             <tr>
                                                                 <th className='w-[220px]'>Product</th>
+                                                                <th className='w-[80px] text-center'>Owner Visibility</th>
                                                                 <th className='w-[60px] text-center'>Quantity</th>
                                                                 <th className='w-[100px] text-center'>Status</th>
                                                                 <th className='w-[100px] text-center'>Last Update Date</th>
@@ -767,6 +864,17 @@ function ProgressMgnt() {
                                                             {job.tasks.map((task, taskIndex) => (
                                                                 <tr key={taskIndex}>
                                                                     <td>{task.name}</td>
+                                                                    <td>
+                                                                        <label className="switch flex justify-center">
+                                                                            <input
+                                                                                name="visibility"
+                                                                                type="checkbox"
+                                                                                checked={task.is_visible}
+                                                                                value={`${task.is_visible}`}
+                                                                            // onChange={() => handleVisibilityToggle(product.id)}
+                                                                            />
+                                                                        </label>
+                                                                    </td>
                                                                     <td className="text-center">
                                                                         {task.qty}
                                                                     </td>
@@ -861,6 +969,7 @@ function ProgressMgnt() {
                                                         <thead>
                                                             <tr>
                                                                 <th className='w-[220px]'>Product</th>
+                                                                <th className='w-[80px] text-center'>Owner Visibility</th>
                                                                 <th className='w-[100px] text-center'>Status</th>
                                                                 <th className='w-[100px] text-center'>Last Update Date</th>
                                                                 <th className='w-[100px] text-center'>Documents</th>
@@ -872,6 +981,17 @@ function ProgressMgnt() {
                                                             {job.tasks.map((task, taskIndex) => (
                                                                 <tr key={taskIndex}>
                                                                     <td>{task.name}</td>
+                                                                    <td>
+                                                                        <label className="switch flex justify-center">
+                                                                            <input
+                                                                                name="visibility"
+                                                                                type="checkbox"
+                                                                                checked={task.is_visible}
+                                                                                value={`${task.is_visible}`}
+                                                                            // onChange={() => handleVisibilityToggle(product.id)}
+                                                                            />
+                                                                        </label>
+                                                                    </td>
                                                                     <td>
                                                                         <div className="flex flex-col items-center">
                                                                             {task.is_qc_form ?
@@ -958,6 +1078,27 @@ function ProgressMgnt() {
                                         </div>
                                     );
                                 })}
+                        </div>
+                    </div>
+                    <div className={activeTab === 'rpm_handover_tab' ? '' : 'hidden'} id="rpm_handover_tab">
+                        <div className="flex flex-col gap-5" data-accordion="true">
+                            {/* {renoProgress.phases[3].jobs
+                                .sort((a, b) => b.priority - a.priority) // Sort jobs by priority (higher number comes first)
+                                .map((job, jobIndex) => {
+                                    const jobProgress = calculateJobProgress(job); // Get the job progress
+                                    return (
+                                        <div className="flex item-center" key={job.id}>
+                                            <div className="card accordion-item border rounded-xl w-full" data-accordion-item="true" id=
+                                                {job.id}>
+                                                <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" +
+                                                    job.id}>
+                                                </button>
+                                                <div className="accordion-content hidden border-t" id={"package_content_" + job.id}>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })} */}
                         </div>
                     </div>
                 </div>
@@ -1212,7 +1353,13 @@ function ProgressMgnt() {
                                             P1 Start Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractual_p1_start_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p1')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                     <tr>
@@ -1220,7 +1367,13 @@ function ProgressMgnt() {
                                             P1 End Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractual_p1_end_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p1', 'end')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1232,7 +1385,13 @@ function ProgressMgnt() {
                                             P2 Start Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractual_p2_start_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p2')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                     <tr>
@@ -1240,7 +1399,13 @@ function ProgressMgnt() {
                                             P2 End Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractual_p2_end_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p2', 'end')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1252,7 +1417,13 @@ function ProgressMgnt() {
                                             QC Start Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractual_qc_start_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'qc')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                     <tr>
@@ -1260,7 +1431,13 @@ function ProgressMgnt() {
                                             QC End Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractual_qc_end_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'qc', 'end')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1272,7 +1449,13 @@ function ProgressMgnt() {
                                             Post Cleaning Start Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractual_pc_start_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'pc')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                     <tr>
@@ -1280,7 +1463,13 @@ function ProgressMgnt() {
                                             Post Cleaning End Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractual_pc_end_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'pc', 'end')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1292,7 +1481,13 @@ function ProgressMgnt() {
                                             Hand Over Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractual_handover_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1312,7 +1507,13 @@ function ProgressMgnt() {
                                             P1 Start Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractor_p1_start_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p1')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                     <tr>
@@ -1320,7 +1521,13 @@ function ProgressMgnt() {
                                             P1 End Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractor_p1_end_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p1', 'end')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1332,7 +1539,13 @@ function ProgressMgnt() {
                                             P2 Start Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractor_p2_start_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p2')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                     <tr>
@@ -1340,7 +1553,13 @@ function ProgressMgnt() {
                                             P2 End Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractor_p2_end_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p2', 'end')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1352,7 +1571,13 @@ function ProgressMgnt() {
                                             QC Start Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractor_qc_start_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'qc')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                     <tr>
@@ -1360,7 +1585,13 @@ function ProgressMgnt() {
                                             QC End Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractor_qc_end_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'qc', 'end')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1372,7 +1603,13 @@ function ProgressMgnt() {
                                             Post Cleaning Start Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractor_pc_start_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'pc')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                     <tr>
@@ -1380,7 +1617,13 @@ function ProgressMgnt() {
                                             Post Cleaning End Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractor_pc_end_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'pc', 'end')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1392,7 +1635,13 @@ function ProgressMgnt() {
                                             Hand Over Date:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            2024-10-01
+                                            <input
+                                                type="date"
+                                                className="input input-sm"
+                                                value={renoProgress.contractor_handover_date || ''}
+                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor')}
+                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                            />
                                         </td>
                                     </tr>
                                 </tbody>

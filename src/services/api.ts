@@ -1023,6 +1023,19 @@ export const changeInternalComment = async (renoProgressId: number, taskId: numb
     }
 }
 
+export const toggleTaskVisibility = async (renoProgressId: number, taskId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/visibility/toggle`, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
 export const uploadTaskDocuments = async (renoProgressId: number, taskId: number, files: File[]) => {
     try {
         // Create a new FormData instance
@@ -1097,21 +1110,39 @@ export const renoProgressIndex = async (size: number = 5, page: number = 1, sear
     }
 };
 
-export const changeRenoProgressStartDate = async (renoProgressId: number, startDate: string) => {
+export const changeRenoProgressContractualDate = async (renoProgressId: number, dateType: string, startDate?: string, endDate?: string) => {
     try {
-        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/start-date`, { start_date: startDate }, {
-            headers: getAuthHeaders()
-        });
-        return response.data;
-    } catch (error) {
-        handle401Error(error as AxiosError);
-        throw error;
-    }
-}
+        // Determine which field to update
+        const payload: { start_date?: string; end_date?: string } = {};
 
-export const changeRenoProgressEndDate = async (renoProgressId: number, endDate: string) => {
+        if (startDate) {
+            payload.start_date = startDate;
+        } else if (endDate) {
+            payload.end_date = endDate;
+        }
+
+        // Proceed if either startDate or endDate is provided
+        if (Object.keys(payload).length === 0) {
+            throw new Error("Either startDate or endDate must be provided.");
+        }
+
+        // Make the API request
+        const response = await axios.post(
+            `${API_URL}reno-progress/${renoProgressId}/contractual/${dateType}/date`,
+            payload,
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const changeRenoProgressContractualHandoverDate = async (renoProgressId: number, startDate: string) => {
     try {
-        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/end-date`, { end_date: endDate }, {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/contractual/handover/date`, { start_date: startDate }, {
             headers: getAuthHeaders()
         });
         return response.data;
@@ -1119,7 +1150,49 @@ export const changeRenoProgressEndDate = async (renoProgressId: number, endDate:
         handle401Error(error as AxiosError);
         throw error;
     }
-}
+};
+
+export const changeRenoProgressContractorDate = async (renoProgressId: number, dateType: string, startDate?: string, endDate?: string) => {
+    try {
+        // Determine which field to update
+        const payload: { start_date?: string; end_date?: string } = {};
+
+        if (startDate) {
+            payload.start_date = startDate;
+        } else if (endDate) {
+            payload.end_date = endDate;
+        }
+
+        // Proceed if either startDate or endDate is provided
+        if (Object.keys(payload).length === 0) {
+            throw new Error("Either startDate or endDate must be provided.");
+        }
+
+        // Make the API request
+        const response = await axios.post(
+            `${API_URL}reno-progress/${renoProgressId}/contractor/${dateType}/date`,
+            payload,
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const changeRenoProgressContractorHandoverDate = async (renoProgressId: number, startDate: string) => {
+    try {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/contractor/handover/date`, { start_date: startDate }, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
 
 export const createPurchaseOrder = async (purchaseOrderData: PurchaseOrder) => {
     try {
