@@ -233,7 +233,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="Text..."
                                             name="internal_desc"
                                             type='text'
-                                            value={formData.internal_desc}
+                                            value={formData?.internal_desc}
                                             onChange={handleChange}
                                             error={errors.internal_desc}
                                         />
@@ -253,7 +253,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="color"
                                             name="color"
                                             type='text'
-                                            value={formData.color}
+                                            value={formData?.color}
                                             onChange={handleChange}
                                             error={errors.color}
                                         />
@@ -264,7 +264,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="material"
                                             name="material"
                                             type='text'
-                                            value={formData.material}
+                                            value={formData?.material}
                                             onChange={handleChange}
                                             error={errors.material}
                                         />
@@ -275,7 +275,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="width"
                                             name="width"
                                             type='text'
-                                            value={formData.width}
+                                            value={formData?.width}
                                             onChange={handleChange}
                                             error={errors.width}
                                         />
@@ -286,7 +286,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="height"
                                             name="height"
                                             type='text'
-                                            value={formData.height}
+                                            value={formData?.height}
                                             onChange={handleChange}
                                             error={errors.height}
                                         />
@@ -297,7 +297,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="depth"
                                             name="depth"
                                             type='text'
-                                            value={formData.depth}
+                                            value={formData?.depth}
                                             onChange={handleChange}
                                             error={errors.depth}
                                         />
