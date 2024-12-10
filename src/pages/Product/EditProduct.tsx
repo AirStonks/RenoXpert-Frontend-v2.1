@@ -141,7 +141,7 @@ const EditProduct: React.FC = () => {
     };
 
     if (productLoading) return <Loading />;
-    if (productError) return <div>{productError}</div>; 
+    if (productError) return <div>{productError}</div>;
 
     if (categoryLoading) return <Loading />;
     if (categoryError) return <div>{categoryError}</div>;
@@ -180,43 +180,17 @@ const EditProduct: React.FC = () => {
                         <div className="flex flex-col flex-[2] gap-8">
 
                             {/* Image */}
-                            {/* <div className="card relative">
-        <div className="comming-soon-overlay rounded-xl absolute flex items-center justify-center inset-0 bg-black bg-opacity-60 pointer-events-none">
-            <span className='text-3xl text-white font-bold -rotate-6'>Comming Soon</span>
-        </div>
-        <div className="card-body">
-            <div className="flex flex-col">
-                <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Image</h1>
-
-                <div className="flex flex-col justify-center items-center text-center">
-                    <span className="flex text-xs text-gray-600 tracking-wide mb-2">
-                        A product name is required and recommended to be unique. A product name is required and recommended to be unique.
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div> */}
-
-                            {/* Status */}
-                            <div className="card">
+                            <div className="card relative">
+                                {/* <div className="comming-soon-overlay rounded-xl absolute flex items-center justify-center inset-0 bg-black bg-opacity-60 pointer-events-none">
+                                    <span className='text-3xl text-white font-bold -rotate-6'>Comming Soon</span>
+                                </div> */}
                                 <div className="card-body">
                                     <div className="flex flex-col">
-                                        {/* Header */}
-                                        <h1 className='text-xl mb-4 font-semibold text-gray-900'>Status</h1>
+                                        <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Image</h1>
 
-                                        {/* Status Dropdown */}
-                                        <div className="flex flex-col">
-                                            <Dropdown
-                                                options={[
-                                                    { value: "available", label: "Available" },
-                                                    { value: "unreleased", label: "Unreleased" }
-                                                ]}
-                                                name="status"
-                                                value={formData?.status}
-                                                onChange={handleChange}
-                                            />
-                                            <span className="text-xs text-gray-600 tracking-wide">
-                                                Set the product status.
+                                        <div className="flex flex-col justify-center items-center text-center">
+                                            <span className="flex text-xs text-gray-600 tracking-wide mb-2">
+                                                A product name is required and recommended to be unique. A product name is required and recommended to be unique.
                                             </span>
                                         </div>
                                     </div>
@@ -242,6 +216,91 @@ const EditProduct: React.FC = () => {
                                                 error={errors.task_weightage}
                                             />
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="card">
+                                <div className="card-body">
+                                    {/* Header */}
+                                    <h1 className='text-xl mb-4 font-semibold text-gray-900'>Internal</h1>
+
+                                    {/* Task Weightage */}
+                                    <div className="flex flex-col">
+                                        <InputFieldGroup
+                                            fieldTitle="Internal Description"
+                                            description="Add comment for internal reference. (Not visible to public)"
+                                            placeholder="Text..."
+                                            name="internal_desc"
+                                            type='text'
+                                            value={formData.internal_desc}
+                                            onChange={handleChange}
+                                            error={errors.internal_desc}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="card">
+                                <div className="card-body">
+                                    {/* Header */}
+                                    <h1 className='text-xl mb-4 font-semibold text-gray-900'>Properties</h1>
+
+                                    <div className="flex flex-col">
+                                        <InputFieldGroup
+                                            fieldTitle="Color"
+                                            description="Color of the product"
+                                            placeholder="color"
+                                            name="color"
+                                            type='text'
+                                            value={formData.color}
+                                            onChange={handleChange}
+                                            error={errors.color}
+                                        />
+
+                                        <InputFieldGroup
+                                            fieldTitle="Material"
+                                            description="The product material"
+                                            placeholder="material"
+                                            name="material"
+                                            type='text'
+                                            value={formData.material}
+                                            onChange={handleChange}
+                                            error={errors.material}
+                                        />
+
+                                        <InputFieldGroup
+                                            fieldTitle="Width"
+                                            description="Product width"
+                                            placeholder="width"
+                                            name="width"
+                                            type='text'
+                                            value={formData.width}
+                                            onChange={handleChange}
+                                            error={errors.width}
+                                        />
+
+                                        <InputFieldGroup
+                                            fieldTitle="Height"
+                                            description="The product height"
+                                            placeholder="height"
+                                            name="height"
+                                            type='text'
+                                            value={formData.height}
+                                            onChange={handleChange}
+                                            error={errors.height}
+                                        />
+
+                                        <InputFieldGroup
+                                            fieldTitle="Depth"
+                                            description="The product depth"
+                                            placeholder="depth"
+                                            name="depth"
+                                            type='text'
+                                            value={formData.depth}
+                                            onChange={handleChange}
+                                            error={errors.depth}
+                                        />
                                     </div>
                                 </div>
                             </div>
