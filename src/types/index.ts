@@ -68,12 +68,19 @@ export interface Product {
             status?: string;
         }
     }
+    color?: string;
+    material?: string;
+    width?: string;
+    height?: string;
+    depth?: string;
+    internal_desc?: string;
     type?: string;
     description?: string;
     uom?: string;
     task_weightage?: number;
     status?: string;
     created_by?: User;
+    updated_by?: User;
     created_at?: string;
     updated_at?: string;
 }

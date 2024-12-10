@@ -123,10 +123,23 @@ function ProductDetail() {
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
-                                Product Creator
+                                Internal Description
                             </h3>
                         </div>
                         <div className="card-body pt-3.5 pb-3.5">
+                            <span className="text-gray-900">
+                                {product.internal_desc ? product.internal_desc : 'N/A'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Product History
+                            </h3>
+                        </div>
+                        <div className="card-group pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
                                     <tr>
@@ -143,6 +156,28 @@ function ProductDetail() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             {product.created_at}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="card-group pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Last Updated By:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {product.updated_by ? product.updated_by.name : 'N/A'}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Last Updated At:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {product.updated_at}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -172,6 +207,7 @@ function ProductDetail() {
                         </div>
                     </div>
                 </div>
+
                 <div className='flex flex-col flex-[4] gap-8'>
                     <div className="card">
                         <div className="card-header">
@@ -290,6 +326,65 @@ function ProductDetail() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <div className="card-title">
+                                Properties
+                            </div>
+                        </div>
+                        <div className="card-body">
+                            <table className="table-auto">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Color:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center text-center">
+                                            <span>{product.color || 'N/A'}</span>
+                                            <i className="ki-filled ki-information-2 text-success"></i>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Material:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center text-center">
+                                            <span>{product.material || 'N/A'}</span>
+                                            <i className="ki-filled ki-information-2 text-success"></i>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Width:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center text-center">
+                                            <span>{product.width || 'N/A'}</span>
+                                            <i className="ki-filled ki-information-2 text-success"></i>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Height:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center text-center">
+                                            <span>{product.height || 'N/A'}</span>
+                                            <i className="ki-filled ki-information-2 text-success"></i>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Depth:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center text-center">
+                                            <span>{product.depth || 'N/A'}</span>
+                                            <i className="ki-filled ki-information-2 text-success"></i>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
