@@ -4,6 +4,13 @@ import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 
+const AWS_S3_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
+
 function ProductDetail() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -65,6 +72,39 @@ function ProductDetail() {
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Photo:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center text-center">
+                                            {product.attachments ?
+                                                product.attachments.thumbnail && (
+                                                    <div className="flex gap-4 items-center">
+                                                        <a
+                                                            className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px"
+                                                            href={AWS_S3_URL + (product.attachments.thumbnail.file_url)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                        >
+                                                            <img
+                                                                src={AWS_S3_URL + (product.attachments.thumbnail.file_url)}
+                                                                alt={product.name}
+                                                                className="w-24 h-24 object-cover"
+                                                            />
+                                                        </a>
+                                                        <button
+                                                            className="btn btn-sm btn-info btn-outline"
+                                                            data-modal-toggle="#photos_modal"
+                                                        >
+                                                            View More
+                                                        </button>
+                                                    </div>
+                                                )
+                                                :
+                                                <span className="text-gray-600">N/A</span>
+                                            }
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Product Name:
@@ -385,6 +425,84 @@ function ProductDetail() {
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="photos_modal">
+                <div className="modal-content h-full max-w-[900px]">
+                    <div className="modal-header py-4 px-5">
+                        <span className="text-lg text-gray-900 font-bold">Product Photos</span>
+                        <button
+                            className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
+                            data-modal-dismiss="true"
+                        >
+                            <i className="ki-filled ki-cross"></i>
+                        </button>
+                    </div>
+                    <div className="modal-body overflow-y-auto scrollable-y flex flex-col gap-4">
+                        <div className="card w-full">
+                            <div className="card-header">
+                                <div className="card-title">
+                                    Thumbnail
+                                </div>
+                            </div>
+                            <div className="card-body">
+                                {product.attachments ?
+                                    product.attachments.thumbnail && (
+                                        <div className="flex gap-4 items-center">
+                                            <a
+                                                className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px"
+                                                href={AWS_S3_URL + (product.attachments.thumbnail.file_url)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                <img
+                                                    src={AWS_S3_URL + (product.attachments.thumbnail.file_url)}
+                                                    alt={product.name}
+                                                    className="w-24 h-24 object-cover"
+                                                />
+                                            </a>
+                                        </div>
+                                    )
+                                    :
+                                    <span className="text-gray-600">N/A</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div className="card w-full">
+                            <div className="card-header">
+                                <div className="card-title">
+                                    Photos
+                                </div>
+                            </div>
+                            <div className="card-body flex gap-4">
+                                {product.attachments ?
+                                    product.attachments.photos ?
+                                        product.attachments.photos.map((photo, index: number) => (
+                                            <div className="flex gap-4 items-center" key={index}>
+                                                <a
+                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px"
+                                                    href={AWS_S3_URL + (photo.file_url)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    <img
+                                                        src={AWS_S3_URL + (photo.file_url)}
+                                                        alt={photo.original_name}
+                                                        className="w-24 h-24 object-cover"
+                                                    />
+                                                </a>
+                                            </div>
+                                        ))
+                                        :
+                                        <span className="text-gray-600">N/A</span>
+                                    :
+                                    <span className="text-gray-600">N/A</span>
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>

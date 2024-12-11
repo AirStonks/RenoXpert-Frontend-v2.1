@@ -68,6 +68,10 @@ export interface Product {
             status?: string;
         }
     }
+    attachments? : {
+        thumbnail?: Attachment;
+        photos?: Attachment[];
+    }
     color?: string;
     material?: string;
     width?: string;

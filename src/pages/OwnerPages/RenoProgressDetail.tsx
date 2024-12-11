@@ -89,35 +89,45 @@ function RenoProgressDetail() {
                                             {phase.jobs
                                                 .sort((a, b) => b.priority - a.priority) // Sort jobs by priority (higher number comes first)
                                                 .map((job, jobIndex) => {
-                                                    return (
-                                                        <div className="flex flex-col" key={jobIndex}>
-                                                            <div className="flex">
-                                                                <span className="text-md font-semibold">{job.name}</span>
-                                                            </div>
-                                                            <span>Progress: {job.completion.toFixed(2)}%</span>
-                                                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                                                <div
-                                                                    className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                                                    style={{
-                                                                        width: `${job.completion}%`,
-                                                                        height: '8px'
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <div className="flex flex-col">
-                                                                {job.tasks.map((task, taskIndex) => (
-                                                                    <div className="flex flex-col mb-4" key={taskIndex}>
-                                                                        <div className="flex">
-                                                                            <span className="text-sm">{task.name}</span>
-                                                                        </div>
-                                                                        <div className="flex">
-                                                                            <span className="text-sm">Status: <span className="text-sm font-semibold">{task.status}</span></span>
+                                                    const jobProgress = calculateJobProgress(job);
 
+                                                    return (
+                                                        <div className="card mb-2" key={jobIndex}>
+                                                            <div className="flex flex-col card-body">
+                                                                <div className="flex justify-between">
+                                                                    <span className="text-md font-semibold">{job.name}</span>
+                                                                    <button
+                                                                        className="btn btn-info btn-sm"
+                                                                    >
+                                                                        View
+                                                                    </button>
+                                                                </div>
+                                                                <span>Progress: {jobProgress.toFixed(2)}%</span>
+                                                                <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
+                                                                    <div
+                                                                        className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                                                        style={{
+                                                                            width: `${jobProgress}%`,
+                                                                            height: '8px'
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    {job.tasks.map((task, taskIndex) => (
+                                                                        <div className="flex flex-col mb-4" key={taskIndex}>
+                                                                            <div className="flex">
+                                                                                <span className="text-sm">{task.name}</span>
+                                                                            </div>
+                                                                            <div className="flex">
+                                                                                <span className="text-sm">Status: <span className="text-sm font-semibold">{task.status}</span></span>
+
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                ))}
+                                                                    ))}
+                                                                </div>
                                                             </div>
                                                         </div>
+
                                                     )
                                                 })}
                                         </div>

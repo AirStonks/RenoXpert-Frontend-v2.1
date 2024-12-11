@@ -183,7 +183,7 @@ export const createProduct = async (productData: Product) => {
         const response = await axios.post(API_URL + 'products', productData, {
             headers: {
                 ...getAuthHeaders(),
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
             }
         });
         return response.data;
@@ -197,7 +197,7 @@ export const updateProduct = async (productData: Product) => {
         const response = await axios.put(API_URL + `products/${productData.id}`, productData, {
             headers: {
                 ...getAuthHeaders(),
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
             }
         });
         return response.data;

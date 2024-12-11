@@ -12,6 +12,13 @@ import { Slide, toast } from 'react-toastify';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import useFetchPMCategory from '../../hook/useFetchPMCategory';
 
+const AWS_S3_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
+
 interface FormErrors {
     [key: string]: string | undefined; // Use string or undefined for error messages
 }
@@ -23,6 +30,9 @@ const EditProduct: React.FC = () => {
 
     const { product, loading: productLoading, error: productError } = useFetchProduct(productId);
     const { pmCategory, loading: categoryLoading, error: categoryError } = useFetchPMCategory();
+
+    const [thumbnail, setThumbnail] = useState(null);
+    const [pendingUploadItems, setPendingUploadItems] = useState(null);
 
     const [formData, setFormData] = useState<Product | null>(null);
 
@@ -50,6 +60,16 @@ const EditProduct: React.FC = () => {
         document.title = "Edit Product | RenoXpert";
         if (product) {
             setFormData(product);
+            setThumbnail({
+                id: Date.now(),
+                file: null,
+                previewUrl: AWS_S3_URL + product.attachments.thumbnail.file_url,
+            });
+            setPendingUploadItems(product.attachments.photos.map((item) => ({
+                id: Date.now(),
+                file: null,
+                previewUrl: AWS_S3_URL + item.file_url,
+            })));
         }
     }, [product]);
 
@@ -94,6 +114,23 @@ const EditProduct: React.FC = () => {
         }
     };
 
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedThumbnail = event.target.files?.[0];
+        if (selectedThumbnail) {
+            const previewUrl = URL.createObjectURL(selectedThumbnail);  // Create a temporary URL for the image
+            setThumbnail({
+                id: Date.now(),  // You can generate a unique ID here if needed
+                file: selectedThumbnail,
+                previewUrl: previewUrl,
+            });
+            console.log('Selected file:', selectedThumbnail.name);
+        }
+    };
+
+    const handleRemoveFile = () => {
+        setThumbnail(null);  // Remove the file (or revert it to an initial state)
+    };
+
     const validate = (): FormErrors => {
         const newErrors: FormErrors = {};
 
@@ -117,8 +154,16 @@ const EditProduct: React.FC = () => {
             return;
         }
 
+        const updatedFormData = {
+            ...formData, // Spread the existing formData
+            attachments: {
+                ...formData.attachments, // Spread the existing attachments (if any)
+                thumbnail: thumbnail?.file ?? formData.attachments.thumbnail,
+            }
+        }
+
         try {
-            const response = await updateProduct(formData);
+            const response = await updateProduct(updatedFormData);
 
             if (response?.success) {
                 notify('success', "Product Edited Successfully!");
@@ -181,16 +226,64 @@ const EditProduct: React.FC = () => {
 
                             {/* Image */}
                             <div className="card relative">
-                                {/* <div className="comming-soon-overlay rounded-xl absolute flex items-center justify-center inset-0 bg-black bg-opacity-60 pointer-events-none">
-                                    <span className='text-3xl text-white font-bold -rotate-6'>Comming Soon</span>
-                                </div> */}
                                 <div className="card-body">
                                     <div className="flex flex-col">
-                                        <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Image</h1>
+                                        <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Thumbnail</h1>
+
+                                        <div className="flex justify-center items-center mb-2">
+                                            {!thumbnail && (
+                                                <input
+                                                    className="file-input file-input-lg"
+                                                    type="file"
+                                                    name="attachments"
+                                                    accept="image/*"
+                                                    onChange={handleFileUpload} // React handles file input change
+                                                />
+                                            )}
+
+                                            {thumbnail && (
+                                                <div className="flex flex-col items-center">
+                                                    <div className="image-input-placeholder rounded-lg border-2 border-success image-input-empty:border-gray-300 relative mb-2">
+                                                        <div className="image-input-preview rounded-lg">
+                                                            <img
+                                                                src={thumbnail.previewUrl}
+                                                                alt="Thumbnail preview"
+                                                                className="rounded-lg w-32 h-32 object-cover"  // Adjust size and style as needed
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex">
+                                                        <button
+                                                            className="btn btn-sm btn-danger"
+                                                            onClick={handleRemoveFile}
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+
+                                                </div>
+                                            )}
+                                        </div>
 
                                         <div className="flex flex-col justify-center items-center text-center">
                                             <span className="flex text-xs text-gray-600 tracking-wide mb-2">
-                                                A product name is required and recommended to be unique. A product name is required and recommended to be unique.
+                                                The product thumbnail will be displayed on the product page.
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div className="card">
+                                <div className="card-body">
+                                    <div className="flex flex-col">
+                                        <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Photos</h1>
+
+                                        <div className="flex flex-col justify-center items-center text-center">
+                                            <span className="flex text-xs text-gray-600 tracking-wide mb-2">
+                                                To manage product photos, head back to the previous or product detail page and click on "View" to manage photos.
                                             </span>
                                         </div>
                                     </div>
