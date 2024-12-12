@@ -146,12 +146,23 @@ function CreateProduct() {
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(event.target.files ?? []);
-        const newPendingUploadItems = [...pendingUploadItems, ...selectedFiles];
+
+        // Filter for image files based on MIME types
+        const imageFiles = selectedFiles.filter(file =>
+            ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'].includes(file.type)
+        );
+
+        const newPendingUploadItems = [...pendingUploadItems, ...imageFiles];
 
         if (newPendingUploadItems.length + documentItems.length > maxFiles) {
             notify('error', `You can only upload up to ${maxFiles} files.`);
             return;
         }
+
+        if (imageFiles.length < selectedFiles.length) {
+            notify('error', 'Only image files are allowed.');
+        }
+
         setPendingUploadItems(newPendingUploadItems);
     };
 
@@ -170,11 +181,21 @@ function CreateProduct() {
     const handleDrop = (event) => {
         event.preventDefault();
         const droppedFiles = event.dataTransfer.files;
-        if (pendingUploadItems.length + droppedFiles.length + documentItems.length <= maxFiles) {
-            setPendingUploadItems((prevItems) => [
-                ...prevItems,
-                ...Array.from(droppedFiles),
-            ]);
+
+        // Filter for image files based on MIME types
+        const imageFiles = Array.from(droppedFiles).filter(file =>
+            ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'].includes(file.type)
+        );
+
+        if (pendingUploadItems.length + imageFiles.length + documentItems.length <= maxFiles) {
+            if (imageFiles.length > 0) {
+                setPendingUploadItems((prevItems) => [
+                    ...prevItems,
+                    ...imageFiles,
+                ]);
+            } else {
+                notify('error', 'Only image files are allowed.');
+            }
         } else {
             notify('error', `You can only upload up to ${maxFiles} files.`);
         }
@@ -218,7 +239,7 @@ function CreateProduct() {
         };
 
         console.log(updatedFormData);
-        
+
 
         try {
             const response = await createProduct(updatedFormData);

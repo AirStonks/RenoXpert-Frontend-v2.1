@@ -1236,10 +1236,8 @@ function ProgressMgnt() {
                                     </div>
                                 )
                                 :
-                                <Loading />
+                                ''
                             }
-
-
 
                             <div className="flex flex-col flex-wrap border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5">
                                 <div className="flex justify-between items-center">

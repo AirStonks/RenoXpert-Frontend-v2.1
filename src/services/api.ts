@@ -197,7 +197,7 @@ export const updateProduct = async (productData: Product) => {
         const response = await axios.put(API_URL + `products/${productData.id}`, productData, {
             headers: {
                 ...getAuthHeaders(),
-                'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                'Content-Type': 'application/json',
             }
         });
         return response.data;
@@ -243,6 +243,73 @@ export const removeProduct = async (productId: number) => {
         throw error; // Ensure to throw the error if needed
     }
 }
+
+export const changeProductThumbnail = async (productId: number, file: File) => {
+    try {
+        const formData = new FormData();
+
+        formData.append('attachment', file);
+
+        const response = await axios.post(
+            `${API_URL}products/${productId}/attachments/thumbnail/change`, formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+        
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handle401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+}
+
+export const uploadProductPhotos = async (productId: number, files: File[]) => {
+    try {
+        // Create a new FormData instance
+        const formData = new FormData();
+
+        // Append each file to the FormData object
+        files.forEach(file => {
+            formData.append('attachments[]', file);  // 'attachments[]' because your backend expects an array
+        });
+
+        // Make the API request
+        const response = await axios.post(
+            `${API_URL}products/${productId}/attachments/photos/upload`, formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handle401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+};
+
+export const removeProductPhoto = async (productId: number, photoIndex: number) => {
+    try {
+        const response = await axios.get(API_URL + `products/${productId}/attachments/photos/${photoIndex}/remove`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
 
 export const fetchPMCategory = async (length = 5) => {
     try {

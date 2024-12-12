@@ -225,22 +225,12 @@ const EditProduct: React.FC = () => {
                         <div className="flex flex-col flex-[2] gap-8">
 
                             {/* Image */}
-                            <div className="card relative">
+                            {/* <div className="card relative">
                                 <div className="card-body">
                                     <div className="flex flex-col">
                                         <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Thumbnail</h1>
 
                                         <div className="flex justify-center items-center mb-2">
-                                            {!thumbnail && (
-                                                <input
-                                                    className="file-input file-input-lg"
-                                                    type="file"
-                                                    name="attachments"
-                                                    accept="image/*"
-                                                    onChange={handleFileUpload} // React handles file input change
-                                                />
-                                            )}
-
                                             {thumbnail && (
                                                 <div className="flex flex-col items-center">
                                                     <div className="image-input-placeholder rounded-lg border-2 border-success image-input-empty:border-gray-300 relative mb-2">
@@ -254,12 +244,20 @@ const EditProduct: React.FC = () => {
                                                     </div>
 
                                                     <div className="flex">
-                                                        <button
-                                                            className="btn btn-sm btn-danger"
-                                                            onClick={handleRemoveFile}
+                                                        <input
+                                                            className="hidden"
+                                                            type="file"
+                                                            name="attachments"
+                                                            accept="image/*"
+                                                            onChange={handleFileUpload}
+                                                            id="file-upload"
+                                                        />
+                                                        <label
+                                                            htmlFor="file-upload"
+                                                            className="btn btn-sm btn-dark btn-outline cursor-pointer"
                                                         >
-                                                            Remove
-                                                        </button>
+                                                            Upload Image
+                                                        </label>
                                                     </div>
 
                                                 </div>
@@ -273,8 +271,7 @@ const EditProduct: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
+                            </div> */}
 
                             <div className="card">
                                 <div className="card-body">
