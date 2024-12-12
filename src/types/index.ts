@@ -68,6 +68,10 @@ export interface Product {
             status?: string;
         }
     }
+    attachments? : {
+        thumbnail?: Attachment;
+        photos?: Attachment[];
+    }
     color?: string;
     material?: string;
     width?: string;
@@ -873,10 +877,33 @@ export interface RenoProgress {
     sale_id?: string,
     sale?: Sale,
     phases?: ProgressPhase[],
+    property?: {
+        id?: string,
+        name?: string
+        block?: string,
+        floor?: string,
+        unit_no?: string,
+    }
+    user?: User,
     status?: string,
-    start_date?: string,
-    end_date?: string,
-    pre_reno_completion?: number,
+    contractual_p1_start_date?: string,
+    contractual_p1_end_date?: string,
+    contractual_p2_end_date?: string,
+    contractual_p2_start_date?: string,
+    contractual_qc_end_date?: string,
+    contractual_qc_start_date?: string,
+    contractual_pc_end_date?: string,
+    contractual_pc_start_date?: string,
+    contractual_handover_date?: string,
+    contractor_p1_start_date?: string,
+    contractor_p1_end_date?: string,
+    contractor_p2_end_date?: string,
+    contractor_p2_start_date?: string,
+    contractor_qc_end_date?: string,
+    contractor_qc_start_date?: string,
+    contractor_pc_end_date?: string,
+    contractor_pc_start_date?: string,
+    contractor_handover_date?: string,
     reno_completion?: number,
     post_reno_completion?: number,
     completed_at?: string,
@@ -902,6 +929,7 @@ export interface PhaseJob {
     priority?: number,
     tasks?: JobTask[],
     status?: string,
+    completion?: number,
     completed_at?: string,
     created_at?: string,
     updated_at?: string,
@@ -927,6 +955,7 @@ export interface JobTask {
     },
     is_defect_form?: boolean,
     is_qc_form?: boolean,
+    is_visible?: boolean,
     status?: string,
     owner_comment?: string,
     internal_comment?: string,
@@ -937,6 +966,7 @@ export interface JobTask {
 
 export interface RenoAccetanceForm {
     id?: string,
+    reno_progress_id?: string,
     is_accepted?: boolean,
     date?: string,
     property?: {

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { RenoAccetanceForm } from "../../types";
-import useFetchRenoProgress from '../../hook/useFetchRenoProgress';
 import Loading from "../../components/Loading";
 import SignatureCanvas from 'react-signature-canvas';
+import useFetchOwnerRenoProgress from "../../hook/useFetchOwnerRenoProgress";
 
 const initialFormData: RenoAccetanceForm = {
+    reno_progress_id: '',
     is_accepted: false,
     date: '',
     property: {
@@ -28,7 +29,7 @@ function RenoAcceptanceForm() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const renoProgressId = id ? parseInt(id, 10) : null;
-    const { renoProgressDetail, loading, error } = useFetchRenoProgress(renoProgressId);
+    const { renoProgressDetail, loading, error } = useFetchOwnerRenoProgress(renoProgressId);
     const [formData, setFormData] = useState(initialFormData);
     const [signature, setSignature] = useState();
 
@@ -46,24 +47,43 @@ function RenoAcceptanceForm() {
     useEffect(() => {
         if (renoProgressDetail) {
             setFormData({
+                reno_progress_id: renoProgressId.toString(),
+                is_accepted: false,
+                date: new Date().toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                }),
                 property: {
-                    property_name: renoProgressDetail.sale.order.property.name,
-                    block: renoProgressDetail.sale.order.block,
-                    level: renoProgressDetail.sale.order.floor,
-                    unit: renoProgressDetail.sale.order.unit_no,
+                    property_name: renoProgressDetail.property.name,
+                    block: renoProgressDetail.property.block,
+                    level: renoProgressDetail.property.floor,
+                    unit: renoProgressDetail.property.unit_no,
                 },
                 user: {
-                    id: renoProgressDetail.sale.order.user.id,
-                    name: renoProgressDetail.sale.order.user.name,
-                    email: renoProgressDetail.sale.order.user.email,
-                    phone_no: renoProgressDetail.sale.order.user.phone_no,
+                    id: renoProgressDetail.user.id,
+                    name: renoProgressDetail.user.name,
+                    email: renoProgressDetail.user.email,
+                    phone_no: renoProgressDetail.user.phone_no,
                 }
             });
         }
-    }, [renoProgressDetail])
+    }, [renoProgressId, renoProgressDetail])
+
+    const handleAgree = (event) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            is_accepted: event.target.checked
+        }));
+    };
 
     const handleClearSignature = (ref) => {
         signature.clear();
+    }
+
+    const handleSubmit = () => {
+        console.log(formData);
+
     }
 
     return (
@@ -107,13 +127,7 @@ function RenoAcceptanceForm() {
                                         <div className="flex flex-col flex-1">
                                             <label className="text-slate-900 mb-2 font-medium" htmlFor="date">Date</label>
                                             <div className="flex gap-6">
-                                                <input
-                                                    type="date"
-                                                    className="input input-sm"
-                                                    value={formData.date || ''}
-                                                // onChange={(e) => handleChangeEndDate(e, Number(progress.id))}
-                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                                />
+                                                <div className="badge badge-lg">{formData.date}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -152,9 +166,10 @@ function RenoAcceptanceForm() {
                                     <label className="form-label flex items-center gap-2.5">
                                         <input
                                             className="radio radio-lg h-4 w-4 text-blue-600"
-                                            name="radio1"
+                                            name="is_accepted"
                                             type="radio"
-                                            value="2"
+                                            value={`${formData.is_accepted}`}
+                                            onChange={handleAgree}
                                         />
                                         Yes
                                     </label>
@@ -204,7 +219,7 @@ function RenoAcceptanceForm() {
                                     </div>
                                     <div className="flex gap-6 mb-2">
                                         <span>
-                                           +60 {formData.user.phone_no}
+                                            +60 {formData.user.phone_no}
                                         </span>
                                     </div>
                                 </div>
@@ -228,6 +243,13 @@ function RenoAcceptanceForm() {
                 </div>
             </div>
             <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2">
+                <button
+                    className="btn btn-lg btn-primary rounded-3xl shadow-lg"
+                    disabled={!formData.is_accepted}
+                    onClick={handleSubmit}
+                >
+                    Submit
+                </button>
             </div>
         </>
     )

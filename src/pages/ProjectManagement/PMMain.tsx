@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { changeRenoProgressEndDate, changeRenoProgressStartDate, renoProgressIndex } from "../../services/api";
 import { RenoProgress } from "../../types";
 import { Slide, toast } from "react-toastify";
+import Loading from "../../components/Loading";
 
 type SortOrder = 'asc' | 'desc' | null;
 
@@ -97,56 +98,10 @@ function PMMain() {
         navigate(`/reno-progress/${id}`);
     }
 
-    const handleChangeStartDate = async (event: React.ChangeEvent<HTMLInputElement>, renoProgressId: number) => {
-        const startDate = event.target.value;
-        try {
-            const response = await changeRenoProgressStartDate(renoProgressId, startDate);
-
-            if (response?.success) {
-                notify('success', 'Start date updated successfully');
-                setRenoProgress((prevData) =>
-                    prevData.map((item) =>
-                        item.id === renoProgressId ? { ...item, start_date: startDate } : item
-                    )
-                );
-            }
-
-        } catch (error) {
-
-            if (error.status === 400) {
-                notify('error', error.response.data.message);
-            } else {
-                notify('error', 'Something went wrong');
-            }
-
-        }
-    }
-
-    const handleChangeEndDate = async (event: React.ChangeEvent<HTMLInputElement>, renoProgressId: number) => {
-        const endDate = event.target.value;
-        try {
-            const response = await changeRenoProgressEndDate(renoProgressId, endDate);
-
-            if (response?.success) {
-                notify('success', 'End date updated successfully');
-                setRenoProgress((prevData) =>
-                    prevData.map((item) =>
-                        item.id === renoProgressId ? { ...item, end_date: endDate } : item
-                    )
-                );
-            }
-
-        } catch (error) {
-            if (error.status === 400) {
-                notify('error', error.response.data.message);
-            } else {
-                notify('error', 'Something went wrong');
-            }
-        }
-    }
-
     return (
         <>
+            {isLoading && <Loading />}
+
             <div className="flex justify-between items-center flex-wrap mb-6">
                 <div className="flex gap-4 items-center">
                     <span className="text-2xl font-bold text-gray-900">
@@ -169,10 +124,11 @@ function PMMain() {
                     <table className="table align-middle text-gray-700 font-medium text-sm">
                         <thead>
                             <tr>
-                                <th className='w-[10px] text-center'>ID</th>
                                 <th className='w-[100px] text-center'>Sales</th>
                                 <th className='w-[100px] text-center'>Payment Progress</th>
                                 <th className='w-[100px] text-center'>Condo</th>
+                                <th className='w-[100px] text-center'>Contractual Date</th>
+                                <th className='w-[100px] text-center'>Contractor Date</th>
                                 <th className='w-[100px] text-center'>Pre-Reno</th>
                                 <th className='w-[100px] text-center'>Reno</th>
                                 <th className='w-[100px] text-center'>Post-Reno</th>
@@ -187,9 +143,6 @@ function PMMain() {
                                         className="cursor-pointer hover:bg-gray-50"
                                         onClick={() => toProgressDetail(Number(progress.id))}
                                     >
-                                        <td className="text-center">
-                                            {progress.id}
-                                        </td>
                                         <td className="text-center">
                                             <Link
                                                 to={'/sales/' + progress.sale_id}
@@ -221,8 +174,8 @@ function PMMain() {
                                                 />
                                             </div>
                                             <div className="flex gap-2 justify-center">
-                                                <span className="text-xs badge badge-xs badge-pill badge-outline badge-success">{progress.sale.paid_percentage * 100}%</span>
                                                 <span className="text-xs badge badge-xs badge-pill badge-outline border-blue-200 bg-blue-50 text-blue-400">{100 - (progress.sale.remaining_percentage * 100)}%</span>
+                                                <span className="text-xs badge badge-xs badge-pill badge-outline badge-success">{progress.sale.paid_percentage * 100}%</span>
                                             </div>
                                         </td>
                                         <td className="text-center">
@@ -233,6 +186,8 @@ function PMMain() {
                                                 </span>
                                             </div>
                                         </td>
+                                        <td></td>
+                                        <td></td>
                                         <td className="text-center">
                                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
                                                 {/* Issued progress bar (outer) */}
@@ -330,248 +285,6 @@ function PMMain() {
                                     </td>
                                 </tr>
                             )}
-                            {/* <tr>
-                                <td className="text-center">1</td>
-                                <td className="text-center">
-                                    <Link
-                                        to={'/sales/1'}
-                                        className="link text-orange-500"
-                                    >
-                                        S000001
-                                    </Link>
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mt-1 mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `80%`,
-                                                height: '8px'
-                                            }}
-                                        />
-
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `30%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                </td>
-                                <td className="text-center">
-                                    <div className="flex flex-col items-center">
-                                        <span className="font-semibold mb-1">Ara Tre'</span>
-                                        <span className="badge badge-xs badge-pill text-xs text-gray-600">B-15-15</span>
-                                    </div>
-                                </td>
-                                <td className="text-center">
-                                    <input type="date" className="input input-sm" />
-                                </td>
-                                <td className="text-center">
-                                    <input type="date" className="input input-sm" />
-                                </td>
-                                <td className="text-center">1M 29D</td>
-                                <td className="text-center">
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `60%`,
-                                                height: '8px'
-                                            }}
-                                        />
-
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `25%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-xs">60%</span>
-                                </td>
-                                <td className="text-center">
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `15%`,
-                                                height: '8px'
-                                            }}
-                                        />
-
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `0%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-xs">20%</span>
-                                </td>
-                                <td className="text-center">
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `0%`,
-                                                height: '8px'
-                                            }}
-                                        />
-
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `0%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-xs">0%</span>
-                                </td>
-                                <td className="text-center">
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `8%`,
-                                                height: '8px'
-                                            }}
-                                        />
-
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `0%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-xs">8%</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-center">2</td>
-                                <td className="text-center">
-                                    <Link
-                                        to={'/sales/2'}
-                                        className="link text-orange-500"
-                                    >
-                                        S000002
-                                    </Link>
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mt-1 mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `100%`,
-                                                height: '8px'
-                                            }}
-                                        />
-
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `70%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                </td>
-                                <td className="text-center">
-                                    <div className="flex flex-col items-center">
-                                        <span className="font-semibold mb-1">Meta City</span>
-                                        <span className="badge badge-xs badge-pill text-xs text-gray-600">A-22-08</span>
-                                    </div>
-                                </td>
-                                <td className="text-center">
-                                    <input type="date" className="input input-sm" />
-                                </td>
-                                <td className="text-center">
-                                    <input type="date" className="input input-sm" />
-                                </td>
-                                <td className="text-center">28D</td>
-                                <td className="text-center">
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `100%`,
-                                                height: '8px'
-                                            }}
-                                        />
-
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `100%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-xs">100%</span>
-                                </td>
-                                <td className="text-center">
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `70%`,
-                                                height: '8px'
-                                            }}
-                                        />
-
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `60%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-xs">70%</span>
-                                </td>
-                                <td className="text-center">
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `0%`,
-                                                height: '8px'
-                                            }}
-                                        />
-
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `0%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-xs">0%</span>
-                                </td>
-                                <td className="text-center">
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `72%`,
-                                                height: '8px'
-                                            }}
-                                        />
-
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `68%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-xs">72%</span>
-                                </td>
-                            </tr> */}
                         </tbody>
                     </table>
                 </div>
