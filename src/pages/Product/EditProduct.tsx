@@ -31,9 +31,6 @@ const EditProduct: React.FC = () => {
     const { product, loading: productLoading, error: productError } = useFetchProduct(productId);
     const { pmCategory, loading: categoryLoading, error: categoryError } = useFetchPMCategory();
 
-    const [thumbnail, setThumbnail] = useState(null);
-    const [pendingUploadItems, setPendingUploadItems] = useState(null);
-
     const [formData, setFormData] = useState<Product | null>(null);
 
     const [selectedProduct, setSelectedProduct] = useState<{ id: number, name: string } | null>(null);
@@ -60,16 +57,6 @@ const EditProduct: React.FC = () => {
         document.title = "Edit Product | RenoXpert";
         if (product) {
             setFormData(product);
-            setThumbnail({
-                id: Date.now(),
-                file: null,
-                previewUrl: AWS_S3_URL + product.attachments.thumbnail.file_url,
-            });
-            setPendingUploadItems(product.attachments.photos.map((item) => ({
-                id: Date.now(),
-                file: null,
-                previewUrl: AWS_S3_URL + item.file_url,
-            })));
         }
     }, [product]);
 
@@ -112,23 +99,6 @@ const EditProduct: React.FC = () => {
                 [name]: value
             }));
         }
-    };
-
-    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedThumbnail = event.target.files?.[0];
-        if (selectedThumbnail) {
-            const previewUrl = URL.createObjectURL(selectedThumbnail);  // Create a temporary URL for the image
-            setThumbnail({
-                id: Date.now(),  // You can generate a unique ID here if needed
-                file: selectedThumbnail,
-                previewUrl: previewUrl,
-            });
-            console.log('Selected file:', selectedThumbnail.name);
-        }
-    };
-
-    const handleRemoveFile = () => {
-        setThumbnail(null);  // Remove the file (or revert it to an initial state)
     };
 
     const validate = (): FormErrors => {
