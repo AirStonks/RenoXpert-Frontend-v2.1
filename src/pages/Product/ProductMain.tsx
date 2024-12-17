@@ -6,6 +6,7 @@ import { productIndex, removeProduct } from '../../services/api';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import Loading from '../../components/Loading';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 type SortOrder = 'asc' | 'desc' | null;
 
@@ -149,9 +150,12 @@ function ProductMain() {
                         Product Overview
                     </span>
                     <div className="flex gap-3 flex-wrap">
-                        <button className="btn btn-sm btn-info" disabled>
+                        <Link
+                            to="/inventory"
+                            className="btn btn-sm btn-info"
+                        >
                             Go to Product Inventory
-                        </button>
+                        </Link>
                         <Button
                             url='/products/create'
                             btnText='Add Product'

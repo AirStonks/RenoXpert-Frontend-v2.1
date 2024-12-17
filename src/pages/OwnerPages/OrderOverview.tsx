@@ -338,7 +338,7 @@ function OrderOverview() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-[12px] mb-4 relative overflow-hidden">
+                                    <div className="w-full bg-gray-200 rounded-full h-[12px] mb-2 relative overflow-hidden">
                                         {/* Issued progress bar (outer) */}
                                         <div
                                             className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
@@ -361,6 +361,16 @@ function OrderOverview() {
                                                 height: '12px'
                                             }}
                                         />
+                                    </div>
+                                    <div className="flex mb-2 gap-2">
+                                        <span className="badge badge-pill badge-outline gap-1 items-center bg-blue-50 border-blue-200 text-blue-300">
+                                            <span className="badge badge-dot size-1.5 bg-blue-300"></span>
+                                            Issued
+                                        </span>
+                                        <span className="badge badge-pill badge-outline gap-1 items-center badge-success">
+                                            <span className="badge badge-dot size-1.5 badge-success"></span>
+                                            Paid
+                                        </span>
                                     </div>
                                 </div>
                             }
@@ -392,7 +402,24 @@ function OrderOverview() {
                                                 <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                             </div>
                                         </div>
-
+                                        {orderDetail.status === 'confirmed' &&
+                                            <>
+                                                {/* <div className="flex mb-2">
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm text-gray-600'>Paid Amount:</span>
+                                                        <span className='text-sm text-gray-900'>RM </span>
+                                                    </div>
+                                                </div> */}
+                                                <div className="flex mb-2">
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm text-gray-600'>Amount Balance:</span>
+                                                        <span className='text-sm text-gray-900'>
+                                                            RM {(orderDetail.sale.remaining_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        }
                                     </div>
                                 </div>
 

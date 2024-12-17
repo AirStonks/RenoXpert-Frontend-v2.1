@@ -163,3 +163,27 @@ export const fetchRenoProgress = async (renoProgressId: number) => {
         throw error; // Ensure to throw the error if needed
     }
 };
+
+export const retrieveRenoProgressPhaseAttachments = async (renoProgressId: number, phase: string) => {
+    try {
+        const response = await axios.get(API_URL + `owner/reno/progresses/${renoProgressId}/phase/${phase}/attachments`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOwner401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const retrieveJobAttachments = async (renoProgressId: number, jobId: number) => {
+    try {
+        const response = await axios.get(API_URL + `owner/reno/progresses/${renoProgressId}/job/${jobId}/attachments`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOwner401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};

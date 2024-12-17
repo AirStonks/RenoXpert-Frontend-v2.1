@@ -1,10 +1,10 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchRenoProgress from "../../hook/useFetchRenoProgress";
 import Loading from "../../components/Loading";
-import { useCallback, useEffect, useRef, useState } from "react";
-import KTComponents, { KTAccordion, KTTabs } from "../../metronic/core";
-import { JobTask, PhaseJob, RenoProgress } from "../../types";
-import { changeInternalComment, changeOwnerComment, changeRenoProgressContractorDate, changeRenoProgressContractorHandoverDate, changeRenoProgressContractualDate, changeRenoProgressContractualHandoverDate, changeTaskStatus, fetchRenoProgress, fetchTaskDocuments, removeTaskDocument, toggleTaskInstall, toggleTaskSupply, toggleTaskVisibility, uploadTaskDocuments } from "../../services/api";
+import { useEffect, useRef, useState } from "react";
+import KTComponents from "../../metronic/core";
+import { PhaseJob, RenoProgress } from "../../types";
+import { changeInternalComment, changeOwnerComment, changeRenoProgressContractorDate, changeRenoProgressContractorHandoverDate, changeRenoProgressContractualDate, changeRenoProgressContractualHandoverDate, changeTaskStatus, fetchRenoProgress, fetchTaskDocuments, removeTaskDocument, toggleTaskVisibility, uploadTaskDocuments } from "../../services/api";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -286,12 +286,11 @@ function ProgressMgnt() {
 
 
                 await notify('success', 'Status updated successfully');
-                setIsLoading(false);
             }
         } catch (error) {
             notify('error', 'Failed to update status');
-            setIsLoading(false);
         }
+        setIsLoading(false);
     }
 
     // Handle file selection from input
@@ -338,6 +337,8 @@ function ProgressMgnt() {
     };
 
     const removeServerFile = async (taskId: number, documentIndex: number) => {
+        setIsLoading(true);
+
         try {
             const response = await removeTaskDocument(renoProgressId, taskId, documentIndex);
 
@@ -354,6 +355,8 @@ function ProgressMgnt() {
         } catch (error) {
             console.log(error);
         }
+
+        setIsLoading(false);
     }
 
     // Clear all files
@@ -363,6 +366,7 @@ function ProgressMgnt() {
 
     // Upload files (placeholder function)
     const uploadFiles = async (taskId: number) => {
+        setIsLoading(true);
 
         try {
             const response = await uploadTaskDocuments(renoProgressId, taskId, pendingUploadItems);
@@ -377,6 +381,8 @@ function ProgressMgnt() {
         } catch (error) {
             console.log(error);
         }
+
+        setIsLoading(false);
     };
 
     const formatFileSize = (size: number) => {
@@ -733,8 +739,7 @@ function ProgressMgnt() {
                                                                             <input
                                                                                 name="visibility"
                                                                                 type="checkbox"
-                                                                                checked={task.is_visible}
-                                                                                value={`${task.is_visible}`}
+                                                                                checked={task.is_visible ?? false}
                                                                                 onChange={() => handleToggleVisibility(Number(task.id))}
                                                                             />
                                                                         </label>
@@ -742,20 +747,12 @@ function ProgressMgnt() {
                                                                     <td>
                                                                         <div className="flex flex-col items-center">
                                                                             {task.is_defect_form ?
-                                                                                <Link
-                                                                                    to={`/reno-progress/${renoProgress.id}/defect-inspection-report`}
-                                                                                    className="btn btn-info btn-sm"
-                                                                                >
-                                                                                    DIR Overview
-                                                                                </Link>
+                                                                                renoProgress.defect_inspection_form ? (
+                                                                                    <span>{renoProgress.defect_inspection_form.status.charAt(0).toUpperCase() + renoProgress.defect_inspection_form.status.slice(1)}</span>
+                                                                                )
+                                                                                    :
+                                                                                    'Not Submitted'
                                                                                 :
-                                                                                // <input
-                                                                                //     className="checkbox"
-                                                                                //     name="install"
-                                                                                //     type="checkbox"
-                                                                                //     checked={!!task.is_installed}
-                                                                                //     onChange={() => toggleProperty(Number(task.id), Number(renoProgress.phases[0].id), Number(job.id), 'install')}
-                                                                                // />
                                                                                 <select
                                                                                     className="select select-bordered w-full max-w-xs"
                                                                                     name="status"
@@ -781,7 +778,12 @@ function ProgressMgnt() {
                                                                     </td>
                                                                     <td className="text-center">
                                                                         {task.is_defect_form ?
-                                                                            ''
+                                                                            <Link
+                                                                                to={`/reno-progress/${renoProgress.id}/defect-inspection-report`}
+                                                                                className="btn btn-info btn-sm"
+                                                                            >
+                                                                                DIR Overview
+                                                                            </Link>
                                                                             :
                                                                             <button
                                                                                 className="btn btn-primary btn-sm"
@@ -798,7 +800,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`0.jobs.${jobIndex}.tasks.${taskIndex}.owner_comment`}
-                                                                            value={task.owner_comment}
+                                                                            value={task.owner_comment || ''}
                                                                             onChange={(e) => handleOwnerCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -807,7 +809,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`0.jobs.${jobIndex}.tasks.${taskIndex}.internal_comment`}
-                                                                            value={task.internal_comment}
+                                                                            value={task.internal_comment || ''}
                                                                             onChange={(e) => handleInternalCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -869,9 +871,8 @@ function ProgressMgnt() {
                                                                             <input
                                                                                 name="visibility"
                                                                                 type="checkbox"
-                                                                                checked={task.is_visible}
-                                                                                value={`${task.is_visible}`}
-                                                                            // onChange={() => handleVisibilityToggle(product.id)}
+                                                                                checked={task.is_visible ?? false}
+                                                                                onChange={() => handleToggleVisibility(Number(task.id))}
                                                                             />
                                                                         </label>
                                                                     </td>
@@ -916,7 +917,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`1.jobs.${jobIndex}.tasks.${taskIndex}.owner_comment`}
-                                                                            value={task.owner_comment}
+                                                                            value={task.owner_comment || ''}
                                                                             onChange={(e) => handleOwnerCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -925,7 +926,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`1.jobs.${jobIndex}.tasks.${taskIndex}.internal_comment`}
-                                                                            value={task.internal_comment}
+                                                                            value={task.internal_comment || ''}
                                                                             onChange={(e) => handleInternalCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -986,9 +987,8 @@ function ProgressMgnt() {
                                                                             <input
                                                                                 name="visibility"
                                                                                 type="checkbox"
-                                                                                checked={task.is_visible}
-                                                                                value={`${task.is_visible}`}
-                                                                            // onChange={() => handleVisibilityToggle(product.id)}
+                                                                                checked={task.is_visible ?? false}
+                                                                                onChange={() => handleToggleVisibility(Number(task.id))}
                                                                             />
                                                                         </label>
                                                                     </td>
@@ -1056,7 +1056,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`2.jobs.${jobIndex}.tasks.${taskIndex}.owner_comment`}
-                                                                            value={task.owner_comment}
+                                                                            value={task.owner_comment || ''}
                                                                             onChange={(e) => handleOwnerCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -1065,7 +1065,7 @@ function ProgressMgnt() {
                                                                             type="text"
                                                                             className="input"
                                                                             name={`2.jobs.${jobIndex}.tasks.${taskIndex}.internal_comment`}
-                                                                            value={task.internal_comment}
+                                                                            value={task.internal_comment || ''}
                                                                             onChange={(e) => handleInternalCommentChange(e, Number(task.id))}
                                                                         />
                                                                     </td>
@@ -1345,150 +1345,160 @@ function ProgressMgnt() {
                                 </div>
                             </div>
                             <div className="card-group">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            P1 Start Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractual_p1_start_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p1')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            P1 End Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractual_p1_end_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p1', 'end')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                P1 Start Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_p1_start_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p1')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                P1 End Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_p1_end_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p1', 'end')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div className="card-group">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            P2 Start Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractual_p2_start_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p2')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            P2 End Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractual_p2_end_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p2', 'end')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                P2 Start Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_p2_start_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p2')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                P2 End Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_p2_end_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'p2', 'end')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div className="card-group">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            QC Start Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractual_qc_start_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'qc')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            QC End Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractual_qc_end_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'qc', 'end')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                QC Start Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_qc_start_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'qc')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                QC End Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_qc_end_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'qc', 'end')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div className="card-group">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            Post Cleaning Start Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractual_pc_start_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'pc')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            Post Cleaning End Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractual_pc_end_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'pc', 'end')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Post Cleaning Start Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_pc_start_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'pc')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Post Cleaning End Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_pc_end_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'pc', 'end')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div className="card-group">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            Hand Over Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractual_handover_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Hand Over Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_handover_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -1499,150 +1509,160 @@ function ProgressMgnt() {
                                 </div>
                             </div>
                             <div className="card-group">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            P1 Start Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractor_p1_start_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p1')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            P1 End Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractor_p1_end_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p1', 'end')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                P1 Start Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_p1_start_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p1')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                P1 End Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_p1_end_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p1', 'end')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div className="card-group">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            P2 Start Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractor_p2_start_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p2')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            P2 End Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractor_p2_end_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p2', 'end')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                P2 Start Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_p2_start_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p2')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                P2 End Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_p2_end_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'p2', 'end')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div className="card-group">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            QC Start Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractor_qc_start_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'qc')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            QC End Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractor_qc_end_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'qc', 'end')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                QC Start Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_qc_start_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'qc')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                QC End Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_qc_end_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'qc', 'end')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div className="card-group">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            Post Cleaning Start Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractor_pc_start_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'pc')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            Post Cleaning End Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractor_pc_end_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'pc', 'end')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Post Cleaning Start Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_pc_start_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'pc')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Post Cleaning End Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_pc_end_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'pc', 'end')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div className="card-group">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            Hand Over Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <input
-                                                type="date"
-                                                className="input input-sm"
-                                                value={renoProgress.contractor_handover_date || ''}
-                                                onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor')}
-                                            // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
-                                            />
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Hand Over Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_handover_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

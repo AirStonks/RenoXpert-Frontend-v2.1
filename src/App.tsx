@@ -45,7 +45,7 @@ import UsersMain from './pages/User/UsersMain';
 import AddInternalUser from './pages/User/AddInternalUser';
 import OrderPreview from './pages/Order/OrderPreview';
 import OwnerRenoRegistrationForm from './pages/OwnerPages/OwnerRenoRegistrationForm';
-import FormSubmitSuccess from './pages/OwnerPages/FormSubmitSuccess';
+import OwnerFormSubmitSuccess from './pages/OwnerPages/FormSubmitSuccess';
 import RegistrationFormMain from './pages/RegistrationForm/RegistrationFormMain';
 import EditRegistrationForm from './pages/RegistrationForm/EditRegistrationForm';
 import RegistrationFormDetail from './pages/RegistrationForm/RegistrationFormDetail';
@@ -64,6 +64,7 @@ import OperationLogin from './pages/OperationPages/OperationLogin';
 import OperationProtectedRoute from './utils/OperationProtectedRoute';
 import OperationMasterLayout from './pages/OperationPages/OperationMasterLayout';
 import OperationHome from './pages/OperationPages/OperationHome';
+import OpFormSubmitSuccess from './pages/OperationPages/FormSubmitSuccess';
 import QCFormDetail from './pages/OperationPages/QCFormDetail';
 import DefectInspectionFormPage from './pages/OperationPages/DefectInspectionFormPage';
 import QCFormPage from './pages/OperationPages/QCFormPage';
@@ -77,6 +78,9 @@ import InventoryMain from './pages/Inventory/InventoryMain';
 import PODetail from './pages/PO/PODetail';
 import POFulfillment from './pages/PO/POFulfillment';
 import RenoProgressDetail from './pages/OwnerPages/RenoProgressDetail';
+import OwnerInspectionReport from './pages/OwnerPages/OwnerInspectionReport';
+import RenoProgressAttachments from './pages/OwnerPages/RenoProgressAttachments';
+import RenoProgressJobAttachments from './pages/OwnerPages/RenoProgressJobAttachments';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -116,6 +120,7 @@ const routes = [
   { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
+  { path: '/op/form/submit/success', element: <OpFormSubmitSuccess />, layout: OperationProtectedLayout },
 
 
   /*--- OWNER SITE ---*/
@@ -127,9 +132,12 @@ const routes = [
   { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
   { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
   { path: '/owner/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
-  { path: '/owner/reno-registration-form/success', element: <FormSubmitSuccess />, layout: null },
+  { path: '/owner/reno-registration-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
   { path: '/owner/reno/progress/:id', element: <RenoProgressDetail />, layout: OwnerProtectedLayout },
   { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
+  { path: '/owner/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },
+  { path: '/owner/reno/progress/:id/:phase', element: <RenoProgressAttachments />, layout: OwnerProtectedLayout },
+  { path: '/owner/reno/progress/:id/job/:jobId/attachments', element: <RenoProgressJobAttachments />, layout: OwnerProtectedLayout },
 
 
   /*--- TEST ---*/

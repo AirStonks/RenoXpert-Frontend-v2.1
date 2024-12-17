@@ -4,6 +4,7 @@ import KTComponents, { KTStepper } from '../../metronic/core';
 import { Slide, toast } from 'react-toastify';
 import { fetchProperties, fetchRenoProgressDetail, submitDIForm } from '../../services/operationApi';
 import Loading from '../../components/Loading';
+import { useNavigate } from 'react-router-dom';
 
 interface FormErrors {
     [key: string]: string | FormErrors | undefined; // Use string or undefined for error messages
@@ -281,6 +282,7 @@ const initInspectionForm: DefectInspectionForm = {
 };
 
 function DefectInspectionFormPage() {
+    const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
     const renoProgressId = queryParams.get('progressId');
 
@@ -293,6 +295,7 @@ function DefectInspectionFormPage() {
 
     useEffect(() => {
         document.title = "DI Form | RenoXpert";
+
         const initFunctions = async () => {
             await KTComponents.init();
             await getProperties();
@@ -369,6 +372,10 @@ function DefectInspectionFormPage() {
                     bathroom_count: response.data.bathroom_count.toString(),
                 }));
             }
+
+            handleDynamicBedroomByNumber(response.data.bedroom_count);
+            handleDynamicBathroomByNumber(response.data.bathroom_count);
+
         } catch (error) {
             console.error('Error fetching reno progress or sale data:', error);
         } finally {
@@ -662,8 +669,9 @@ function DefectInspectionFormPage() {
         } else {
             try {
                 await submitDIForm(formData);
-
+                
                 notify('success', 'Form successfully submitted.');
+                navigate('/op/form/submit/success');
 
             } catch (error) {
                 console.log(error);
@@ -765,6 +773,99 @@ function DefectInspectionFormPage() {
             };
         });
     };
+
+    const handleDynamicBedroomByNumber = (value: string | number) => {
+        const bedroomCount = parseInt(value);
+
+        setErrors({});
+
+        // Update the bathroom count and dynamically add/remove bedrooms in the form data
+        setFormData((prevFormData) => {
+            const updatedBedrooms = { ...prevFormData.area?.bedrooms };
+
+            // Add or remove bathroom fields based on the new count
+            for (let i = 1; i <= bedroomCount; i++) {
+                if (!updatedBedrooms[`bedroom${i}`]) {
+                    // Add a new bathroom with empty questions (q1, q2, ..., q8)
+                    updatedBedrooms[`bedroom${i}`] = {
+                        q1: { value: '', remark: '' },
+                        q2: { value: '', remark: '' },
+                        q3: { value: '', remark: '' },
+                        q4: { value: '', remark: '' },
+                        q5: { value: '', remark: '' },
+                        q6: { value: '', remark: '' },
+                        q7: { value: '', remark: '' },
+                        q8: { value: '', remark: '' },
+                        q9: { value: '', remark: '' },
+                    };
+                }
+            }
+
+            // Remove bedrooms if the number is decreased
+            Object.keys(updatedBedrooms).forEach((key) => {
+                const bedroomNumber = parseInt(key.replace('bedroom', ''));
+                if (bedroomNumber > bedroomCount) {
+                    delete updatedBedrooms[key];
+                }
+            });
+
+            // Return the updated formData
+            return {
+                ...prevFormData,
+                area: {
+                    ...prevFormData.area,
+                    bedrooms: updatedBedrooms
+                }
+            };
+        });
+    }
+
+    const handleDynamicBathroomByNumber = (value: string | number) => {
+        const bathroomCount = parseInt(value);
+
+        setErrors({});
+
+        // Update the bathroom count and dynamically add/remove bathrooms in the form data
+        setFormData((prevFormData) => {
+            const updatedBathrooms = { ...prevFormData.area?.bathrooms };
+
+            // Add or remove bathroom fields based on the new count
+            for (let i = 1; i <= bathroomCount; i++) {
+                if (!updatedBathrooms[`bathroom${i}`]) {
+                    // Add a new bathroom with empty questions (q1, q2, ..., q8)
+                    updatedBathrooms[`bathroom${i}`] = {
+                        q1: { value: '', remark: '' },
+                        q2: { value: '', remark: '' },
+                        q3: { value: '', remark: '' },
+                        q4: { value: '', remark: '' },
+                        q5: { value: '', remark: '' },
+                        q6: { value: '', remark: '' },
+                        q7: { value: '', remark: '' },
+                        q8: { value: '', remark: '' },
+                        q9: { value: '', remark: '' },
+                    };
+                }
+            }
+
+            // Remove bathrooms if the number is decreased
+            Object.keys(updatedBathrooms).forEach((key) => {
+                const bathroomNumber = parseInt(key.replace('bathroom', ''));
+                if (bathroomNumber > bathroomCount) {
+                    delete updatedBathrooms[key];
+                }
+            });
+
+            // Return the updated formData
+            return {
+                ...prevFormData,
+                bathroom_count: bathroomCount.toString(),
+                area: {
+                    ...prevFormData.area,
+                    bathrooms: updatedBathrooms
+                }
+            };
+        });
+    }
 
     const isAcceptedFileType = (type: string) => acceptedFileTypes.includes(type);
 
@@ -5731,6 +5832,7 @@ function DefectInspectionFormPage() {
                 <button
                     className="btn btn-lg btn-primary rounded-3xl shadow-lg stepper-last:hidden"
                     data-stepper-next="true"
+                    onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
                 >
                     Next
                 </button>

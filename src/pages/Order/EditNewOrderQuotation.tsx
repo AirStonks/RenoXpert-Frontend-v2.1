@@ -1,6 +1,6 @@
 // src\pages\Order\EditNewOrderQuotation.tsx
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useFetchQuotation from "../../hook/useFetchQuotation";
 import Loading from "../../components/Loading";
@@ -674,7 +674,7 @@ function EditNewOrderQuotation() {
                             <div className="card-header px-2">
                                 <h2 className='text-base font-semibold'>Form Detail</h2>
                             </div>
-                            <div className="card-body flex flex-col text-gray-900 px-2 py-4">
+                            <div className="card-body flex flex-col text-gray-900 px-2 py-4 text-xs">
                                 <div className="flex flex-col mb-8">
                                     <span className="font-medium">Status</span>
                                     <span className={`badge badge-outline gap-1 items-center ${formDetail.status ===
@@ -853,54 +853,54 @@ function EditNewOrderQuotation() {
                                                     <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
 
                                                     {/* Grille Door */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Grille door</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Grille door</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.foyer_entrance.grille_door === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.foyer_entrance.grille_door === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Digital Lock */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Digital lock</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Digital lock</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.foyer_entrance.digital_lock === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.foyer_entrance.digital_lock === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Shoe Cabinet */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Shoe cabinet</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Shoe cabinet</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.foyer_entrance.shoe_cabinet === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.foyer_entrance.shoe_cabinet === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Lights */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Lights</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.foyer_entrance.lights === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.foyer_entrance.lights === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
                                                 </div>
@@ -929,119 +929,119 @@ function EditNewOrderQuotation() {
                                                     <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
 
                                                     {/* Kitchen Cabinet */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Kitchen cabinet</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Kitchen cabinet</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.kitchen_cabinet === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.kitchen_cabinet === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Kitchen Island */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Kitchen island</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Kitchen island</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.kitchen_island === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.kitchen_island === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Sink & Tap */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Sink & tap</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Sink & tap</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.sink_tap === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.sink_tap === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Hood and Hob */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Hood and hob</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Hood and hob</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.hood_hob === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.hood_hob === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Microwave */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Microwave</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Microwave</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.microwave === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.microwave === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Oven */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Oven</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Oven</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.oven === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.oven === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Water Dispenser / Water Purifier */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Water dispenser / water purifier</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Water dispenser / water purifier</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.water_dispenser === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.water_dispenser === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Fridge */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Fridge</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Fridge</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.fridge === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.fridge === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Lights */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Lights</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.lights === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.kitchen.lights === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
                                                 </div>
@@ -1070,41 +1070,41 @@ function EditNewOrderQuotation() {
                                                     <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
 
                                                     {/* Washer */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Washer</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Washer</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.yard.washer === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.yard.washer === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Dryer */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Dryer</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Dryer</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.yard.dryer === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.yard.dryer === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Lights */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Lights</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.yard.lights === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.yard.lights === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
                                                 </div>
@@ -1133,41 +1133,41 @@ function EditNewOrderQuotation() {
                                                     <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
 
                                                     {/* Dining Table & Chairs */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Dining table & chairs</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Dining table & chairs</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.dining.dining_table_chairs === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.dining.dining_table_chairs === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Lights */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Lights</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.dining.lights === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.dining.lights === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Fan */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Fan</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Fan</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.dining.fan === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.dining.fan === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
                                                 </div>
@@ -1196,93 +1196,93 @@ function EditNewOrderQuotation() {
                                                     <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
 
                                                     {/* Sofa */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Sofa</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Sofa</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.sofa === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.sofa === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Coffee Table */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Coffee table</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Coffee table</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.coffee_table === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.coffee_table === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* TV */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">TV</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">TV</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.tv === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.tv === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* TV Cabinet */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">TV cabinet</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">TV cabinet</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.tv_cabinet === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.tv_cabinet === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Fan */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Fan</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Fan</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.fan === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.fan === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* Lights */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">Lights</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.lights === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.lights === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
 
                                                     {/* AC */}
-                                                    <div className="flex items-center text-gray-900 font-semibold">AC</div>
+                                                    <div className="flex items-center text-xs text-gray-900 font-semibold">AC</div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.ac === 'furnished' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-success"></i>
                                                         }
                                                     </div>
                                                     <div className="flex justify-center items-center">
                                                         {formDetail.furnishing.living.ac === 'not-furnish' &&
-                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                            <i className="ki-solid ki-check-circle text-lg text-danger"></i>
                                                         }
                                                     </div>
                                                 </div>
@@ -1296,6 +1296,268 @@ function EditNewOrderQuotation() {
                                             {formDetail.furnishing.living.other ? formDetail.furnishing.living.other : '-'}
                                         </span>
                                     </div>
+
+                                    {Object.keys(formDetail.furnishing.bedrooms || {}).map((bedroomKey) => {
+
+                                        const bedroom = formDetail.furnishing.bedrooms[bedroomKey];
+
+                                        return (
+                                            <React.Fragment key={bedroomKey}>
+                                                <hr className="mb-8" />
+
+                                                <div className="card rounded-md mb-8">
+                                                    <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                        <h2 className="">{bedroomKey.charAt(0).toUpperCase() + bedroomKey.slice(1)}</h2>
+                                                    </div>
+                                                    <div className="card-body text-sm px-4">
+                                                        <div className="w-full">
+                                                            <div className="grid grid-cols-3 gap-4">
+                                                                {/* Header Row */}
+                                                                <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                                <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                                {/* Bedframe */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Bedframe</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.bedframe === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.bedframe === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Wardrobe */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Wardrobe</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.wardrobe === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.wardrobe === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Study Table */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Study Table</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.study_table === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.study_table === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Writing Chair */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Writing Chair</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.writing_chair === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.writing_chair === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Curtain */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Curtain</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.curtain === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.curtain === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Lights */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Lights</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.lights === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.lights === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Fan */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Fan</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.fan === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.fan === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* AC */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">AC</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.ac === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.ac === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Other */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Other</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.other === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bedroom.other === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col mb-8">
+                                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="living.other">Remarks</label>
+                                                    <span className="textarea">
+                                                        {bedroom.remark ? bedroom.remark : '-'}
+                                                    </span>
+                                                </div>
+                                            </React.Fragment>
+                                        )
+                                    })}
+
+
+                                    {Object.keys(formDetail.furnishing.bathrooms || {}).map((bathroomKey) => {
+
+                                        const bathroom = formDetail.furnishing.bathrooms[bathroomKey];
+
+                                        return (
+                                            <React.Fragment key={bathroomKey}>
+                                                <hr className="mb-8" />
+
+                                                <div className="card rounded-md mb-8">
+                                                    <div className="card-header px-4 rounded-t-md bg-gray-300 text-gray-900 font-bold">
+                                                        <h2 className="">{bathroomKey.charAt(0).toUpperCase() + bathroomKey.slice(1)}</h2>
+                                                    </div>
+                                                    <div className="card-body text-sm px-4">
+                                                        <div className="w-full">
+                                                            <div className="grid grid-cols-3 gap-4">
+                                                                {/* Header Row */}
+                                                                <div className="col-start-2 text-xs text-center text-gray-900 font-semibold">Furnished</div>
+                                                                <div className="col-start-3 text-xs text-center text-gray-900 font-semibold">Not Furnished</div>
+
+                                                                {/* Water Heater */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Water Heater</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.water_heater === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.water_heater === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Bidet */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Bidet</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.bidet === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.bidet === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Mirror */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Mirror</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.mirror === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.mirror === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Shower Screen */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Shower Screen </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.shower_screen === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.shower_screen === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Lights */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Lights </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.lights === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.lights === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+
+                                                                {/* Other */}
+                                                                <div className="flex items-center text-gray-900 font-semibold">Other</div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.other === 'furnished' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-success"></i>
+                                                                    }
+                                                                </div>
+                                                                <div className="flex justify-center items-center">
+                                                                    {bathroom.other === 'not-furnish' &&
+                                                                        <i className="ki-solid ki-check-circle text-lg text-danger"></i>
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-col mb-8">
+                                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="living.other">Remarks</label>
+                                                    <span className="textarea">
+                                                        {bathroom.remark ? bathroom.remark : '-'}
+                                                    </span>
+                                                </div>
+                                            </React.Fragment>
+                                        )
+                                    })}
                                 </div>
 
                                 <div className="flex flex-col mb-8">

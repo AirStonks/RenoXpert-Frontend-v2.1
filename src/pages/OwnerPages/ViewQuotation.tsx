@@ -112,11 +112,43 @@ function ViewQuotation() {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td className="text-sm text-gray-600 pe-4 lg:pe-8 font-semibold">
+                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
                                         Amount:
                                     </td>
-                                    <td className="text-sm text-gray-900 font-medium">
+                                    <td className="text-sm text-gray-900 pb-3 font-medium">
                                         RM {invoiceDetail.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="text-sm text-gray-600 pe-4 lg:pe-8 font-semibold">
+                                        Fees & Discounts:
+                                    </td>
+                                    <td className="text-sm text-gray-900 font-medium">
+                                        <ul>
+                                            {((invoiceDetail.discountsData && Array.isArray(invoiceDetail.discountsData) && invoiceDetail.discountsData.length > 0) ||
+                                                (invoiceDetail.feesData && Array.isArray(invoiceDetail.feesData) && invoiceDetail.feesData.length > 0)) ? (
+                                                <>
+                                                    {invoiceDetail.discountsData && Array.isArray(invoiceDetail.discountsData) && invoiceDetail.discountsData.length > 0 ? (
+                                                        invoiceDetail.discountsData.map((discount, index) => (
+                                                            <li key={`discount-${index}`}>
+                                                                {discount.name}
+                                                            </li>
+                                                        ))
+                                                    ) : null}
+
+                                                    {invoiceDetail.feesData && Array.isArray(invoiceDetail.feesData) && invoiceDetail.feesData.length > 0 ? (
+                                                        invoiceDetail.feesData.map((fee, index) => (
+                                                            <li key={`fee-${index}`}>
+                                                                {fee.name}
+                                                            </li>
+                                                        ))
+                                                    ) : null}
+                                                </>
+                                            ) : (
+                                                <li>-</li>
+                                            )}
+                                        </ul>
+
                                     </td>
                                 </tr>
                             </tbody>
