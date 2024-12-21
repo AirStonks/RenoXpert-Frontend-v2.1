@@ -124,16 +124,8 @@ const EditProduct: React.FC = () => {
             return;
         }
 
-        const updatedFormData = {
-            ...formData, // Spread the existing formData
-            attachments: {
-                ...formData.attachments, // Spread the existing attachments (if any)
-                thumbnail: thumbnail?.file ?? formData.attachments.thumbnail,
-            }
-        }
-
         try {
-            const response = await updateProduct(updatedFormData);
+            const response = await updateProduct(formData);
 
             if (response?.success) {
                 notify('success', "Product Edited Successfully!");

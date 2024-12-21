@@ -78,9 +78,9 @@ import InventoryMain from './pages/Inventory/InventoryMain';
 import PODetail from './pages/PO/PODetail';
 import POFulfillment from './pages/PO/POFulfillment';
 import RenoProgressDetail from './pages/OwnerPages/RenoProgressDetail';
+import RenoProgressManagement from './pages/OperationPages/RenoProgressManagement';
 import OwnerInspectionReport from './pages/OwnerPages/OwnerInspectionReport';
-import RenoProgressAttachments from './pages/OwnerPages/RenoProgressAttachments';
-import RenoProgressJobAttachments from './pages/OwnerPages/RenoProgressJobAttachments';
+import RenoProgressPhaseAttachments from './pages/OwnerPages/RenoProgressPhaseAttachments';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -121,6 +121,7 @@ const routes = [
   { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
   { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
   { path: '/op/form/submit/success', element: <OpFormSubmitSuccess />, layout: OperationProtectedLayout },
+  { path: '/op/reno/progress/:id', element: <RenoProgressManagement />, layout: OperationProtectedLayout },
 
 
   /*--- OWNER SITE ---*/
@@ -136,8 +137,7 @@ const routes = [
   { path: '/owner/reno/progress/:id', element: <RenoProgressDetail />, layout: OwnerProtectedLayout },
   { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
   { path: '/owner/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },
-  { path: '/owner/reno/progress/:id/:phase', element: <RenoProgressAttachments />, layout: OwnerProtectedLayout },
-  { path: '/owner/reno/progress/:id/job/:jobId/attachments', element: <RenoProgressJobAttachments />, layout: OwnerProtectedLayout },
+  { path: '/owner/reno/progress/:id/phase/:phase/attachments', element: <RenoProgressPhaseAttachments />, layout: OwnerProtectedLayout },
 
 
   /*--- TEST ---*/

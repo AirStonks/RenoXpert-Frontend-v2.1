@@ -75,6 +75,20 @@ function PODetail() {
                                     </tr>
                                     <tr>
                                         <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Created Date:
+                                        </td>
+                                        <td className="text-xs text-gray-900 pb-3">
+                                            {po.created_at
+                                                ? new Date(po.created_at).toLocaleDateString('en-GB', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric'
+                                                })
+                                                : 'N/A'}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
                                             Order Status:
                                         </td>
                                         <td className="text-xs text-gray-900 pb-3">

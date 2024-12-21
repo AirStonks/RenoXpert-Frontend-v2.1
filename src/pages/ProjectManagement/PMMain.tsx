@@ -186,44 +186,54 @@ function PMMain() {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td>
-                                            <div className="flex flex-col">
-                                                <div className="flex flex-col mb-4">
-                                                    <span className="text-sm text-gray-600 font-semibold">
-                                                        Start Date
-                                                    </span>
-                                                    <span className="badge badge-sm text-sm text-gray-900">
-                                                        13 Dec 2024
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm text-gray-600 font-semibold">
-                                                        End Date
-                                                    </span>
-                                                    <span className="badge badge-sm text-sm text-gray-900">
-                                                        13 Dec 2024
-                                                    </span>
-                                                </div>
+                                        <td className="text-center">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-sm text-gray-900">
+                                                    {progress.contractual_start_date
+                                                        ? new Date(progress.contractual_start_date).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : '-'}
+                                                </span>
+                                                <span className="text-sm text-gray-600">
+                                                    to
+                                                </span>
+                                                <span className="text-sm text-gray-900">
+                                                    {progress.contractual_end_date
+                                                        ? new Date(progress.contractual_end_date).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : '-'}
+                                                </span>
                                             </div>
                                         </td>
-                                        <td>
-                                            <div className="flex flex-col">
-                                                <div className="flex flex-col mb-4">
-                                                    <span className="text-sm text-gray-600 font-semibold">
-                                                        Start Date
-                                                    </span>
-                                                    <span className="badge badge-sm text-sm text-gray-900">
-                                                        13 Dec 2024
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm text-gray-600 font-semibold">
-                                                        End Date
-                                                    </span>
-                                                    <span className="badge badge-sm text-sm text-gray-900">
-                                                        13 Dec 2024
-                                                    </span>
-                                                </div>
+                                        <td className="text-center">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-sm text-gray-900">
+                                                    {progress.contractor_start_date
+                                                        ? new Date(progress.contractor_start_date).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : '-'}
+                                                </span>
+                                                <span className="text-sm text-gray-600">
+                                                    to
+                                                </span>
+                                                <span className="text-sm text-gray-900">
+                                                    {progress.contractor_end_date
+                                                        ? new Date(progress.contractor_end_date).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : '-'}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="text-center">

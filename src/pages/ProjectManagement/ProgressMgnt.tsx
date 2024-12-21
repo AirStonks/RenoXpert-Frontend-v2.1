@@ -646,7 +646,54 @@ function ProgressMgnt() {
                         </div>
                     </div>
                     <div className="card-body">
-
+                        <div className="flex flex-col mb-4 gap-2">
+                            <span className="font-semibold">Contractual Date:</span>
+                            <div className="flex gap-4">
+                                <span className="badge badge-lg">
+                                    {renoProgress.contractual_start_date
+                                        ? new Date(renoProgress.contractual_start_date).toLocaleDateString('en-GB', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })
+                                        : '-'}
+                                </span>
+                                <span>to</span>
+                                <span className="badge badge-lg">
+                                    {renoProgress.contractual_end_date
+                                        ? new Date(renoProgress.contractual_end_date).toLocaleDateString('en-GB', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })
+                                        : '-'}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <span className="font-semibold">Contractor Date:</span>
+                            <div className="flex gap-4">
+                                <span className="badge badge-lg">
+                                    {renoProgress.contractor_start_date
+                                        ? new Date(renoProgress.contractor_start_date).toLocaleDateString('en-GB', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })
+                                        : '-'}
+                                </span>
+                                <span>to</span>
+                                <span className="badge badge-lg">
+                                    {renoProgress.contractor_end_date
+                                        ? new Date(renoProgress.contractor_end_date).toLocaleDateString('en-GB', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })
+                                        : '-'}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     <div className="card-footer flex justify-center items-center">
                         <Link
@@ -684,12 +731,6 @@ function ProgressMgnt() {
                             onClick={() => setActiveTab('post_reno_tab')}
                         >
                             Post Reno
-                        </button>
-                        <button
-                            className={`tab ${activeTab === 'rpm_handover_tab' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('rpm_handover_tab')}
-                        >
-                            RPM Handover
                         </button>
                     </div>
 
@@ -1080,27 +1121,6 @@ function ProgressMgnt() {
                                 })}
                         </div>
                     </div>
-                    <div className={activeTab === 'rpm_handover_tab' ? '' : 'hidden'} id="rpm_handover_tab">
-                        <div className="flex flex-col gap-5" data-accordion="true">
-                            {/* {renoProgress.phases[3].jobs
-                                .sort((a, b) => b.priority - a.priority) // Sort jobs by priority (higher number comes first)
-                                .map((job, jobIndex) => {
-                                    const jobProgress = calculateJobProgress(job); // Get the job progress
-                                    return (
-                                        <div className="flex item-center" key={job.id}>
-                                            <div className="card accordion-item border rounded-xl w-full" data-accordion-item="true" id=
-                                                {job.id}>
-                                                <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" +
-                                                    job.id}>
-                                                </button>
-                                                <div className="accordion-content hidden border-t" id={"package_content_" + job.id}>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })} */}
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -1338,11 +1358,45 @@ function ProgressMgnt() {
                         </button>
                     </div>
                     <div className="modal-body overflow-y-auto scrollable-y flex gap-4">
-                        <div className="card flex-1">
+                        <div className="card flex-1 h-full">
                             <div className="card-header">
                                 <div className="card-title">
                                     Contractual
                                 </div>
+                            </div>
+                            <div className="card-group">
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Start Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_start_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'overall')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                End Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractual_end_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractual', 'overall', 'end')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div className="card-group">
                                 <table className="table-auto">
@@ -1502,11 +1556,45 @@ function ProgressMgnt() {
                             </div>
                         </div>
 
-                        <div className="card flex-1">
+                        <div className="card flex-1 h-auto">
                             <div className="card-header">
                                 <div className="card-title">
                                     Contractor
                                 </div>
+                            </div>
+                            <div className="card-group">
+                                <table className="table-auto">
+                                    <tbody>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Start Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_start_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'overall')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                End Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <input
+                                                    type="date"
+                                                    className="input input-sm"
+                                                    value={renoProgress.contractor_end_date || ''}
+                                                    onChange={(e) => handleChangeDate(e, Number(renoProgress.id), 'contractor', 'overall', 'end')}
+                                                // onClick={(e) => e.stopPropagation()} // Prevent tr onClick
+                                                />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div className="card-group">
                                 <table className="table-auto">

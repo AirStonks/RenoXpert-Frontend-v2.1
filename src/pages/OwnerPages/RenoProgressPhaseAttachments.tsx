@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Slide, toast } from "react-toastify";
-import { retrieveJobAttachments } from "../../services/ownerApi";
+import { retrieveJobAttachments, retrieveRenoProgressPhaseAttachments } from "../../services/ownerApi";
 import Loading from "../../components/Loading";
 
 const AWS_S3_URL =
@@ -11,11 +11,10 @@ const AWS_S3_URL =
             ? import.meta.env.VITE_STAGING_AWS_S3_URL
             : null
 
-function RenoProgressJobAttachments() {
+function RenoProgressPhaseAttachments() {
     const navigate = useNavigate();
-    const { id, jobId } = useParams<{ id: string, jobId: string }>();
+    const { id, phase } = useParams<{ id: string, phase: string }>();
     const renoProgressId = id ? parseInt(id, 10) : null;
-    const phaseJobId = id ? parseInt(jobId, 10) : null;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [attachments, setAttachments] = useState<[]>([]);
@@ -44,7 +43,7 @@ function RenoProgressJobAttachments() {
             setIsLoading(true);
 
             try {
-                const response = await retrieveJobAttachments(renoProgressId, phaseJobId);
+                const response = await retrieveRenoProgressPhaseAttachments(renoProgressId, phase);
 
                 if (response?.success) {
                     setAttachments(response.data);
@@ -59,7 +58,7 @@ function RenoProgressJobAttachments() {
 
         fetchJobAttachments();
 
-    }, [phaseJobId, renoProgressId]);
+    }, [renoProgressId, phase]);
 
     return (
         <>
@@ -74,7 +73,7 @@ function RenoProgressJobAttachments() {
                                 onClick={handleBackClick}
                             >
                             </button>
-                            <span className="text-lg font-semibold">Job Attachments</span>
+                            <span className="text-lg font-semibold">Phase Attachments</span>
                         </div>
                     </div>
                     <div className="card-body flex flex-wrap gap-4">
@@ -102,4 +101,4 @@ function RenoProgressJobAttachments() {
     );
 }
 
-export default RenoProgressJobAttachments;
+export default RenoProgressPhaseAttachments;
