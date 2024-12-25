@@ -272,15 +272,15 @@ function ProductMain() {
                                     </th>
                                     <th className='w-[80px] text-center'>
                                         <div className="flex items-center justify-center gap-2">
-                                            Created By
+                                            Updated By
                                         </div>
                                     </th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('created_at')}
+                                        onClick={() => handleSort('updated_at')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
-                                            Created Date {getSortIcon('created_at')}
+                                        Updated Date {getSortIcon('updated_at')}
                                         </div>
                                     </th>
                                     <th className='w-[120px] text-center'>Action</th>
@@ -308,8 +308,8 @@ function ProductMain() {
                                             <td className='text-center capitalize'>{product.pm_category}</td>
                                             <td className='text-center capitalize'>{product.type}</td>
                                             <td className='text-center'>{product.task_weightage}</td>
-                                            <td className='text-center'>{product.created_by ? product.created_by.name : '-'}</td>
-                                            <td className='text-center'>{product.created_at}</td>
+                                            <td className='text-center'>{product.updated_by ? product.updated_by.name : '-'}</td>
+                                            <td className='text-center'>{product.updated_at}</td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
                                                     <button

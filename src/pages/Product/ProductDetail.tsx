@@ -213,7 +213,7 @@ function ProductDetail() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="flex flex-col flex-[3] gap-8">
+                <div className="flex flex-col flex-[1] gap-8">
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
@@ -225,42 +225,6 @@ function ProductDetail() {
                                 <tbody>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Photo:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
-                                            <div className="flex gap-4 items-center">
-                                                {selectedThumbnail ? (
-                                                    <div className="flex gap-4 items-center">
-                                                        <a
-                                                            className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px"
-                                                            href={AWS_S3_URL + (selectedThumbnail.file_url)}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            <img
-                                                                src={AWS_S3_URL + (selectedThumbnail.file_url)}
-                                                                alt={product.name}
-                                                                className="w-24 h-24 object-cover border border-gray-300 rounded"
-                                                            />
-                                                        </a>
-                                                    </div>
-                                                )
-                                                    :
-                                                    <span className="text-gray-600">N/A</span>
-                                                }
-
-
-                                                <button
-                                                    className="btn btn-sm btn-info btn-outline"
-                                                    data-modal-toggle="#photos_modal"
-                                                >
-                                                    View More
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Product Name:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
@@ -270,19 +234,27 @@ function ProductDetail() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            SKU:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {product.SKU ? product.SKU : 'N/A'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Description:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
                                             <span>{product.description ? product.description : '-'}</span>
                                             <i className="ki-filled ki-information-2 text-success"></i>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Internal Description:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
+                                            <span>{product.internal_desc ? product.internal_desc : '-'}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            UOM:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
+                                            <span>{product.uom}</span>
                                         </td>
                                     </tr>
                                     <tr>
@@ -303,27 +275,14 @@ function ProductDetail() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            PM Category:
+                                            SKU:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {product.pm_category}
+                                            {product.SKU ? product.SKU : 'N/A'}
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Internal Description
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <span className="text-gray-900">
-                                {product.internal_desc ? product.internal_desc : 'N/A'}
-                            </span>
                         </div>
                     </div>
 
@@ -378,31 +337,59 @@ function ProductDetail() {
                             </table>
                         </div>
                     </div>
+                </div>
 
+                <div className="flex flex-col flex-[2] gap-8">
                     <div className="card">
-                        <div className="card-header flex justify-between items-center">
+                        <div className="card-header">
                             <h3 className="card-title">
-                                Project Management
+                                Photo
                             </h3>
                         </div>
-                        <div className="card-body pt-3.5 pb-3.5">
+                        <div className="card-body">
                             <table className="table-auto">
                                 <tbody>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Task Weightage:
+                                            Thumbnail:
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {product.task_weightage}
+                                        <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
+                                            <div className="flex gap-4 items-center">
+                                                {selectedThumbnail ? (
+                                                    <div className="flex gap-4 items-center">
+                                                        <a
+                                                            className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px"
+                                                            href={AWS_S3_URL + (selectedThumbnail.file_url)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                        >
+                                                            <img
+                                                                src={AWS_S3_URL + (selectedThumbnail.file_url)}
+                                                                alt={product.name}
+                                                                className="w-24 h-24 object-cover border border-gray-300 rounded"
+                                                            />
+                                                        </a>
+                                                    </div>
+                                                )
+                                                    :
+                                                    <span className="text-gray-600">N/A</span>
+                                                }
+
+
+                                                <button
+                                                    className="btn btn-sm btn-info btn-outline"
+                                                    data-modal-toggle="#photos_modal"
+                                                >
+                                                    View More
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
 
-                <div className='flex flex-col flex-[4] gap-8'>
                     <div className="card">
                         <div className="card-header">
                             <div className="card-title">
@@ -412,7 +399,7 @@ function ProductDetail() {
                         <div className="card-body">
                             <table className="table-auto mb-4">
                                 <tbody>
-                                    <tr className="flex items-center">
+                                    {/* <tr className="flex items-center">
                                         <td className="pb-3">
                                             <div className="flex flex-col pe-1">
                                                 <span className="text-gray-900">UOM</span>
@@ -426,7 +413,7 @@ function ProductDetail() {
                                             <span className="text-gray-900">{product.uom}</span>
                                             <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
-                                    </tr>
+                                    </tr> */}
                                     <tr className="flex items-center">
                                         <td>
                                             <div className="flex flex-col pe-1">
@@ -520,6 +507,38 @@ function ProductDetail() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className='flex flex-col flex-[1] gap-8'>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Project Management
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Task Weightage:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {product.task_weightage}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            PM Category:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {product.pm_category}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
