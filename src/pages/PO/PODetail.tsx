@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchPO from "../../hook/useFetchPO";
 import { useEffect } from "react";
 import Loading from "../../components/Loading";
@@ -7,12 +7,17 @@ import { POItem } from "../../types";
 
 function PODetail() {
     const navigate = useNavigate();
+    const { state } = useLocation();
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
     const { po, loading, error } = useFetchPO(poId);
 
     const handleBackClick = () => {
-        navigate('/purchase-orders');
+        if (state) {
+            navigate(state.fromUrl);
+        } else {
+            navigate('/purchase-orders');
+        }
     };
 
     useEffect(() => {
@@ -66,6 +71,20 @@ function PODetail() {
                                         </td>
                                         <td className="text-xs text-gray-900 pb-3">
                                             {po.po_no}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                            Created Date:
+                                        </td>
+                                        <td className="text-xs text-gray-900 pb-3">
+                                            {po.created_at
+                                                ? new Date(po.created_at).toLocaleDateString('en-GB', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric'
+                                                })
+                                                : 'N/A'}
                                         </td>
                                     </tr>
                                     <tr>

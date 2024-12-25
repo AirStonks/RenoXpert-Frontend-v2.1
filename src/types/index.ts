@@ -187,6 +187,7 @@ export interface Sale {
     remaining_percentage?: number,
     paid_percentage?: number,
     status?: string,
+    purchase_orders?: PurchaseOrder[],
     created_at?: string,
     updated_at?: string,
 }
@@ -473,6 +474,7 @@ export interface DefectInspectionForm {
         }
     }
     status?: string,
+    created_by?: User,
     created_at?: string,
     updated_at?: string,
 }
@@ -884,8 +886,11 @@ export interface RenoProgress {
         floor?: string,
         unit_no?: string,
     }
+    defect_inspection_form?: DefectInspectionForm,
     user?: User,
     status?: string,
+    contractual_start_date?: string,
+    contractual_end_date?: string,
     contractual_p1_start_date?: string,
     contractual_p1_end_date?: string,
     contractual_p2_end_date?: string,
@@ -895,6 +900,8 @@ export interface RenoProgress {
     contractual_pc_end_date?: string,
     contractual_pc_start_date?: string,
     contractual_handover_date?: string,
+    contractor_start_date?: string,
+    contractor_end_date?: string,
     contractor_p1_start_date?: string,
     contractor_p1_end_date?: string,
     contractor_p2_end_date?: string,
@@ -904,6 +911,7 @@ export interface RenoProgress {
     contractor_pc_end_date?: string,
     contractor_pc_start_date?: string,
     contractor_handover_date?: string,
+    pre_reno_completion?: number,
     reno_completion?: number,
     post_reno_completion?: number,
     completed_at?: string,

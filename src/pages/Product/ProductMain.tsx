@@ -6,6 +6,7 @@ import { productIndex, removeProduct } from '../../services/api';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import Loading from '../../components/Loading';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 type SortOrder = 'asc' | 'desc' | null;
 
@@ -149,9 +150,12 @@ function ProductMain() {
                         Product Overview
                     </span>
                     <div className="flex gap-3 flex-wrap">
-                        <button className="btn btn-sm btn-info" disabled>
+                        <Link
+                            to="/inventory"
+                            className="btn btn-sm btn-info"
+                        >
                             Go to Product Inventory
-                        </button>
+                        </Link>
                         <Button
                             url='/products/create'
                             btnText='Add Product'
@@ -268,15 +272,15 @@ function ProductMain() {
                                     </th>
                                     <th className='w-[80px] text-center'>
                                         <div className="flex items-center justify-center gap-2">
-                                            Created By
+                                            Updated By
                                         </div>
                                     </th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('created_at')}
+                                        onClick={() => handleSort('updated_at')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
-                                            Created Date {getSortIcon('created_at')}
+                                        Updated Date {getSortIcon('updated_at')}
                                         </div>
                                     </th>
                                     <th className='w-[120px] text-center'>Action</th>
@@ -304,8 +308,8 @@ function ProductMain() {
                                             <td className='text-center capitalize'>{product.pm_category}</td>
                                             <td className='text-center capitalize'>{product.type}</td>
                                             <td className='text-center'>{product.task_weightage}</td>
-                                            <td className='text-center'>{product.created_by ? product.created_by.name : '-'}</td>
-                                            <td className='text-center'>{product.created_at}</td>
+                                            <td className='text-center'>{product.updated_by ? product.updated_by.name : '-'}</td>
+                                            <td className='text-center'>{product.updated_at}</td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
                                                     <button

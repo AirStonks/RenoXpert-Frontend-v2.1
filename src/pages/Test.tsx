@@ -1,6 +1,37 @@
 // import { useEffect, useRef, useState } from "react";
 // import KTComponent, { KTStepper } from "../metronic/core";
 // import SignatureCanvas from 'react-signature-canvas';
+import { useEffect, useState } from "react";
+import KTComponent from "../metronic/core";
+
+interface TimelineItem {
+    date: string;
+    title: string;
+    description: string;
+    icon: JSX.Element;
+}
+
+const timelineData: TimelineItem[] = [
+    {
+        date: 'January 2024',
+        title: 'Started learning Tailwind CSS!',
+        description: 'I began my journey with Tailwind CSS and built my first responsive design.',
+        icon: <i className="fa fa-check text-white"></i>,
+    },
+    {
+        date: 'February 2024',
+        title: 'Built my first project with Tailwind CSS.',
+        description: 'I built a simple landing page using only Tailwind CSS.',
+        icon: <i className="fa fa-laptop text-white"></i>,
+    },
+    {
+        date: 'March 2024',
+        title: 'Created a portfolio website using Tailwind CSS.',
+        description: 'I created my personal portfolio to showcase my projects.',
+        icon: <i className="fa fa-rocket text-white"></i>,
+    },
+];
+
 
 function Test() {
 

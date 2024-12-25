@@ -1261,6 +1261,18 @@ export const changeRenoProgressContractorHandoverDate = async (renoProgressId: n
     }
 };
 
+export const fetchDefectInspectionForm = async (diFormId: number) => {
+    try {
+        const response = await axios.get(API_URL + `defect-inspection-forms/${diFormId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const createPurchaseOrder = async (purchaseOrderData: PurchaseOrder) => {
     try {
         const response = await axios.post(API_URL + 'purchase-orders', purchaseOrderData, {

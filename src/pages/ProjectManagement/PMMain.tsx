@@ -129,10 +129,10 @@ function PMMain() {
                                 <th className='w-[100px] text-center'>Condo</th>
                                 <th className='w-[100px] text-center'>Contractual Date</th>
                                 <th className='w-[100px] text-center'>Contractor Date</th>
-                                <th className='w-[100px] text-center'>Pre-Reno</th>
-                                <th className='w-[100px] text-center'>Reno</th>
-                                <th className='w-[100px] text-center'>Post-Reno</th>
-                                <th className='w-[100px] text-center'>Completion</th>
+                                <th className='w-[80px] text-center'>Pre-Reno</th>
+                                <th className='w-[80px] text-center'>Reno</th>
+                                <th className='w-[80px] text-center'>Post-Reno</th>
+                                <th className='w-[80px] text-center'>Completion</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -154,7 +154,7 @@ function PMMain() {
                                             </Link>
                                         </td>
                                         <td className="text-center">
-                                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
+                                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-2 relative overflow-hidden">
                                                 {/* Issued progress bar (outer) */}
                                                 <div
                                                     className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
@@ -174,20 +174,68 @@ function PMMain() {
                                                 />
                                             </div>
                                             <div className="flex gap-2 justify-center">
-                                                <span className="text-xs badge badge-xs badge-pill badge-outline border-blue-200 bg-blue-50 text-blue-400">{100 - (progress.sale.remaining_percentage * 100)}%</span>
-                                                <span className="text-xs badge badge-xs badge-pill badge-outline badge-success">{progress.sale.paid_percentage * 100}%</span>
+                                                <span className="text-xs badge badge-sm badge-pill badge-outline border-blue-200 bg-blue-50 text-blue-400">{100 - (progress.sale.remaining_percentage * 100)}%</span>
+                                                <span className="text-xs badge badge-sm badge-pill badge-outline badge-success">{progress.sale.paid_percentage * 100}%</span>
                                             </div>
                                         </td>
                                         <td className="text-center">
                                             <div className="flex flex-col items-center">
                                                 <span className="font-semibold mb-1">{progress.sale.order.property.name}</span>
-                                                <span className="badge badge-xs badge-pill text-xs text-gray-600">
+                                                <span className="badge badge-sm badge-pill text-xs text-gray-600">
                                                     {progress.sale.order.block}-{progress.sale.order.floor}-{progress.sale.order.unit_no}
                                                 </span>
                                             </div>
                                         </td>
-                                        <td></td>
-                                        <td></td>
+                                        <td className="text-center">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-sm text-gray-900">
+                                                    {progress.contractual_start_date
+                                                        ? new Date(progress.contractual_start_date).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : '-'}
+                                                </span>
+                                                <span className="text-sm text-gray-600">
+                                                    to
+                                                </span>
+                                                <span className="text-sm text-gray-900">
+                                                    {progress.contractual_end_date
+                                                        ? new Date(progress.contractual_end_date).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : '-'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="text-center">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-sm text-gray-900">
+                                                    {progress.contractor_start_date
+                                                        ? new Date(progress.contractor_start_date).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : '-'}
+                                                </span>
+                                                <span className="text-sm text-gray-600">
+                                                    to
+                                                </span>
+                                                <span className="text-sm text-gray-900">
+                                                    {progress.contractor_end_date
+                                                        ? new Date(progress.contractor_end_date).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : '-'}
+                                                </span>
+                                            </div>
+                                        </td>
                                         <td className="text-center">
                                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
                                                 {/* Issued progress bar (outer) */}

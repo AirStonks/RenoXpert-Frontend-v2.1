@@ -499,10 +499,10 @@ function CreateQuotation() {
                                                                                 <i className="ki-solid ki-plus-squared"></i>
                                                                             </button>
                                                                         </td>
-                                                                        <td>
+                                                                        <td className='text-center'>
                                                                             RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                         </td>
-                                                                        <td>
+                                                                        <td className='text-center'>
                                                                             RM {((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                         </td>
                                                                         <td className='text-center'>

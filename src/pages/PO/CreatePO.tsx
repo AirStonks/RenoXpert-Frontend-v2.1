@@ -395,8 +395,8 @@ function CreatePO() {
             </div>
 
             <div className="flex flex-col gap-8 mb-4">
-                <div className="flex gap-4">
-                    <div className="card w-full">
+                <div className="flex flex-wrap gap-4">
+                    <div className="card flex flex-auto">
                         <div className="card-header">
                             <span className="font-semibold">General</span>
                         </div>
@@ -511,7 +511,7 @@ function CreatePO() {
                     </div>
 
                     {selectedSale && (
-                        <div className="card w-full">
+                        <div className="card flex flex-auto">
                             <div className="card-header">
                                 <span className="font-semibold">Sales Order Detail</span>
                             </div>
@@ -548,7 +548,7 @@ function CreatePO() {
                     )}
 
                     {selectedVendor && (
-                        <div className="card w-full">
+                        <div className="card flex flex-auto">
                             <div className="card-header">
                                 <span className="font-semibold">Vendor Detail</span>
                             </div>
@@ -585,7 +585,7 @@ function CreatePO() {
                         </div>
                     )}
 
-                    <div className="card w-full">
+                    <div className="card flex flex-auto">
                         <div className="card-header">
                             <span className="font-semibold">Total Amount</span>
                         </div>
@@ -743,7 +743,7 @@ function CreatePO() {
                                                                 onChange={(e) => handleChangeQty(e, poProd.product_id)}
                                                                 onInput={(e) => {
                                                                     // Only allow numbers in the input field
-                                                                    e.currentTarget.value = e.currentTarget.value.replace(/[^1-9]/g, '');
+                                                                    e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, '');
                                                                 }}
                                                                 onWheel={(e) => {
                                                                     // Prevent the default scroll behavior
@@ -768,21 +768,21 @@ function CreatePO() {
                                                         </td>
                                                         <td className="text-center">
                                                             {poProd.supply ?
-                                                                <span>RM {poProd.supply_price * poProd.qty}</span>
+                                                                <span>RM {(poProd.supply_price * poProd.qty).toFixed(2)}</span>
                                                                 :
                                                                 '-'
                                                             }
                                                         </td>
                                                         <td className="text-center">
                                                             {poProd.install ?
-                                                                <span>RM {poProd.install_price * poProd.qty}</span>
+                                                                <span>RM {(poProd.install_price * poProd.qty).toFixed(2)}</span>
                                                                 :
                                                                 '-'
                                                             }
                                                         </td>
                                                         <td className="text-center">
                                                             RM {
-                                                                ((poProd.supply ? poProd.supply_price : 0) + (poProd.install ? poProd.install_price : 0)) * poProd.qty
+                                                                (((poProd.supply ? poProd.supply_price : 0) + (poProd.install ? poProd.install_price : 0)) * poProd.qty).toFixed(2)
                                                             }
                                                         </td>
                                                         <td className="text-center">

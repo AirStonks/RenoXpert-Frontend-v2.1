@@ -268,276 +268,394 @@ function OrderOverview() {
 
     return (
         <>
-            <div className="card flex-auto w-full max-w-4xl">
-                <div className="card-header flex justify-between">
-                    <div className="flex gap-4 justify-center">
-                        <Link
-                            to={'/owner/home'}
-                            className="ki-solid ki-arrow-left items-center">
-                        </Link>
-                        {orderDetail.status === 'confirmed' ?
-                            <span className="text-lg font-semibold">Quotation Order Overview</span>
-                            :
-                            <span className="text-lg font-semibold">Quotation Order Agreement</span>
-                        }
+            <div className="flex w-full px-2">
+                <div className="card flex-auto w-full max-w-4xl">
+                    <div className="card-header flex justify-between">
+                        <div className="flex gap-4 justify-center">
+                            <Link
+                                to={'/owner/home'}
+                                className="ki-solid ki-arrow-left items-center">
+                            </Link>
+                            {orderDetail.status === 'confirmed' ?
+                                <span className="text-lg font-semibold">Quotation Order Overview</span>
+                                :
+                                <span className="text-lg font-semibold">Quotation Order Agreement</span>
+                            }
 
-                    </div>
-                    {/* <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
+                        </div>
+                        {/* <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
                         <i className="ki-filled ki-printer"></i>
                     </button> */}
-                </div>
-                <div className="card-body pt-2">
-                    <div className="tabs mb-5">
-                        <button
-                            className={`tab ${activeTab === 'tab_1_1' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('tab_1_1')}
-                        >
-                            {orderDetail.status === 'confirmed' ?
-                                'Overview'
-                                :
-                                'Quotation Order'
-                            }
-                        </button>
-                        {orderDetail.status === 'confirmed' ?
-                            <button
-                                className={`tab ${activeTab === 'tab_1_4' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('tab_1_4')}
-                            >
-                                Quotation Order
-                            </button>
-                            :
-                            ''
-                        }
-                        <button
-                            className={`tab ${activeTab === 'tab_1_2' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('tab_1_2')}
-                        >
-                            T&C
-                        </button>
-                        <button
-                            className={`tab ${activeTab === 'tab_1_3' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('tab_1_3')}
-                        >
-                            Reno Agreement
-                        </button>
                     </div>
-                    <div className={activeTab === 'tab_1_1' ? '' : 'hidden'} id="tab_1_1">
-                        <div className="overflow-x-auto">
-                            {orderDetail.status === 'confirmed' &&
-                                <div className="flex flex-col flex-1 mb-4">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (orderDetail.sale.remaining_percentage * 100)}% Invoice Issued</span>
-                                        <div className="flex">
-                                            <div className="badge badge-success badge-outline text-md mb-2">
-                                                {orderDetail.sale.invoices.reduce((sum, invoice) => {
-                                                    if (invoice.status === 'paid') {
-                                                        return sum + invoice.percentage;
-                                                    }
-                                                    return sum;
-                                                }, 0) * 100}% Paid
+                    <div className="card-body pt-2 px-4">
+                        <div className="tabs mb-5">
+                            <button
+                                className={`tab ${activeTab === 'tab_1_1' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('tab_1_1')}
+                            >
+                                {orderDetail.status === 'confirmed' ?
+                                    'Overview'
+                                    :
+                                    'Quotation Order'
+                                }
+                            </button>
+                            {orderDetail.status === 'confirmed' ?
+                                <button
+                                    className={`tab ${activeTab === 'tab_1_4' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('tab_1_4')}
+                                >
+                                    Quotation Order
+                                </button>
+                                :
+                                ''
+                            }
+                            <button
+                                className={`tab ${activeTab === 'tab_1_2' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('tab_1_2')}
+                            >
+                                T&C
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'tab_1_3' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('tab_1_3')}
+                            >
+                                Reno Agreement
+                            </button>
+                        </div>
+                        <div className={activeTab === 'tab_1_1' ? '' : 'hidden'} id="tab_1_1">
+                            <div className="overflow-x-auto">
+                                {orderDetail.status === 'confirmed' &&
+                                    <div className="flex flex-col flex-1 mb-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (orderDetail.sale.remaining_percentage * 100)}% Invoice Issued</span>
+                                            <div className="flex">
+                                                <div className="badge badge-success badge-outline text-md mb-2">
+                                                    {orderDetail.sale.invoices.reduce((sum, invoice) => {
+                                                        if (invoice.status === 'paid') {
+                                                            return sum + invoice.percentage;
+                                                        }
+                                                        return sum;
+                                                    }, 0) * 100}% Paid
+                                                </div>
                                             </div>
                                         </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-[12px] mb-2 relative overflow-hidden">
+                                            {/* Issued progress bar (outer) */}
+                                            <div
+                                                className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
+                                                style={{
+                                                    width: `${100 - (orderDetail.sale.remaining_percentage * 100)}%`,
+                                                    height: '12px'
+                                                }}
+                                            />
+
+                                            {/* Paid progress bar (inner) */}
+                                            <div
+                                                className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                                style={{
+                                                    width: `${orderDetail.sale.invoices.reduce((sum, invoice) => {
+                                                        if (invoice.status === 'paid') {
+                                                            return sum + invoice.percentage;
+                                                        }
+                                                        return sum;
+                                                    }, 0) * 100}%`,
+                                                    height: '12px'
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="flex mb-2 gap-2">
+                                            <span className="badge badge-pill badge-outline gap-1 items-center bg-blue-50 border-blue-200 text-blue-300">
+                                                <span className="badge badge-dot size-1.5 bg-blue-300"></span>
+                                                Issued
+                                            </span>
+                                            <span className="badge badge-pill badge-outline gap-1 items-center badge-success">
+                                                <span className="badge badge-dot size-1.5 badge-success"></span>
+                                                Paid
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-[12px] mb-4 relative overflow-hidden">
-                                        {/* Issued progress bar (outer) */}
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                            style={{
-                                                width: `${100 - (orderDetail.sale.remaining_percentage * 100)}%`,
-                                                height: '12px'
-                                            }}
-                                        />
+                                }
 
-                                        {/* Paid progress bar (inner) */}
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `${orderDetail.sale.invoices.reduce((sum, invoice) => {
-                                                    if (invoice.status === 'paid') {
-                                                        return sum + invoice.percentage;
-                                                    }
-                                                    return sum;
-                                                }, 0) * 100}%`,
-                                                height: '12px'
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            }
+                                <div className="flex flex-col sm:flex-row sm:flex-wrap mb-4">
 
-                            <div className="flex flex-col sm:flex-row sm:flex-wrap mb-4">
-
-                                <div className="card flex-1 sm:mb-0 mb-2 mr-2">
-                                    <div className="card-header py-0 flex justify-between">
-                                        <h2 className="card-title">
-                                            Quotation Order Detail
-                                        </h2>
-                                        <span className={`badge badge-sm p-2 cursor-default
+                                    <div className="card flex-1 sm:mb-0 mb-2 mr-2">
+                                        <div className="card-header py-0 flex justify-between">
+                                            <h2 className="card-title">
+                                                Quotation Order Detail
+                                            </h2>
+                                            <span className={`badge badge-sm p-2 cursor-default
                                                         ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
                                                         ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
                                                         badge-outline`}
-                                        >
-                                            {orderDetail.status}
-                                        </span>
+                                            >
+                                                {orderDetail.status}
+                                            </span>
+                                        </div>
+                                        <div className="card-body">
+                                            <div className="flex justify-between flex-wrap gap-8">
+                                                <div className="flex flex-col">
+                                                    {/* <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span> */}
+                                                    <span className='text-sm text-gray-600'>QUO Number:</span>
+                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className='text-sm text-gray-600'>Total Amount:</span>
+                                                    <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                                </div>
+                                            </div>
+                                            {orderDetail.status === 'confirmed' &&
+                                                <>
+                                                    {/* <div className="flex mb-2">
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm text-gray-600'>Paid Amount:</span>
+                                                        <span className='text-sm text-gray-900'>RM </span>
+                                                    </div>
+                                                </div> */}
+                                                    <div className="flex mb-2">
+                                                        <div className="flex flex-col">
+                                                            <span className='text-sm text-gray-600'>Amount Balance:</span>
+                                                            <span className='text-sm text-gray-900'>
+                                                                RM {(orderDetail.sale.remaining_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            }
+                                        </div>
                                     </div>
-                                    <div className="card-body">
-                                        <div className="flex justify-between flex-wrap gap-8">
-                                            <div className="flex flex-col">
-                                                {/* <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span> */}
-                                                <span className='text-sm text-gray-600'>QUO Number:</span>
-                                                <span className='text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span>
+
+                                    <div className="card flex-1 sm:mb-0 mb-2 mr-2">
+                                        <div className="card-header">
+                                            <h2 className="card-title">
+                                                Property
+                                            </h2>
+                                        </div>
+                                        <div className="card-body">
+                                            <div className="flex justify-between flex-wrap">
+                                                <div className="flex flex-col mb-4 mr-8">
+                                                    <span className='text-sm text-gray-600'>Name:</span>
+                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.property.name}</span>
+                                                </div>
+                                                <div className="flex flex-col mb-4">
+                                                    <span className='text-sm text-gray-600'>Unit:</span>
+                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}</span>
+                                                </div>
+                                                <div className="">
+
+                                                </div>
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className='text-sm text-gray-600'>Total Amount:</span>
-                                                <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                                <span className='text-sm text-gray-600'>Address:</span>
+                                                <span className='text-sm text-gray-900'>{address}</span>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
 
-                                <div className="card flex-1 sm:mb-0 mb-2 mr-2">
-                                    <div className="card-header">
-                                        <h2 className="card-title">
-                                            Property
-                                        </h2>
-                                    </div>
-                                    <div className="card-body">
-                                        <div className="flex justify-between flex-wrap">
-                                            <div className="flex flex-col mb-4 mr-8">
-                                                <span className='text-sm text-gray-600'>Name:</span>
-                                                <span className='text-sm text-gray-900 font-semibold'>{orderDetail.property.name}</span>
-                                            </div>
-                                            <div className="flex flex-col mb-4">
-                                                <span className='text-sm text-gray-600'>Unit:</span>
-                                                <span className='text-sm text-gray-900 font-semibold'>{orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}</span>
-                                            </div>
-                                            <div className="">
+                                {orderDetail.status === 'confirmed' ?
+                                    <>
+                                        <div className="flex flex-col gap-2 mb-4">
+                                            <span className="flex text-gray-900 text-lg font-semibold">
+                                                Payment Invoices
+                                            </span>
 
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className='text-sm text-gray-600'>Address:</span>
-                                            <span className='text-sm text-gray-900'>{address}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                            {orderDetail.sale.invoices.length === 0 ?
+                                                <div className="flex flex-col items-center">
+                                                    <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
+                                                    <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
 
-                            {orderDetail.status === 'confirmed' ?
-                                <>
-                                    <div className="flex flex-col gap-2 mb-4">
-                                        <span className="flex text-gray-900 text-lg font-semibold">
-                                            Payment Invoices
-                                        </span>
-
-                                        {orderDetail.sale.invoices.length === 0 ?
-                                            <div className="flex flex-col items-center">
-                                                <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
-                                                <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
-
-                                                <h2 className="text-xl font-semibold text-slate-900">There is no Payment Invoices here</h2>
-                                            </div>
-                                            : orderDetail.sale.invoices.map((invoice, index) => (
-                                                <Link
-                                                    to={`/invoice/${invoice.id}/view`}
-                                                    key={index}
-                                                    className="card cursor-pointer"
-                                                    data-modal-toggle="#payment_invoice_modal"
-                                                // onClick={() => setSelectedInvoiceId(Number(invoice.id))}
-                                                >
-                                                    <div className="card-body flex justify-between items-center">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="flex flex-col gap-1">
-                                                                <div className="flex">
-                                                                    <div className="relative size-[50px] shrink-0 mr-8">
-                                                                        <svg className="w-full h-full stroke-info-clarity fill-info-light" fill="none" height="48" viewBox="0 0 44 48" width="44" xmlns="http://www.w3.org/2000/svg">
-                                                                            <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill="#EFF6FF">
-                                                                            </path>
-                                                                            <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke="#1B84FF" strokeOpacity="0.2">
-                                                                            </path>
-                                                                        </svg>
-                                                                        <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
-                                                                            <i className="ki-outline ki-document text-1.5xl ps-px text-info"></i>
+                                                    <h2 className="text-xl font-semibold text-slate-900">There is no Payment Invoices here</h2>
+                                                </div>
+                                                : orderDetail.sale.invoices.map((invoice, index) => (
+                                                    <Link
+                                                        to={`/invoice/${invoice.id}/view`}
+                                                        key={index}
+                                                        className="card cursor-pointer"
+                                                        data-modal-toggle="#payment_invoice_modal"
+                                                    // onClick={() => setSelectedInvoiceId(Number(invoice.id))}
+                                                    >
+                                                        <div className="card-body flex justify-between items-center">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="flex flex-col gap-1">
+                                                                    <div className="flex">
+                                                                        <div className="relative size-[50px] shrink-0 mr-8">
+                                                                            <svg className="w-full h-full stroke-info-clarity fill-info-light" fill="none" height="48" viewBox="0 0 44 48" width="44" xmlns="http://www.w3.org/2000/svg">
+                                                                                <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill="#EFF6FF">
+                                                                                </path>
+                                                                                <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke="#1B84FF" strokeOpacity="0.2">
+                                                                                </path>
+                                                                            </svg>
+                                                                            <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
+                                                                                <i className="ki-outline ki-document text-1.5xl ps-px text-info"></i>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex flex-col">
+                                                                            <h3 className="text-gray-900 text-sm font-medium">
+                                                                                {invoice.invoice_no}
+                                                                            </h3>
+                                                                            <div className="flex flex-col mr-8 mb-2">
+                                                                                <span className={`badge badge-outline ${invoice.status === 'paid' ? 'badge-success' : ''}`}>
+                                                                                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                                                                </span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="flex flex-col">
-                                                                        <h3 className="text-gray-900 text-sm font-medium">
-                                                                            {invoice.invoice_no}
-                                                                        </h3>
+
+                                                                    <div className="flex mr-14 flex-wrap">
                                                                         <div className="flex flex-col mr-8 mb-2">
-                                                                            <span className={`badge badge-outline ${invoice.status === 'paid' ? 'badge-success' : ''}`}>
-                                                                                {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                                                            <span className="text-xs text-gray-600">
+                                                                                Amount:
+                                                                            </span>
+                                                                            <span className="text-sm text-gray-900 font-medium">
+                                                                                RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-xs text-gray-600">
+                                                                                Due Date:
+                                                                            </span>
+                                                                            <span className="text-sm text-gray-900 font-medium">
+                                                                                {invoice.due_date
+                                                                                    ? new Date(invoice.due_date).toLocaleDateString('en-GB', {
+                                                                                        day: 'numeric',
+                                                                                        month: 'long',
+                                                                                        year: 'numeric'
+                                                                                    })
+                                                                                    : 'N/A'}
                                                                             </span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-
-                                                                <div className="flex mr-14 flex-wrap">
-                                                                    <div className="flex flex-col mr-8 mb-2">
-                                                                        <span className="text-xs text-gray-600">
-                                                                            Amount:
-                                                                        </span>
-                                                                        <span className="text-sm text-gray-900 font-medium">
-                                                                            RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                        </span>
-                                                                    </div>
-
-                                                                    <div className="flex flex-col">
-                                                                        <span className="text-xs text-gray-600">
-                                                                            Due Date:
-                                                                        </span>
-                                                                        <span className="text-sm text-gray-900 font-medium">
-                                                                            {invoice.due_date
-                                                                                ? new Date(invoice.due_date).toLocaleDateString('en-GB', {
-                                                                                    day: 'numeric',
-                                                                                    month: 'long',
-                                                                                    year: 'numeric'
-                                                                                })
-                                                                                : 'N/A'}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </Link>
-                                            ))
-                                        }
-                                    </div>
-                                </>
-                                :
-                                ''
-                            }
+                                                    </Link>
+                                                ))
+                                            }
+                                        </div>
+                                    </>
+                                    :
+                                    ''
+                                }
 
+                                {orderDetail.status === 'confirmed' ?
+                                    ''
+                                    :
+                                    <>
+                                        <table className="w-full border-collapse">
+                                            <thead className="bg-gray-100">
+                                                <tr>
+                                                    <th className="p-2 text-center hidden md:table-cell">No.</th>
+                                                    <th className="p-2 text-left">Description</th>
+                                                    <th className="p-2 text-center hidden md:table-cell">Quantity</th>
+                                                    <th className="p-2 text-center">Price (RM)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage: Package, index: number) => (
+                                                    <React.Fragment key={index}>
+                                                        <tr className="bg-slate-50 border-b">
+                                                            <td className="p-2 text-center hidden text-xs md:table-cell">{index + 1}</td>
+                                                            <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
+                                                            <td className="p-2 text-center hidden text-xs md:table-cell"></td>
+                                                            <td className="p-2 text-center text-xs">
+                                                                {quotationPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                        </tr>
+                                                        {quotationPackage.products.map((product: Product, prodIndex: number) => (
+                                                            // Check if product.pivot.visibility is true
+                                                            product.pivot.visibility ? (
+                                                                <tr key={prodIndex} className="border-b text-xs">
+                                                                    <td className="p-2 hidden md:table-cell"></td>
+                                                                    <td className="p-2 ">
+                                                                        {product.name}
+                                                                    </td>
+                                                                    <td className="p-2 text-center">
+                                                                        {!product.pivot.included
+                                                                            ? 0
+                                                                            : product.pivot.quantity}
+                                                                    </td>
+                                                                    <td className="p-2 text-center hidden md:table-cell">
+                                                                        {!product.pivot.included
+                                                                            ? `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                            : null}
+                                                                    </td>
+                                                                </tr>
+                                                            ) : (
+                                                                ""
+                                                            )
+                                                        ))}
+                                                    </React.Fragment>
+                                                ))}
+                                                <tr className="font-medium">
+                                                    <td className="p-2 hidden md:table-cell" colSpan={2}></td>
+                                                    <td className="p-2 text-center">Total:</td>
+                                                    <td className="p-2 text-center">
+                                                        {orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <div className="flex flex-col items-start gap-4">
+                                            <label className="form-label flex items-center gap-2 flex-wrap">
+                                                <input
+                                                    className="checkbox"
+                                                    name="agree_tnc"
+                                                    type="checkbox"
+                                                    value="1"
+                                                    checked={orderDetail.status === 'confirmed' || agreeTnc}
+                                                    onChange={handleAgreeTncChange}
+                                                    disabled={orderDetail.status === 'confirmed'}
+                                                />
+                                                <span className="max-w-[80%]">
+                                                    I have read and accept the <a href='#' className='link' onClick={() => setActiveTab('tab_1_2')}>Term and Condition</a>
+                                                </span>
+                                            </label>
+                                            <label className="form-label flex items-center gap-2 flex-wrap">
+                                                <input
+                                                    className="checkbox"
+                                                    name="agree_reno_agreement"
+                                                    type="checkbox"
+                                                    value="1"
+                                                    checked={orderDetail.status === 'confirmed' || agreeRenoAgreement}
+                                                    onChange={handleAgreeRenoAgreementChange}
+                                                    disabled={orderDetail.status === 'confirmed'}
+                                                />
+                                                <span className="max-w-[80%]">I acknowledge I have agreed with the <a href='#' className='link' onClick={() => setActiveTab('tab_1_3')}>Reno Agreement</a></span>
+                                            </label>
+                                        </div>
+                                    </>
+                                }
+                            </div>
+                        </div>
+                        <div className={activeTab === 'tab_1_4' ? '' : 'hidden'} id="tab_1_4">
                             {orderDetail.status === 'confirmed' ?
-                                ''
-                                :
                                 <>
                                     <table className="w-full border-collapse">
                                         <thead className="bg-gray-100">
                                             <tr>
-                                                <th className="p-2 text-center hidden md:table-cell">No.</th>
-                                                <th className="p-2 text-left">Description</th>
-                                                <th className="p-2 text-center hidden md:table-cell">Quantity</th>
-                                                <th className="p-2 text-center">Price (RM)</th>
+                                                <th className="p-2 text-sm text-center hidden md:table-cell">No.</th>
+                                                <th className="p-2 text-sm text-left">Description</th>
+                                                <th className="p-2 text-sm text-center hidden md:table-cell">Quantity</th>
+                                                <th className="p-2 text-sm text-center">Price (RM)</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage: Package, index: number) => (
                                                 <React.Fragment key={index}>
-                                                    <tr className="bg-slate-50 border-b">
-                                                        <td className="p-2 text-center hidden text-xs md:table-cell">{index + 1}</td>
-                                                        <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
-                                                        <td className="p-2 text-center hidden text-xs md:table-cell"></td>
-                                                        <td className="p-2 text-center text-xs">
+                                                    <tr className="bg-slate-50 border-b text-2xs">
+                                                        <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
+                                                        <td className="p-2 font-semibold">{quotationPackage.name}</td>
+                                                        <td className="p-2 text-center hidden md:table-cell"></td>
+                                                        <td className="p-2 text-center">
                                                             {quotationPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </td>
                                                     </tr>
                                                     {quotationPackage.products.map((product: Product, prodIndex: number) => (
                                                         // Check if product.pivot.visibility is true
                                                         product.pivot.visibility ? (
-                                                            <tr key={prodIndex} className="border-b text-xs">
+                                                            <tr key={prodIndex} className="border-b text-2xs">
                                                                 <td className="p-2 hidden md:table-cell"></td>
                                                                 <td className="p-2 ">
                                                                     {product.name}
@@ -568,110 +686,21 @@ function OrderOverview() {
                                             </tr>
                                         </tbody>
                                     </table>
-
-                                    <div className="flex flex-col items-start gap-4">
-                                        <label className="form-label flex items-center gap-2 flex-wrap">
-                                            <input
-                                                className="checkbox"
-                                                name="agree_tnc"
-                                                type="checkbox"
-                                                value="1"
-                                                checked={orderDetail.status === 'confirmed' || agreeTnc}
-                                                onChange={handleAgreeTncChange}
-                                                disabled={orderDetail.status === 'confirmed'}
-                                            />
-                                            <span className="max-w-[80%]">
-                                                I have read and accept the <a href='#' className='link' onClick={() => setActiveTab('tab_1_2')}>Term and Condition</a>
-                                            </span>
-                                        </label>
-                                        <label className="form-label flex items-center gap-2 flex-wrap">
-                                            <input
-                                                className="checkbox"
-                                                name="agree_reno_agreement"
-                                                type="checkbox"
-                                                value="1"
-                                                checked={orderDetail.status === 'confirmed' || agreeRenoAgreement}
-                                                onChange={handleAgreeRenoAgreementChange}
-                                                disabled={orderDetail.status === 'confirmed'}
-                                            />
-                                            <span className="max-w-[80%]">I acknowledge I have agreed with the <a href='#' className='link' onClick={() => setActiveTab('tab_1_3')}>Reno Agreement</a></span>
-                                        </label>
-                                    </div>
                                 </>
+                                :
+                                ''
                             }
                         </div>
-                    </div>
-                    <div className={activeTab === 'tab_1_4' ? '' : 'hidden'} id="tab_1_4">
-                        {orderDetail.status === 'confirmed' ?
-
-                            <>
-                                <table className="w-full border-collapse">
-                                    <thead className="bg-gray-100">
-                                        <tr>
-                                            <th className="p-2 text-center hidden md:table-cell">No.</th>
-                                            <th className="p-2 text-left">Description</th>
-                                            <th className="p-2 text-center hidden md:table-cell">Quantity</th>
-                                            <th className="p-2 text-center">Price (RM)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage: Package, index: number) => (
-                                            <React.Fragment key={index}>
-                                                <tr className="bg-slate-50 border-b">
-                                                    <td className="p-2 text-center hidden text-xs md:table-cell">{index + 1}</td>
-                                                    <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
-                                                    <td className="p-2 text-center hidden text-xs md:table-cell"></td>
-                                                    <td className="p-2 text-center text-xs">
-                                                        {quotationPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </td>
-                                                </tr>
-                                                {quotationPackage.products.map((product: Product, prodIndex: number) => (
-                                                    // Check if product.pivot.visibility is true
-                                                    product.pivot.visibility ? (
-                                                        <tr key={prodIndex} className="border-b text-xs">
-                                                            <td className="p-2 hidden md:table-cell"></td>
-                                                            <td className="p-2 ">
-                                                                {product.name}
-                                                            </td>
-                                                            <td className="p-2 text-center">
-                                                                {!product.pivot.included
-                                                                    ? 0
-                                                                    : product.pivot.quantity}
-                                                            </td>
-                                                            <td className="p-2 text-center hidden md:table-cell">
-                                                                {!product.pivot.included
-                                                                    ? `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : null}
-                                                            </td>
-                                                        </tr>
-                                                    ) : (
-                                                        ""
-                                                    )
-                                                ))}
-                                            </React.Fragment>
-                                        ))}
-                                        <tr className="font-medium">
-                                            <td className="p-2 hidden md:table-cell" colSpan={2}></td>
-                                            <td className="p-2 text-center">Total:</td>
-                                            <td className="p-2 text-center">
-                                                {orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </>
-                            :
-                            ''
-                        }
-                    </div>
-                    <div className={activeTab === 'tab_1_2' ? '' : 'hidden'} id="tab_1_2">
-                        {tnc}
-                    </div>
-                    <div className={activeTab === 'tab_1_3' ? '' : 'hidden'} id="tab_1_3">
-                        {renoAgreement}
+                        <div className={activeTab === 'tab_1_2' ? '' : 'hidden'} id="tab_1_2">
+                            {tnc}
+                        </div>
+                        <div className={activeTab === 'tab_1_3' ? '' : 'hidden'} id="tab_1_3">
+                            {renoAgreement}
+                        </div>
                     </div>
                 </div>
             </div>
+
 
             {orderDetail.status === 'pending' ?
                 <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2">

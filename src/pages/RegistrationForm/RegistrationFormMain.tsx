@@ -209,7 +209,6 @@ function RegistrationFormMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[20px] text-center'>ID</th>
                                     <th className='w-[150px] text-center'>Owner Name</th>
                                     <th className='w-[80px]'>Form No</th>
                                     <th className='w-[100px] text-center'>Phone No.</th>
@@ -226,9 +225,6 @@ function RegistrationFormMain() {
                                             key={regFormIndex}
                                             className={`${regFormIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
                                         >
-                                            <td className='text-center'>
-                                                {regForm.id}
-                                            </td>
                                             <td>
                                                 {regForm.user.name_first} {regForm.user.name_last}
                                             </td>
@@ -307,7 +303,7 @@ function RegistrationFormMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="text-center text-gray-500">
+                                        <td colSpan={6} className="text-center text-gray-500">
                                             No regForms available
                                         </td>
                                     </tr>

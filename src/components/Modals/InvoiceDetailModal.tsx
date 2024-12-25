@@ -104,7 +104,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
     } else {
         // const discounts = JSON.parse(JSON.parse(JSON.stringify(invoiceDetail.discountsData)));
         console.log(invoiceDetail);
-        
+
 
         content = (
             <div className="flex flex-wrap gap-4">
@@ -121,7 +121,17 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                         <td className="text-sm text-gray-900 font-medium pb-3">{invoice.invoice_no}</td>
                                     </tr>
                                     <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Amount:</td>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Initial Bill Amount:</td>
+                                        <td className="text-sm text-gray-900 font-medium pb-3">
+                                            {`RM ${(invoice.sale.total_amount * invoice.percentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Weightage:</td>
+                                        <td className="text-sm text-gray-900 font-medium pb-3">{(invoice.percentage * 100)}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Bill Amount:</td>
                                         <td className="text-sm text-gray-900 font-medium pb-3">
                                             {`RM ${invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                         </td>
@@ -144,22 +154,6 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                             </span>
                                         </td>
                                     </tr>
-                                    {/* <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Discounts:</td>
-                                        <td className="text-sm text-gray-900 pb-3 font-medium">
-                                            {discounts.length > 0 ? (
-                                                discounts.map((discount, index) => {
-                                                    const discountValue = discount.valueType === "percentage"
-                                                        ? `${(discount.value * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
-                                                        : `RM ${discount.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-                                                    return <div key={index}>{discountValue}</div>;
-                                                })
-                                            ) : (
-                                                <span>No Discounts</span>
-                                            )}
-                                        </td>
-                                    </tr> */}
                                 </tbody>
                             </table>
                         </div>
@@ -211,6 +205,74 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                     </div>
                 </div>
                 <div className="flex flex-col flex-auto gap-4">
+                    <div className="flex gap-2">
+                        <div className="card flex-1">
+                            <div className="card-header flex justify-between items-center">
+                                <h3 className="card-title">Discounts</h3>
+                            </div>
+                            {invoice.discountsData && Array.isArray(invoice.discountsData) && invoice.discountsData.length > 0 ? (
+                                invoice.discountsData.map((discount, index) => (
+                                    <div key={index} className="card-group">
+                                        <table className="table-auto">
+                                            <tbody>
+                                                <tr>
+                                                    <td className="text-sm text-gray-600 pb-3 pe-2 lg:pe-4">Name:</td>
+                                                    <td className="text-sm text-gray-900 font-medium pb-3">{discount.name}</td>
+                                                </tr>
+                                                {discount.valueType === "percentage" &&
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-2 lg:pe-4">Rate:</td>
+                                                        <td className="text-sm text-gray-900 font-medium pb-3">{(discount.value * 100).toFixed(2)}%</td>
+                                                    </tr>
+                                                }
+                                                <tr>
+                                                    <td className="text-sm text-gray-600 pb-3 pe-2 lg:pe-4">Discount Amount:</td>
+                                                    <td className="text-sm text-gray-900 font-medium pb-3">RM {discount.valueType === "percentage" ? ((invoice.sale.total_amount * invoice.percentage) * discount.value).toFixed(2) : discount.value.toFixed(2)}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="card-group">
+                                    <span className="text-sm text-gray-600 pb-3 pe-2 lg:pe-4">No discounts</span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="card flex-1">
+                            <div className="card-header flex justify-between items-center">
+                                <h3 className="card-title">Fees</h3>
+                            </div>
+                            {invoice.feesData && Array.isArray(invoice.feesData) && invoice.feesData.length > 0 ? (
+                                invoice.feesData.map((fee, index) => (
+                                    <div key={index} className="card-group">
+                                        <table className="table-auto">
+                                            <tbody>
+                                                <tr>
+                                                    <td className="text-sm text-gray-600 pb-3 pe-2 lg:pe-4">Name:</td>
+                                                    <td className="text-sm text-gray-900 font-medium pb-3">{fee.name}</td>
+                                                </tr>
+                                                {fee.valueType === "percentage" &&
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-2 lg:pe-4">Rate:</td>
+                                                        <td className="text-sm text-gray-900 font-medium pb-3">{(fee.value * 100).toFixed(2)}%</td>
+                                                    </tr>
+                                                }
+                                                <tr>
+                                                    <td className="text-sm text-gray-600 pb-3 pe-2 lg:pe-4">Fee Amount:</td>
+                                                    <td className="text-sm text-gray-900 font-medium pb-3">RM {fee.valueType === "percentage" ? ((invoice.sale.total_amount * invoice.percentage) * fee.value).toFixed(2) : fee.value.toFixed(2)}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="card-group">
+                                    <span className="text-sm text-gray-600 pb-3 pe-2 lg:pe-4">No fees</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">Payment Transaction</h3>
