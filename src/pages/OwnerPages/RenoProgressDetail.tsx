@@ -233,7 +233,7 @@ function RenoProgressDetail() {
                                                     </div>
                                                 </div>
                                                 <div className="w-full max-w-3xl mx-auto">
-                                                    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:ml-[8.75rem] md:before:translate-x-0 before:h-full before:w-0.5 before:bg-slate-300">
+                                                    <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-slate-300">
                                                         {/* <div className="-my-6"> */}
                                                         {phase.jobs
                                                             .sort((a, b) => b.priority - a.priority) // Sort jobs by priority (higher number comes first)
@@ -316,20 +316,20 @@ function RenoProgressDetail() {
 
                                                                 return (
                                                                     <div className="relative" key={jobIndex}>
-                                                                        <div className="md:flex items-center md:space-x-4">
-                                                                            <div className="flex items-center space-x-4 md:space-x-2 md:space-x-reverse">
+                                                                        <div className="md:flex items-center space-x-4">
+                                                                            <div className="flex items-center space-x-4">
                                                                                 <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow md:order-1">
                                                                                     <svg className="fill-emerald-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
                                                                                         <path d="M8 0a8 8 0 1 0 8 8 8.009 8.009 0 0 0-8-8Zm0 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
                                                                                     </svg>
                                                                                 </div>
-                                                                                <div className="ml-14 md:ml-0">
+                                                                                <div className="ml-14">
                                                                                     <span className="text-indigo-500 text-base font-bold mr-2">{job.name}</span>
                                                                                     {/* <span className="text-slate-500 ">opened the request</span> */}
                                                                                 </div>
                                                                             </div>
                                                                         </div>
-                                                                        <div className="ml-14 md:ml-44 mb-4">
+                                                                        <div className="ml-14 mb-4">
                                                                             <span className="text-sm font-semibold block mb-2">Progress: {job.completion.toFixed(2)}%</span>
                                                                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
                                                                                 <div
@@ -341,7 +341,7 @@ function RenoProgressDetail() {
                                                                                 />
                                                                             </div>
                                                                         </div>
-                                                                        <div className="ml-14 md:ml-44 mb-4">
+                                                                        <div className="ml-14 mb-4">
                                                                             {job.tasks.map((task, taskIndex) => (
                                                                                 <div className="flex flex-col mb-4" key={taskIndex}>
                                                                                     <div className="flex mb-1 items-center gap-2">

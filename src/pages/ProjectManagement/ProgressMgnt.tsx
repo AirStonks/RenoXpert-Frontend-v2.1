@@ -259,8 +259,8 @@ function ProgressMgnt() {
             }
         } catch (error) {
             notify('error', 'Failed to update status');
-            setIsLoading(false);
         }
+        setIsLoading(false);
     }
 
     const handleToggleVisibility = async (taskId: number) => {
