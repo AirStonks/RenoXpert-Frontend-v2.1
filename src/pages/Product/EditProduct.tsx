@@ -133,7 +133,7 @@ const EditProduct: React.FC = () => {
             }
 
         } catch (error) {
-            console.error('Product creation failed:', error);
+            notify('error', error.response.data.message);
         }
     };
 
@@ -418,11 +418,11 @@ const EditProduct: React.FC = () => {
                                         {/* Category */}
                                         <div className="flex flex-col mb-8">
                                             <label className='mb-2 text-sm font-medium text-gray-900'>
-                                                Category
+                                                PM Category
                                             </label>
 
                                             <span className="text-xs text-gray-600 tracking-wide mb-2">
-                                                Define which category of the product.
+                                                Define the category of the product. (for PM Management purpose)
                                             </span>
 
                                             <Dropdown
