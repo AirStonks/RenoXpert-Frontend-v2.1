@@ -8,6 +8,13 @@ import Loading from '../../components/Loading';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
+const AWS_S3_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
+
 type SortOrder = 'asc' | 'desc' | null;
 
 function ProductMain() {
@@ -222,6 +229,11 @@ function ProductMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
+                                    <th className='w-[100px] text-center'>
+                                        <div className="flex items-center justify-center gap-2">
+                                            Photo
+                                        </div>
+                                    </th>
                                     <th
                                         className='w-[300px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('name')}
@@ -280,7 +292,7 @@ function ProductMain() {
                                         onClick={() => handleSort('updated_at')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
-                                        Updated Date {getSortIcon('updated_at')}
+                                            Updated Date {getSortIcon('updated_at')}
                                         </div>
                                     </th>
                                     <th className='w-[120px] text-center'>Action</th>
@@ -293,6 +305,18 @@ function ProductMain() {
                                             key={prodIndex}
                                             className={`${prodIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
                                         >
+                                            <td className='text-center'>
+                                                {product.attachments && product.attachments.thumbnail ? (
+                                                    <img
+                                                        src={AWS_S3_URL + product.attachments.thumbnail.file_url}
+                                                        alt={product.name}
+                                                        className="w-[64px] h-[64px] object-cover border border-gray-300 rounded"
+                                                    />
+                                                )
+                                                    :
+                                                    ''
+                                                }
+                                            </td>
                                             <td>
                                                 <div className="flex flex-col">
                                                     <span>{product.name}</span>
