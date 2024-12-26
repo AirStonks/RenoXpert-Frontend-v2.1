@@ -215,7 +215,7 @@ const EditProduct: React.FC = () => {
                                                 name="description"
                                                 placeholder="Text"
                                                 rows={6}
-                                                value={formData.description} // Use value instead of children
+                                                value={formData.description || ''} // Use value instead of children
                                                 onChange={(e) => handleChange(e)} // Handle change for updating formData
                                             />
                                         </div>
@@ -233,7 +233,7 @@ const EditProduct: React.FC = () => {
                                                 name="internal_desc"
                                                 placeholder="Text"
                                                 rows={6}
-                                                value={formData.internal_desc} // Use value instead of children
+                                                value={formData.internal_desc || ''} // Use value instead of children
                                                 onChange={(e) => handleChange(e)} // Handle change for updating formData
                                             />
                                         </div>
