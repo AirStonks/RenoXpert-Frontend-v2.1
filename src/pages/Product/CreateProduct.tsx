@@ -210,17 +210,20 @@ function CreateProduct() {
         const newErrors: FormErrors = {};
         if (!formData.name) newErrors.name = "Name required";
         if (!formData.uom) newErrors.uom = "UOM required";
-        if (!formData.provisioning.supply.retail_price) newErrors.supply_retail_price = "Retail Price required";
-        if (!formData.provisioning.supply.cogs) newErrors.supply_cogs = "Cost of Good Sold required";
-        if (!formData.provisioning.supply.excluded_price) newErrors.supply_excluded_price = "Excluded Price required";
-        if (!formData.provisioning.install.retail_price) newErrors.install_retail_price = "Retail Price required";
-        if (!formData.provisioning.install.cogs) newErrors.install_cogs = "Cost of Good Sold required";
-        if (!formData.provisioning.install.excluded_price) newErrors.install_excluded_price = "Excluded Price required";
+        if (formData?.provisioning.supply.retail_price < 0 || formData?.provisioning.supply.retail_price === '') newErrors.supply_retail_price = "Retail Price required";
+        if (formData?.provisioning.supply.cogs < 0 || formData?.provisioning.supply.cogs === '') newErrors.supply_cogs = "Cost of Good Sold required";
+        if (formData?.provisioning.supply.excluded_price < 0 || formData?.provisioning.supply.excluded_price === '') newErrors.supply_excluded_price = "Excluded Price required";
+        if (formData?.provisioning.install.retail_price < 0 || formData?.provisioning.install.retail_price === '') newErrors.install_retail_price = "Retail Price required";
+        if (formData?.provisioning.install.cogs < 0 || formData?.provisioning.install.cogs === '') newErrors.install_cogs = "Cost of Good Sold required";
+        if (formData?.provisioning.install.excluded_price < 0 || formData?.provisioning.install.excluded_price === '') newErrors.install_excluded_price = "Excluded Price required";
 
         return newErrors;
     };
 
     const handleSubmit = async () => {
+
+        console.log(formData);
+
 
         const validationErrors = validate();
 
@@ -645,11 +648,11 @@ function CreateProduct() {
                                 {/* Category */}
                                 <div className="flex flex-col mb-8">
                                     <label className='mb-2 text-sm font-medium text-gray-900'>
-                                        Category
+                                        PM Category
                                     </label>
 
                                     <span className="text-xs text-gray-600 tracking-wide mb-2">
-                                        Define which category of the product.
+                                        Define the category of the product. (for PM Management purpose)
                                     </span>
 
                                     <Dropdown
