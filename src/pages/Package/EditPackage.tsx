@@ -55,7 +55,8 @@ function EditPackage() {
             setFormData((prev) => ({
                 ...prev,
                 packageName: packageDetail.name,
-                description: packageDetail.description
+                description: packageDetail.description,
+                description_internal: packageDetail.description_internal
             }));
 
             const selectedProducts = [];
@@ -146,6 +147,7 @@ function EditPackage() {
                 name: formData.packageName,
                 total_price: formData.packagePrice,
                 description: formData.description,
+                description_internal: formData.description_internal,
                 products: newProducts,
             };
 
@@ -311,6 +313,26 @@ function EditPackage() {
                                 onChange={handleChange}
                                 error={validationErrors.description}
                             />
+
+                            {/* Internal Description */}
+                            <div className="flex flex-col mb-8">
+                                <label className='mb-2 text-sm font-medium text-gray-900'>
+                                    Internal Description
+                                </label>
+                                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                    Add description for internal reference. (Not visible to public)
+                                </span>
+
+                                <textarea
+                                    className="textarea"
+                                    placeholder="This description will not visible on owner view"
+                                    name='description_internal'
+                                    rows={6}
+                                    value={formData.description_internal || ''}
+                                    onChange={handleChange}
+                                >
+                                </textarea>
+                            </div>
 
                         </div>
                     </div>
