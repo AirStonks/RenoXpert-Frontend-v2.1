@@ -15,6 +15,7 @@ function OperationHome() {
 
     const [loading, setLoading] = useState(false);
     const [selectedProgressStatus, setSelectedProgressStatus] = useState<string | null>(null);
+    const [sortBy, setSortBy] = useState('');
 
     const toggleStatus = (status: string) => {
         setSelectedProgressStatus(prevStatus => (prevStatus === status ? null : status));
@@ -103,10 +104,15 @@ function OperationHome() {
                 <div className="card w-full rounded-b-none shadow-none border-none bg-slate-950">
                     <div className="card-body flex flex-col">
                         {user ?
-                            <>
-                                <span className="text-gray-200 text-xl font-bold capitalize">{user.name}</span>
-                                <span className="text-gray-300 text-sm font-medium">+60 {user.phone_no.replace(/(\d{2})\d{4}(\d{3})/, '$1***$2')}</span>
-                            </>
+                            <div className="flex justify-between items-center gap-4">
+                                <div className="flex flex-col">
+                                    <span className="text-gray-200 text-xl font-bold capitalize">{user.name}</span>
+                                    <span className="text-gray-300 text-sm font-medium">+60 {user.phone_no.replace(/(\d{2})\d{4}(\d{3})/, '$1***$2')}</span>
+                                </div>
+                                <div className="text-danger">
+                                    <i className="ki-filled ki-entrance-right text-xl font-semibold"></i>
+                                </div>
+                            </div>
                             :
                             <div className="animate-pulse flex flex-col gap-4">
                                 <span className="h-4 bg-slate-700 rounded text-xl font-bold capitalize"></span>
@@ -159,6 +165,7 @@ function OperationHome() {
                                 <div className="flex gap-3">
                                     <button
                                         className="btn btn-sm btn-light rounded-full"
+                                        data-drawer-toggle="#drawer_2_4"
                                     >
                                         <i className="ki-filled ki-sort"></i>
                                         Sort
@@ -276,6 +283,32 @@ function OperationHome() {
                         <div className={activeTab === 'tab_1_3' ? '' : 'hidden'} id="tab_1_3">
                             <span>QC Form</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="drawer drawer-bottom flex flex-col rounded-t-lg" data-drawer="true" id="drawer_2_4">
+                <div className="py-4">
+                    <div className="card-group">
+                        <button
+                            className="btn btn-clear"
+                        >
+                            <span className="text-gray-900 font-normal">By Start Date</span>
+                        </button>
+                    </div>
+                    <div className="card-group">
+                        <button
+                            className="btn btn-clear"
+                        >
+                            <span className="text-gray-900 font-normal">By Completion</span>
+                        </button>
+                    </div>
+                    <div className="card-group">
+                        <button
+                            className="btn btn-clear"
+                        >
+                            <span className="text-gray-900 font-normal">By Status</span>
+                        </button>
                     </div>
                 </div>
             </div>

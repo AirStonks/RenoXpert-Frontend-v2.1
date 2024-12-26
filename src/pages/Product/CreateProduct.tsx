@@ -24,7 +24,7 @@ interface UploadedThumbnail {
 const initProductData: Product = {
     name: '',
     SKU: '',
-    type: 'service',
+    type: 'renovation',
     description: '',
     pm_category: '1',
     uom: '',
@@ -86,7 +86,7 @@ function CreateProduct() {
         document.title = "Create Product | RenoXpert";
     }, []);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
         if (name.startsWith('provisioning.supply')) {
@@ -290,9 +290,116 @@ function CreateProduct() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="flex flex-col flex-[2] gap-8">
+                <div className="flex flex-col flex-[1] gap-8">
+                    <div className="card">
+                        <div className="card-body">
+                            {/* Header */}
+                            <h1 className='text-xl mb-4 font-semibold text-gray-900'>General</h1>
 
-                    {/* Image */}
+                            <div className="flex flex-col">
+                                {/* Product Name */}
+                                <InputFieldGroup
+                                    fieldTitle="Product Name"
+                                    description="A product name is required and recommended to be unique."
+                                    placeholder="Product name"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    error={errors.name}
+                                />
+
+                                {/* Description */}
+                                <div className="flex flex-col items-baseline flex-wrap lg:flex-nowrap mb-8">
+                                    <label className="mb-2 text-sm font-medium text-gray-900">
+                                        Description
+                                    </label>
+                                    <span className='text-xs text-gray-600 tracking-wide mb-2'>
+                                        Add any additional comments or notes about the product here
+                                    </span>
+                                    <textarea
+                                        className="textarea"
+                                        name="description"
+                                        placeholder="Text"
+                                        rows={6}
+                                        onChange={(e) => handleChange(e)}
+                                    >
+                                        {formData.description}
+                                    </textarea>
+                                </div>
+
+                                {/* Internal Description */}
+                                <div className="flex flex-col items-baseline flex-wrap lg:flex-nowrap mb-8">
+                                    <label className="mb-2 text-sm font-medium text-gray-900">
+                                        Internal Description
+                                    </label>
+                                    <span className='text-xs text-gray-600 tracking-wide mb-2'>
+                                        Add comment for internal reference. (Not visible to public)
+                                    </span>
+                                    <textarea
+                                        className="textarea"
+                                        name="internal_desc"
+                                        placeholder="Text"
+                                        rows={6}
+                                        onChange={(e) => handleChange(e)}
+                                    >
+                                        {formData.internal_desc}
+                                    </textarea>
+                                </div>
+
+                                {/* UOM */}
+                                <InputFieldGroup
+                                    fieldTitle="UOM"
+                                    description="Unit of Measurement of the product"
+                                    placeholder="measurement"
+                                    type="text"
+                                    name="uom"
+                                    value={formData.uom}
+                                    onChange={handleChange}
+                                    error={errors.uom}
+                                />
+
+                                {/* Product Type */}
+                                <div className="flex flex-col mb-8">
+                                    <label className='mb-2 text-sm font-medium text-gray-900'>
+                                        Product Type
+                                    </label>
+
+                                    <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                        Select a product type to differentiate the product.
+                                    </span>
+
+                                    <Dropdown
+                                        options={[
+                                            { value: "renovation", label: "Renovation" },
+                                            { value: "carpentry", label: "Carpentry" },
+                                            { value: "furniture", label: "Furniture" },
+                                            { value: "electrical_appliances", label: "Electrical Appliances" },
+                                            { value: "iot", label: "IOT" },
+                                            { value: "project_management", label: "Project Management" },
+                                            { value: "loose_items", label: "Loose Items" },
+                                        ]}
+                                        name="type"
+                                        value={formData.type}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+
+                                {/* SKU */}
+                                <InputFieldGroup
+                                    fieldTitle="SKU"
+                                    description="Unique code for tracking this product in inventory"
+                                    placeholder="SKU"
+                                    name="SKU"
+                                    value={formData?.SKU}
+                                    onChange={handleChange}
+                                    error={errors.SKU}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex flex-col flex-[2] gap-8">
+                    {/* Thumbnail */}
                     <div className="card relative">
                         <div className="card-body">
                             <div className="flex flex-col">
@@ -340,11 +447,9 @@ function CreateProduct() {
                                     </span>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div className="card">
-                        <div className="card-body">
+                            <hr className='my-4' />
+
                             <div className="flex flex-col">
                                 <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Photos</h1>
 
@@ -460,48 +565,141 @@ function CreateProduct() {
 
                     <div className="card">
                         <div className="card-body">
-                            <div className="flex flex-col">
-                                {/* Header */}
-                                <h1 className='text-xl mb-4 font-semibold text-gray-900'>Project Management</h1>
+                            {/* Header */}
+                            <h1 className='text-xl mb-4 font-semibold text-gray-900'>Pricing</h1>
 
-                                {/* Task Weightage */}
-                                <div className="flex flex-col">
-                                    <InputFieldGroup
-                                        fieldTitle="Task Weightage"
-                                        description="Define the weightage of this task."
-                                        placeholder="0 - 10"
-                                        name="task_weightage"
-                                        type='number'
-                                        value={formData.task_weightage}
-                                        onChange={handleChange}
-                                        error={errors.task_weightage}
-                                    />
+                            <div className="flex flex-wrap gap-4">
+                                <div className="card flex lg:flex-1 md:flex-auto">
+                                    <div className="card-body">
+                                        <div className="flex flex-col mb-4">
+                                            <h1 className='text-2xl font-semibold text-gray-900 mb-2'>Supply</h1>
+                                            <span className='text-xs text-gray-600 tracking-wide'>The costs for the product supply</span>
+                                        </div>
+
+                                        {/* Retail Price */}
+                                        <InputFieldGroup
+                                            fieldTitle="Retail Price"
+                                            description="This is the price at which the product will be sold to customers"
+                                            placeholder="Retail Price"
+                                            type="number"
+                                            name="provisioning.supply.retail_price"
+                                            value={formData.provisioning.supply.retail_price}
+                                            onChange={handleChange}
+                                            error={errors.supply_retail_price}
+                                        />
+
+                                        {/* Cost of Good */}
+                                        <InputFieldGroup
+                                            fieldTitle="Cost of Good Sold"
+                                            description="This includes all costs directly tied to the production of the product"
+                                            placeholder="Cost of Good Sold"
+                                            type="number"
+                                            name="provisioning.supply.cogs"
+                                            value={formData.provisioning.supply.cogs}
+                                            onChange={handleChange}
+                                            error={errors.supply_cogs}
+                                        />
+
+                                        {/* Excluded Price */}
+                                        <InputFieldGroup
+                                            fieldTitle="Excluded Price"
+                                            description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
+                                            placeholder="Excluded Price"
+                                            type="number"
+                                            name="provisioning.supply.excluded_price"
+                                            value={formData.provisioning.supply.excluded_price}
+                                            onChange={handleChange}
+                                            error={errors.supply_excluded_price}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="card flex lg:flex-1 md:flex-auto">
+                                    <div className="card-body">
+                                        <div className="flex flex-col mb-4">
+                                            <h1 className='text-2xl font-semibold text-gray-900 mb-2'>Install</h1>
+                                            <span className='text-xs text-gray-600 tracking-wide'>The installation cost for the product</span>
+                                        </div>
+
+                                        {/* Retail Price */}
+                                        <InputFieldGroup
+                                            fieldTitle="Retail Price"
+                                            description="This is the price at which the product will be sold to customers"
+                                            placeholder="Retail Price"
+                                            type="number"
+                                            name="provisioning.install.retail_price"
+                                            value={formData.provisioning.install.retail_price}
+                                            onChange={handleChange}
+                                            error={errors.install_retail_price}
+                                        />
+
+                                        {/* Cost of Good */}
+                                        <InputFieldGroup
+                                            fieldTitle="Cost of Good Sold"
+                                            description="This includes all costs directly tied to the production of the product"
+                                            placeholder="Cost of Good Sold"
+                                            type="number"
+                                            name="provisioning.install.cogs"
+                                            value={formData.provisioning.install.cogs}
+                                            onChange={handleChange}
+                                            error={errors.install_cogs}
+                                        />
+
+                                        {/* Excluded Price */}
+                                        <InputFieldGroup
+                                            fieldTitle="Excluded Price"
+                                            description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
+                                            placeholder="Excluded Price"
+                                            type="number"
+                                            name="provisioning.install.excluded_price"
+                                            value={formData.provisioning.install.excluded_price}
+                                            onChange={handleChange}
+                                            error={errors.install_excluded_price}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                </div>
+                <div className='flex flex-col flex-[1] gap-8'>
                     <div className="card">
                         <div className="card-body">
                             {/* Header */}
-                            <h1 className='text-xl mb-4 font-semibold text-gray-900'>Internal</h1>
+                            <h1 className='text-xl mb-4 font-semibold text-gray-900'>Project Management</h1>
 
-                            {/* Internal Description */}
-                            <div className="flex flex-col">
-                                <InputFieldGroup
-                                    fieldTitle="Internal Description"
-                                    description="Add comment for internal reference. (Not visible to public)"
-                                    placeholder="Text..."
-                                    name="internal_desc"
-                                    type='text'
-                                    value={formData.internal_desc}
+                            {/* Task Weightage */}
+                            <InputFieldGroup
+                                fieldTitle="Task Weightage"
+                                description="Define the weightage of this task."
+                                placeholder="0 - 10"
+                                name="task_weightage"
+                                type='number'
+                                value={formData.task_weightage}
+                                onChange={handleChange}
+                                error={errors.task_weightage}
+                            />
+
+                            {/* PM Category */}
+                            <div className="flex flex-col mb-8">
+                                <label className='mb-2 text-sm font-medium text-gray-900'>
+                                    PM Category
+                                </label>
+
+                                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                    Define the category of the product. (for PM Management purpose)
+                                </span>
+
+                                <Dropdown
+                                    options={dropdownOptions}
+                                    name="pm_category"
+                                    value={formData.pm_category}
                                     onChange={handleChange}
-                                    error={errors.internal_desc}
                                 />
                             </div>
                         </div>
                     </div>
 
+                    {/* Properties */}
                     <div className="card">
                         <div className="card-body">
                             {/* Header */}
@@ -561,220 +759,6 @@ function CreateProduct() {
                                     value={formData.depth}
                                     onChange={handleChange}
                                     error={errors.depth}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className='flex flex-col right-column flex-[5] gap-8'>
-                    {/* General */}
-                    <div className="card">
-                        <div className="card-body">
-                            <div className="flex flex-col">
-                                {/* Header */}
-                                <h1 className='text-xl mb-4 font-semibold text-gray-900'>General</h1>
-
-                                {/* Product Name */}
-                                <InputFieldGroup
-                                    fieldTitle="Product Name"
-                                    description="A product name is required and recommended to be unique."
-                                    placeholder="Product name"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    error={errors.name}
-                                />
-
-                                {/* Description */}
-                                <InputFieldGroup
-                                    fieldTitle="Description"
-                                    description="Add any additional comments or notes about the product here"
-                                    placeholder="Text..."
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleChange}
-                                />
-
-                                {/* Internal Description */}
-                                <InputFieldGroup
-                                    fieldTitle="Internal Description"
-                                    description="Add comment for internal reference. (Not visible to public)"
-                                    placeholder="Text..."
-                                    name="internal_desc"
-                                    type='text'
-                                    value={formData.internal_desc}
-                                    onChange={handleChange}
-                                    error={errors.internal_desc}
-                                />
-
-                                {/* SKU */}
-                                <InputFieldGroup
-                                    fieldTitle="SKU"
-                                    description="Unique code for tracking this product in inventory"
-                                    placeholder="SKU"
-                                    name="SKU"
-                                    value={formData.SKU}
-                                    onChange={handleChange}
-                                    error={errors.SKU}
-                                />
-
-                                {/* Type */}
-                                <div className="flex flex-col mb-8">
-                                    <label className='mb-2 text-sm font-medium text-gray-900'>
-                                        Product Type
-                                    </label>
-
-                                    <span className="text-xs text-gray-600 tracking-wide mb-2">
-                                        Select the type of product: <strong>Service</strong> for tasks or benefits, and <strong>Component</strong> for physical parts.
-                                    </span>
-
-                                    <Dropdown
-                                        options={[
-                                            { value: "service", label: "Renovation" },
-                                            { value: "Carpentry", label: "Carpentry" },
-                                            { value: "Furniture", label: "Furniture" },
-                                            { value: "electrical_appliances", label: "Electrical Appliances" },
-                                            { value: "iot", label: "IOT" },
-                                            { value: "project_Mmnagement", label: "Project Management" },
-                                            { value: "loose_items", label: "Loose Items" },
-                                        ]}
-                                        name="type"
-                                        value={formData.type}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-
-                                {/* Category */}
-                                <div className="flex flex-col mb-8">
-                                    <label className='mb-2 text-sm font-medium text-gray-900'>
-                                        PM Category
-                                    </label>
-
-                                    <span className="text-xs text-gray-600 tracking-wide mb-2">
-                                        Define the category of the product. (for PM Management purpose)
-                                    </span>
-
-                                    <Dropdown
-                                        options={dropdownOptions}
-                                        name="pm_category"
-                                        value={formData.pm_category}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Pricing */}
-                    <div className="card">
-                        <div className="card-body">
-                            {/* Header */}
-                            <h1 className='text-2xl mb-4 font-semibold text-gray-900'>Pricing</h1>
-                            <div className="flex gap-12">
-                                <div className="flex flex-col flex-1">
-                                    {/* Retail Price */}
-                                    <InputFieldGroup
-                                        fieldTitle="UOM"
-                                        description="Unit of Measurement of the product"
-                                        placeholder="measurement"
-                                        type="text"
-                                        name="uom"
-                                        value={formData.uom}
-                                        onChange={handleChange}
-                                        error={errors.uom}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-4">
-                        <div className="card flex lg:flex-1 md:flex-auto">
-                            <div className="card-body">
-                                <div className="flex flex-col mb-4">
-                                    <h1 className='text-2xl font-semibold text-gray-900 mb-2'>Supply</h1>
-                                    <span className='text-xs text-gray-600 tracking-wide'>The costs for the product supply</span>
-                                </div>
-
-                                {/* Retail Price */}
-                                <InputFieldGroup
-                                    fieldTitle="Retail Price"
-                                    description="This is the price at which the product will be sold to customers"
-                                    placeholder="Retail Price"
-                                    type="number"
-                                    name="provisioning.supply.retail_price"
-                                    value={formData.provisioning.supply.retail_price}
-                                    onChange={handleChange}
-                                    error={errors.supply_retail_price}
-                                />
-
-                                {/* Cost of Good */}
-                                <InputFieldGroup
-                                    fieldTitle="Cost of Good Sold"
-                                    description="This includes all costs directly tied to the production of the product"
-                                    placeholder="Cost of Good Sold"
-                                    type="number"
-                                    name="provisioning.supply.cogs"
-                                    value={formData.provisioning.supply.cogs}
-                                    onChange={handleChange}
-                                    error={errors.supply_cogs}
-                                />
-
-                                {/* Excluded Price */}
-                                <InputFieldGroup
-                                    fieldTitle="Excluded Price"
-                                    description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
-                                    placeholder="Excluded Price"
-                                    type="number"
-                                    name="provisioning.supply.excluded_price"
-                                    value={formData.provisioning.supply.excluded_price}
-                                    onChange={handleChange}
-                                    error={errors.supply_excluded_price}
-                                />
-                            </div>
-                        </div>
-                        <div className="card flex lg:flex-1 md:flex-auto">
-                            <div className="card-body">
-                                <div className="flex flex-col mb-4">
-                                    <h1 className='text-2xl font-semibold text-gray-900 mb-2'>Install</h1>
-                                    <span className='text-xs text-gray-600 tracking-wide'>The installation cost for the product</span>
-                                </div>
-
-                                {/* Retail Price */}
-                                <InputFieldGroup
-                                    fieldTitle="Retail Price"
-                                    description="This is the price at which the product will be sold to customers"
-                                    placeholder="Retail Price"
-                                    type="number"
-                                    name="provisioning.install.retail_price"
-                                    value={formData.provisioning.install.retail_price}
-                                    onChange={handleChange}
-                                    error={errors.install_retail_price}
-                                />
-
-                                {/* Cost of Good */}
-                                <InputFieldGroup
-                                    fieldTitle="Cost of Good Sold"
-                                    description="This includes all costs directly tied to the production of the product"
-                                    placeholder="Cost of Good Sold"
-                                    type="number"
-                                    name="provisioning.install.cogs"
-                                    value={formData.provisioning.install.cogs}
-                                    onChange={handleChange}
-                                    error={errors.install_cogs}
-                                />
-
-                                {/* Excluded Price */}
-                                <InputFieldGroup
-                                    fieldTitle="Excluded Price"
-                                    description="Enter the price that will be deducted when the selected product is excluded from a package in quotation"
-                                    placeholder="Excluded Price"
-                                    type="number"
-                                    name="provisioning.install.excluded_price"
-                                    value={formData.provisioning.install.excluded_price}
-                                    onChange={handleChange}
-                                    error={errors.install_excluded_price}
                                 />
                             </div>
                         </div>

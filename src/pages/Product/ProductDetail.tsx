@@ -270,7 +270,7 @@ function ProductDetail() {
                                             Product Type:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
+                                            {product.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                         </td>
                                     </tr>
                                     <tr>

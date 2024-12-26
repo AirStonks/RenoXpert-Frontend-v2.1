@@ -57,7 +57,7 @@ export const retrieveRenoProgresses = async () => {
 
 export const fetchRenoProgressDetail = async (renoProgressId: number) => {
     try {
-        const response = await axios.get(API_URL + `op/reno/progress/${renoProgressId}/properties`, {
+        const response = await axios.get(API_URL + `op/reno/progress/${renoProgressId}`, {
             headers: getAuthHeaders(),
         });
         return response.data; // Return product data

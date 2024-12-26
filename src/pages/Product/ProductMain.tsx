@@ -133,7 +133,7 @@ function ProductMain() {
             const response = await removeProduct(productId);
 
             if (response?.success) {
-                initProductTable(page, size);
+                initProductTable(1, 10, null);
                 return { success: true };
             }
             return { success: false };
@@ -330,7 +330,7 @@ function ProductMain() {
                                                 </div>
                                             </td>
                                             <td className='text-center capitalize'>{product.pm_category}</td>
-                                            <td className='text-center capitalize'>{product.type}</td>
+                                            <td className='text-center capitalize'>{product.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</td>
                                             <td className='text-center'>{product.task_weightage}</td>
                                             <td className='text-center'>{product.updated_by ? product.updated_by.name : '-'}</td>
                                             <td className='text-center'>{product.updated_at}</td>
