@@ -197,7 +197,7 @@ const EditProduct: React.FC = () => {
                                             description="A product name is required and recommended to be unique."
                                             placeholder="Product name"
                                             name="name"
-                                            value={formData.name}
+                                            value={formData?.name}
                                             onChange={handleChange}
                                             error={errors.name}
                                         />
@@ -215,7 +215,7 @@ const EditProduct: React.FC = () => {
                                                 name="description"
                                                 placeholder="Text"
                                                 rows={6}
-                                                value={formData.description || ''} // Use value instead of children
+                                                value={formData?.description || ''} // Use value instead of children
                                                 onChange={(e) => handleChange(e)} // Handle change for updating formData
                                             />
                                         </div>
@@ -233,7 +233,7 @@ const EditProduct: React.FC = () => {
                                                 name="internal_desc"
                                                 placeholder="Text"
                                                 rows={6}
-                                                value={formData.internal_desc || ''} // Use value instead of children
+                                                value={formData?.internal_desc || ''} // Use value instead of children
                                                 onChange={(e) => handleChange(e)} // Handle change for updating formData
                                             />
                                         </div>
@@ -246,7 +246,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="measurement"
                                             type="text"
                                             name="uom"
-                                            value={formData.uom}
+                                            value={formData?.uom}
                                             onChange={handleChange}
                                             error={errors.uom}
                                         />
@@ -272,7 +272,7 @@ const EditProduct: React.FC = () => {
                                                     { value: "loose_items", label: "Loose Items" },
                                                 ]}
                                                 name="type"
-                                                value={formData.type}
+                                                value={formData?.type}
                                                 onChange={handleChange}
                                             />
                                         </div>
@@ -326,7 +326,7 @@ const EditProduct: React.FC = () => {
                                                     placeholder="Retail Price"
                                                     type="number"
                                                     name="provisioning.supply.retail_price"
-                                                    value={formData.provisioning.supply.retail_price}
+                                                    value={formData?.provisioning.supply.retail_price}
                                                     onChange={handleChange}
                                                     error={errors.supply_retail_price}
                                                 />
@@ -338,7 +338,7 @@ const EditProduct: React.FC = () => {
                                                     placeholder="Cost of Good Sold"
                                                     type="number"
                                                     name="provisioning.supply.cogs"
-                                                    value={formData.provisioning.supply.cogs}
+                                                    value={formData?.provisioning.supply.cogs}
                                                     onChange={handleChange}
                                                     error={errors.supply_cogs}
                                                 />
@@ -350,7 +350,7 @@ const EditProduct: React.FC = () => {
                                                     placeholder="Excluded Price"
                                                     type="number"
                                                     name="provisioning.supply.excluded_price"
-                                                    value={formData.provisioning.supply.excluded_price}
+                                                    value={formData?.provisioning.supply.excluded_price}
                                                     onChange={handleChange}
                                                     error={errors.supply_excluded_price}
                                                 />
@@ -370,7 +370,7 @@ const EditProduct: React.FC = () => {
                                                     placeholder="Retail Price"
                                                     type="number"
                                                     name="provisioning.install.retail_price"
-                                                    value={formData.provisioning.install.retail_price}
+                                                    value={formData?.provisioning.install.retail_price}
                                                     onChange={handleChange}
                                                     error={errors.install_retail_price}
                                                 />
@@ -382,7 +382,7 @@ const EditProduct: React.FC = () => {
                                                     placeholder="Cost of Good Sold"
                                                     type="number"
                                                     name="provisioning.install.cogs"
-                                                    value={formData.provisioning.install.cogs}
+                                                    value={formData?.provisioning.install.cogs}
                                                     onChange={handleChange}
                                                     error={errors.install_cogs}
                                                 />
@@ -394,7 +394,7 @@ const EditProduct: React.FC = () => {
                                                     placeholder="Excluded Price"
                                                     type="number"
                                                     name="provisioning.install.excluded_price"
-                                                    value={formData.provisioning.install.excluded_price}
+                                                    value={formData?.provisioning.install.excluded_price}
                                                     onChange={handleChange}
                                                     error={errors.install_excluded_price}
                                                 />
@@ -417,7 +417,7 @@ const EditProduct: React.FC = () => {
                                         placeholder="0 - 10"
                                         name="task_weightage"
                                         type='number'
-                                        value={formData.task_weightage}
+                                        value={formData?.task_weightage}
                                         onChange={handleChange}
                                         error={errors.task_weightage}
                                     />
@@ -435,7 +435,7 @@ const EditProduct: React.FC = () => {
                                         <Dropdown
                                             options={dropdownOptions}
                                             name="pm_category"
-                                            value={formData.pm_category}
+                                            value={formData?.pm_category}
                                             onChange={handleChange}
                                         />
                                     </div>
@@ -455,7 +455,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="color"
                                             name="color"
                                             type='text'
-                                            value={formData.color}
+                                            value={formData?.color}
                                             onChange={handleChange}
                                             error={errors.color}
                                         />
@@ -466,7 +466,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="material"
                                             name="material"
                                             type='text'
-                                            value={formData.material}
+                                            value={formData?.material}
                                             onChange={handleChange}
                                             error={errors.material}
                                         />
@@ -477,7 +477,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="width"
                                             name="width"
                                             type='text'
-                                            value={formData.width}
+                                            value={formData?.width}
                                             onChange={handleChange}
                                             error={errors.width}
                                         />
@@ -488,7 +488,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="height"
                                             name="height"
                                             type='text'
-                                            value={formData.height}
+                                            value={formData?.height}
                                             onChange={handleChange}
                                             error={errors.height}
                                         />
@@ -499,7 +499,7 @@ const EditProduct: React.FC = () => {
                                             placeholder="depth"
                                             name="depth"
                                             type='text'
-                                            value={formData.depth}
+                                            value={formData?.depth}
                                             onChange={handleChange}
                                             error={errors.depth}
                                         />
