@@ -24,7 +24,7 @@ interface UploadedThumbnail {
 const initProductData: Product = {
     name: '',
     SKU: '',
-    type: 'service',
+    type: 'renovation',
     description: '',
     pm_category: '1',
     uom: '',
