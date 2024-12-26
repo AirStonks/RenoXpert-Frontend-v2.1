@@ -186,58 +186,63 @@ function InventoryMain() {
                             </thead>
                             <tbody className="text-xs">
                                 {inventories.length > 0 ? (
-                                    inventories.map((inventory, invIndex) => (
-                                        <tr
-                                            key={invIndex}
-                                            className={`${invIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
-                                        >
-                                            <td>
-                                                <div className="flex flex-col">
-                                                    <span>
-                                                        {inventory.product.name}
-                                                    </span>
-                                                    <span className="text-2xs text-gray-600">
-                                                        SKU: {inventory.product.SKU ? inventory.product.SKU : 'N/A'}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                {inventory.current_stock + inventory.coming_stock + inventory.utilized_stock}
-                                            </td>
-                                            <td className='text-center'>
-                                                {inventory.current_stock}
-                                            </td>
-                                            <td className='text-center'>
-                                                {inventory.coming_stock}
-                                            </td>
-                                            <td className='text-center'>
-                                                {inventory.current_stock + inventory.coming_stock}
-                                            </td>
-                                            <td className='text-center'>
-                                                {inventory.total_required_stock}
-                                            </td>
-                                            <td className='text-center'>
-                                                {inventory.utilized_stock}
-                                            </td>
-                                            <td className='text-center'>
-                                                {inventory.required_stock}
-                                            </td>
-                                            <td className='text-center'>
-                                                {inventory.current_balance}
-                                            </td>
-                                            <td className='text-center'>
-                                                {inventory.total_balance}
-                                            </td>
-                                            <td className='text-center'>
-                                                <Link
-                                                    to={`/inventory/${inventory.id}`}
-                                                    className="btn btn-sm btn-outline btn-primary"
-                                                >
-                                                    View
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    ))
+                                    inventories.map((inventory, invIndex) => {
+
+                                        console.log(inventory);
+                                        
+                                        return (
+                                            <tr
+                                                key={invIndex}
+                                                className={`${invIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
+                                            >
+                                                <td>
+                                                    <div className="flex flex-col">
+                                                        <span>
+                                                            {inventory.product.name}
+                                                        </span>
+                                                        <span className="text-2xs text-gray-600">
+                                                            SKU: {inventory.product.SKU ? inventory.product.SKU : 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className='text-center'>
+                                                    {inventory.current_stock + inventory.coming_stock + inventory.utilized_stock}
+                                                </td>
+                                                <td className='text-center'>
+                                                    {inventory.current_stock}
+                                                </td>
+                                                <td className='text-center'>
+                                                    {inventory.coming_stock}
+                                                </td>
+                                                <td className='text-center'>
+                                                    {inventory.current_stock + inventory.coming_stock}
+                                                </td>
+                                                <td className='text-center'>
+                                                    {inventory.total_required_stock}
+                                                </td>
+                                                <td className='text-center'>
+                                                    {inventory.utilized_stock}
+                                                </td>
+                                                <td className='text-center'>
+                                                    {inventory.required_stock}
+                                                </td>
+                                                <td className='text-center'>
+                                                    {inventory.current_balance}
+                                                </td>
+                                                <td className='text-center'>
+                                                    {inventory.total_balance}
+                                                </td>
+                                                <td className='text-center'>
+                                                    <Link
+                                                        to={`/inventory/${inventory.id}`}
+                                                        className="btn btn-sm btn-outline btn-primary"
+                                                    >
+                                                        View
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })
                                 ) : (
                                     <tr>
                                         <td colSpan={11} className="text-center text-gray-500">

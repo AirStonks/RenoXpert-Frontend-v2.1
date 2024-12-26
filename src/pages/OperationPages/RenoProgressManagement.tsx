@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import Header from "./components/Header";
-import { fetchRenoProgress } from "../../services/api";
 import { JobTask, PhaseJob, RenoProgress } from "../../types";
 import { KTAccordion } from "../../metronic/core";
 import Loading from "../../components/Loading";
 import { Slide, toast } from "react-toastify";
-import { changeTaskStatus, fetchTaskDocuments, removeTaskDocument, updateSelectedTaskComments, uploadTaskDocuments } from "../../services/operationApi";
+import { changeTaskStatus, fetchRenoProgressDetail, fetchTaskDocuments, removeTaskDocument, updateSelectedTaskComments, uploadTaskDocuments } from "../../services/operationApi";
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -58,7 +57,7 @@ function RenoProgressManagement() {
         setLoading(true);
 
         try {
-            const response = await fetchRenoProgress(renoProgressId);
+            const response = await fetchRenoProgressDetail(renoProgressId);
 
             if (response?.success) {
                 setRenoProgress(response.data);
@@ -375,10 +374,15 @@ function RenoProgressManagement() {
                         <span className="text-sm text-gray-600 items-center">Quick access to the forms.</span>
                     </div>
                     <div className="flex gap-3">
-                        <button className="btn btn-info btn-sm">
+                        <Link
+                            to={`/reno/defect-inspection-form?progressId=${renoProgressId}`}
+                            className="btn btn-info btn-sm"
+                        >
                             DI Form
-                        </button>
-                        <button className="btn btn-info btn-sm">
+                        </Link>
+                        <button
+                            className="btn btn-info btn-sm"
+                        >
                             QC Form
                         </button>
                     </div>
@@ -500,7 +504,7 @@ function RenoProgressManagement() {
                                                                                         </div>
                                                                                         <div className="flex mb-2 items-center gap-2">
                                                                                             <span className="text-xs text-gray-500 font-semibold">Status: </span>
-                                                                                            <span className="text-xs text-gray-500 font-semibold">{task.status.charAt(0).toUpperCase() + task.status.slice(1).replace(/_/g, ' ')}</span>
+                                                                                            <span className="text-xs text-gray-500 font-semibold">{task.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</span>
                                                                                         </div>
                                                                                         <div className="flex items-center gap-2">
                                                                                             {task.is_defect_form || task.is_qc_form ?
