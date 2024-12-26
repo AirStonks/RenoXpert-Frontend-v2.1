@@ -38,20 +38,20 @@ function CreatePackage() {
         localStorage.removeItem('include_prod_selected_products');
         navigate('/packages');
     };
-+
-    useEffect(() => {
-        document.title = "Create Package | RenoXpert";
+    +
+        useEffect(() => {
+            document.title = "Create Package | RenoXpert";
 
-        const storedProducts = localStorage.getItem('include_prod_selected_products');
-        if (storedProducts) {
-            const parsedProducts = JSON.parse(storedProducts);
+            const storedProducts = localStorage.getItem('include_prod_selected_products');
+            if (storedProducts) {
+                const parsedProducts = JSON.parse(storedProducts);
 
-            setSelectedProducts(parsedProducts);
+                setSelectedProducts(parsedProducts);
 
-            const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
-            setTotalPrice(initialTotalPrice);
-        }
-    }, []);
+                const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+                setTotalPrice(initialTotalPrice);
+            }
+        }, []);
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -272,17 +272,12 @@ function CreatePackage() {
                                 error={validationErrors.description}
                             />
 
-                        </div>
-                    </div>
-
-                    {/* <div className="card bg-slate-50">
-                        <div className="card-body">
                             <div className="flex flex-col mb-8">
                                 <label className='mb-2 text-sm font-medium text-gray-900'>
-                                    Description <span className='text-slate-500'>(Internal)</span>
+                                    Internal Description
                                 </label>
                                 <span className="text-xs text-gray-600 tracking-wide mb-2">
-                                    Note down the remark for internal reference. (Not public in owner view quotation)
+                                    Add description for internal reference. (Not visible to public)
                                 </span>
 
                                 <textarea
@@ -290,13 +285,14 @@ function CreatePackage() {
                                     placeholder="This description will not visible on owner view"
                                     name='description_internal'
                                     rows={6}
-                                    value={formData.description_internal}
+                                    value={formData.description_internal || ''}
                                     onChange={handleChange}
                                 >
                                 </textarea>
                             </div>
+
                         </div>
-                    </div> */}
+                    </div>
                 </div>
 
                 <div className='flex flex-col right-column flex-[7] gap-8'>

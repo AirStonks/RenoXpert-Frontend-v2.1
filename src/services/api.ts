@@ -412,7 +412,7 @@ export const fetchPackage = async (packageId: number) => {
     }
 };
 
-export const updatePackage = async (packageData: Product) => {
+export const updatePackage = async (packageData: Package) => {
     try {
         const response = await axios.put(API_URL + `packages/${packageData.id}`, packageData, {
             headers: {

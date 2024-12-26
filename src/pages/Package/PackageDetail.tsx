@@ -89,26 +89,18 @@ function PackageDetail() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Type:
+                                            Description:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            -
+                                            {packageDetail.description}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Last Order:
+                                            Internal Description:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            -
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Signed Up:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            -
+                                            {packageDetail.description_internal}
                                         </td>
                                     </tr>
                                 </tbody>
