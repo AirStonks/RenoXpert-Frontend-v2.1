@@ -61,7 +61,7 @@ const EditProduct: React.FC = () => {
     }, [product]);
 
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
         if (name.startsWith('provisioning.supply')) {
@@ -215,10 +215,9 @@ const EditProduct: React.FC = () => {
                                                 name="description"
                                                 placeholder="Text"
                                                 rows={6}
-                                                onChange={(e) => handleChange(e)}
-                                            >
-                                                {formData.description}
-                                            </textarea>
+                                                value={formData.description} // Use value instead of children
+                                                onChange={(e) => handleChange(e)} // Handle change for updating formData
+                                            />
                                         </div>
 
                                         {/* Internal Description */}
@@ -234,11 +233,11 @@ const EditProduct: React.FC = () => {
                                                 name="internal_desc"
                                                 placeholder="Text"
                                                 rows={6}
-                                                onChange={(e) => handleChange(e)}
-                                            >
-                                                {formData.internal_desc}
-                                            </textarea>
+                                                value={formData.internal_desc} // Use value instead of children
+                                                onChange={(e) => handleChange(e)} // Handle change for updating formData
+                                            />
                                         </div>
+
 
                                         {/* UOM */}
                                         <InputFieldGroup
