@@ -636,7 +636,7 @@ function CreateProduct() {
                                             { value: "furniture", label: "Furniture" },
                                             { value: "electrical_appliances", label: "Electrical Appliances" },
                                             { value: "iot", label: "IOT" },
-                                            { value: "project_Mmnagement", label: "Project Management" },
+                                            { value: "project_management", label: "Project Management" },
                                             { value: "loose_items", label: "Loose Items" },
                                         ]}
                                         name="type"
