@@ -101,6 +101,7 @@ function CreatePackage() {
                 newProducts = parsedProducts.map((item: any) => ({
                     id: item.id,
                     name: item.name,
+                    SKU: item.SKU,
                     quantity: item.quantity,
                     visibility: item.visibility,
                     // product_retail_price: parseFloat(item.product_retail_price),
@@ -334,6 +335,7 @@ function CreatePackage() {
                                                             <td>
                                                                 <div className="flex flex-col">
                                                                     <span>{product.name}</span>
+                                                                    <span className="text-xs text-slate-400 font-semibold">SKU: {product.SKU || '-'}</span>
                                                                     <span className="text-xs text-slate-400">{product.description}</span>
                                                                 </div>
                                                             </td>

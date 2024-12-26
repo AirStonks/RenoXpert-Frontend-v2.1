@@ -155,6 +155,7 @@ function IncludeProductModal({
         if (selectBtn) {
             const id = selectBtn.dataset.id;
             const productName = selectBtn.dataset.name;
+            const SKU = selectBtn.dataset.sku;
             const productPrice = parseFloat(selectBtn.dataset.price);
             const productDescription = selectBtn.dataset.desc;
 
@@ -180,6 +181,7 @@ function IncludeProductModal({
                 selectedProducts.push({
                     id: Number(id),
                     name: productName,
+                    SKU: SKU,
                     quantity: 1,
                     visibility: true,
                     price: productPrice,
@@ -281,6 +283,7 @@ function IncludeProductModal({
                                                             className={`btn ${buttonClass} btn-sm`}
                                                             data-action={action}
                                                             data-id={product.id}
+                                                            data-sku={product.SKU}
                                                             data-price={product.provisioning.supply.retail_price + product.provisioning.install.retail_price}
                                                             data-name={product.name}
                                                             data-desc={product.description}

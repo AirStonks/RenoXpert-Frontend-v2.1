@@ -129,7 +129,6 @@ function PackageDetail() {
                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                 <thead>
                                     <tr>
-                                        <th className='w-[20px]'>ID</th>
                                         <th className='w-[250px]'>Product</th>
                                         <th className='w-[50px] text-center'>Quantity</th>
                                         <th className='w-[100px] text-center'>Visibility</th>
@@ -142,12 +141,8 @@ function PackageDetail() {
                                         <tr key={index}>
                                             <td>
                                                 <div className="flex flex-col">
-                                                    <span>{product.id}</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div className="flex flex-col">
                                                     <span>{product.name}</span>
+                                                    <span className="text-xs text-slate-400 font-semibold">SKU: {product.SKU || '-'}</span>
                                                     <span className="text-xs text-slate-400">{product.description}</span>
                                                 </div>
                                             </td>
