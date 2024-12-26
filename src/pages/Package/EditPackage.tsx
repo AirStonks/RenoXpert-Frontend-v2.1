@@ -61,10 +61,11 @@ function EditPackage() {
 
             const selectedProducts = [];
 
-            packageDetail.products.forEach(({ id, name, pivot, provisioning, description }) => {
+            packageDetail.products.forEach(({ id, name, SKU, pivot, provisioning, description }) => {
                 selectedProducts.push({
                     id,
                     name,
+                    SKU,
                     quantity: pivot.quantity,
                     visibility: pivot.visibility,
                     price: provisioning.install.retail_price + provisioning.supply.retail_price,
@@ -400,6 +401,7 @@ function EditPackage() {
                                                             <td>
                                                                 <div className="flex flex-col">
                                                                     <span>{product.name}</span>
+                                                                    <span className="text-xs text-slate-400 font-semibold">SKU: {product.SKU || '-'}</span>
                                                                     <span className="text-xs text-slate-400">{product.description}</span>
                                                                 </div>
                                                             </td>
