@@ -275,27 +275,6 @@ const EditProduct: React.FC = () => {
                             <div className="card">
                                 <div className="card-body">
                                     {/* Header */}
-                                    <h1 className='text-xl mb-4 font-semibold text-gray-900'>Internal</h1>
-
-                                    {/* Task Weightage */}
-                                    <div className="flex flex-col">
-                                        <InputFieldGroup
-                                            fieldTitle="Internal Description"
-                                            description="Add comment for internal reference. (Not visible to public)"
-                                            placeholder="Text..."
-                                            name="internal_desc"
-                                            type='text'
-                                            value={formData?.internal_desc}
-                                            onChange={handleChange}
-                                            error={errors.internal_desc}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="card">
-                                <div className="card-body">
-                                    {/* Header */}
                                     <h1 className='text-xl mb-4 font-semibold text-gray-900'>Properties</h1>
 
                                     <div className="flex flex-col">
@@ -377,6 +356,28 @@ const EditProduct: React.FC = () => {
                                             error={errors.name}
                                         />
 
+                                        {/* Description */}
+                                        <InputFieldGroup
+                                            fieldTitle="Description"
+                                            description="Add any additional comments or notes about the product here"
+                                            placeholder="Text..."
+                                            name="description"
+                                            value={formData?.description}
+                                            onChange={handleChange}
+                                        />
+
+                                        {/* Internal Description */}
+                                        <InputFieldGroup
+                                            fieldTitle="Internal Description"
+                                            description="Add comment for internal reference. (Not visible to public)"
+                                            placeholder="Text..."
+                                            name="internal_desc"
+                                            type='text'
+                                            value={formData?.internal_desc}
+                                            onChange={handleChange}
+                                            error={errors.internal_desc}
+                                        />
+
                                         {/* SKU */}
                                         <InputFieldGroup
                                             fieldTitle="SKU"
@@ -431,16 +432,6 @@ const EditProduct: React.FC = () => {
                                                 onChange={handleChange}
                                             />
                                         </div>
-
-                                        {/* Remark */}
-                                        <InputFieldGroup
-                                            fieldTitle="Description"
-                                            description="Add any additional comments or notes about the product here"
-                                            placeholder="Text..."
-                                            name="description"
-                                            value={formData?.description}
-                                            onChange={handleChange}
-                                        />
                                     </div>
                                 </div>
                             </div>
