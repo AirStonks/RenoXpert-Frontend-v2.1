@@ -401,7 +401,7 @@ const EditProduct: React.FC = () => {
 
                                             <Dropdown
                                                 options={[
-                                                    { value: "service", label: "Renovation" },
+                                                    { value: "renovation", label: "Renovation" },
                                                     { value: "Carpentry", label: "Carpentry" },
                                                     { value: "Furniture", label: "Furniture" },
                                                     { value: "electrical_appliances", label: "Electrical Appliances" },
