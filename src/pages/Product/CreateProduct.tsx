@@ -631,9 +631,9 @@ function CreateProduct() {
 
                                     <Dropdown
                                         options={[
-                                            { value: "service", label: "Renovation" },
-                                            { value: "Carpentry", label: "Carpentry" },
-                                            { value: "Furniture", label: "Furniture" },
+                                            { value: "renovation", label: "Renovation" },
+                                            { value: "carpentry", label: "Carpentry" },
+                                            { value: "furniture", label: "Furniture" },
                                             { value: "electrical_appliances", label: "Electrical Appliances" },
                                             { value: "iot", label: "IOT" },
                                             { value: "project_Mmnagement", label: "Project Management" },
