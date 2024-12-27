@@ -40,6 +40,15 @@ function PackageDetail() {
                         Package Detail
                     </span>
                 </div>
+                <div className="flex">
+                    <Link
+                        to={'/packages/edit/' + packageId}
+                        className="btn btn-info btn-sm"
+                    >
+                        <i className="ki-outline ki-notepad-edit"></i>
+                        Edit
+                    </Link>
+                </div>
             </div>
             <div className="flex flex-wrap gap-8 mb-8">
                 <div className="left-column flex flex-col flex-[3] gap-8">
@@ -48,15 +57,6 @@ function PackageDetail() {
                             <h3 className="card-title">
                                 General Info
                             </h3>
-
-                            <Link
-                                to={'/packages/edit/' + packageId}
-                                className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                data-tooltip="#edit_tooltip"
-                                data-action="edit"
-                            >
-                                <i className="ki-outline ki-notepad-edit"></i>
-                            </Link>
                         </div>
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
@@ -115,15 +115,6 @@ function PackageDetail() {
                             <h3 className="card-title">
                                 Products
                             </h3>
-
-                            <Link
-                                to={'/packages/edit/' + packageId}
-                                className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                data-tooltip="#edit_tooltip"
-                                data-action="edit"
-                            >
-                                <i className="ki-outline ki-notepad-edit"></i>
-                            </Link>
                         </div>
                         <div className="card-table pb-3.5">
                             <table className="table align-middle text-gray-700 font-medium text-sm">

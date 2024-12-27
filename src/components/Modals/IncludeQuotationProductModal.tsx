@@ -30,7 +30,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
 
     }, [page, size, searchTerm, sortOrder, sortField]);
 
-    
+
     const initProductTable = async (
         page: number,
         size: number,
@@ -92,6 +92,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
             const prodId = selectBtn.dataset.id;
             const packId = selectBtn.dataset.packid;
             const productName = selectBtn.dataset.name;
+            const SKU = selectBtn.dataset.sku;
             const productPrice = parseFloat(selectBtn.dataset.price);
             const productDescription = selectBtn.dataset.desc;
 
@@ -147,6 +148,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                     selectedProducts.push({
                         id: Number(prodId),
                         name: productName,
+                        SKU: SKU,
                         quantity: 1,
                         price: productPrice,
                         description: productDescription
@@ -279,7 +281,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                         })();
 
                                         console.log(selectedProducts);
-                                        
+
 
                                         // Check if the current product is selected
                                         const isSelected = selectedProducts.some(prod => prod.id === product.id);
@@ -305,6 +307,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                                 <td>
                                                     <div className="flex flex-col">
                                                         <span>{product.name}</span>
+                                                        <span className="text-xs text-slate-500 font-semibold">SKU: {product.SKU || '-'}</span>
                                                         <span className="text-xs text-slate-400">{product.description || ''}</span>
                                                     </div>
                                                 </td>
@@ -323,6 +326,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                                                 data-action={action}
                                                                 data-id={product.id}
                                                                 data-packId={selectedPackageId}
+                                                                data-sku={product.SKU}
                                                                 data-price={product.provisioning.supply.retail_price + product.provisioning.install.retail_price}
                                                                 data-name={product.name}
                                                                 data-desc={product.description}

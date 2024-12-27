@@ -202,7 +202,8 @@ function ProductDetail() {
                         to={'/products/edit/' + productId}
                         className="btn btn-info btn-sm"
                     >
-                        Edit Product
+                        <i className="ki-outline ki-notepad-edit"></i>
+                        Edit
                     </Link>
                 </div>
             </div>

@@ -178,6 +178,10 @@ function QuotationMain() {
                                     <th className='w-[150px] text-center'>Name</th>
                                     <th className='w-[300px] text-center'>Description</th>
                                     <th className='w-[110px] text-center'>Total Amount</th>
+                                    <th className='w-[80px] text-center'>Created By</th>
+                                    <th className='w-[80px] text-center'>Created Date</th>
+                                    <th className='w-[80px] text-center'>Updated By</th>
+                                    <th className='w-[80px] text-center'>Updated Date</th>
                                     <th className='w-[110px] text-center'>Action</th>
                                 </tr>
                             </thead>
@@ -201,6 +205,18 @@ function QuotationMain() {
                                             </td>
                                             <td className='text-center'>
                                                 RM {quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td className='text-center'>
+                                                {quotation.created_by ? quotation.created_by.name : '-'}
+                                            </td>
+                                            <td className='text-center'>
+                                                {quotation.created_at}
+                                            </td>
+                                            <td className='text-center'>
+                                                {quotation.updated_by ? quotation.updated_by.name : '-'}
+                                            </td>
+                                            <td className='text-center'>
+                                                {quotation.updated_at}
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
@@ -227,7 +243,7 @@ function QuotationMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="text-center text-gray-500">
+                                        <td colSpan={9} className="text-center text-gray-500">
                                             No quotations available
                                         </td>
                                     </tr>

@@ -170,10 +170,13 @@ function PackageMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[10px] text-center'>ID</th>
-                                    <th className='w-[150px] text-center'>Name</th>
-                                    <th className='w-[300px] text-center'>Description</th>
+                                    <th className='w-[200px] text-center'>Name</th>
+                                    <th className='w-[300px] text-center'>Internal Description</th>
                                     <th className='w-[110px] text-center'>Price</th>
+                                    <th className='w-[80px] text-center'>Created By</th>
+                                    <th className='w-[80px] text-center'>Created Date</th>
+                                    <th className='w-[80px] text-center'>Updated By</th>
+                                    <th className='w-[80px] text-center'>Updated Date</th>
                                     <th className='w-[110px] text-center'>Action</th>
                                 </tr>
                             </thead>
@@ -186,17 +189,27 @@ function PackageMain() {
                                         >
                                             <td>
                                                 <div className="flex flex-col">
-                                                    <span>{pkg.id}</span>
+                                                    <span>{pkg.name}</span>
+                                                    <span className="text-xs text-slate-400">{pkg.description || ''}</span>
                                                 </div>
                                             </td>
                                             <td>
-                                                {pkg.name}
-                                            </td>
-                                            <td>
-                                                {pkg.description}
+                                                {pkg.description_internal}
                                             </td>
                                             <td className='text-center'>
                                                 RM {pkg.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td className='text-center'>
+                                                {pkg.created_by ? pkg.created_by.name : '-'}
+                                            </td>
+                                            <td className='text-center'>
+                                                {pkg.created_at}
+                                            </td>
+                                            <td className='text-center'>
+                                                {pkg.updated_by ? pkg.updated_by.name : '-'}
+                                            </td>
+                                            <td className='text-center'>
+                                                {pkg.updated_at}
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
@@ -223,7 +236,7 @@ function PackageMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="text-center text-gray-500">
+                                        <td colSpan={8} className="text-center text-gray-500">
                                             No packages available
                                         </td>
                                     </tr>

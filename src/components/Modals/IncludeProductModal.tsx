@@ -267,6 +267,7 @@ function IncludeProductModal({
                                                 <td>
                                                     <div className="flex flex-col">
                                                         <span>{product.name}</span>
+                                                        <span className="text-xs text-slate-500 font-semibold">SKU: {product.SKU || '-'}</span>
                                                         <span className="text-xs text-slate-400">{product.description || ''}</span>
                                                     </div>
                                                 </td>
