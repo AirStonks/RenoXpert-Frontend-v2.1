@@ -211,7 +211,7 @@ function IncludeProductModal({
             {isLoading && <Loading />}
 
             <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="include_product_modal">
-                <div className="modal-content modal-center-y max-w-[800px]">
+                <div className="modal-content modal-center-y max-w-[900px]">
                     <div className="modal-header py-4 px-5">
                         <span className="text-lg text-gray-900 font-bold">Add Product into Package</span>
                         <button
