@@ -249,6 +249,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
             const packageName = selectBtn.dataset.name;
             const packagePrice = parseFloat(selectBtn.dataset.price);
             const packageDescription = selectBtn.dataset.desc;
+            const packageInternalDescription = selectBtn.dataset.int_desc;
 
             // Retrieve the current selected prodPackages from localStorage
             const storedPackages = localStorage.getItem('include_packages');
@@ -273,6 +274,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                     id: Number(id),
                     name: packageName,
                     description: packageDescription,
+                    description_internal: packageInternalDescription,
                     total_price: packagePrice,
                     products: selectedPackage.products
                 });
@@ -344,7 +346,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                                         <th className="text-center">
                                             <span className="sort">
                                                 <span className="sort-label">
-                                                    Packages Count
+                                                    Internal Description
                                                 </span>
                                             </span>
                                         </th>
@@ -383,7 +385,9 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                                                             <span className="text-xs text-slate-400">{pkg.description}</span>
                                                         </div>
                                                     </td>
-                                                    <td className='text-center capitalize'></td>
+                                                    <td>
+                                                        {pkg.description_internal}
+                                                    </td>
                                                     <td className='text-center'>
                                                         {`RM ${pkg.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                     </td>
@@ -397,6 +401,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                                                                 data-name={pkg.name}
                                                                 data-price={pkg.total_price}
                                                                 data-desc={pkg.description}
+                                                                data-int_desc={pkg.description_internal}
                                                                 onClick={(e) => handleSelectPackage(e.target)}
                                                             >
                                                                 {buttonText}

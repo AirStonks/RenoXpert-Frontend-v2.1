@@ -47,6 +47,15 @@ function QuotationDetail() {
                         Quotation Detail
                     </span>
                 </div>
+                <div className="flex">
+                    <Link
+                        to={`/quotations/edit/${quotationId}`}
+                        className="btn btn-info btn-sm"
+                    >
+                        <i className="ki-outline ki-notepad-edit"></i>
+                        Edit
+                    </Link>
+                </div>
             </div>
             <div className="flex flex-wrap gap-8 mb-8">
                 <div className="left-column flex flex-col flex-[3] gap-8">
@@ -55,17 +64,6 @@ function QuotationDetail() {
                             <h3 className="card-title">
                                 General Info
                             </h3>
-
-                            <Link
-                                to={`/quotations/edit/${quotationId}`}
-                                className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                data-tooltip="#edit_tooltip"
-                                data-action="edit"
-                                data-id={quotationId}
-                            // onClick={handleCloseModal}
-                            >
-                                <i className="ki-outline ki-notepad-edit"></i>
-                            </Link>
                         </div>
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
@@ -108,17 +106,6 @@ function QuotationDetail() {
                             <h3 className="card-title">
                                 Packages
                             </h3>
-
-                            <Link
-                                to={`/quotations/edit/${quotationId}`}
-                                className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                data-tooltip="#edit_tooltip"
-                                data-action="edit"
-                                data-id={quotationId}
-                            // onClick={handleCloseModal}
-                            >
-                                <i className="ki-outline ki-notepad-edit"></i>
-                            </Link>
                         </div>
 
                         <div className="flex flex-col gap-5 p-4" data-accordion="true">
@@ -133,8 +120,11 @@ function QuotationDetail() {
                                                 <span className='text-base text-slate-700'>
                                                     RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </span>
-                                                <span className='text-sm text-slate-400'>
-                                                    {prodPackage.description}
+                                                <span className='flex items-center gap-2 text-sm text-slate-400'>
+                                                    {prodPackage.description_internal && <>
+                                                        <i className="ki-filled ki-information-2 text-warning text-xl"></i>
+                                                        {prodPackage.description_internal}
+                                                    </>}
                                                 </span>
                                             </div>
                                             <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">

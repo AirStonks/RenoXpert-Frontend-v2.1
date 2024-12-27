@@ -118,6 +118,7 @@ function CreateQuotation() {
             id: pkg.id,
             name: pkg.name,
             description: pkg.description,
+            description_internal: pkg.description_internal,
             total_price: pkg.total_price,
             products: pkg.products.map((product: Product) => (product))
         }));
@@ -300,7 +301,7 @@ function CreateQuotation() {
     };
 
     const handleRemoveProduct = (prodId: number, packId: number) => {
-        
+
         setSelectedPackages((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage: Package) => {
                 if (Number(prodPackage.id) === packId) {
@@ -440,8 +441,11 @@ function CreateQuotation() {
                                                     <span className='text-base text-slate-700'>
                                                         RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </span>
-                                                    <span className='text-sm text-slate-400'>
-                                                        {prodPackage.description}
+                                                    <span className='flex items-center gap-2 text-sm text-slate-400'>
+                                                        {prodPackage.description_internal && <>
+                                                            <i className="ki-filled ki-information-2 text-warning text-xl"></i>
+                                                            {prodPackage.description_internal}
+                                                        </>}
                                                     </span>
                                                 </div>
                                                 <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">

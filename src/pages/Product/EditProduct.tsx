@@ -106,17 +106,18 @@ const EditProduct: React.FC = () => {
 
         if (!formData?.name) newErrors.name = "Name required";
         if (!formData?.uom) newErrors.uom = "UOM required";
-        if (formData?.provisioning.supply.retail_price < 0 || formData?.provisioning.supply.retail_price === '') newErrors.supply_retail_price = "Retail Price required";
-        if (formData?.provisioning.supply.cogs < 0 || formData?.provisioning.supply.cogs === '') newErrors.supply_cogs = "Cost of Good Sold required";
-        if (formData?.provisioning.supply.excluded_price < 0 || formData?.provisioning.supply.excluded_price === '') newErrors.supply_excluded_price = "Excluded Price required";
-        if (formData?.provisioning.install.retail_price < 0 || formData?.provisioning.install.retail_price === '') newErrors.install_retail_price = "Retail Price required";
-        if (formData?.provisioning.install.cogs < 0 || formData?.provisioning.install.cogs === '') newErrors.install_cogs = "Cost of Good Sold required";
-        if (formData?.provisioning.install.excluded_price < 0 || formData?.provisioning.install.excluded_price === '') newErrors.install_excluded_price = "Excluded Price required";
+        if ((formData?.provisioning.supply.retail_price < 0 || formData?.provisioning.supply.retail_price === '') && (formData?.type !== 'roundup')) newErrors.supply_retail_price = "Retail Price required";
+        if ((formData?.provisioning.supply.cogs < 0 || formData?.provisioning.supply.cogs === '') && (formData?.type !== 'roundup')) newErrors.supply_cogs = "Cost of Good Sold required";
+        if ((formData?.provisioning.supply.excluded_price < 0 || formData?.provisioning.supply.excluded_price === '') && (formData?.type !== 'roundup')) newErrors.supply_excluded_price = "Excluded Price required";
+        if ((formData?.provisioning.install.retail_price < 0 || formData?.provisioning.install.retail_price === '') && (formData?.type !== 'roundup')) newErrors.install_retail_price = "Retail Price required";
+        if ((formData?.provisioning.install.cogs < 0 || formData?.provisioning.install.cogs === '') && (formData?.type !== 'roundup')) newErrors.install_cogs = "Cost of Good Sold required";
+        if ((formData?.provisioning.install.excluded_price < 0 || formData?.provisioning.install.excluded_price === '') && (formData?.type !== 'roundup')) newErrors.install_excluded_price = "Excluded Price required";
 
         return newErrors;
     };
 
     const handleSubmit = async () => {
+        setErrors({});
         const validationErrors = validate();
 
         if (Object.keys(validationErrors).length > 0) {
@@ -270,6 +271,7 @@ const EditProduct: React.FC = () => {
                                                     { value: "iot", label: "IOT" },
                                                     { value: "project_management", label: "Project Management" },
                                                     { value: "loose_items", label: "Loose Items" },
+                                                    { value: "roundup", label: "Roundup" },
                                                 ]}
                                                 name="type"
                                                 value={formData?.type}

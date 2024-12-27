@@ -102,6 +102,10 @@ export interface Package {
     total_price?: number;
     products?: Product[];
     description_internal?: string;
+    created_by?: User;
+    updated_by?: User;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface Quotation {
@@ -113,6 +117,10 @@ export interface Quotation {
     valid_until?: string;
     metadata?: JSON;
     packages?: Package[];
+    created_by?: User;
+    updated_by?: User;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface Property {
