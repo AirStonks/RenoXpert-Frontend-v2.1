@@ -107,9 +107,6 @@ function ProgressMgnt() {
     const handleOwnerCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
         const { value } = e.target;
 
-        console.log(value);
-
-
         // More efficient state update
         setRenoProgress(prevRenoProgress => {
             const updatedPhases = prevRenoProgress.phases.map(phase => ({

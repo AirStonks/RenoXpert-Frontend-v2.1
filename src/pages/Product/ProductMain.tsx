@@ -1,6 +1,6 @@
 import Button from '../../components/Buttons/Button';
 import KTComponent from '../../metronic/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Product } from '../../types';
 import { productIndex, removeProduct } from '../../services/api';
 import DeleteModal from '../../components/Modals/DeleteModal';
@@ -19,6 +19,7 @@ type SortOrder = 'asc' | 'desc' | null;
 
 function ProductMain() {
     const navigate = useNavigate();
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [products, setProducts] = useState<Product[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -35,8 +36,8 @@ function ProductMain() {
     useEffect(() => {
         document.title = "Products | RenoXpert";
         KTComponent.init();
-        initProductTable(page, size, searchTerm, sortOrder, sortField);
-    }, [page, size, searchTerm, sortOrder, sortField]);
+        initProductTable(1, 10, '', null, '');
+    }, []);
 
     const initProductTable = async (
         page: number,
@@ -67,24 +68,35 @@ function ProductMain() {
         const value = event.target.value;
         setSearchTerm(value);
 
-        try {
-            setIsLoading(true);
-            const response = await productIndex(size, page, value);
-
-            const data = response?.data || [];
-            setProducts(data);
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error searching products:', error);
-            setError('Failed to search products');
-        } finally {
-            setIsLoading(false);
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+
+            try {
+                setIsLoading(true);
+                const response = await productIndex(size, 1, value, sortOrder, sortField);
+
+                const data = response?.data || [];
+                setProducts(data);
+                setTotalItems(response?.totalCount || 0);
+            } catch (error) {
+                console.error('Error searching products:', error);
+                setError('Failed to search products');
+            } finally {
+                setIsLoading(false);
+            }
+
+        }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
+        initProductTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
@@ -97,16 +109,20 @@ function ProductMain() {
             // Cycle through states: null -> asc -> desc -> null
             if (sortOrder === null) {
                 setSortOrder('asc');
+                initProductTable(page, size, searchTerm, 'asc', field);
             } else if (sortOrder === 'asc') {
                 setSortOrder('desc');
+                initProductTable(page, size, searchTerm, 'desc', field);
             } else {
                 setSortOrder(null);
                 setSortField('');
+                initProductTable(page, size, searchTerm, null, '');
             }
         } else {
             // New field, start with ascending
             setSortField(field);
             setSortOrder('asc');
+            initProductTable(page, size, searchTerm, 'asc', field);
         }
     };
 
