@@ -256,6 +256,7 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                 <tr>
                                     <th className='text-center'>Product</th>
                                     <th className='min-w-[150px] text-center'>Category</th>
+                                    <th className='min-w-[150px] text-center'>Product Type</th>
                                     <th className='min-w-[120px] text-center'>Selling Price</th>
                                     <th className='min-w-[120px] text-center'>Action</th>
                                 </tr>
@@ -312,6 +313,9 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                                     </div>
                                                 </td>
                                                 <td className='text-center capitalize'>{product.pm_category}</td>
+                                                <td className='text-center capitalize'>
+                                                    {product.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                                </td>
                                                 <td className='text-center'>
                                                     <div className="flex flex-col justify-center items-center">
                                                         <span>RM {product.provisioning.supply.retail_price + product.provisioning.install.retail_price}</span>

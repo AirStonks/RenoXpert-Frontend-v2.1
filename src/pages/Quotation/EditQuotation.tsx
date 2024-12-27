@@ -220,8 +220,6 @@ function EditQuotation() {
         }
     };
 
-
-
     const updateSelectedPackages = (packages) => {
         const updatedPackages = packages.map((prodPackage: Package) => {
             const totalPrice = prodPackage.products.reduce((sum, product) => {
@@ -286,7 +284,8 @@ function EditQuotation() {
         });
     };
 
-    const handleRemoveProduct = (packId: number, prodId: number) => {
+    const handleRemoveProduct = (prodId: number, packId: number) => {
+
         setSelectedPackages((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage: Package) => {
                 if (prodPackage.id === packId) {
