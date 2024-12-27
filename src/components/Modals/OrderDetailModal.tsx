@@ -237,7 +237,7 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                                                 <span className="text-base text-gray-900 font-medium">
                                                                     {prodPackage.name}
                                                                 </span>
-                                                                <span className='text-base text-slate-700'>
+                                                                <span className='text-base text-gray-700'>
                                                                     RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </span>
                                                                 <span className='text-sm text-slate-400'>
