@@ -1,6 +1,6 @@
 // src\pages\Sales\SalesMain.tsx
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import SalesTable from '../../components/Tables/SalesTable';
 import Loading from '../../components/Loading';
 import { Sale } from '../../types';
@@ -10,8 +10,11 @@ import { salesIndex } from '../../services/api';
 // import CreatePropertyModal from '../../components/Modals/CreatePropertyModal';
 // import PropertyTable from '../../components/Tables/PropertyTable';
 
+type SortOrder = 'asc' | 'desc' | null;
+
 function SalesMain() {
     const navigate = useNavigate();
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [sales, setSales] = useState<Sale[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -20,18 +23,26 @@ function SalesMain() {
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [sortField, setSortField] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
     const [selectedQuotation, setSelectedQuotation] = useState<{ id: number | string, name: string } | null>(null);
 
     useEffect(() => {
         document.title = "Sales | RenoXpert";
-        initSalesTable(page, size);
-    }, [page, size]);
+        initSalesTable(1, 10, '', null, '');
+    }, []);
 
-    const initSalesTable = async (page: number, size: number, searchTerm?: string) => {
+    const initSalesTable = async (
+        page: number,
+        size: number,
+        searchTerm?: string,
+        order?: string,
+        field?: string
+    ) => {
         try {
             setIsLoading(true);
-            const response = await salesIndex(size, page, searchTerm);
+            const response = await salesIndex(size, page, searchTerm, order, field);
 
             const data = response?.data || [];
             setSales(data);
@@ -46,37 +57,85 @@ function SalesMain() {
     };
 
     const handleRefreshTable = async () => {
-        initSalesTable(page, size, searchTerm);
+        initSalesTable(page, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchTerm(value);
 
-        try {
-            setIsLoading(true);
-            const response = await salesIndex(size, page, value);
-
-            const data = response?.data || [];
-            setSales(data);
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error searching sales:', error);
-            setError('Failed to search sales');
-        } finally {
-            setIsLoading(false);
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+
+            try {
+                setIsLoading(true);
+                const response = await salesIndex(size, 1, value, sortOrder, sortField);
+
+                const data = response?.data || [];
+                setSales(data);
+                setTotalItems(response?.totalCount || 0);
+            } catch (error) {
+                console.error('Error searching products:', error);
+                setError('Failed to search products');
+            } finally {
+                setIsLoading(false);
+            }
+
+        }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
+        initSalesTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
     };
+
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            // Cycle through states: null -> asc -> desc -> null
+            if (sortOrder === null) {
+                setSortOrder('asc');
+                initSalesTable(page, size, searchTerm, 'asc', field);
+            } else if (sortOrder === 'asc') {
+                setSortOrder('desc');
+                initSalesTable(page, size, searchTerm, 'desc', field);
+            } else {
+                setSortOrder(null);
+                setSortField('');
+                initSalesTable(page, size, searchTerm, null, '');
+            }
+        } else {
+            // New field, start with ascending
+            setSortField(field);
+            setSortOrder('asc');
+            initSalesTable(page, size, searchTerm, 'asc', field);
+        }
+    };
+
+    const getSortIcon = (field: string) => {
+        if (sortField !== field) {
+            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+        switch (sortOrder) {
+            case 'asc':
+                return <i className="ki-outline ki-arrow-up text-primary" />;
+            case 'desc':
+                return <i className="ki-outline ki-arrow-down text-primary" />;
+            default:
+                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+    };
+
 
     const totalPages = Math.ceil(totalItems / size);
 

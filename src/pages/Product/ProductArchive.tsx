@@ -1,22 +1,27 @@
-// src\pages\Product\Package\PackageMain.tsx
-
-import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Buttons/Button';
 import KTComponent from '../../metronic/core';
 import { useEffect, useRef, useState } from 'react';
-import { Package } from '../../types';
-import { packageIndex, removePackage } from '../../services/api';
-import Loading from '../../components/Loading';
+import { Product } from '../../types';
+import { productIndexArchived, removeProduct } from '../../services/api';
 import DeleteModal from '../../components/Modals/DeleteModal';
+import Loading from '../../components/Loading';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+
+const AWS_S3_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
 
 type SortOrder = 'asc' | 'desc' | null;
 
-function PackageMain() {
+function ProductArchive() {
     const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const [packages, setPackages] = useState<Package[]>([]); // Initialize as an empty array
+    const [products, setProducts] = useState<Product[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);
@@ -26,15 +31,19 @@ function PackageMain() {
     const [sortField, setSortField] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
-    const [selectedPackage, setSelectedPackage] = useState<{ id: number | string, name: string } | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<{ id: number | string, name: string } | null>(null);
 
     useEffect(() => {
-        document.title = "Packages | RenoXpert";
+        document.title = "Products | RenoXpert";
         KTComponent.init();
-        initPackageTable(1, 10, '', null, '');
+        initProductTable(1, 10, '', null, '');
     }, []);
 
-    const initPackageTable = async (
+    const handleBackClick = () => {
+        navigate('/products');
+    };
+
+    const initProductTable = async (
         page: number,
         size: number,
         searchTerm?: string,
@@ -43,22 +52,20 @@ function PackageMain() {
     ) => {
         try {
             setIsLoading(true);
-            const response = await packageIndex(size, page, searchTerm, order, field);
-
+            const response = await productIndexArchived(size, page, searchTerm, order, field);
             const data = response?.data || [];
-            setPackages(data);
-
+            setProducts(data);
             setTotalItems(response?.totalCount || 0);
         } catch (error) {
-            console.error('Error fetching packages:', error);
-            setError('Failed to load packages');
+            console.error('Error fetching products:', error);
+            setError('Failed to load products');
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleRefreshTable = async () => {
-        initPackageTable(page, size, searchTerm);
+        initProductTable(page, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,10 +82,10 @@ function PackageMain() {
 
             try {
                 setIsLoading(true);
-                const response = await packageIndex(size, 1, value, sortOrder, sortField);
+                const response = await productIndexArchived(size, 1, value, sortOrder, sortField);
 
                 const data = response?.data || [];
-                setPackages(data);
+                setProducts(data);
                 setTotalItems(response?.totalCount || 0);
             } catch (error) {
                 console.error('Error searching products:', error);
@@ -93,7 +100,7 @@ function PackageMain() {
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
-        initPackageTable(newPage, size, searchTerm, sortOrder, sortField);
+        initProductTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
@@ -106,20 +113,20 @@ function PackageMain() {
             // Cycle through states: null -> asc -> desc -> null
             if (sortOrder === null) {
                 setSortOrder('asc');
-                initPackageTable(page, size, searchTerm, 'asc', field);
+                initProductTable(page, size, searchTerm, 'asc', field);
             } else if (sortOrder === 'asc') {
                 setSortOrder('desc');
-                initPackageTable(page, size, searchTerm, 'desc', field);
+                initProductTable(page, size, searchTerm, 'desc', field);
             } else {
                 setSortOrder(null);
                 setSortField('');
-                initPackageTable(page, size, searchTerm, null, '');
+                initProductTable(page, size, searchTerm, null, '');
             }
         } else {
             // New field, start with ascending
             setSortField(field);
             setSortOrder('asc');
-            initPackageTable(page, size, searchTerm, 'asc', field);
+            initProductTable(page, size, searchTerm, 'asc', field);
         }
     };
 
@@ -137,22 +144,24 @@ function PackageMain() {
         }
     };
 
-    const handleViewPackage = (pkgId: string | number) => {
-        navigate(`/packages/${pkgId}`);
+    const handleViewProduct = (productId: string | number) => {
+        const state = { from: 'products/archives' };
+        navigate(`/products/${productId}`, { state });
     }
 
-    const handleRemovePackage = async (pkgId: number) => {
+    const handleRemoveProduct = async (productId: number) => {
         try {
-            const response = await removePackage(pkgId);
+            const response = await removeProduct(productId);
 
             if (response?.success) {
-                initPackageTable(page, size);
+                initProductTable(1, 10, null);
                 return { success: true };
             }
             return { success: false };
 
         } catch (error) {
-            return { success: false, message: 'Package removal failed' };
+            console.log(error);
+            return { success: false, message: 'Product removal failed' };
         }
     }
 
@@ -165,56 +174,35 @@ function PackageMain() {
 
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center flex-wrap">
-                    <span className="text-2xl font-bold text-gray-900">
-                        Package Overview
-                    </span>
+                    <div className="flex gap-4 items-center">
+                        <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
+                            <i className="ki-solid ki-arrow-left"></i>
+                        </button>
+                        <span className="text-2xl font-bold text-gray-900">
+                            Archived Products
+                        </span>
+                    </div>
                     <div className="flex gap-3 flex-wrap">
-                        <Button
-                            url='/packages/create'
-                            btnText='Add New Package'
-                            btnSize='btn-sm'
-                            icon='ki-outline ki-plus-squared'
-                        />
                         <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
                             <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
                                 <i className="ki-filled ki-dots-vertical"></i>
                             </button>
 
                             <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
-                                {/* <div className="menu-item disabled">
-                                    <button
-                                        className="menu-link"
-                                        data-modal-toggle="#archive_product_modal"
-                                    >
-                                        <span className="menu-title">
-                                            <div className="flex gap-2 items-center">
-                                                <span>Manage Category</span>
-                                            </div>
-                                        </span>
-                                    </button>
-                                </div> */}
-                                <div className="menu-item">
-                                    <Link
-                                        to={'/packages/archives'}
-                                        className="menu-link"
-                                    >
-                                        <span className="menu-title">
-                                            <div className="flex gap-2 items-center">
-                                                <i className="ki-filled ki-archive"></i>
-                                                <span>Archived Zone</span>
-                                            </div>
-                                        </span>
-                                    </Link>
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <div className="flex gap-2 items-center text-center badge badge-lg badge-pill badge-warning badge-outline">
+                    <i className="ki-filled ki-information-4"></i>
+                    <span className="font-semibold">You are currently viewing archived items</span>
+                </div>
+
                 <div className="card">
                     <div className="card-header flex-wrap gap-2">
                         <div className="card-title">
-                            Package Overview
+                            Archived Products
                         </div>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button
@@ -227,7 +215,7 @@ function PackageMain() {
                                 <label className="input input-sm">
                                     <i className="ki-filled ki-magnifier"></i>
                                     <input
-                                        placeholder="Search packages"
+                                        placeholder="Search products"
                                         type="text"
                                         value={searchTerm}
                                         onChange={handleSearch}
@@ -262,8 +250,13 @@ function PackageMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
+                                    <th className='w-[100px] text-center'>
+                                        <div className="flex items-center justify-center gap-2">
+                                            Photo
+                                        </div>
+                                    </th>
                                     <th
-                                        className='w-[200px] text-center cursor-pointer hover:bg-gray-50'
+                                        className='w-[300px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('name')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
@@ -271,24 +264,50 @@ function PackageMain() {
                                         </div>
                                     </th>
                                     <th
-                                        className='w-[300px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('description_internal')}
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('sku')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
-                                            Internal Description {getSortIcon('description_internal')}
+                                            SKU {getSortIcon('sku')}
                                         </div>
                                     </th>
-                                    <th className='w-[110px] text-center'>Price</th>
-                                    <th className='w-[80px] text-center'>Created By</th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('price')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Selling Price {getSortIcon('price')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[120px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('pm_category_id')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            PM Category {getSortIcon('pm_category_id')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[120px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('type')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Type {getSortIcon('type')}
+                                        </div>
+                                    </th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('created_at')}
+                                        onClick={() => handleSort('task_weightage')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
-                                            Created Date {getSortIcon('created_at')}
+                                            Task Weightage {getSortIcon('task_weightage')}
                                         </div>
                                     </th>
-                                    <th className='w-[80px] text-center'>Updated By</th>
+                                    <th className='w-[80px] text-center'>
+                                        <div className="flex items-center justify-center gap-2">
+                                            Updated By
+                                        </div>
+                                    </th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('updated_at')}
@@ -297,47 +316,60 @@ function PackageMain() {
                                             Updated Date {getSortIcon('updated_at')}
                                         </div>
                                     </th>
-                                    <th className='w-[110px] text-center'>Action</th>
+                                    <th className='w-[120px] text-center'>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {packages.length > 0 ? (
-                                    packages.map((pkg, pkgIndex) => (
+                                {products.length > 0 ? (
+                                    products.map((product, prodIndex) => (
                                         <tr
-                                            key={pkgIndex}
-                                            className={`${pkgIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
+                                            key={prodIndex}
+                                            className={`${prodIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
                                         >
+                                            <td className='text-center'>
+                                                {product.attachments && product.attachments.thumbnail ? (
+                                                    <img
+                                                        src={AWS_S3_URL + product.attachments.thumbnail.file_url}
+                                                        alt={product.name}
+                                                        className="w-[64px] h-[64px] object-cover border border-gray-300 rounded"
+                                                    />
+                                                )
+                                                    :
+                                                    ''
+                                                }
+                                            </td>
                                             <td>
                                                 <div className="flex flex-col">
-                                                    <span>{pkg.name}</span>
-                                                    <span className="text-xs text-slate-400">{pkg.description || ''}</span>
+                                                    <span>{product.name}</span>
+                                                    <span className="text-xs text-slate-400">{product.description || ''}</span>
                                                 </div>
                                             </td>
-                                            <td>
-                                                {pkg.description_internal}
-                                            </td>
+                                            <td className='text-center'>{product.SKU}</td>
                                             <td className='text-center'>
-                                                RM {pkg.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                <div className="flex flex-col justify-center items-center">
+                                                    <span>RM {product.provisioning.supply.retail_price + product.provisioning.install.retail_price}</span>
+                                                </div>
                                             </td>
-                                            <td className='text-center'>
-                                                {pkg.created_by ? pkg.created_by.name : '-'}
-                                            </td>
-                                            <td className='text-center'>
-                                                {pkg.created_at}
-                                            </td>
-                                            <td className='text-center'>
-                                                {pkg.updated_by ? pkg.updated_by.name : '-'}
-                                            </td>
-                                            <td className='text-center'>
-                                                {pkg.updated_at}
-                                            </td>
+                                            <td className='text-center capitalize'>{product.pm_category}</td>
+                                            <td className='text-center capitalize'>{product.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</td>
+                                            <td className='text-center'>{product.task_weightage}</td>
+                                            <td className='text-center'>{product.updated_by ? product.updated_by.name : '-'}</td>
+                                            <td className='text-center'>{product.updated_at}</td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <button
-                                                        className="btn btn-sm btn-secondary"
-                                                        onClick={() => handleViewPackage(pkg.id)}
+                                                    <Link
+                                                        to={`/products/${product.id}`}
+                                                        state={{ fromUrl: '/products/archives' }}
+                                                        className="btn-view btn btn-sm btn-secondary"
                                                     >
                                                         View
+                                                    </Link>
+                                                    <button
+                                                        className="btn-delete btn btn-sm btn-icon btn-danger"
+                                                        data-modal-toggle="#delete_item_modal"
+                                                        onClick={() => setSelectedProduct({ id: product.id, name: product.name })}
+                                                    >
+                                                        <i className="ki-outline ki-trash"></i>
                                                     </button>
                                                 </div>
                                             </td>
@@ -345,8 +377,8 @@ function PackageMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={8} className="text-center text-gray-500">
-                                            No packages available
+                                        <td colSpan={9} className="text-center text-gray-500">
+                                            No products available
                                         </td>
                                     </tr>
                                 )}
@@ -445,12 +477,19 @@ function PackageMain() {
                         </div>
                     </div>
                 </div>
-                {/* <ActivityCenter /> */}
-
-                {/* <PackageTable /> */}
             </div>
+
+            <DeleteModal
+                item={selectedProduct}
+                modalTitle='Remove Product'
+                modalPrompt='Are you sure to permanently remove this product:'
+                notifySuccess='Product Removed Successfully!'
+                notifyError='Product remove failed'
+                navigateUrl='/products'
+                deleteFunction={handleRemoveProduct}
+            />
         </>
     );
 }
 
-export default PackageMain;
+export default ProductArchive;

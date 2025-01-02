@@ -178,6 +178,24 @@ export const productIndex = async (size: number = 5, page: number = 1, searchTer
     }
 };
 
+export const productIndexArchived = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'products/index/archived', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const createProduct = async (productData: Product) => {
     try {
         const response = await axios.post(API_URL + 'products', productData, {
@@ -259,7 +277,7 @@ export const changeProductThumbnail = async (productId: number, file: File) => {
                 }
             }
         );
-        
+
         return response.data; // Return response data
 
     } catch (error) {
@@ -311,6 +329,36 @@ export const removeProductPhoto = async (productId: number, photoIndex: number) 
     }
 };
 
+export const archiveProduct = async (productId: number) => {
+    try {
+        const response = await axios.get(API_URL + `products/${productId}/archive`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const restoreProduct = async (productId: number) => {
+    try {
+        const response = await axios.get(API_URL + `products/${productId}/restore`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const fetchPMCategory = async (length = 5) => {
     try {
         const response = await axios.get(API_URL + 'product/category', {
@@ -357,6 +405,24 @@ export const removeProductCategory = async (productCategoryId: number) => {
 export const packageIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
         const response = await axios.get(API_URL + 'packages', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const packageIndexArchived = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'packages/index/archived', {
             headers: getAuthHeaders(),
             params: {
                 size: size,
@@ -441,14 +507,64 @@ export const removePackage = async (packageId: number) => {
     }
 }
 
-export const quotationIndex = async (size: number = 5, page: number = 1, searchTerm?: string) => {
+export const archivePackage = async (packageId: number) => {
+    try {
+        const response = await axios.get(API_URL + `packages/${packageId}/archive`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const restorePackage = async (packageId: number) => {
+    try {
+        const response = await axios.get(API_URL + `packages/${packageId}/restore`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const quotationIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
         const response = await axios.get(API_URL + 'quotations', {
             headers: getAuthHeaders(),
             params: {
                 size: size,
                 page: page,
-                search: searchTerm
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const quotationIndexArchived = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'quotations/index/archived', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
             }
         });
         return response.data;
@@ -516,6 +632,36 @@ export const fetchQuotations = async (searchTerm = '', length = 5) => {
 export const removeQuotation = async (quotationId: number) => {
     try {
         const response = await axios.delete(API_URL + `quotations/${quotationId}`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const archiveQuotation = async (quotationId: number) => {
+    try {
+        const response = await axios.get(API_URL + `quotations/${quotationId}/archive`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const restoreQuotation = async (quotationId: number) => {
+    try {
+        const response = await axios.get(API_URL + `quotations/${quotationId}/restore`, {
             headers: {
                 ...getAuthHeaders(),
                 'Content-Type': 'application/json',
@@ -617,14 +763,16 @@ export const removeProperty = async (propertyId: number) => {
     }
 }
 
-export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?: string) => {
+export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
         const response = await axios.get(API_URL + 'orders', {
             headers: getAuthHeaders(),
             params: {
                 size: size,
                 page: page,
-                search: searchTerm
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
             }
         });
         return response.data;
@@ -943,14 +1091,16 @@ export const testSms = async () => {
     }
 }
 
-export const registrationFormIndex = async (size: number = 5, page: number = 1, searchTerm?: string) => {
+export const registrationFormIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
         const response = await axios.get(API_URL + 'owner/reno-registration-form', {
             headers: getAuthHeaders(),
             params: {
                 size: size,
                 page: page,
-                search: searchTerm
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
             }
         });
         return response.data;
@@ -1286,7 +1436,6 @@ export const createPurchaseOrder = async (purchaseOrderData: PurchaseOrder) => {
         handle401Error(error as AxiosError);
     }
 };
-
 
 export const POIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {

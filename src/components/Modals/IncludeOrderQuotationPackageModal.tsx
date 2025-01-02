@@ -15,6 +15,8 @@ interface IncludeOrderQuotationPackageModallProps {
 type SortOrder = 'asc' | 'desc' | null;
 
 function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPackages, previousModalId }: IncludeOrderQuotationPackageModallProps) {
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
     const [packages, setPackages] = useState<Package[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -26,77 +28,11 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
-    // const handleTableClick = useCallback((event: MouseEvent) => {
-    //     const target = event.target as HTMLElement;
-
-    //     console.log(target);
-
-
-    //     // Find the select button element
-    //     const selectBtn = target.closest('[data-action="select"], [data-action="remove"]') as HTMLElement;
-
-    //     if (selectBtn) {
-    //         const id = selectBtn.dataset.id;
-    //         const packageName = selectBtn.dataset.name;
-    //         const packagePrice = parseFloat(selectBtn.dataset.price);
-    //         const packageDescription = selectBtn.dataset.desc;
-
-    //         // Retrieve the current selected prodPackages from localStorage
-    //         const storedPackages = localStorage.getItem('selected_quotation_packages');
-    //         const selectedPackages = storedPackages ? JSON.parse(storedPackages) : [];
-    //         const packagesData = localStorage.getItem('packages_data');
-
-    //         // Check if the prodPackage ID is already selected
-    //         const packageIndex = selectedPackages.findIndex(prodPackage => prodPackage.id === Number(id));
-
-    //         if (packageIndex > -1) {
-    //             // If it is selected, remove it
-    //             selectedPackages.splice(packageIndex, 1);
-    //             // Change button to "Select"
-    //             selectBtn.dataset.action = 'select';
-    //             selectBtn.className = 'btn btn-primary btn-sm'; // Update class
-    //             selectBtn.innerText = 'Select';
-    //         } else {
-    //             // If it is not selected, add it
-    //             const selectedPackage = JSON.parse(packagesData).find(prodPackage => prodPackage.id === Number(id));
-
-    //             selectedPackages.push({
-    //                 id: Number(id),
-    //                 name: packageName,
-    //                 description: packageDescription,
-    //                 total_price: packagePrice,
-    //                 packages: selectedPackage.packages
-    //             });
-
-    //             // selectedPackages.push(selectedPackage);
-    //             // Change button to "Remove"
-    //             selectBtn.dataset.action = 'remove';
-    //             selectBtn.className = 'btn btn-danger btn-sm'; // Update class
-    //             selectBtn.innerText = 'Remove';
-    //         }
-
-
-    //         // Save the updated array back to localStorage
-    //         localStorage.setItem('selected_quotation_packages', JSON.stringify(selectedPackages));
-
-    //         // TODO Update the prodPackage-list
-    //         updateSelectedPackages(selectedPackages);
-    //     }
-    // }, [selectedPackages, updateSelectedPackages]);
-
     useEffect(() => {
 
-        initPackageTable(page, size, searchTerm, sortOrder, sortField);
+        initPackageTable(1, 10, '', null, '');
 
-    }, [page, size, searchTerm, sortOrder, sortField]);
-
-    // const getPackages = async () => {
-    //     const response = await fetchPackages();
-
-    //     if (response) {
-    //         localStorage.setItem('packages_data', JSON.stringify(response.data));
-    //     }
-    // };
+    }, []);
 
     const initPackageTable = async (
         page: number,
@@ -123,119 +59,83 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
         }
     };
 
-    // const initProdTable = () => {
-    //     const apiUrl = 'http://' + window.location.hostname + ':8000/api/packages';
-    //     const datatableEl = document.querySelector('#packages_table') as HTMLElement;
-    //     const token = localStorage.getItem('token');
-
-    //     const options = {
-    //         apiEndpoint: apiUrl,
-    //         requestMethod: 'GET',
-    //         requestHeaders: {
-    //             'Authorization': `Bearer ${token}`,
-    //         },
-    //         pageSize: 5,
-    //         pageSizes: [5, 10],
-    //         columns: {
-    //             // select: {
-    //             //     render: (item: string, data: Package) => {
-    //             //         const checkbox = document.createElement('input');
-    //             //         checkbox.className = 'checkbox checkbox-sm';
-    //             //         checkbox.type = 'checkbox';
-    //             //         checkbox.value = data.id.toString();
-    //             //         checkbox.setAttribute('data-datatable-row-check', 'true');
-    //             //         return checkbox.outerHTML.trim();
-    //             //     },
-    //             // },
-    //             name: {
-    //                 title: 'Package',
-    //                 render: (item: string, data: Package) => `
-    //                     <div class="flex flex-col">
-    //                         <span>${item}</span>
-    //                         <span class="text-xs text-slate-400">${data.description}</span>
-    //                     </div>
-    //                 `,
-    //             },
-    //             category: {
-    //                 title: 'Category',
-    //             },
-    //             total_price: {
-    //                 title: 'Price',
-    //                 render: (item: number) => `RM ${item.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, // Format as currency
-    //             },
-    //             action: {
-    //                 title: 'Action',
-    //                 render: (item: string, data: Package) => {
-    //                     const selectedPackagesString = localStorage.getItem('selected_quotation_packages');
-    //                     const selectedPackages = selectedPackagesString ? JSON.parse(selectedPackagesString) : [];
-
-    //                     const isSelected = selectedPackages.some((prodPackage: { id: number }) => prodPackage.id === data.id);
-
-    //                     const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
-    //                     const action = isSelected ? 'remove' : 'select';
-    //                     const buttonText = isSelected ? 'Remove' : 'Select';
-
-    //                     return `
-    //                         <div class="flex justify-around gap-2">
-    //                             <button 
-    //                                 class="btn ${buttonClass} btn-sm"
-    //                                 data-action="${action}"
-    //                                 data-id="${data.id}"
-    //                                 data-name="${data.name}"
-    //                                 data-price="${data.total_price}"
-    //                                 data-desc="${data.description}"
-    //                             >
-    //                                 ${buttonText}
-    //                             </button>
-    //                         </div>
-    //                     `;
-    //                 }
-    //             }
-
-    //         },
-    //     };
-
-    //     const datatable = new KTDataTable(datatableEl, options);
-
-    //     if (datatableEl) {
-    //         datatableEl.addEventListener('click', handleTableClick);
-
-    //         return () => {
-    //             datatableEl.removeEventListener('click', handleTableClick);
-    //         };
-    //     }
-    // }
-
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchTerm(value);
 
-        try {
-            setIsLoading(true);
-            const response = await packageIndex(page, size, searchTerm, sortOrder, sortField);
-            const data = response?.data || [];
-
-            localStorage.setItem('packages_data', JSON.stringify(data));
-
-            setPackages(data);
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error searching packages:', error);
-            setError('Failed to search packages');
-        } finally {
-            setIsLoading(false);
-            KTAccordion.init();
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+
+            try {
+                setIsLoading(true);
+                const response = await packageIndex(size, 1, value, sortOrder, sortField);
+                const data = response?.data || [];
+
+                localStorage.setItem('packages_data', JSON.stringify(data));
+
+                setPackages(data);
+                setTotalItems(response?.totalCount || 0);
+            } catch (error) {
+                console.error('Error searching packages:', error);
+                setError('Failed to search packages');
+            } finally {
+                setIsLoading(false);
+                KTAccordion.init();
+            }
+
+        }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
+        initPackageTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+    };
+
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            // Cycle through states: null -> asc -> desc -> null
+            if (sortOrder === null) {
+                setSortOrder('asc');
+                initPackageTable(page, size, searchTerm, 'asc', field);
+            } else if (sortOrder === 'asc') {
+                setSortOrder('desc');
+                initPackageTable(page, size, searchTerm, 'desc', field);
+            } else {
+                setSortOrder(null);
+                setSortField('');
+                initPackageTable(page, size, searchTerm, null, '');
+            }
+        } else {
+            // New field, start with ascending
+            setSortField(field);
+            setSortOrder('asc');
+            initPackageTable(page, size, searchTerm, 'asc', field);
+        }
+    };
+
+    const getSortIcon = (field: string) => {
+        if (sortField !== field) {
+            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+        switch (sortOrder) {
+            case 'asc':
+                return <i className="ki-outline ki-arrow-up text-primary" />;
+            case 'desc':
+                return <i className="ki-outline ki-arrow-down text-primary" />;
+            default:
+                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
     };
 
     const totalPages = Math.ceil(totalItems / size);
@@ -332,29 +232,28 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                 <thead>
                                     <tr>
-                                        {/* <th className="w-14">
-                                            <input className="checkbox checkbox-sm" data-datatable-check="true" type="checkbox" />
-                                        </th> */}
-                                        <th className="text-center">
-                                            <span className="sort">
-                                                <span className="sort-label">
-                                                    Package
-                                                </span>
-                                            </span>
+                                        <th
+                                            className='text-center cursor-pointer hover:bg-gray-50'
+                                            onClick={() => handleSort('name')}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                Name {getSortIcon('name')}
+                                            </div>
                                         </th>
                                         <th className="text-center">
                                             <span className="sort">
                                                 <span className="sort-label">
-                                                    Packages Count
+                                                    Internal Description
                                                 </span>
                                             </span>
                                         </th>
-                                        <th className="min-w-[120px] text-center">
-                                            <span className="sort">
-                                                <span className="sort-label">
-                                                    Total Price
-                                                </span>
-                                            </span>
+                                        <th
+                                            className='min-w-[120px] text-center cursor-pointer hover:bg-gray-50'
+                                            onClick={() => handleSort('total_price')}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                Total Price {getSortIcon('total_price')}
+                                            </div>
                                         </th>
                                         <th className="min-w-[110px] text-center">
 
@@ -384,7 +283,9 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                                                             <span className="text-xs text-slate-400">{pkg.description}</span>
                                                         </div>
                                                     </td>
-                                                    <td className='text-center capitalize'></td>
+                                                    <td>
+                                                        {pkg.description_internal}
+                                                    </td>
                                                     <td className='text-center'>
                                                         {`RM ${pkg.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                     </td>

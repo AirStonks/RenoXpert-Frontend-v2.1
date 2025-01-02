@@ -1,6 +1,6 @@
 // src\pages\Order\OrderMain.tsx
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { orderIndex, removeOrder } from '../../services/api';
 import DeleteModal from '../../components/Modals/DeleteModal';
@@ -18,8 +18,11 @@ const APP_URL =
                 ? import.meta.env.VITE_LOCAL_APP_URL
                 : null;
 
+type SortOrder = 'asc' | 'desc' | null;
+
 function OrderMain() {
     const navigate = useNavigate();
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [orders, setOrders] = useState<Order[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -28,6 +31,8 @@ function OrderMain() {
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [sortField, setSortField] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
     const [selectedOrder, setSelectedOrder] = useState<{ id: number | string, name: string } | null>(null);
 
@@ -46,7 +51,7 @@ function OrderMain() {
 
     useEffect(() => {
         document.title = "Quotation Orders | RenoXpert";
-        initOrderTable(page, size);
+        initOrderTable(1, 10, '', null, '');
 
         const clipboard = new ClipboardJS('.copy-link');
 
@@ -60,12 +65,18 @@ function OrderMain() {
             clipboard.destroy();
         };
 
-    }, [page, size]);
+    }, []);
 
-    const initOrderTable = async (page: number, size: number, searchTerm?: string) => {
+    const initOrderTable = async (
+        page: number,
+        size: number,
+        searchTerm?: string,
+        order?: string,
+        field?: string
+    ) => {
         try {
             setIsLoading(true);
-            const response = await orderIndex(size, page, searchTerm);
+            const response = await orderIndex(size, page, searchTerm, order, field);
 
             const data = response?.data || [];
             setOrders(data);
@@ -80,36 +91,83 @@ function OrderMain() {
     };
 
     const handleRefreshTable = async () => {
-        initOrderTable(page, size, searchTerm);
+        initOrderTable(page, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchTerm(value);
 
-        try {
-            setIsLoading(true);
-            const response = await orderIndex(size, page, value);
-
-            const data = response?.data || [];
-            setOrders(data);
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error searching orders:', error);
-            setError('Failed to search orders');
-        } finally {
-            setIsLoading(false);
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+
+            try {
+                setIsLoading(true);
+                const response = await orderIndex(size, 1, value, sortOrder, sortField);
+
+                const data = response?.data || [];
+                setOrders(data);
+                setTotalItems(response?.totalCount || 0);
+            } catch (error) {
+                console.error('Error searching products:', error);
+                setError('Failed to search products');
+            } finally {
+                setIsLoading(false);
+            }
+
+        }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
+        initOrderTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+    };
+
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            // Cycle through states: null -> asc -> desc -> null
+            if (sortOrder === null) {
+                setSortOrder('asc');
+                initOrderTable(page, size, searchTerm, 'asc', field);
+            } else if (sortOrder === 'asc') {
+                setSortOrder('desc');
+                initOrderTable(page, size, searchTerm, 'desc', field);
+            } else {
+                setSortOrder(null);
+                setSortField('');
+                initOrderTable(page, size, searchTerm, null, '');
+            }
+        } else {
+            // New field, start with ascending
+            setSortField(field);
+            setSortOrder('asc');
+            initOrderTable(page, size, searchTerm, 'asc', field);
+        }
+    };
+
+    const getSortIcon = (field: string) => {
+        if (sortField !== field) {
+            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+        switch (sortOrder) {
+            case 'asc':
+                return <i className="ki-outline ki-arrow-up text-primary" />;
+            case 'desc':
+                return <i className="ki-outline ki-arrow-down text-primary" />;
+            default:
+                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
     };
 
     const totalPages = Math.ceil(totalItems / size);
@@ -208,6 +266,24 @@ function OrderMain() {
                                     <th className='w-[120px] text-center'>Owner</th>
                                     <th className='w-[80px] text-center'>Unit</th>
                                     <th className='w-[150px] text-center'>Property</th>
+                                    <th className='w-[80px] text-center'>Created By</th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('created_at')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Created Date {getSortIcon('created_at')}
+                                        </div>
+                                    </th>
+                                    <th className='w-[80px] text-center'>Updated By</th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('updated_at')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Updated Date {getSortIcon('updated_at')}
+                                        </div>
+                                    </th>
                                     <th className='w-[120px] text-center'>Action</th>
                                 </tr>
                             </thead>
@@ -253,6 +329,18 @@ function OrderMain() {
                                                 <div className="flex flex-col gap-1">
                                                     <span>{order.property.name}</span>
                                                 </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                {order.created_by ? order.created_by.name : '-'}
+                                            </td>
+                                            <td className='text-center'>
+                                                {order.created_at}
+                                            </td>
+                                            <td className='text-center'>
+                                                {order.updated_by ? order.updated_by.name : '-'}
+                                            </td>
+                                            <td className='text-center'>
+                                                {order.updated_at}
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
@@ -320,7 +408,7 @@ function OrderMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="text-center text-gray-500">
+                                        <td colSpan={11} className="text-center text-gray-500">
                                             No orders available
                                         </td>
                                     </tr>

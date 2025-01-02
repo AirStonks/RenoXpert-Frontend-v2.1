@@ -81,6 +81,9 @@ import RenoProgressDetail from './pages/OwnerPages/RenoProgressDetail';
 import RenoProgressManagement from './pages/OperationPages/RenoProgressManagement';
 import OwnerInspectionReport from './pages/OwnerPages/OwnerInspectionReport';
 import RenoProgressPhaseAttachments from './pages/OwnerPages/RenoProgressPhaseAttachments';
+import ProductArchive from './pages/Product/ProductArchive';
+import PackageArchive from './pages/Package/PackageArchive';
+import QuotationArchive from './pages/Quotation/QuotationArchive';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -167,18 +170,21 @@ const routes = [
   { path: '/products/:id', element: <ProductDetail />, layout: ProtectedLayout },
   { path: '/products/edit/:id', element: <EditProduct />, layout: ProtectedLayout },
   { path: '/products/category', element: <ProductCategory />, layout: ProtectedLayout },
+  { path: '/products/archives', element: <ProductArchive />, layout: ProtectedLayout },
 
   /*--- PACKAGES ---*/
   { path: '/packages', element: <PackageMain />, layout: ProtectedLayout },
   { path: '/packages/create', element: <CreatePackage />, layout: ProtectedLayout },
   { path: '/packages/:id', element: <PackageDetail />, layout: ProtectedLayout },
   { path: '/packages/edit/:id', element: <EditPackage />, layout: ProtectedLayout },
+  { path: '/packages/archives', element: <PackageArchive />, layout: ProtectedLayout },
 
   /*--- QUOTATION TEMPLATE ---*/
   { path: '/quotations', element: <QuotationMain />, layout: ProtectedLayout },
   { path: '/quotations/create', element: <CreateQuotation />, layout: ProtectedLayout },
   { path: '/quotations/edit/:id', element: <EditQuotation />, layout: ProtectedLayout },
   { path: '/quotations/:id', element: <QuotationDetail />, layout: ProtectedLayout },
+  { path: '/quotations/archives', element: <QuotationArchive />, layout: ProtectedLayout },
 
   /*--- PROPERTY ---*/
   { path: '/properties', element: <PropertyMain />, layout: ProtectedLayout },

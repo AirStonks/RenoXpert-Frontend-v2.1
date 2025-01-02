@@ -21,6 +21,8 @@ function IncludeProductModal({
     updateTotalPrice,
     previousModalId
 }: IncludeProductModalProps) {
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
     const [products, setProducts] = useState<Product[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -92,9 +94,9 @@ function IncludeProductModal({
 
     useEffect(() => {
 
-        initProductTable(page, size, searchTerm, sortOrder, sortField);
+        initProductTable(1, 10, '', null, '');
 
-    }, [page, size, searchTerm, sortOrder, sortField]);
+    }, []);
 
     const initProductTable = async (
         page: number,
@@ -121,29 +123,76 @@ function IncludeProductModal({
         const value = event.target.value;
         setSearchTerm(value);
 
-        try {
-            setIsLoading(true);
-            const response = await productIndex(size, page, value);
-
-            const data = response?.data || [];
-            setProducts(data);
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error searching products:', error);
-            setError('Failed to search products');
-        } finally {
-            setIsLoading(false);
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+
+            try {
+                setIsLoading(true);
+                const response = await productIndex(size, 1, value, sortOrder, sortField);
+
+                const data = response?.data || [];
+                setProducts(data);
+                setTotalItems(response?.totalCount || 0);
+            } catch (error) {
+                console.error('Error searching products:', error);
+                setError('Failed to search products');
+            } finally {
+                setIsLoading(false);
+            }
+
+        }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
+        initProductTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+    };
+
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            // Cycle through states: null -> asc -> desc -> null
+            if (sortOrder === null) {
+                setSortOrder('asc');
+                initProductTable(page, size, searchTerm, 'asc', field);
+            } else if (sortOrder === 'asc') {
+                setSortOrder('desc');
+                initProductTable(page, size, searchTerm, 'desc', field);
+            } else {
+                setSortOrder(null);
+                setSortField('');
+                initProductTable(page, size, searchTerm, null, '');
+            }
+        } else {
+            // New field, start with ascending
+            setSortField(field);
+            setSortOrder('asc');
+            initProductTable(page, size, searchTerm, 'asc', field);
+        }
+    };
+
+    const getSortIcon = (field: string) => {
+        if (sortField !== field) {
+            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+        switch (sortOrder) {
+            case 'asc':
+                return <i className="ki-outline ki-arrow-up text-primary" />;
+            case 'desc':
+                return <i className="ki-outline ki-arrow-down text-primary" />;
+            default:
+                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
     };
 
     const totalPages = Math.ceil(totalItems / size);
@@ -241,10 +290,38 @@ function IncludeProductModal({
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='text-center'>Product</th>
-                                    <th className='min-w-[150px] text-center'>Category</th>
-                                    <th className='min-w-[150px] text-center'>Product Type</th>
-                                    <th className='min-w-[120px] text-center'>Selling Price</th>
+                                    <th
+                                        className='text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Name {getSortIcon('name')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='min-w-[150px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('pm_category_id')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Category {getSortIcon('pm_category_id')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='min-w-[150px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('type')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Product Type {getSortIcon('type')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='min-w-[120px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('price')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Selling Price {getSortIcon('price')}
+                                        </div>
+                                    </th>
                                     <th className='min-w-[120px] text-center'>Action</th>
                                 </tr>
                             </thead>

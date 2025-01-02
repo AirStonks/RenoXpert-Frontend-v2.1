@@ -140,10 +140,6 @@ function ProductMain() {
         }
     };
 
-    const handleViewProduct = (productId: string | number) => {
-        navigate(`/products/${productId}`);
-    }
-
     const handleRemoveProduct = async (productId: number) => {
         try {
             const response = await removeProduct(productId);
@@ -185,12 +181,39 @@ function ProductMain() {
                             btnSize='btn-sm'
                             icon='ki-outline ki-plus-squared'
                         />
-                        <Button
-                            url='/products/category'
-                            btnText='Manage Category'
-                            btnSize='btn-sm'
-                            btnColor='btn-warning'
-                        />
+                        <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                            <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                                <i className="ki-filled ki-dots-vertical"></i>
+                            </button>
+
+                            <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
+                                <div className="menu-item disabled">
+                                    <button
+                                        className="menu-link"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <span>Manage Category</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div className="menu-item">
+                                    <Link
+                                        to={'/products/archives'}
+                                        className="menu-link"
+                                        data-modal-toggle="#archive_product_modal"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <i className="ki-filled ki-archive"></i>
+                                                <span>Archived Zone</span>
+                                            </div>
+                                        </span>
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -352,19 +375,20 @@ function ProductMain() {
                                             <td className='text-center'>{product.updated_at}</td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <button
+                                                    <Link
+                                                        to={`/products/${product.id}`}
+                                                        state={{ fromUrl: '/products' }}
                                                         className="btn-view btn btn-sm btn-secondary"
-                                                        onClick={() => handleViewProduct(product.id)}
                                                     >
                                                         View
-                                                    </button>
-                                                    <button
+                                                    </Link>
+                                                    {/* <button
                                                         className="btn-delete btn btn-sm btn-icon btn-danger"
                                                         data-modal-toggle="#delete_item_modal"
                                                         onClick={() => setSelectedProduct({ id: product.id, name: product.name })}
                                                     >
                                                         <i className="ki-outline ki-trash"></i>
-                                                    </button>
+                                                    </button> */}
                                                 </div>
                                             </td>
                                         </tr>
@@ -473,7 +497,7 @@ function ProductMain() {
                 </div>
             </div>
 
-            <DeleteModal
+            {/* <DeleteModal
                 item={selectedProduct}
                 modalTitle='Remove Product'
                 modalPrompt='Are you sure to permanently remove this product:'
@@ -481,7 +505,7 @@ function ProductMain() {
                 notifyError='Product remove failed'
                 navigateUrl='/products'
                 deleteFunction={handleRemoveProduct}
-            />
+            /> */}
         </>
     );
 }
