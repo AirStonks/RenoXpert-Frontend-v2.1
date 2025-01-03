@@ -135,53 +135,45 @@ function EditOrder() {
             }
         }
 
-        initDropdown();
     }, [orderDetail]);
 
-    const initDropdown = async () => {
-        const contractEl = document.querySelector('#contract_dropdown') as HTMLElement;
-        const contractDropdown = KTDropdown.getInstance(contractEl);
+    const handleOpenOwnerDropdown = async () => {
+        setSearchUserTerm('');
+        inputUserRef.current.value = '';
+        inputUserRef.current.focus();
+        try {
+            const data = await fetchUsers('', 'owner');
+            setUsers(data.data);
 
-        const propertyEl = document.querySelector('#property_dropdown') as HTMLElement;
-        const propertyDropdown = KTDropdown.getInstance(propertyEl);
+        } catch (error) {
+            console.error('Failed to fetch quotations:', error);
+        }
+    }
 
-        const quotationEl = document.querySelector('#quotation_dropdown') as HTMLElement;
-        const quotationDropdown = KTDropdown.getInstance(quotationEl);
+    const handleOpenPropertyDropdown = async () => {
+        setSearchPropertyTerm('');
+        inputPropertyRef.current.value = '';
+        inputPropertyRef.current.focus();
+        try {
+            const data = await fetchProperties('', 6);
+            setProperties(data.data);
 
-        contractDropdown.on('shown', async () => {
-            inputUserRef.current.focus();
-            try {
-                const data = await fetchUsers('', 'owner');
-                setUsers(data.data);
+        } catch (error) {
+            console.error('Failed to fetch quotations:', error);
+        }
+    }
 
-            } catch (error) {
-                console.error('Failed to fetch quotations:', error);
-            }
-        });
+    const handleOpenQuotationDropdown = async () => {
+        setSearchQuotationTerm('');
+        inputQuotationRef.current.value = '';
+        inputQuotationRef.current.focus();
+        try {
+            const data = await fetchQuotations('', 6);
+            setQuotations(data.data);
 
-        propertyDropdown.on('shown', async () => {
-            inputPropertyRef.current.focus();
-            try {
-                const data = await fetchProperties('', 6);
-                setProperties(data.data);
-
-            } catch (error) {
-                console.error('Failed to fetch quotations:', error);
-            }
-        });
-
-        quotationDropdown.on('shown', async () => {
-            inputQuotationRef.current.focus();
-            try {
-                const data = await fetchQuotations('', 6);
-                setQuotations(data.data);
-
-            } catch (error) {
-                console.error('Failed to fetch quotations:', error);
-            }
-        });
-
-
+        } catch (error) {
+            console.error('Failed to fetch quotations:', error);
+        }
     }
 
     const handleSearchForm = async (formId: string) => {
@@ -383,7 +375,7 @@ function EditOrder() {
                 quotation_id: selectedQuotation.id,
                 total_amount: formData.totalAmount,
                 block: formData.block,
-                floor: formData.floor, 
+                floor: formData.floor,
                 unit_no: formData.unitNo,
                 bedroom_count: formData.bedroom_count,
                 bathroom_count: formData.bathroom_count,
@@ -438,7 +430,10 @@ function EditOrder() {
                                         1. Select an Owner
                                     </span>
                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="contract_dropdown">
-                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                        <button
+                                            className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
+                                            onClick={handleOpenOwnerDropdown}
+                                        >
                                             <span>Owner</span>
                                             <i className="ki-filled ki-down"></i>
                                         </button>
@@ -486,7 +481,10 @@ function EditOrder() {
                                         2. Select a Property
                                     </span>
                                     <div className="dropdow" data-dropdown="true" data-dropdown-trigger="click" id='property_dropdown'>
-                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                        <button
+                                            className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
+                                            onClick={handleOpenPropertyDropdown}
+                                        >
                                             <span>Property</span>
                                             <i className="ki-filled ki-down"></i>
                                         </button>
@@ -661,7 +659,10 @@ function EditOrder() {
                                         </div> */}
                                     </div>
                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
-                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                        <button
+                                            className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
+                                            onClick={handleOpenQuotationDropdown}
+                                        >
                                             <span>Quotation</span>
                                             <i className="ki-filled ki-down"></i>
                                         </button>
