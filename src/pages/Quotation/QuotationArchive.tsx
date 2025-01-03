@@ -1,17 +1,21 @@
-import ClipboardJS from "clipboard";
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { Slide, toast } from "react-toastify";
-import { POIndex } from "../../services/api";
-import { PurchaseOrder } from "../../types";
-import Loading from "../../components/Loading";
+// src\pages\Quotation\QuotationArchive.tsx
+
+import { useNavigate } from 'react-router-dom';
+import Button from '../../components/Buttons/Button';
+import { useEffect, useRef, useState } from 'react';
+import { Quotation } from '../../types';
+import { quotationIndex, quotationIndexArchived, removeQuotation } from '../../services/api';
+import Loading from '../../components/Loading';
+import DeleteModal from '../../components/Modals/DeleteModal';
+import { Link } from 'react-router-dom';
 
 type SortOrder = 'asc' | 'desc' | null;
 
-function POMain() {
+function QuotationArchive() {
+    const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]); // Initialize as an empty array
+    const [quotations, setQuotations] = useState<Quotation[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);
@@ -21,37 +25,23 @@ function POMain() {
     const [sortField, setSortField] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
-    const notify = (type: 'success' | 'error', message: string) => {
-        (toast[type] as (message: string, options?: object) => void)(message, {
-            position: "top-center",
-            autoClose: 3000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: localStorage.getItem('theme'),
-            transition: Slide,
-        });
-    };
+    const [selectedQuotation, setSelectedQuotation] = useState<{ id: number | string, name: string } | null>(null);
 
     useEffect(() => {
-        document.title = "Purchase Orders | RenoXpert";
-        initPOTable(1, 10, '', null, '');
+        document.title = "Quotations | RenoXpert";
+        initQuotationTable(1, 10, '', null, '');
 
-        const clipboard = new ClipboardJS('.copy-link');
-
-        clipboard.on('success', function (e) {
-            notify('success', 'Copied to clipboard!');
-            e.clearSelection();
-        });
-
-        // Cleanup the ClipboardJS instance
+        // Cleanup function to clear localStorage on unmount
         return () => {
-            clipboard.destroy();
+            localStorage.removeItem('include_packages');
         };
     }, []);
 
-    const initPOTable = async (
+    const handleBackClick = () => {
+        navigate('/quotations');
+    };
+
+    const initQuotationTable = async (
         page: number,
         size: number,
         searchTerm?: string,
@@ -60,22 +50,22 @@ function POMain() {
     ) => {
         try {
             setIsLoading(true);
-            const response = await POIndex(size, page, searchTerm, order, field);
+            const response = await quotationIndexArchived(size, page, searchTerm, order, field);
 
             const data = response?.data || [];
-            setPurchaseOrders(data);
+            setQuotations(data);
 
             setTotalItems(response?.totalCount || 0);
         } catch (error) {
-            console.error('Error fetching purchase orders:', error);
-            setError('Failed to load purchase orders');
+            console.error('Error fetching quotations:', error);
+            setError('Failed to load quotations');
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleRefreshTable = async () => {
-        initPOTable(page, size, searchTerm, sortOrder, sortField);
+        initQuotationTable(page, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,10 +82,10 @@ function POMain() {
 
             try {
                 setIsLoading(true);
-                const response = await POIndex(size, 1, value, sortOrder, sortField);
+                const response = await quotationIndexArchived(size, 1, value, sortOrder, sortField);
 
                 const data = response?.data || [];
-                setPurchaseOrders(data);
+                setQuotations(data);
                 setTotalItems(response?.totalCount || 0);
             } catch (error) {
                 console.error('Error searching products:', error);
@@ -110,7 +100,7 @@ function POMain() {
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
-        initPOTable(newPage, size, searchTerm, sortOrder, sortField);
+        initQuotationTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
@@ -123,20 +113,20 @@ function POMain() {
             // Cycle through states: null -> asc -> desc -> null
             if (sortOrder === null) {
                 setSortOrder('asc');
-                initPOTable(page, size, searchTerm, 'asc', field);
+                initQuotationTable(page, size, searchTerm, 'asc', field);
             } else if (sortOrder === 'asc') {
                 setSortOrder('desc');
-                initPOTable(page, size, searchTerm, 'desc', field);
+                initQuotationTable(page, size, searchTerm, 'desc', field);
             } else {
                 setSortOrder(null);
                 setSortField('');
-                initPOTable(page, size, searchTerm, null, '');
+                initQuotationTable(page, size, searchTerm, null, '');
             }
         } else {
             // New field, start with ascending
             setSortField(field);
             setSortOrder('asc');
-            initPOTable(page, size, searchTerm, 'asc', field);
+            initQuotationTable(page, size, searchTerm, 'asc', field);
         }
     };
 
@@ -156,6 +146,26 @@ function POMain() {
 
     const totalPages = Math.ceil(totalItems / size);
 
+    const handleViewQuotation = (quotationId: string | number) => {
+        navigate(`/quotations/${quotationId}`);
+    }
+
+    const handleRemoveQuotation = async (quotationId: number) => {
+        try {
+            const response = await removeQuotation(quotationId);
+
+            if (response?.success) {
+                initQuotationTable(page, size);
+                return { success: true };
+            }
+            return { success: false };
+
+        } catch (error) {
+            console.log(error);
+            return { success: false, message: 'Quotation removal failed' };
+        }
+    }
+
     return (
         <>
             {/* Loading Overlay */}
@@ -163,25 +173,54 @@ function POMain() {
 
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center flex-wrap">
-                    <span className="text-2xl font-bold text-gray-900">
-                        Purchase Orders
-                    </span>
-                    <div className="flex gap-3 flex-wrap">
-                        <Link
-                            to={'/purchase-orders/create'}
-                            className='btn btn-primary btn-sm'
-                            data-modal-toggle="#create_order_modal"
-                        >
-                            <i className="ki-outline ki-plus-squared"></i>
-                            Create PO
-                        </Link>
+                    <div className="flex gap-4 items-center">
+                        <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
+                            <i className="ki-solid ki-arrow-left"></i>
+                        </button>
+                        <span className="text-2xl font-bold text-gray-900">
+                            Archived Quotations
+                        </span>
                     </div>
+                    <div className="flex gap-3 flex-wrap">
+                        {/* <Button
+                            url='/quotations/create'
+                            btnText='Create Quotation'
+                            btnSize='btn-sm'
+                            icon='ki-outline ki-plus-squared'
+                        /> */}
+                        <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                            <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                                <i className="ki-filled ki-dots-vertical"></i>
+                            </button>
+
+                            <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
+                                {/* <div className="menu-item">
+                                    <Link
+                                        to={'/quotations/archives'}
+                                        className="menu-link"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <i className="ki-filled ki-archive"></i>
+                                                <span>Archived Zone</span>
+                                            </div>
+                                        </span>
+                                    </Link>
+                                </div> */}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex gap-2 items-center text-center badge badge-lg badge-pill badge-warning badge-outline">
+                    <i className="ki-filled ki-information-4"></i>
+                    <span className="font-semibold">You are currently viewing archived items</span>
                 </div>
 
                 <div className="card">
                     <div className="card-header flex-wrap gap-2">
                         <div className="card-title">
-                            Quotation Orders Overview
+                            Quotation Template Overview
                         </div>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button
@@ -194,7 +233,7 @@ function POMain() {
                                 <label className="input input-sm">
                                     <i className="ki-filled ki-magnifier"></i>
                                     <input
-                                        placeholder="Search packages"
+                                        placeholder="Search quotations..."
                                         type="text"
                                         value={searchTerm}
                                         onChange={handleSearch}
@@ -229,87 +268,123 @@ function POMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[100px] text-center'>PO No.</th>
-                                    <th className='w-[100px] text-center'>Sales No.</th>
-                                    <th className='w-[60px] text-center'>Total Amount</th>
-                                    <th className='w-[120px] text-center'>Order Status</th>
-                                    <th className='w-[80px] text-center'>Payment Status</th>
-                                    <th className='w-[80px] text-center'>Delivery/Fulfillment</th>
-                                    <th className='w-[120px] text-center'>Action</th>
+                                    <th
+                                        className='w-[150px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Name {getSortIcon('name')}
+                                        </div>
+                                    </th>
+                                    <th className='w-[100px] text-center'>Property</th>
+                                    <th className='w-[50px] text-center'>Draft/Ready</th>
+                                    <th
+                                        className='w-[300px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('description')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Description {getSortIcon('description')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[110px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('total_amount')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Total Amount {getSortIcon('total_amount')}
+                                        </div>
+                                    </th>
+                                    <th className='w-[80px] text-center'>Created By</th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('created_at')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Created Date {getSortIcon('created_at')}
+                                        </div>
+                                    </th>
+                                    <th className='w-[80px] text-center'>Updated By</th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('updated_at')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Updated Date {getSortIcon('updated_at')}
+                                        </div>
+                                    </th>
+                                    <th className='w-[110px] text-center'>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {purchaseOrders.length > 0 ? (
-                                    purchaseOrders.map((po, poIndex) => (
+                                {quotations.length > 0 ? (
+                                    quotations.map((quotation, quoteIndex) => (
                                         <tr
-                                            key={poIndex}
-                                            className={`${poIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
+                                            key={quoteIndex}
+                                            className={`${quoteIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
                                         >
                                             <td>
-                                                <div className="flex flex-col gap-1">
+                                                {quotation.name}
+                                            </td>
+                                            <td>
+                                                {quotation.property.name}
+                                            </td>
+                                            <td className='text-center'>
+                                                <label className="switch switch-lg flex justify-center">
+                                                    <input
+                                                        className="checkbox"
+                                                        name="is_ready"
+                                                        type="checkbox"
+                                                        checked={!!quotation.is_ready}
+                                                        readOnly
+                                                    />
+                                                </label>
+                                            </td>
+                                            <td>
+                                                {quotation.description}
+                                            </td>
+                                            <td className='text-center'>
+                                                RM {quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td className='text-center'>
+                                                {quotation.created_by ? quotation.created_by.name : '-'}
+                                            </td>
+                                            <td className='text-center'>
+                                                {quotation.created_at}
+                                            </td>
+                                            <td className='text-center'>
+                                                {quotation.updated_by ? quotation.updated_by.name : '-'}
+                                            </td>
+                                            <td className='text-center'>
+                                                {quotation.updated_at}
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex justify-around gap-2">
                                                     <Link
-                                                        to={`/purchase-orders/${po.id}`}
-                                                        className="cursor-pointer text-orange-500"
+                                                        to={`/quotations/${quotation.id}`}
+                                                        state={{ fromUrl: '/quotations/archives' }}
+                                                        className="btn btn-sm btn-secondary"
                                                     >
-                                                        {po.po_no}
+                                                        View
                                                     </Link>
+                                                    <button
+                                                        className="btn-delete btn btn-sm btn-icon btn-danger"
+                                                        data-tooltip="#remove_tooltip"
+                                                        data-action="delete"
+                                                        data-id={quotation.id}
+                                                        data-name={quotation.name}
+                                                        data-modal-toggle="#delete_item_modal"
+                                                        onClick={() => setSelectedQuotation({ id: quotation.id, name: quotation.name })}
+                                                    >
+                                                        <i className="ki-outline ki-trash"></i>
+                                                    </button>
                                                 </div>
-                                            </td>
-                                            <td>
-                                                <div className="flex flex-col gap-1">
-                                                    {po.sale ?
-                                                        <Link
-                                                            to={`/sales/${po.sale_id}`}
-                                                            state={{ fromUrl: '/purchase-orders' }}
-                                                            className="cursor-pointer text-orange-500"
-                                                        >
-                                                            {po.sale.sales_no}
-                                                        </Link>
-                                                        :
-                                                        '-'
-                                                    }
-
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span>RM {po.total_amount.toFixed(2)}</span>
-                                            </td>
-                                            <td className='text-center'>
-                                                <span className={`badge badge-pill p-2 cursor-default
-                                                    ${po.order_status === 'confirmed' ? 'badge-success' : ''} 
-                                                    ${po.order_status === 'revoked' ? 'badge-danger' : ''} 
-                                                    badge-outline`}
-                                                >
-                                                    {po.order_status}
-                                                </span>
-                                            </td>
-                                            <td className='text-center'>
-                                                <span className={`badge badge-pill p-2 cursor-default
-                                                    ${po.payment_status === 'confirmed' ? 'badge-success' : ''} 
-                                                    ${po.payment_status === 'revoked' ? 'badge-danger' : ''} 
-                                                    badge-outline`}
-                                                >
-                                                    {po.payment_status}
-                                                </span>
-                                            </td>
-                                            <td className='text-center'>
-                                                <Link
-                                                    to={`/purchase-orders/fulfillment/${po.id}`}
-                                                    className="btn btn-sm btn-outline btn-primary"
-                                                >
-                                                    View Status
-                                                </Link>
-
-                                            </td>
-                                            <td className='text-center'>
-
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="text-center text-gray-500">
-                                            No purchase orders available
+                                        <td colSpan={9} className="text-center text-gray-500">
+                                            No quotations available
                                         </td>
                                     </tr>
                                 )}
@@ -409,8 +484,18 @@ function POMain() {
                     </div>
                 </div>
             </div>
+
+            <DeleteModal
+                item={selectedQuotation}
+                modalTitle='Remove Quotation'
+                modalPrompt='Are you sure to permanently remove this package:'
+                notifySuccess='Quotation Removed Successfully!'
+                notifyError='Quotation remove failed'
+                navigateUrl='/quotations'
+                deleteFunction={handleRemoveQuotation}
+            />
         </>
     );
 }
 
-export default POMain;
+export default QuotationArchive;

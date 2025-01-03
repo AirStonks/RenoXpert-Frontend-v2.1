@@ -6,19 +6,26 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
 import IncludePackageModal from '../../components/Modals/IncludePackageModal';
-import { Package, Product, Quotation } from '../../types';
-import { createQuotation } from '../../services/api';
+import { Package, Product, Property, Quotation } from '../../types';
+import { createQuotation, fetchProperties } from '../../services/api';
 import IncludeQuotationProductModal from '../../components/Modals/IncludeQuotationProductModal';
+import { KTDropdown } from '../../metronic/core';
 
 function CreateQuotation() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         quotationName: '',
         quotationPrice: 0,
+        is_ready: false,
         description: '',
     });
 
     const qtyBtnRef = useRef(null);
+    const inputPropertyRef = useRef(null);
+
+    const [searchPropertyTerm, setSearchPropertyTerm] = useState('');
+    const [properties, setProperties] = useState<Property[]>([]);
+    const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [selectedPackages, setSelectedPackages] = useState<Package[]>([]);
@@ -67,7 +74,25 @@ function CreateQuotation() {
             quotationPrice: totalAmount, // Sync quotationPrice with totalAmount
         }));
 
+        initDropdown();
+
     }, [totalAmount]);
+
+    const initDropdown = async () => {
+        const propertyEl = document.querySelector('#property_dropdown') as HTMLElement;
+        const propertyDropdown = KTDropdown.getInstance(propertyEl);
+
+        propertyDropdown.on('shown', async () => {
+            inputPropertyRef.current.focus();
+            try {
+                const data = await fetchProperties('', 6);
+                setProperties(data.data);
+
+            } catch (error) {
+                console.error('Failed to fetch quotations:', error);
+            }
+        });
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -110,8 +135,24 @@ function CreateQuotation() {
 
     // PENDING
     const handleSubmit = async () => {
+
+        if (selectedProperty === null) {
+            notify('error', "Please select a property");
+            return;
+        }
+
+        if (formData.quotationName === '') {
+            notify('error', "Please enter a quotation name");
+            return;
+        }
+
         const storedPackages = localStorage.getItem('include_packages');
         const parsedPackages = JSON.parse(storedPackages);
+
+        if (parsedPackages === null || parsedPackages.length === 0) {
+            notify('error', "Please select at least one package");
+            return;
+        }
 
         // const metadata;
         const newMetadata = parsedPackages.map((pkg: Package) => ({
@@ -133,7 +174,9 @@ function CreateQuotation() {
 
         const quotationData: Quotation = {
             name: formData.quotationName,
+            property_id: selectedProperty.id,
             description: formData.description,
+            is_ready: formData.is_ready,
             total_amount: formData.quotationPrice,
             metadata: newMetadata,
         }
@@ -200,7 +243,35 @@ function CreateQuotation() {
         }
     };
 
+    const handleSearchProperty = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const term = event.target.value;
+        setSearchPropertyTerm(term);
 
+        try {
+            const data = await fetchProperties(term, 6); // Assuming you have a similar fetch function
+            setProperties(data.data);
+        } catch (error) {
+            console.error('Error fetching properties:', error);
+        }
+    };
+
+    const handleSelectProperty = async (property: Property) => {
+        setFormData((prev) => ({
+            ...prev,
+            propertyId: property.id,
+        }));
+        setSelectedProperty(property);
+        setSearchPropertyTerm('');
+        setProperties([]);
+        localStorage.setItem('create_order_data', JSON.stringify(formData));
+    };
+
+    const toggleIsReady = () => {
+        setFormData((prevData) => ({
+            ...prevData,
+            is_ready: !prevData.is_ready
+        }));
+    };
 
     const updateSelectedPackages = (packages) => {
         const updatedPackages = packages.map((prodPackage: Package) => {
@@ -224,40 +295,6 @@ function CreateQuotation() {
     const updateLocalStorage = (packages) => {
         localStorage.setItem('include_packages', JSON.stringify(packages));
     };
-
-    // const toggleProperty = (id: number, packId: number, property: 'supply' | 'install') => {
-    //     console.log('Triggered toggleProperty');
-
-    //     setSelectedPackages((prevPackages: Package[]) => {
-    //         const updatedPackages = prevPackages.map((prodPackage) => {
-    //             if (prodPackage.id === packId) {
-    //                 const updatedProducts = prodPackage.products.map((product) => {
-    //                     if (product.id === id) {
-    //                         const key = property === 'install' ? 'includeInstall' : 'includeSupply';
-
-    //                         return {
-    //                             ...product,
-    //                             pivot: {
-    //                                 ...product.pivot,
-    //                                 [key]: product.pivot ? !product.pivot[key] : true, // handle case if pivot is undefined
-    //                             },
-    //                         };
-    //                     }
-    //                     return product; // Return the original product if not matched
-    //                 });
-
-    //                 return {
-    //                     ...prodPackage,
-    //                     products: updatedProducts,
-    //                 };
-    //             }
-    //             return prodPackage; // Return the original package if not matched
-    //         });
-
-    //         updateLocalStorage(updatedPackages);
-    //         return updatedPackages;
-    //     });
-    // };
 
     const adjustQuantity = (prodId: number, packId: number, action: 'increase' | 'decrease') => {
         setSelectedPackages((prevPackages: Package[]) => {
@@ -327,7 +364,6 @@ function CreateQuotation() {
         });
     };
 
-
     const handleRemovePackage = (packId: number) => {
         setSelectedPackages((prevPackages: Package[]) => {
             // Filter out the package with the matching packId
@@ -355,7 +391,7 @@ function CreateQuotation() {
                         <i className="ki-solid ki-arrow-left"></i>
                     </button>
                     <span className="text-2xl font-bold text-gray-900">
-                        Create New Quotation
+                        Create New Quotation Template
                     </span>
                 </div>
             </div>
@@ -364,12 +400,12 @@ function CreateQuotation() {
                 <div className="flex flex-col flex-[3] gap-8">
                     <div className="card">
                         <div className="card-body">
-                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Package Detail</h2>
+                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>General</h2>
 
                             {/* Package Name */}
                             <InputFieldGroup
                                 fieldTitle="Quotation Name"
-                                description="A prodPackage name is required and recommended to be unique."
+                                description="The name of the quotation, recommend to be unique."
                                 placeholder="Quotation name"
                                 name="quotationName"
                                 value={formData.quotationName}
@@ -380,13 +416,111 @@ function CreateQuotation() {
                             {/* Description */}
                             <InputFieldGroup
                                 fieldTitle="Description"
-                                description="A prodPackage name is required and recommended to be unique."
+                                description="An extra description of the quotation."
                                 placeholder="Description"
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
                                 error={validationErrors.description}
                             />
+
+                            {/* Property */}
+                            <div className="flex flex-col mb-8">
+                                <span className="mb-2 text-sm font-medium text-gray-900">
+                                    Property
+                                </span>
+                                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                    Select the property that associated with this quotation template.
+                                </span>
+                                <div className="dropdow mb-2" data-dropdown="true" data-dropdown-trigger="click" id='property_dropdown'>
+                                    <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                        <span>Property</span>
+                                        <i className="ki-filled ki-down"></i>
+                                    </button>
+                                    <div className="dropdown-content w-full max-w-80">
+                                        <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                            <label className="input input-sm">
+                                                <i className="ki-filled ki-magnifier"></i>
+                                                <input
+                                                    ref={inputPropertyRef}
+                                                    placeholder="Search property"
+                                                    type="text"
+                                                    value={searchPropertyTerm}
+                                                    onChange={handleSearchProperty}
+                                                />
+                                            </label>
+                                        </div>
+                                        <div className="menu menu-default flex flex-col w-full">
+                                            {properties.map((property, index) => (
+                                                <div className="menu-item" key={index} data-id={property.id}>
+                                                    <button
+                                                        className="menu-link"
+                                                        onClick={() => handleSelectProperty(property)}
+                                                    >
+                                                        <span className="menu-title">{property.name}</span>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                {selectedProperty && (
+                                    <>
+                                        <div className="card">
+                                            <div className="card-body">
+                                                <div className="flex flex-col gap-1 text-gray-900">
+                                                    <span className='text-sm font-semibold text-gray-900'>{selectedProperty.name}</span>
+                                                    <span className='text-sm font-normal text-slate-400'>
+                                                        {[
+                                                            selectedProperty.address,
+                                                            selectedProperty.street,
+                                                            selectedProperty.postcode,
+                                                            selectedProperty.city,
+                                                            selectedProperty.state
+                                                        ].filter(Boolean).join(', ')}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+
+                            {/* Quotation Status */}
+                            <div className="flex flex-col mb-8">
+                                <label className="mb-2 text-sm font-medium text-gray-900">
+                                    Quotation Status
+                                </label>
+
+                                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                    Set the status of the quotation. "On" indicates ready to use, "Off" indicates draft mode.
+                                </span>
+
+                                <label className="switch switch-lg">
+                                    <input
+                                        className="checkbox"
+                                        name="is_ready"
+                                        type="checkbox"
+                                        checked={!!formData.is_ready}
+                                        onChange={toggleIsReady}
+                                    />
+                                    <span className="switch-label">
+                                        Current Mode: {formData.is_ready ? 'Ready to use' : 'Draft Mode'}
+                                    </span>
+                                </label>
+
+                                {/* <input
+                                    className={`input mb-2 ${error ? 'border-red-500' : ''}`}
+                                    placeholder={placeholder}
+                                    type={type}
+                                    name={name}
+                                    value={displayValue}  // Display value as a string, but handle 0 properly
+                                    onChange={handleChange}
+                                />
+
+                                {error && <label className="text-red-500 text-xs">{error}</label>} */}
+                            </div>
                         </div>
                     </div>
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import Loading from "../../components/Loading";
@@ -16,8 +16,11 @@ const APP_URL =
                 ? import.meta.env.VITE_LOCAL_APP_URL
                 : null;
 
+type SortOrder = 'asc' | 'desc' | null;
+
 function RegistrationFormMain() {
     const navigate = useNavigate();
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [regForms, setRegForm] = useState<OwnerRegistrationForm[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -26,6 +29,8 @@ function RegistrationFormMain() {
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [sortField, setSortField] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -44,7 +49,7 @@ function RegistrationFormMain() {
         document.title = "Owner Registration Forms | RenoXpert";
         const clipboard = new ClipboardJS('.copy-link');
 
-        initRegFormTable(page, size);
+        initRegFormTable(1, 10, '', null, '');
 
         clipboard.on('success', function (e) {
             notify('success', 'Copied to clipboard!');
@@ -55,12 +60,18 @@ function RegistrationFormMain() {
             clipboard.destroy();
         };
 
-    }, [page, size]);
+    }, []);
 
-    const initRegFormTable = async (page: number, size: number, searchTerm?: string) => {
+    const initRegFormTable = async (
+        page: number,
+        size: number,
+        searchTerm?: string,
+        order?: string,
+        field?: string
+    ) => {
         try {
             setIsLoading(true);
-            const response = await registrationFormIndex(size, page, searchTerm);
+            const response = await registrationFormIndex(size, page, searchTerm, order, field);
 
             const data = response?.data || [];
             setRegForm(data);
@@ -75,36 +86,83 @@ function RegistrationFormMain() {
     };
 
     const handleRefreshTable = async () => {
-        initRegFormTable(page, size, searchTerm);
+        initRegFormTable(page, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchTerm(value);
 
-        try {
-            setIsLoading(true);
-            const response = await registrationFormIndex(size, page, value);
-
-            const data = response?.data || [];
-            setRegForm(data);
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error searching regForms:', error);
-            setError('Failed to search regForms');
-        } finally {
-            setIsLoading(false);
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+
+            try {
+                setIsLoading(true);
+                const response = await registrationFormIndex(size, 1, value, sortOrder, sortField);
+
+                const data = response?.data || [];
+                setRegForm(data);
+                setTotalItems(response?.totalCount || 0);
+            } catch (error) {
+                console.error('Error searching products:', error);
+                setError('Failed to search products');
+            } finally {
+                setIsLoading(false);
+            }
+
+        }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
+        initRegFormTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+    };
+
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            // Cycle through states: null -> asc -> desc -> null
+            if (sortOrder === null) {
+                setSortOrder('asc');
+                initRegFormTable(page, size, searchTerm, 'asc', field);
+            } else if (sortOrder === 'asc') {
+                setSortOrder('desc');
+                initRegFormTable(page, size, searchTerm, 'desc', field);
+            } else {
+                setSortOrder(null);
+                setSortField('');
+                initRegFormTable(page, size, searchTerm, null, '');
+            }
+        } else {
+            // New field, start with ascending
+            setSortField(field);
+            setSortOrder('asc');
+            initRegFormTable(page, size, searchTerm, 'asc', field);
+        }
+    };
+
+    const getSortIcon = (field: string) => {
+        if (sortField !== field) {
+            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+        switch (sortOrder) {
+            case 'asc':
+                return <i className="ki-outline ki-arrow-up text-primary" />;
+            case 'desc':
+                return <i className="ki-outline ki-arrow-down text-primary" />;
+            default:
+                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
     };
 
     const totalPages = Math.ceil(totalItems / size);
@@ -209,12 +267,55 @@ function RegistrationFormMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
+                                    {/* <th
+                                        className='w-[150px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Owner Name {getSortIcon('name')}
+                                        </div>
+                                    </th> */}
                                     <th className='w-[150px] text-center'>Owner Name</th>
-                                    <th className='w-[80px]'>Form No</th>
-                                    <th className='w-[100px] text-center'>Phone No.</th>
-                                    <th className='w-[150px] text-center'>Email</th>
-                                    <th className='w-[100px] text-center'>Status</th>
-                                    <th className='w-[150px] text-center'>Submitted At</th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('form_no')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Form No {getSortIcon('form_no')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('phone_no')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Phone No. {getSortIcon('phone_no')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[150px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('email')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Email {getSortIcon('email')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('status')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Status {getSortIcon('status')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('created_at')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Submitted At {getSortIcon('created_at')}
+                                        </div>
+                                    </th>
                                     <th className='w-[80px] text-center'>Action</th>
                                 </tr>
                             </thead>

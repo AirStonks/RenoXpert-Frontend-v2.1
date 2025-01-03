@@ -1,10 +1,11 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchProduct from "../../hook/useFetchProduct";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { changeProductThumbnail, removeProductPhoto, uploadProductPhotos } from "../../services/api";
+import { archiveProduct, changeProductThumbnail, removeProductPhoto, restoreProduct, uploadProductPhotos } from "../../services/api";
 import { Slide, toast } from "react-toastify";
+import { KTModal } from "../../metronic/core";
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -15,9 +16,10 @@ const AWS_S3_URL =
 
 function ProductDetail() {
     const navigate = useNavigate();
+    const { state } = useLocation();
     const { id } = useParams<{ id: string }>();
     const productId = id ? parseInt(id, 10) : null;
-    const { product, loading, error } = useFetchProduct(productId);
+    const { product, loading, error, refetch } = useFetchProduct(productId);
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -57,7 +59,11 @@ function ProductDetail() {
     }, [product?.attachments?.photos, product?.attachments?.thumbnail]);
 
     const handleBackClick = () => {
-        navigate('/products');
+        if (state) {
+            navigate(state.fromUrl);
+        } else {
+            navigate('/products');
+        }
     };
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,6 +179,45 @@ function ProductDetail() {
         return `${(size / KB).toFixed(2)} KB`;
     };
 
+    const handleArchiveItem = async () => {
+        try {
+            const response = await archiveProduct(productId);
+
+            if (response?.success) {
+                notify('success', 'Product archived successfully.');
+
+                const modalEl = document.querySelector('#archive_item_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+
+                modal.hide();
+                refetch();
+
+                navigate('/products/' + productId);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const handleRestoreItem = async () => {
+        try {
+            const response = await restoreProduct(productId);
+
+            if (response?.success) {
+                notify('success', 'Product restored successfully.');
+
+                const modalEl = document.querySelector('#restore_item_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+
+                modal.hide();
+                refetch();
+
+                navigate('/products/' + productId);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     if (!productId) return null;
 
@@ -197,7 +242,7 @@ function ProductDetail() {
                         Product Detail
                     </span>
                 </div>
-                <div className="flex">
+                <div className="flex gap-4">
                     <Link
                         to={'/products/edit/' + productId}
                         className="btn btn-info btn-sm"
@@ -205,6 +250,55 @@ function ProductDetail() {
                         <i className="ki-outline ki-notepad-edit"></i>
                         Edit
                     </Link>
+                    {product.status === 'archived' &&
+                        <button
+                            className="btn btn-success btn-sm btn-outline"
+                            data-modal-toggle="#restore_item_modal"
+                        >
+                            <div className="flex gap-2 items-center">
+                                <i className="ki-filled ki-archive"></i>
+                                <span>Restore Product</span>
+                            </div>
+                        </button>
+                    }
+                    <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                            <i className="ki-filled ki-dots-vertical"></i>
+                        </button>
+
+                        <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
+                            {product.status !== 'archived' &&
+                                <div className="menu-item">
+                                    <button
+                                        className="menu-link"
+                                        data-modal-toggle="#archive_item_modal"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center text-danger">
+                                                <i className="ki-filled ki-archive text-lg"></i>
+                                                <span>Archive Product</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            }
+                            {product.status === 'archived' &&
+                                <div className="menu-item">
+                                    <button
+                                        className="menu-link"
+                                    // data-modal-toggle="#archive_item_modal"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center text-danger">
+                                                <i className="ki-outline ki-trash text-lg"></i>
+                                                <span>Remove Product</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -259,18 +353,23 @@ function ProductDetail() {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                        <td className="text-sm text-gray-600 pe-4 lg:pe-8">
                                             Status:
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                                        <td
+                                            className={`badge badge-sm badge-outline text-sm text-gray-900
+                                                    ${product.status === 'available' ? 'badge-success' : ''}
+                                                    ${product.status === 'archived' ? 'badge-danger' : ''}
+                                                `}
+                                        >
+                                            {product.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                        <td className="text-sm text-gray-600 py-3 pe-4 lg:pe-8">
                                             Product Type:
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
+                                        <td className="text-sm text-gray-900 py-3">
                                             {product.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                         </td>
                                     </tr>
@@ -791,6 +890,106 @@ function ProductDetail() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="archive_item_modal">
+                <div className="modal-content modal-center-y max-w-[500px]">
+                    <div className="modal-body overflow-y-auto scrollable-y flex flex-col gap-6 justify-center items-center my-4">
+                        <div className="modal-title text-lg">
+                            Archive Product
+                        </div>
+
+                        <div className="text-gray-800">
+                            Are you sure you want to archive this product?
+                        </div>
+
+                        <blockquote className="p-4 border-s-4 border-warning bg-warning-clarity rounded-md">
+                            <div className="flex gap-4">
+                                <div className="flex">
+                                    <i className="ki-filled ki-information-4 text-xl text-warning"></i>
+                                </div>
+                                <div className="flex flex-col gap-6">
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-warning-active font-semibold">
+                                            Restore Product
+                                        </span>
+                                        <span className="text-sm text-gray-800">
+                                            You can unarchive and restore products from the product <strong>Archive Zone</strong>.
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-warning-active font-semibold">
+                                            Manual Removal from Associated Entities
+                                        </span>
+                                        <span className="text-sm text-gray-800">
+                                            At this stage of system development, we are unable to automatically remove the item you are about to archive from the <strong>Package, Quotation Template and Quotation Orders</strong>. You will need to manually remove it from these sections.
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </blockquote>
+
+                        <div className="flex gap-4">
+                            <button
+                                className="btn btn-secondary btn-sm"
+                                data-modal-dismiss="true"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-success btn-sm"
+                                onClick={handleArchiveItem}
+                            >
+                                Archive
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="restore_item_modal">
+                <div className="modal-content modal-center-y max-w-[500px]">
+                    <div className="modal-body overflow-y-auto scrollable-y flex flex-col gap-6 justify-center items-center my-4">
+                        <div className="modal-title text-lg">
+                            Restore Product
+                        </div>
+
+                        <div className="text-gray-800">
+                            Are you sure you want to restore this product?
+                        </div>
+
+                        {/* <blockquote className="p-4 border-s-4 border-warning bg-warning-clarity rounded-md">
+                            <div className="flex gap-4">
+                                <div className="flex">
+                                    <i className="ki-filled ki-information-4 text-xl text-warning"></i>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <span className="text-warning-active font-semibold">
+                                        Information
+                                    </span>
+                                    <span className="text-sm text-gray-800">
+                                        You can retrieve this product from the product archive zone and unarchive it.
+                                    </span>
+                                </div>
+                            </div>
+                        </blockquote> */}
+
+                        <div className="flex gap-4">
+                            <button
+                                className="btn btn-secondary btn-sm"
+                                data-modal-dismiss="true"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-success btn-sm"
+                                onClick={handleRestoreItem}
+                            >
+                                Restore
+                            </button>
                         </div>
                     </div>
                 </div>

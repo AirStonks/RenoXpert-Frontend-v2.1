@@ -2,14 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import { toast, Slide } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
 import IncludeProductModal from '../../components/Modals/IncludeProductModal';
 import { Package, Product } from '../../types';
-import { createPackage } from '../../services/api';
+import { createPackage, fetchPackage } from '../../services/api';
+import Loading from '../../components/Loading';
 
 function CreatePackage() {
     const navigate = useNavigate();
+    const { state } = useLocation();
     const [formData, setFormData] = useState({
         packageName: '',
         packagePrice: 0,
@@ -21,6 +23,8 @@ function CreatePackage() {
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [totalPrice, setTotalPrice] = useState<number>(0);
+
+    const [loading, setLoading] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -34,24 +38,87 @@ function CreatePackage() {
             transition: Slide,
         });
     };
+
     const handleBackClick = () => {
         localStorage.removeItem('include_prod_selected_products');
-        navigate('/packages');
+        if (state) {
+            navigate(state.fromUrl);
+        } else {
+            navigate('/packages');
+        }
     };
-    +
-        useEffect(() => {
-            document.title = "Create Package | RenoXpert";
 
-            const storedProducts = localStorage.getItem('include_prod_selected_products');
-            if (storedProducts) {
-                const parsedProducts = JSON.parse(storedProducts);
+    useEffect(() => {
+        document.title = "Create Package | RenoXpert";
 
-                setSelectedProducts(parsedProducts);
+        const handleDuplicateProducts = async (packageId: number) => {
+            setLoading(true);
+            try {
+                const response = await fetchPackage(packageId);
 
-                const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
-                setTotalPrice(initialTotalPrice);
+                if (response?.success) {
+                    const data: Package = response.data;
+
+                    const transformedProducts = data.products.map((product: any) => ({
+                        SKU: product.SKU,
+                        description: product.description,
+                        id: product.id,
+                        install: product.pivot.includeInstall,
+                        name: product.name,
+                        price: product.provisioning.supply.retail_price + product.provisioning.install.retail_price,
+                        quantity: product.pivot.quantity,
+                        supply: product.pivot.includeSupply,
+                        visibility: product.pivot.visibility
+                    }));
+
+                    // Save to localStorage and update state
+                    await localStorage.setItem('include_prod_selected_products', JSON.stringify(transformedProducts));
+
+                    // Update selected products state
+                    setSelectedProducts(transformedProducts);
+
+                    // Calculate total price
+                    const calculatedTotalPrice = transformedProducts.reduce((total, product) => {
+                        return total + (product.price * product.quantity); // Multiply price by quantity
+                    }, 0);
+
+                    // Update the totalPrice state
+                    setTotalPrice(calculatedTotalPrice);
+                    
+                    setFormData({
+                        ...formData,
+                        packageName: data.name,
+                        description: data.description,
+                        description_internal: data.description_internal,
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching duplicate products:', error);
             }
-        }, []);
+            setLoading(false);
+        }
+
+
+        if (state) {
+            if (state.dupPackId) {
+                console.log('Duplicate Package ID: ', state.dupPackId);
+                handleDuplicateProducts(state.dupPackId)
+            }
+        }
+
+        const storedProducts = localStorage.getItem('include_prod_selected_products');
+
+        if (storedProducts) {
+            const parsedProducts = JSON.parse(storedProducts);
+
+            setSelectedProducts(parsedProducts);
+
+            const initialTotalPrice = parsedProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+            setTotalPrice(initialTotalPrice);
+        }
+
+    }, [state]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -216,6 +283,8 @@ function CreatePackage() {
 
     return (
         <>
+            {loading && <Loading />}
+
             <div className="flex justify-between items-center flex-wrap mb-6">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>

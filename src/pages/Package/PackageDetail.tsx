@@ -1,22 +1,101 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useFetchPackage from "../../hook/useFetchPackage";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
+import { archivePackage, removePackage, restorePackage } from "../../services/api";
+import { Slide, toast } from "react-toastify";
+import { KTModal } from "../../metronic/core";
+import DeleteModal from "../../components/Modals/DeleteModal";
 
 function PackageDetail() {
     const navigate = useNavigate();
+    const { state } = useLocation();
     const { id } = useParams<{ id: string }>();
     const packageId = id ? parseInt(id, 10) : null;
-    const { packageDetail, loading, error } = useFetchPackage(packageId);
+    const { packageDetail, loading, error, refetch } = useFetchPackage(packageId);
+
+    const [selectedPackage, setSelectedPackage] = useState<{ id: number | string, name: string } | null>(null);
+
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
 
     useEffect(() => {
         document.title = "Package Detail | RenoXpert";
-    }, [packageId]);
+        setSelectedPackage({ id: packageId, name: packageDetail?.name || '' });
+    }, [packageId, packageDetail?.name]);
 
     const handleBackClick = () => {
-        navigate('/packages');
+        if (state) {
+            navigate(state.fromUrl);
+        } else {
+            navigate('/packages');
+        }
     };
+
+    const handleArchiveItem = async () => {
+        try {
+            const response = await archivePackage(packageId);
+
+            if (response?.success) {
+                notify('success', 'Package archived successfully.');
+
+                const modalEl = document.querySelector('#archive_item_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+
+                modal.hide();
+                refetch();
+
+                navigate('/packages/' + packageId);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const handleRestoreItem = async () => {
+        try {
+            const response = await restorePackage(packageId);
+
+            if (response?.success) {
+                notify('success', 'Package restored successfully.');
+
+                const modalEl = document.querySelector('#restore_item_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+
+                modal.hide();
+                refetch();
+
+                navigate('/packages/' + packageId);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const handleRemovePackage = async (pkgId: number) => {
+        try {
+            const response = await removePackage(pkgId);
+
+            if (response?.success) {
+                return { success: true };
+            }
+            return { success: false };
+
+        } catch (error) {
+            return { success: false, message: 'Package removal failed' };
+        }
+    }
 
     if (!packageId) return null; // Early return for null packageId
 
@@ -40,7 +119,7 @@ function PackageDetail() {
                         Package Detail
                     </span>
                 </div>
-                <div className="flex">
+                <div className="flex gap-4">
                     <Link
                         to={'/packages/edit/' + packageId}
                         className="btn btn-info btn-sm"
@@ -48,6 +127,69 @@ function PackageDetail() {
                         <i className="ki-outline ki-notepad-edit"></i>
                         Edit
                     </Link>
+                    {packageDetail.status === 'archived' &&
+                        <button
+                            className="btn btn-success btn-sm btn-outline"
+                            data-modal-toggle="#restore_item_modal"
+                        >
+                            <div className="flex gap-2 items-center">
+                                <i className="ki-filled ki-archive"></i>
+                                <span>Restore Package</span>
+                            </div>
+                        </button>
+                    }
+                    <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                            <i className="ki-filled ki-dots-vertical"></i>
+                        </button>
+
+                        <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
+                            <div className="menu-item">
+                                <Link
+                                    to={`/packages/create`}
+                                    state={{ dupPackId: packageId, fromUrl: `/packages/${packageId}` }}
+                                    className="menu-link"
+                                >
+                                    <span className="menu-title">
+                                        <div className="flex gap-2 items-center">
+                                            <i className="ki-outline ki-note text-lg"></i>
+                                            <span>Duplicate Package</span>
+                                        </div>
+                                    </span>
+                                </Link>
+                            </div>
+                            {packageDetail.status !== 'archived' &&
+                                <div className="menu-item">
+                                    <button
+                                        className="menu-link"
+                                        data-modal-toggle="#archive_item_modal"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center text-danger">
+                                                <i className="ki-filled ki-archive text-lg"></i>
+                                                <span>Archive Package</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            }
+                            {packageDetail.status === 'archived' &&
+                                <div className="menu-item">
+                                    <button
+                                        className="menu-link"
+                                        data-modal-toggle="#delete_item_modal"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center text-danger">
+                                                <i className="ki-outline ki-trash text-lg"></i>
+                                                <span>Remove Package</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
                 </div>
             </div>
             <div className="flex flex-wrap gap-8 mb-8">
@@ -78,20 +220,23 @@ function PackageDetail() {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                        <td className="text-sm text-gray-600 pe-4 lg:pe-8">
                                             Status:
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <span className="badge badge-sm badge-success badge-outline">
-                                                Available
-                                            </span>
+                                        <td
+                                            className={`badge badge-sm badge-outline text-sm text-gray-900
+                                                    ${packageDetail.status === 'available' ? 'badge-success' : ''}
+                                                    ${packageDetail.status === 'archived' ? 'badge-danger' : ''}
+                                                `}
+                                        >
+                                            {packageDetail.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                        <td className="text-sm text-gray-600 py-3 pe-4 lg:pe-8">
                                             Description:
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
+                                        <td className="text-sm text-gray-900 py-3">
                                             {packageDetail.description}
                                         </td>
                                     </tr>
@@ -167,6 +312,116 @@ function PackageDetail() {
                     </div>
                 </div>
             </div>
+
+            <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="archive_item_modal">
+                <div className="modal-content modal-center-y max-w-[500px]">
+                    <div className="modal-body overflow-y-auto scrollable-y flex flex-col gap-6 justify-center items-center my-4">
+                        <div className="modal-title text-lg">
+                            Archive Package
+                        </div>
+
+                        <div className="text-gray-800">
+                            Are you sure you want to archive this package?
+                        </div>
+
+                        <blockquote className="p-4 border-s-4 border-warning bg-warning-clarity rounded-md">
+                            <div className="flex gap-4">
+                                <div className="flex">
+                                    <i className="ki-filled ki-information-4 text-xl text-warning"></i>
+                                </div>
+                                <div className="flex flex-col gap-6">
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-warning-active font-semibold">
+                                            Restore Package
+                                        </span>
+                                        <span className="text-sm text-gray-800">
+                                            You can unarchive and restore packages from the package <strong>Archive Zone</strong>.
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-warning-active font-semibold">
+                                            Manual Removal from Associated Entities
+                                        </span>
+                                        <span className="text-sm text-gray-800">
+                                            At this stage of system development, we are unable to automatically remove the item you are about to archive from the <strong>Package, Quotation Template and Quotation Orders</strong>. You will need to manually remove it from these sections.
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </blockquote>
+
+                        <div className="flex gap-4">
+                            <button
+                                className="btn btn-secondary btn-sm"
+                                data-modal-dismiss="true"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-success btn-sm"
+                                onClick={handleArchiveItem}
+                            >
+                                Archive
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="restore_item_modal">
+                <div className="modal-content modal-center-y max-w-[500px]">
+                    <div className="modal-body overflow-y-auto scrollable-y flex flex-col gap-6 justify-center items-center my-4">
+                        <div className="modal-title text-lg">
+                            Restore Package
+                        </div>
+
+                        <div className="text-gray-800">
+                            Are you sure you want to restore this package?
+                        </div>
+
+                        {/* <blockquote className="p-4 border-s-4 border-warning bg-warning-clarity rounded-md">
+                            <div className="flex gap-4">
+                                <div className="flex">
+                                    <i className="ki-filled ki-information-4 text-xl text-warning"></i>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <span className="text-warning-active font-semibold">
+                                        Information
+                                    </span>
+                                    <span className="text-sm text-gray-800">
+                                        You can retrieve this product from the product archive zone and unarchive it.
+                                    </span>
+                                </div>
+                            </div>
+                        </blockquote> */}
+
+                        <div className="flex gap-4">
+                            <button
+                                className="btn btn-secondary btn-sm"
+                                data-modal-dismiss="true"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-success btn-sm"
+                                onClick={handleRestoreItem}
+                            >
+                                Restore
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <DeleteModal
+                item={selectedPackage}
+                modalTitle='Remove Package'
+                modalPrompt='Are you sure to permanently remove this package:'
+                notifySuccess='Package Removed Successfully!'
+                notifyError='Package remove failed'
+                navigateUrl='/packages'
+                deleteFunction={handleRemovePackage}
+            />
         </>
     );
 }

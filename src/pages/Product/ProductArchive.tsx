@@ -1,30 +1,27 @@
-// src\pages\Order\OrderMain.tsx
-
+import Button from '../../components/Buttons/Button';
+import KTComponent from '../../metronic/core';
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { orderIndex, removeOrder } from '../../services/api';
+import { Product } from '../../types';
+import { productIndexArchived, removeProduct } from '../../services/api';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import Loading from '../../components/Loading';
-import { Order } from '../../types';
-import { Slide, toast } from 'react-toastify';
-import ClipboardJS from 'clipboard';
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-const APP_URL =
+const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
-        ? import.meta.env.VITE_APP_URL
-        : import.meta.env.VITE_APP_ENV === "staging"
-            ? import.meta.env.VITE_STAGING_APP_URL
-            : import.meta.env.VITE_APP_ENV === "local"
-                ? import.meta.env.VITE_LOCAL_APP_URL
-                : null;
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
 
 type SortOrder = 'asc' | 'desc' | null;
 
-function OrderMain() {
+function ProductArchive() {
     const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const [orders, setOrders] = useState<Order[]>([]); // Initialize as an empty array
+    const [products, setProducts] = useState<Product[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);
@@ -34,40 +31,19 @@ function OrderMain() {
     const [sortField, setSortField] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
-    const [selectedOrder, setSelectedOrder] = useState<{ id: number | string, name: string } | null>(null);
-
-    const notify = (type: 'success' | 'error', message: string) => {
-        (toast[type] as (message: string, options?: object) => void)(message, {
-            position: "top-center",
-            autoClose: 3000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: localStorage.getItem('theme'),
-            transition: Slide,
-        });
-    };
+    const [selectedProduct, setSelectedProduct] = useState<{ id: number | string, name: string } | null>(null);
 
     useEffect(() => {
-        document.title = "Quotation Orders | RenoXpert";
-        initOrderTable(1, 10, '', null, '');
-
-        const clipboard = new ClipboardJS('.copy-link');
-
-        clipboard.on('success', function (e) {
-            notify('success', 'Copied to clipboard!');
-            e.clearSelection();
-        });
-
-        // Cleanup the ClipboardJS instance
-        return () => {
-            clipboard.destroy();
-        };
-
+        document.title = "Products | RenoXpert";
+        KTComponent.init();
+        initProductTable(1, 10, '', null, '');
     }, []);
 
-    const initOrderTable = async (
+    const handleBackClick = () => {
+        navigate('/products');
+    };
+
+    const initProductTable = async (
         page: number,
         size: number,
         searchTerm?: string,
@@ -76,22 +52,20 @@ function OrderMain() {
     ) => {
         try {
             setIsLoading(true);
-            const response = await orderIndex(size, page, searchTerm, order, field);
-
+            const response = await productIndexArchived(size, page, searchTerm, order, field);
             const data = response?.data || [];
-            setOrders(data);
-
+            setProducts(data);
             setTotalItems(response?.totalCount || 0);
         } catch (error) {
-            console.error('Error fetching orders:', error);
-            setError('Failed to load orders');
+            console.error('Error fetching products:', error);
+            setError('Failed to load products');
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleRefreshTable = async () => {
-        initOrderTable(page, size, searchTerm, sortOrder, sortField);
+        initProductTable(page, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,10 +82,10 @@ function OrderMain() {
 
             try {
                 setIsLoading(true);
-                const response = await orderIndex(size, 1, value, sortOrder, sortField);
+                const response = await productIndexArchived(size, 1, value, sortOrder, sortField);
 
                 const data = response?.data || [];
-                setOrders(data);
+                setProducts(data);
                 setTotalItems(response?.totalCount || 0);
             } catch (error) {
                 console.error('Error searching products:', error);
@@ -126,7 +100,7 @@ function OrderMain() {
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
-        initOrderTable(newPage, size, searchTerm, sortOrder, sortField);
+        initProductTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
@@ -139,20 +113,20 @@ function OrderMain() {
             // Cycle through states: null -> asc -> desc -> null
             if (sortOrder === null) {
                 setSortOrder('asc');
-                initOrderTable(page, size, searchTerm, 'asc', field);
+                initProductTable(page, size, searchTerm, 'asc', field);
             } else if (sortOrder === 'asc') {
                 setSortOrder('desc');
-                initOrderTable(page, size, searchTerm, 'desc', field);
+                initProductTable(page, size, searchTerm, 'desc', field);
             } else {
                 setSortOrder(null);
                 setSortField('');
-                initOrderTable(page, size, searchTerm, null, '');
+                initProductTable(page, size, searchTerm, null, '');
             }
         } else {
             // New field, start with ascending
             setSortField(field);
             setSortOrder('asc');
-            initOrderTable(page, size, searchTerm, 'asc', field);
+            initProductTable(page, size, searchTerm, 'asc', field);
         }
     };
 
@@ -170,23 +144,28 @@ function OrderMain() {
         }
     };
 
-    const totalPages = Math.ceil(totalItems / size);
+    const handleViewProduct = (productId: string | number) => {
+        const state = { from: 'products/archives' };
+        navigate(`/products/${productId}`, { state });
+    }
 
-    const handleRemoveOrder = async (orderId: number) => {
+    const handleRemoveProduct = async (productId: number) => {
         try {
-            const response = await removeOrder(orderId);
+            const response = await removeProduct(productId);
 
             if (response?.success) {
-                initOrderTable(page, size);
+                initProductTable(1, 10, null);
                 return { success: true };
             }
             return { success: false };
 
         } catch (error) {
             console.log(error);
-            return { success: false, message: 'Quotation removal failed' };
+            return { success: false, message: 'Product removal failed' };
         }
     }
+
+    const totalPages = Math.ceil(totalItems / size);
 
     return (
         <>
@@ -195,25 +174,35 @@ function OrderMain() {
 
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center flex-wrap">
-                    <span className="text-2xl font-bold text-gray-900">
-                        Quotation Orders
-                    </span>
-                    <div className="flex gap-3 flex-wrap">
-                        <Link
-                            to={'/orders/create'}
-                            className='btn btn-primary btn-sm'
-                            data-modal-toggle="#create_order_modal"
-                        >
-                            <i className="ki-outline ki-plus-squared"></i>
-                            Add New Quotation Order
-                        </Link>
+                    <div className="flex gap-4 items-center">
+                        <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
+                            <i className="ki-solid ki-arrow-left"></i>
+                        </button>
+                        <span className="text-2xl font-bold text-gray-900">
+                            Archived Products
+                        </span>
                     </div>
+                    <div className="flex gap-3 flex-wrap">
+                        <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                            <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                                <i className="ki-filled ki-dots-vertical"></i>
+                            </button>
+
+                            <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex gap-2 items-center text-center badge badge-lg badge-pill badge-warning badge-outline">
+                    <i className="ki-filled ki-information-4"></i>
+                    <span className="font-semibold">You are currently viewing archived items</span>
                 </div>
 
                 <div className="card">
                     <div className="card-header flex-wrap gap-2">
                         <div className="card-title">
-                            Quotation Orders Overview
+                            Archived Products
                         </div>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button
@@ -226,7 +215,7 @@ function OrderMain() {
                                 <label className="input input-sm">
                                     <i className="ki-filled ki-magnifier"></i>
                                     <input
-                                        placeholder="Search packages"
+                                        placeholder="Search products"
                                         type="text"
                                         value={searchTerm}
                                         onChange={handleSearch}
@@ -261,21 +250,64 @@ function OrderMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[100px]'>Order No.</th>
-                                    <th className='w-[100px] text-center'>Status</th>
-                                    <th className='w-[120px] text-center'>Owner</th>
-                                    <th className='w-[80px] text-center'>Unit</th>
-                                    <th className='w-[150px] text-center'>Property</th>
-                                    <th className='w-[80px] text-center'>Created By</th>
-                                    <th
-                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('created_at')}
-                                    >
+                                    <th className='w-[100px] text-center'>
                                         <div className="flex items-center justify-center gap-2">
-                                            Created Date {getSortIcon('created_at')}
+                                            Photo
                                         </div>
                                     </th>
-                                    <th className='w-[80px] text-center'>Updated By</th>
+                                    <th
+                                        className='w-[300px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Name {getSortIcon('name')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('sku')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            SKU {getSortIcon('sku')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('price')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Selling Price {getSortIcon('price')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[120px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('pm_category_id')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            PM Category {getSortIcon('pm_category_id')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[120px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('type')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Type {getSortIcon('type')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('task_weightage')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Task Weightage {getSortIcon('task_weightage')}
+                                        </div>
+                                    </th>
+                                    <th className='w-[80px] text-center'>
+                                        <div className="flex items-center justify-center gap-2">
+                                            Updated By
+                                        </div>
+                                    </th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('updated_at')}
@@ -288,128 +320,65 @@ function OrderMain() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {orders.length > 0 ? (
-                                    orders.map((order, orderIndex) => (
+                                {products.length > 0 ? (
+                                    products.map((product, prodIndex) => (
                                         <tr
-                                            key={orderIndex}
-                                            className={`${orderIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
+                                            key={prodIndex}
+                                            className={`${prodIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
                                         >
-                                            <td>
-                                                <div className="flex flex-col gap-1">
-                                                    <Link
-                                                        to={`/orders/${order.id}`}
-                                                        className="cursor-pointer text-orange-500"
-                                                    >
-                                                        {order.order_no}
-                                                    </Link>
-                                                </div>
-                                            </td>
                                             <td className='text-center'>
-                                                <span className={`badge badge-pill p-2 cursor-default
-                                                    ${order.status === 'confirmed' ? 'badge-success' : ''} 
-                                                    ${order.status === 'revoked' ? 'badge-danger' : ''} 
-                                                    badge-outline`}
-                                                >
-                                                    {order.status}
-                                                </span>
+                                                {product.attachments && product.attachments.thumbnail ? (
+                                                    <img
+                                                        src={AWS_S3_URL + product.attachments.thumbnail.file_url}
+                                                        alt={product.name}
+                                                        className="w-[64px] h-[64px] object-cover border border-gray-300 rounded"
+                                                    />
+                                                )
+                                                    :
+                                                    ''
+                                                }
                                             </td>
                                             <td>
-                                                <div className="flex flex-col gap-1">
-                                                    <span>{order.user.name}</span>
-                                                    <span className="text-xs text-slate-400">{order.user.email}</span>
-                                                    <span className="text-xs text-slate-700">+60 {order.user.phone_no}</span>
+                                                <div className="flex flex-col">
+                                                    <span>{product.name}</span>
+                                                    <span className="text-xs text-slate-400">{product.description || ''}</span>
                                                 </div>
                                             </td>
+                                            <td className='text-center'>{product.SKU}</td>
                                             <td className='text-center'>
-                                                <div className="flex flex-col gap-1">
-                                                    <span>{order.block}-{order.floor}-{order.unit_no}</span>
+                                                <div className="flex flex-col justify-center items-center">
+                                                    <span>RM {product.provisioning.supply.retail_price + product.provisioning.install.retail_price}</span>
                                                 </div>
                                             </td>
-                                            <td className='text-center'>
-                                                <div className="flex flex-col gap-1">
-                                                    <span>{order.property.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                {order.created_by ? order.created_by.name : '-'}
-                                            </td>
-                                            <td className='text-center'>
-                                                {order.created_at}
-                                            </td>
-                                            <td className='text-center'>
-                                                {order.updated_by ? order.updated_by.name : '-'}
-                                            </td>
-                                            <td className='text-center'>
-                                                {order.updated_at}
-                                            </td>
+                                            <td className='text-center capitalize'>{product.pm_category}</td>
+                                            <td className='text-center capitalize'>{product.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</td>
+                                            <td className='text-center'>{product.task_weightage}</td>
+                                            <td className='text-center'>{product.updated_by ? product.updated_by.name : '-'}</td>
+                                            <td className='text-center'>{product.updated_at}</td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <button
-                                                        className="btn btn-sm btn-outline btn-info copy-link"
-                                                        data-clipboard-text={`${APP_URL}owner/order/overview/id/${order.id}`}
+                                                    <Link
+                                                        to={`/products/${product.id}`}
+                                                        state={{ fromUrl: '/products/archives' }}
+                                                        className="btn-view btn btn-sm btn-secondary"
                                                     >
-                                                        Copy Link
+                                                        View
+                                                    </Link>
+                                                    <button
+                                                        className="btn-delete btn btn-sm btn-icon btn-danger"
+                                                        data-modal-toggle="#delete_item_modal"
+                                                        onClick={() => setSelectedProduct({ id: product.id, name: product.name })}
+                                                    >
+                                                        <i className="ki-outline ki-trash"></i>
                                                     </button>
-
-                                                    {order.status !== 'confirmed' && order.status !== 'revoked' ?
-                                                        <>
-                                                            {/* <button
-                                                                className="btn-confirm btn btn-xs btn-success"
-                                                                data-tooltip="#confirm_tooltip"
-                                                                data-action="confirm"
-                                                                data-id="${data.id}"
-                                                            >
-                                                                C
-                                                            </button> */}
-                                                            <Link
-                                                                to={`/orders/edit/${order.id}`}
-                                                                className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                                            >
-                                                                <i className="ki-outline ki-notepad-edit"></i>
-                                                            </Link>
-                                                            <button
-                                                                className="btn-delete btn btn-sm btn-icon btn-clear btn-light"
-                                                                data-modal-toggle="#delete_item_modal"
-                                                                onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
-                                                            >
-                                                                <i className="ki-outline ki-trash"></i>
-                                                            </button>
-                                                        </>
-                                                        :
-                                                        ''
-                                                    }
-
-                                                    {order.status === 'confirmed' ?
-                                                        <Link
-                                                            to={`/orders/edit/${order.id}`}
-                                                            className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                                        >
-                                                            <i className="ki-outline ki-notepad-edit"></i>
-                                                        </Link>
-                                                        :
-                                                        ''
-                                                    }
-
-                                                    {order.status === 'revoked' ?
-                                                        <button
-                                                            className="btn-regenerate btn btn-sm btn-warning"
-                                                            data-tooltip="#regenerate_tooltip"
-                                                            data-action="regenerate"
-                                                            data-id="${data.id}"
-                                                        >
-                                                            Regenerate Order
-                                                        </button>
-                                                        :
-                                                        ''
-                                                    }
                                                 </div>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={11} className="text-center text-gray-500">
-                                            No orders available
+                                        <td colSpan={9} className="text-center text-gray-500">
+                                            No products available
                                         </td>
                                     </tr>
                                 )}
@@ -511,16 +480,16 @@ function OrderMain() {
             </div>
 
             <DeleteModal
-                item={selectedOrder}
-                modalTitle='Remove Order'
-                modalPrompt='Are you sure to permanently remove this order:'
-                notifySuccess='Order Removed Successfully!'
-                notifyError='Order remove failed'
-                navigateUrl='/orders'
-                deleteFunction={handleRemoveOrder}
+                item={selectedProduct}
+                modalTitle='Remove Product'
+                modalPrompt='Are you sure to permanently remove this product:'
+                notifySuccess='Product Removed Successfully!'
+                notifyError='Product remove failed'
+                navigateUrl='/products'
+                deleteFunction={handleRemoveProduct}
             />
         </>
     );
 }
 
-export default OrderMain;
+export default ProductArchive;

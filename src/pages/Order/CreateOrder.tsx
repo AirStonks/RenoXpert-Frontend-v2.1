@@ -488,6 +488,7 @@ function CreateOrder() {
                                         </div>
                                     )}
                                 </div>
+                                
                                 <div className="flex flex-col flex-1 gap-2">
                                     <span className="text-base font-semibold text-gray-900">
                                         2. Select a Property

@@ -2,14 +2,18 @@
 
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Buttons/Button';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Quotation } from '../../types';
 import { quotationIndex, removeQuotation } from '../../services/api';
 import Loading from '../../components/Loading';
 import DeleteModal from '../../components/Modals/DeleteModal';
+import { Link } from 'react-router-dom';
+
+type SortOrder = 'asc' | 'desc' | null;
 
 function QuotationMain() {
     const navigate = useNavigate();
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [quotations, setQuotations] = useState<Quotation[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -18,23 +22,36 @@ function QuotationMain() {
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [sortField, setSortField] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
     const [selectedQuotation, setSelectedQuotation] = useState<{ id: number | string, name: string } | null>(null);
+    const [selectedQuotationReadyStatus, setSelectedQuotationReadyStatus] = useState<string | null>(null);
 
     useEffect(() => {
         document.title = "Quotations | RenoXpert";
-        initQuotationTable(page, size);
+        initQuotationTable(1, 10, '', null, '');
 
         // Cleanup function to clear localStorage on unmount
         return () => {
             localStorage.removeItem('include_packages');
         };
-    }, [page, size]);
+    }, []);
 
-    const initQuotationTable = async (page: number, size: number, searchTerm?: string) => {
+    const toggleStatus = (status: string) => {
+        setSelectedQuotationReadyStatus(prevStatus => (prevStatus === status ? null : status));
+    };
+
+    const initQuotationTable = async (
+        page: number,
+        size: number,
+        searchTerm?: string,
+        order?: string,
+        field?: string
+    ) => {
         try {
             setIsLoading(true);
-            const response = await quotationIndex(size, page, searchTerm);
+            const response = await quotationIndex(size, page, searchTerm, order, field);
 
             const data = response?.data || [];
             setQuotations(data);
@@ -49,36 +66,83 @@ function QuotationMain() {
     };
 
     const handleRefreshTable = async () => {
-        initQuotationTable(page, size, searchTerm);
+        initQuotationTable(page, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchTerm(value);
 
-        try {
-            setIsLoading(true);
-            const response = await quotationIndex(size, page, value);
-
-            const data = response?.data || [];
-            setQuotations(data);
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error searching quotations:', error);
-            setError('Failed to search quotations');
-        } finally {
-            setIsLoading(false);
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+
+            try {
+                setIsLoading(true);
+                const response = await quotationIndex(size, 1, value, sortOrder, sortField);
+
+                const data = response?.data || [];
+                setQuotations(data);
+                setTotalItems(response?.totalCount || 0);
+            } catch (error) {
+                console.error('Error searching products:', error);
+                setError('Failed to search products');
+            } finally {
+                setIsLoading(false);
+            }
+
+        }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
+        initQuotationTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+    };
+
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            // Cycle through states: null -> asc -> desc -> null
+            if (sortOrder === null) {
+                setSortOrder('asc');
+                initQuotationTable(page, size, searchTerm, 'asc', field);
+            } else if (sortOrder === 'asc') {
+                setSortOrder('desc');
+                initQuotationTable(page, size, searchTerm, 'desc', field);
+            } else {
+                setSortOrder(null);
+                setSortField('');
+                initQuotationTable(page, size, searchTerm, null, '');
+            }
+        } else {
+            // New field, start with ascending
+            setSortField(field);
+            setSortOrder('asc');
+            initQuotationTable(page, size, searchTerm, 'asc', field);
+        }
+    };
+
+    const getSortIcon = (field: string) => {
+        if (sortField !== field) {
+            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+        switch (sortOrder) {
+            case 'asc':
+                return <i className="ki-outline ki-arrow-up text-primary" />;
+            case 'desc':
+                return <i className="ki-outline ki-arrow-down text-primary" />;
+            default:
+                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
     };
 
     const totalPages = Math.ceil(totalItems / size);
@@ -120,6 +184,27 @@ function QuotationMain() {
                             btnSize='btn-sm'
                             icon='ki-outline ki-plus-squared'
                         />
+                        <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                            <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                                <i className="ki-filled ki-dots-vertical"></i>
+                            </button>
+
+                            <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
+                                <div className="menu-item">
+                                    <Link
+                                        to={'/quotations/archives'}
+                                        className="menu-link"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <i className="ki-filled ki-archive"></i>
+                                                <span>Archived Zone</span>
+                                            </div>
+                                        </span>
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -129,6 +214,32 @@ function QuotationMain() {
                             Quotation Template Overview
                         </div>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
+                            <div className="flex gap-3 items-center">
+                                <span className='text-gray-900 font-medium'>Filter: </span>
+                                {/* <button
+                                    className="btn btn-sm btn-light rounded-full"
+                                    data-drawer-toggle="#drawer_2_4"
+                                >
+                                    <i className="ki-filled ki-sort"></i>
+                                    Sort
+                                </button> */}
+                                <button
+                                    className={`btn btn-sm rounded-full ${selectedQuotationReadyStatus === 'in_progress' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                    onClick={() => toggleStatus('in_progress')}
+                                >
+                                    Ready Only
+                                </button>
+                                {/* <button
+                                    className={`btn btn-sm rounded-full ${selectedProgressStatus === 'done' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                    onClick={() => toggleStatus('done')}
+                                >
+                                    Done
+                                    {
+                                        selectedProgressStatus === 'done' &&
+                                        <i className="ki-filled ki-cross"></i>
+                                    }
+                                </button> */}
+                            </div>
                             <button
                                 className="btn-refresh"
                                 onClick={handleRefreshTable}
@@ -174,14 +285,50 @@ function QuotationMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[10px] text-center'>ID</th>
-                                    <th className='w-[150px] text-center'>Name</th>
-                                    <th className='w-[300px] text-center'>Description</th>
-                                    <th className='w-[110px] text-center'>Total Amount</th>
+                                    <th
+                                        className='w-[150px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Name {getSortIcon('name')}
+                                        </div>
+                                    </th>
+                                    <th className='w-[100px] text-center'>Property</th>
+                                    <th className='w-[50px] text-center'>Draft/Ready</th>
+                                    <th
+                                        className='w-[300px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('description')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Description {getSortIcon('description')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[110px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('total_amount')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Total Amount {getSortIcon('total_amount')}
+                                        </div>
+                                    </th>
                                     <th className='w-[80px] text-center'>Created By</th>
-                                    <th className='w-[80px] text-center'>Created Date</th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('created_at')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Created Date {getSortIcon('created_at')}
+                                        </div>
+                                    </th>
                                     <th className='w-[80px] text-center'>Updated By</th>
-                                    <th className='w-[80px] text-center'>Updated Date</th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('updated_at')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Updated Date {getSortIcon('updated_at')}
+                                        </div>
+                                    </th>
                                     <th className='w-[110px] text-center'>Action</th>
                                 </tr>
                             </thead>
@@ -193,12 +340,21 @@ function QuotationMain() {
                                             className={`${quoteIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
                                         >
                                             <td>
-                                                <div className="flex flex-col">
-                                                    <span>{quotation.id}</span>
-                                                </div>
+                                                {quotation.name}
                                             </td>
                                             <td>
-                                                {quotation.name}
+                                                {quotation.property.name}
+                                            </td>
+                                            <td className='text-center'>
+                                                <label className="switch switch-lg flex justify-center">
+                                                    <input
+                                                        className="checkbox"
+                                                        name="is_ready"
+                                                        type="checkbox"
+                                                        checked={!!quotation.is_ready}
+                                                        readOnly
+                                                    />
+                                                </label>
                                             </td>
                                             <td>
                                                 {quotation.description}
@@ -220,13 +376,14 @@ function QuotationMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <button
+                                                    <Link
+                                                        to={`/quotations/${quotation.id}`}
+                                                        state={{ fromUrl: '/quotations/archives' }}
                                                         className="btn btn-sm btn-secondary"
-                                                        onClick={() => handleViewQuotation(quotation.id)}
                                                     >
                                                         View
-                                                    </button>
-                                                    <button
+                                                    </Link>
+                                                    {/* <button
                                                         className="btn-delete btn btn-sm btn-icon btn-danger"
                                                         data-tooltip="#remove_tooltip"
                                                         data-action="delete"
@@ -236,7 +393,7 @@ function QuotationMain() {
                                                         onClick={() => setSelectedQuotation({ id: quotation.id, name: quotation.name })}
                                                     >
                                                         <i className="ki-outline ki-trash"></i>
-                                                    </button>
+                                                    </button> */}
                                                 </div>
                                             </td>
                                         </tr>
@@ -345,7 +502,7 @@ function QuotationMain() {
                 </div>
             </div>
 
-            <DeleteModal
+            {/* <DeleteModal
                 item={selectedQuotation}
                 modalTitle='Remove Quotation'
                 modalPrompt='Are you sure to permanently remove this package:'
@@ -353,7 +510,7 @@ function QuotationMain() {
                 notifyError='Quotation remove failed'
                 navigateUrl='/quotations'
                 deleteFunction={handleRemoveQuotation}
-            />
+            /> */}
         </>
     );
 }

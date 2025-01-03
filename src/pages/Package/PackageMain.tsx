@@ -3,14 +3,18 @@
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Buttons/Button';
 import KTComponent from '../../metronic/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Package } from '../../types';
 import { packageIndex, removePackage } from '../../services/api';
 import Loading from '../../components/Loading';
 import DeleteModal from '../../components/Modals/DeleteModal';
+import { Link } from 'react-router-dom';
+
+type SortOrder = 'asc' | 'desc' | null;
 
 function PackageMain() {
     const navigate = useNavigate();
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [packages, setPackages] = useState<Package[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -19,19 +23,27 @@ function PackageMain() {
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [sortField, setSortField] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
     const [selectedPackage, setSelectedPackage] = useState<{ id: number | string, name: string } | null>(null);
 
     useEffect(() => {
         document.title = "Packages | RenoXpert";
         KTComponent.init();
-        initPackageTable(page, size);
-    }, [page, size]);
+        initPackageTable(1, 10, '', null, '');
+    }, []);
 
-    const initPackageTable = async (page: number, size: number, searchTerm?: string) => {
+    const initPackageTable = async (
+        page: number,
+        size: number,
+        searchTerm?: string,
+        order?: string,
+        field?: string
+    ) => {
         try {
             setIsLoading(true);
-            const response = await packageIndex(size, page, searchTerm);
+            const response = await packageIndex(size, page, searchTerm, order, field);
 
             const data = response?.data || [];
             setPackages(data);
@@ -53,29 +65,76 @@ function PackageMain() {
         const value = event.target.value;
         setSearchTerm(value);
 
-        try {
-            setIsLoading(true);
-            const response = await packageIndex(size, page, value);
-
-            const data = response?.data || [];
-            setPackages(data);
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error searching packages:', error);
-            setError('Failed to search packages');
-        } finally {
-            setIsLoading(false);
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+
+            try {
+                setIsLoading(true);
+                const response = await packageIndex(size, 1, value, sortOrder, sortField);
+
+                const data = response?.data || [];
+                setPackages(data);
+                setTotalItems(response?.totalCount || 0);
+            } catch (error) {
+                console.error('Error searching products:', error);
+                setError('Failed to search products');
+            } finally {
+                setIsLoading(false);
+            }
+
+        }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
+        initPackageTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+    };
+
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            // Cycle through states: null -> asc -> desc -> null
+            if (sortOrder === null) {
+                setSortOrder('asc');
+                initPackageTable(page, size, searchTerm, 'asc', field);
+            } else if (sortOrder === 'asc') {
+                setSortOrder('desc');
+                initPackageTable(page, size, searchTerm, 'desc', field);
+            } else {
+                setSortOrder(null);
+                setSortField('');
+                initPackageTable(page, size, searchTerm, null, '');
+            }
+        } else {
+            // New field, start with ascending
+            setSortField(field);
+            setSortOrder('asc');
+            initPackageTable(page, size, searchTerm, 'asc', field);
+        }
+    };
+
+    const getSortIcon = (field: string) => {
+        if (sortField !== field) {
+            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+        switch (sortOrder) {
+            case 'asc':
+                return <i className="ki-outline ki-arrow-up text-primary" />;
+            case 'desc':
+                return <i className="ki-outline ki-arrow-down text-primary" />;
+            default:
+                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
     };
 
     const handleViewPackage = (pkgId: string | number) => {
@@ -116,6 +175,39 @@ function PackageMain() {
                             btnSize='btn-sm'
                             icon='ki-outline ki-plus-squared'
                         />
+                        <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                            <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                                <i className="ki-filled ki-dots-vertical"></i>
+                            </button>
+
+                            <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
+                                {/* <div className="menu-item disabled">
+                                    <button
+                                        className="menu-link"
+                                        data-modal-toggle="#archive_product_modal"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <span>Manage Category</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div> */}
+                                <div className="menu-item">
+                                    <Link
+                                        to={'/packages/archives'}
+                                        className="menu-link"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <i className="ki-filled ki-archive"></i>
+                                                <span>Archived Zone</span>
+                                            </div>
+                                        </span>
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -170,13 +262,41 @@ function PackageMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[200px] text-center'>Name</th>
-                                    <th className='w-[300px] text-center'>Internal Description</th>
+                                    <th
+                                        className='w-[200px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Name {getSortIcon('name')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[300px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('description_internal')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Internal Description {getSortIcon('description_internal')}
+                                        </div>
+                                    </th>
                                     <th className='w-[110px] text-center'>Price</th>
                                     <th className='w-[80px] text-center'>Created By</th>
-                                    <th className='w-[80px] text-center'>Created Date</th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('created_at')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Created Date {getSortIcon('created_at')}
+                                        </div>
+                                    </th>
                                     <th className='w-[80px] text-center'>Updated By</th>
-                                    <th className='w-[80px] text-center'>Updated Date</th>
+                                    <th
+                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('updated_at')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Updated Date {getSortIcon('updated_at')}
+                                        </div>
+                                    </th>
                                     <th className='w-[110px] text-center'>Action</th>
                                 </tr>
                             </thead>
@@ -213,23 +333,13 @@ function PackageMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <button
+                                                    <Link
+                                                        to={`/packages/${pkg.id}`}
+                                                        state={{ fromUrl: '/packages/archives' }}
                                                         className="btn btn-sm btn-secondary"
-                                                        onClick={() => handleViewPackage(pkg.id)}
                                                     >
                                                         View
-                                                    </button>
-                                                    <button
-                                                        className="btn-delete btn btn-sm btn-icon btn-danger"
-                                                        data-tooltip="#remove_tooltip"
-                                                        data-action="delete"
-                                                        data-id={pkg.id}
-                                                        data-name={pkg.name}
-                                                        data-modal-toggle="#delete_item_modal"
-                                                        onClick={() => setSelectedPackage({ id: pkg.id, name: pkg.name })}
-                                                    >
-                                                        <i className="ki-outline ki-trash"></i>
-                                                    </button>
+                                                    </Link>
                                                 </div>
                                             </td>
                                         </tr>
@@ -340,16 +450,6 @@ function PackageMain() {
 
                 {/* <PackageTable /> */}
             </div>
-
-            <DeleteModal
-                item={selectedPackage}
-                modalTitle='Remove Package'
-                modalPrompt='Are you sure to permanently remove this package:'
-                notifySuccess='Package Removed Successfully!'
-                notifyError='Package remove failed'
-                navigateUrl='/packages'
-                deleteFunction={handleRemovePackage}
-            />
         </>
     );
 }
