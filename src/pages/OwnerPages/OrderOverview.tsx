@@ -446,7 +446,18 @@ function OrderOverview() {
                                             </div>
                                             <div className="flex flex-col">
                                                 <span className='text-sm text-gray-600'>Address:</span>
-                                                <span className='text-sm text-gray-900'>{address}</span>
+                                                <span className='text-sm text-gray-900'>
+                                                    {[
+                                                        orderDetail.property.address,
+                                                        orderDetail.property.street,
+                                                        orderDetail.property.postcode,
+                                                        orderDetail.property.city,
+                                                        orderDetail.property.state,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(', ')
+                                                    }
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
