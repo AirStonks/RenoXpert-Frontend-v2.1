@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import useFetchPackage from "../../hook/useFetchPackage";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
 import { archivePackage, removePackage, restorePackage } from "../../services/api";
@@ -10,6 +10,7 @@ import DeleteModal from "../../components/Modals/DeleteModal";
 
 function PackageDetail() {
     const navigate = useNavigate();
+    const { state } = useLocation();
     const { id } = useParams<{ id: string }>();
     const packageId = id ? parseInt(id, 10) : null;
     const { packageDetail, loading, error, refetch } = useFetchPackage(packageId);
@@ -35,7 +36,11 @@ function PackageDetail() {
     }, [packageId, packageDetail?.name]);
 
     const handleBackClick = () => {
-        navigate('/packages');
+        if (state) {
+            navigate(state.fromUrl);
+        } else {
+            navigate('/packages');
+        }
     };
 
     const handleArchiveItem = async () => {

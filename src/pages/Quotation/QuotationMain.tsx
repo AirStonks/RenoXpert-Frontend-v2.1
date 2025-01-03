@@ -26,6 +26,7 @@ function QuotationMain() {
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
     const [selectedQuotation, setSelectedQuotation] = useState<{ id: number | string, name: string } | null>(null);
+    const [selectedQuotationReadyStatus, setSelectedQuotationReadyStatus] = useState<string | null>(null);
 
     useEffect(() => {
         document.title = "Quotations | RenoXpert";
@@ -36,6 +37,10 @@ function QuotationMain() {
             localStorage.removeItem('include_packages');
         };
     }, []);
+
+    const toggleStatus = (status: string) => {
+        setSelectedQuotationReadyStatus(prevStatus => (prevStatus === status ? null : status));
+    };
 
     const initQuotationTable = async (
         page: number,
@@ -209,6 +214,32 @@ function QuotationMain() {
                             Quotation Template Overview
                         </div>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
+                            <div className="flex gap-3 items-center">
+                                <span className='text-gray-900 font-medium'>Filter: </span>
+                                {/* <button
+                                    className="btn btn-sm btn-light rounded-full"
+                                    data-drawer-toggle="#drawer_2_4"
+                                >
+                                    <i className="ki-filled ki-sort"></i>
+                                    Sort
+                                </button> */}
+                                <button
+                                    className={`btn btn-sm rounded-full ${selectedQuotationReadyStatus === 'in_progress' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                    onClick={() => toggleStatus('in_progress')}
+                                >
+                                    Ready Only
+                                </button>
+                                {/* <button
+                                    className={`btn btn-sm rounded-full ${selectedProgressStatus === 'done' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                    onClick={() => toggleStatus('done')}
+                                >
+                                    Done
+                                    {
+                                        selectedProgressStatus === 'done' &&
+                                        <i className="ki-filled ki-cross"></i>
+                                    }
+                                </button> */}
+                            </div>
                             <button
                                 className="btn-refresh"
                                 onClick={handleRefreshTable}
@@ -345,12 +376,13 @@ function QuotationMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <button
+                                                    <Link
+                                                        to={`/quotations/${quotation.id}`}
+                                                        state={{ fromUrl: '/quotations/archives' }}
                                                         className="btn btn-sm btn-secondary"
-                                                        onClick={() => handleViewQuotation(quotation.id)}
                                                     >
                                                         View
-                                                    </button>
+                                                    </Link>
                                                     {/* <button
                                                         className="btn-delete btn btn-sm btn-icon btn-danger"
                                                         data-tooltip="#remove_tooltip"

@@ -359,12 +359,13 @@ function QuotationArchive() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <button
+                                                    <Link
+                                                        to={`/quotations/${quotation.id}`}
+                                                        state={{ fromUrl: '/quotations/archives' }}
                                                         className="btn btn-sm btn-secondary"
-                                                        onClick={() => handleViewQuotation(quotation.id)}
                                                     >
                                                         View
-                                                    </button>
+                                                    </Link>
                                                     <button
                                                         className="btn-delete btn btn-sm btn-icon btn-danger"
                                                         data-tooltip="#remove_tooltip"

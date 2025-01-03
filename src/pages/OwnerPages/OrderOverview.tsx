@@ -547,8 +547,8 @@ function OrderOverview() {
                                                 <tr>
                                                     <th className="p-2 text-center hidden md:table-cell">No.</th>
                                                     <th className="p-2 text-left">Description</th>
-                                                    <th className="p-2 text-center hidden md:table-cell">Quantity</th>
-                                                    <th className="p-2 text-center">Price (RM)</th>
+                                                    <th className="p-2 text-center">UOM</th>
+                                                    <th className="p-2 text-center">QTY</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -558,17 +558,20 @@ function OrderOverview() {
                                                             <td className="p-2 text-center hidden text-xs md:table-cell">{index + 1}</td>
                                                             <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
                                                             <td className="p-2 text-center hidden text-xs md:table-cell"></td>
-                                                            <td className="p-2 text-center text-xs">
-                                                                {quotationPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </td>
+                                                            <td className="p-2 text-center text-xs"></td>
+                                                            <td className="p-2 text-center text-xs"></td>
                                                         </tr>
                                                         {quotationPackage.products.map((product: Product, prodIndex: number) => (
                                                             // Check if product.pivot.visibility is true
                                                             product.pivot.visibility ? (
                                                                 <tr key={prodIndex} className="border-b text-xs">
                                                                     <td className="p-2 hidden md:table-cell"></td>
-                                                                    <td className="p-2 ">
-                                                                        {product.name}
+                                                                    <td className="p-2 flex flex-col">
+                                                                        <span className='text-gray-900'>{product.name}</span>
+                                                                        <span className='text-gray-500 text-2xs'>{product.description}</span>
+                                                                    </td>
+                                                                    <td className="p-2 text-center">
+                                                                        {product.uom}
                                                                     </td>
                                                                     <td className="p-2 text-center">
                                                                         {!product.pivot.included
@@ -587,13 +590,6 @@ function OrderOverview() {
                                                         ))}
                                                     </React.Fragment>
                                                 ))}
-                                                <tr className="font-medium">
-                                                    <td className="p-2 hidden md:table-cell" colSpan={2}></td>
-                                                    <td className="p-2 text-center">Total:</td>
-                                                    <td className="p-2 text-center">
-                                                        {orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </td>
-                                                </tr>
                                             </tbody>
                                         </table>
 
@@ -637,8 +633,8 @@ function OrderOverview() {
                                             <tr>
                                                 <th className="p-2 text-sm text-center hidden md:table-cell">No.</th>
                                                 <th className="p-2 text-sm text-left">Description</th>
-                                                <th className="p-2 text-sm text-center hidden md:table-cell">Quantity</th>
-                                                <th className="p-2 text-sm text-center">Price (RM)</th>
+                                                <th className="p-2 text-center">UOM</th>
+                                                <th className="p-2 text-center">QTY</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -648,17 +644,20 @@ function OrderOverview() {
                                                         <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
                                                         <td className="p-2 font-semibold">{quotationPackage.name}</td>
                                                         <td className="p-2 text-center hidden md:table-cell"></td>
-                                                        <td className="p-2 text-center">
-                                                            {quotationPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </td>
+                                                        <td className="p-2 text-center"></td>
+                                                        <td className="p-2 text-center"></td>
                                                     </tr>
                                                     {quotationPackage.products.map((product: Product, prodIndex: number) => (
                                                         // Check if product.pivot.visibility is true
                                                         product.pivot.visibility ? (
                                                             <tr key={prodIndex} className="border-b text-2xs">
                                                                 <td className="p-2 hidden md:table-cell"></td>
-                                                                <td className="p-2 ">
-                                                                    {product.name}
+                                                                <td className="p-2 flex flex-col">
+                                                                    <span className='text-gray-900'>{product.name}</span>
+                                                                    <span className='text-gray-500 text-2xs'>{product.description}</span>
+                                                                </td>
+                                                                <td className="p-2 text-center">
+                                                                    {product.uom}
                                                                 </td>
                                                                 <td className="p-2 text-center">
                                                                     {!product.pivot.included
@@ -677,13 +676,6 @@ function OrderOverview() {
                                                     ))}
                                                 </React.Fragment>
                                             ))}
-                                            <tr className="font-medium">
-                                                <td className="p-2 hidden md:table-cell" colSpan={2}></td>
-                                                <td className="p-2 text-center">Total:</td>
-                                                <td className="p-2 text-center">
-                                                    {orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
                                         </tbody>
                                     </table>
                                 </>

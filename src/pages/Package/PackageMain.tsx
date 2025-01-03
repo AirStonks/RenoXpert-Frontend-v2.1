@@ -333,12 +333,13 @@ function PackageMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <button
+                                                    <Link
+                                                        to={`/packages/${pkg.id}`}
+                                                        state={{ fromUrl: '/packages/archives' }}
                                                         className="btn btn-sm btn-secondary"
-                                                        onClick={() => handleViewPackage(pkg.id)}
                                                     >
                                                         View
-                                                    </button>
+                                                    </Link>
                                                 </div>
                                             </td>
                                         </tr>

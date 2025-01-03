@@ -334,12 +334,13 @@ function PackageArchive() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <button
+                                                    <Link
+                                                        to={`/packages/${pkg.id}`}
+                                                        state={{ fromUrl: '/packages/archives' }}
                                                         className="btn btn-sm btn-secondary"
-                                                        onClick={() => handleViewPackage(pkg.id)}
                                                     >
                                                         View
-                                                    </button>
+                                                    </Link>
                                                     <button
                                                         className="btn-delete btn btn-sm btn-icon btn-danger"
                                                         data-tooltip="#remove_tooltip"

@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/Loading";
 import { Package } from "../../types";
 import { Link } from "react-router-dom";
@@ -10,6 +10,7 @@ import { Slide, toast } from "react-toastify";
 
 function QuotationDetail() {
     const navigate = useNavigate();
+    const { state } = useLocation();
     const { id } = useParams<{ id: string }>();
     const quotationId = id ? parseInt(id, 10) : null;
     const { quotationDetail, loading, error, refetch } = useFetchQuotation(quotationId);
@@ -40,7 +41,11 @@ function QuotationDetail() {
     }, [quotationDetail]);
 
     const handleBackClick = () => {
-        navigate('/quotations');
+        if (state) {
+            navigate(state.fromUrl);
+        } else {
+            navigate('/quotations');
+        }
     };
 
     const handleArchiveItem = async () => {
@@ -146,7 +151,7 @@ function QuotationDetail() {
                                 <div className="menu-item">
                                     <button
                                         className="menu-link"
-                                        // data-modal-toggle="#archive_item_modal"
+                                    // data-modal-toggle="#archive_item_modal"
                                     >
                                         <span className="menu-title">
                                             <div className="flex gap-2 items-center text-danger">
