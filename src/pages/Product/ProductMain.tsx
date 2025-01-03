@@ -377,7 +377,6 @@ function ProductMain() {
                                                 <div className="flex justify-around gap-2">
                                                     <Link
                                                         to={`/products/${product.id}`}
-                                                        state={{ fromUrl: '/products' }}
                                                         className="btn-view btn btn-sm btn-secondary"
                                                     >
                                                         View
