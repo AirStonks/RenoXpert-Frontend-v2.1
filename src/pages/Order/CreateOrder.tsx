@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
 import Loading from '../../components/Loading';
 import React from 'react';
+import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -50,6 +51,10 @@ function CreateOrder() {
         status: '',
         bedroom_count: 1,
         bathroom_count: 1,
+        bonus: {
+            description: '',
+            value: '',
+        }
     });
 
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -355,11 +360,28 @@ function CreateOrder() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
+        // Check if the field is inside the "bonus" object
+        if (name.startsWith("bonus.")) {
+            const bonusField = name.split(".")[1]; // Get the property of the bonus object (e.g., 'value')
+
+            // Convert value to a number if it's the 'bonus.value' field
+            const newValue = bonusField === 'value' ? Number(value) : value;
+
+            setFormData((prevData) => ({
+                ...prevData,
+                bonus: {
+                    ...prevData.bonus,
+                    [bonusField]: newValue, // Update the specific bonus field
+                },
+            }));
+        } else {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }));
+        }
     };
+
 
     const handleSubmit = async () => {
         if (!selectedUser) {
@@ -387,13 +409,14 @@ function CreateOrder() {
             form_id: formId,
             property_id: selectedProperty.id,
             quotation_id: selectedQuotation.id,
-            total_amount: formData.totalAmount,
+            total_amount: formData.totalAmount ? (formData.totalAmount - (Number(formData.bonus.value) || 0)) : (selectedQuotation.total_amount - (Number(formData.bonus.value) || 0)),
             block: formData.block,
             floor: formData.floor,
             unit_no: formData.unitNo,
             bedroom_count: formData.bedroom_count,
             bathroom_count: formData.bathroom_count,
             description: '',
+            bonus: formData.bonus,
             metadata: JSON.parse(localStorage.getItem('include_packages')),
         }
 
@@ -484,6 +507,7 @@ function CreateOrder() {
                                     )}
                                 </div>
 
+                                {/* Property */}
                                 <div className="flex flex-col flex-1 gap-2">
                                     <span className="text-base font-semibold text-gray-900">
                                         2. Select a Property
@@ -637,8 +661,9 @@ function CreateOrder() {
                         <div className="card-body">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Quotation</h2>
 
-                            <div className="flex flex-col gap-4">
-                                <div className="flex flex-col gap-2">
+                            <div className="flex gap-8">
+                                {/* Quotation */}
+                                <div className="flex flex-col flex-1 gap-2">
                                     <span className="text-base font-semibold text-gray-900">
                                         3. Select a Quotation
                                     </span>
@@ -650,7 +675,7 @@ function CreateOrder() {
                                             <span>Quotation</span>
                                             <i className="ki-filled ki-down"></i>
                                         </button>
-                                        <div className="dropdown-content w-full max-w-2xl">
+                                        <div className="dropdown-content w-full max-w-xl">
                                             <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
                                                 <label className="input input-sm">
                                                     <i className="ki-filled ki-magnifier"></i>
@@ -685,6 +710,33 @@ function CreateOrder() {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Bonus */}
+                                <div className="flex flex-col flex-1 gap-2">
+                                    <span className="text-base font-semibold text-gray-900">
+                                        4. Apply Bonus (Optional)
+                                    </span>
+
+                                    <InputFieldGroup
+                                        fieldTitle="4.1 Description"
+                                        description="Set a description of the bonus"
+                                        type="text"
+                                        placeholder=''
+                                        name="bonus.description"
+                                        value={formData.bonus.description}
+                                        onChange={handleChange}
+                                    />
+
+                                    <InputFieldGroup
+                                        fieldTitle="4.2 Value"
+                                        description="Set a total value of the bonus"
+                                        type="number"
+                                        placeholder=''
+                                        name="bonus.value"
+                                        value={formData.bonus.value}
+                                        onChange={handleChange}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -697,8 +749,17 @@ function CreateOrder() {
                                             {selectedQuotation.name}
                                         </span>
                                         <span className="text-base font-normal text-gray-800">
-                                            Price: RM {formData.totalAmount ? formData.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : selectedQuotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            Price: RM {
+                                                // Check if formData.totalAmount exists, and calculate the price with or without bonus
+                                                formData.totalAmount
+                                                    ? (formData.totalAmount - (Number(formData.bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                    : (selectedQuotation.total_amount - (Number(formData.bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                            }
+                                            {formData.bonus.value &&
+                                                ` (Discount: RM${Number(formData.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
+                                            }
                                         </span>
+
                                         <span className="text-base font-normal text-slate-400">
                                             {selectedQuotation.description}
                                         </span>

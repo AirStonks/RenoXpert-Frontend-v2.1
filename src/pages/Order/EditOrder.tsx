@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
 import useFetchOrder from '../../hook/useFetchOrder';
 import Loading from '../../components/Loading';
+import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -49,6 +50,10 @@ function EditOrder() {
         status: '',
         bedroom_count: 1,
         bathroom_count: 1,
+        bonus: {
+            description: '',
+            value: '',
+        }
     });
 
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -82,26 +87,34 @@ function EditOrder() {
                 userId: orderDetail.user_id || '',
                 propertyId: orderDetail.property_id || '',
                 quotationId: orderDetail.latest_quotation.quotation_id || '',
-                totalAmount: orderDetail.total_amount || 0,
+                totalAmount: orderDetail.latest_quotation.total_amount || 0,
                 block: orderDetail.block || '',
                 floor: orderDetail.floor || '',
                 unitNo: orderDetail.unit_no || '',
                 status: orderDetail.status || '',
                 bedroom_count: orderDetail.bedroom_count || 1,
                 bathroom_count: orderDetail.bathroom_count || 1,
+                bonus: {
+                    description: orderDetail.latest_quotation.bonus?.description,
+                    value: orderDetail.latest_quotation.bonus?.value.toString(),
+                }
             });
 
             const tmpEditOrder = {
                 userId: orderDetail.user_id || '',
                 propertyId: orderDetail.property_id || '',
                 quotationId: orderDetail.latest_quotation.quotation_id || '',
-                totalAmount: orderDetail.total_amount || 0,
+                totalAmount: orderDetail.latest_quotation.total_amount || 0,
                 block: orderDetail.block || '',
                 floor: orderDetail.floor || '',
                 unitNo: orderDetail.unit_no || '',
                 status: orderDetail.status || '',
                 bedroom_count: orderDetail.bedroom_count || 1,
                 bathroom_count: orderDetail.bathroom_count || 1,
+                bonus: {
+                    description: orderDetail.latest_quotation.bonus?.description,
+                    value: orderDetail.latest_quotation.bonus?.value.toString(),
+                }
             }
 
             if (localStorage.getItem('e:edit_order_data')) {
@@ -360,10 +373,27 @@ function EditOrder() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
+
+        // Check if the field is inside the "bonus" object
+        if (name.startsWith("bonus.")) {
+            const bonusField = name.split(".")[1]; // Get the property of the bonus object (e.g., 'value')
+
+            // Convert value to a number if it's the 'bonus.value' field
+            const newValue = bonusField === 'value' ? Number(value) : value;
+
+            setFormData((prevData) => ({
+                ...prevData,
+                bonus: {
+                    ...prevData.bonus,
+                    [bonusField]: newValue, // Update the specific bonus field
+                },
+            }));
+        } else {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }));
+        }
     };
 
     const handleSubmit = async () => {
@@ -380,6 +410,7 @@ function EditOrder() {
                 bedroom_count: formData.bedroom_count,
                 bathroom_count: formData.bathroom_count,
                 description: '',
+                bonus: formData.bonus,
                 metadata: JSON.parse(localStorage.getItem('include_packages')),
             }
 
@@ -476,6 +507,7 @@ function EditOrder() {
                                         </div>
                                     )}
                                 </div>
+
                                 <div className="flex flex-col flex-1 gap-2">
                                     <span className="text-base font-semibold text-gray-900">
                                         2. Select a Property
@@ -630,34 +662,12 @@ function EditOrder() {
                         <div className="card-body">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Quotation</h2>
 
-                            <div className="flex flex-col gap-4">
-                                <div className="flex flex-col gap-2">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-base font-semibold text-gray-900">
-                                            3. Select a Quotation
-                                        </span>
-                                        {/* <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
-                                            <button
-                                                className="dropdown-toggle btn btn-sm btn-outline btn-info btn-icon-xs">
-                                                Previous Version
-                                                <i className="ki-outline ki-down dropdown-open:hidden">
-                                                </i>
-                                                <i className="ki-outline ki-up hidden dropdown-open:block">
-                                                </i>
-                                            </button>
-                                            <div className="dropdown-content w-full max-w-48">
-                                                <div className="menu menu-default flex flex-col">
-                                                    {orderDetail.order_quotations.slice(1).map((orderQuotation, index) => (
-                                                        <div className="menu-item" key={index} data-id={orderQuotation.id}>
-                                                            <button className="menu-link">
-                                                                <span className="menu-title">Version {orderQuotation.version}</span>
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div> */}
-                                    </div>
+                            <div className="flex gap-8">
+                                {/* Quotation */}
+                                <div className="flex flex-col flex-1 gap-2">
+                                    <span className="text-base font-semibold text-gray-900">
+                                        3. Select a Quotation
+                                    </span>
                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
                                         <button
                                             className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
@@ -666,7 +676,7 @@ function EditOrder() {
                                             <span>Quotation</span>
                                             <i className="ki-filled ki-down"></i>
                                         </button>
-                                        <div className="dropdown-content w-full max-w-2xl">
+                                        <div className="dropdown-content w-full max-w-xl">
                                             <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
                                                 <label className="input input-sm">
                                                     <i className="ki-filled ki-magnifier"></i>
@@ -683,16 +693,50 @@ function EditOrder() {
                                                 {quotations.map((quotation, index) => (
                                                     <div className="menu-item" key={index} data-id={quotation.id}>
                                                         <button
-                                                            className="menu-link"
+                                                            className="menu-link flex justify-between items-center"
                                                             onClick={() => handleSelectQuotation(quotation)}
                                                         >
                                                             <span className="menu-title">{quotation.name}</span>
+                                                            {!quotation.is_ready && (
+                                                                <i
+                                                                    className="ki-outline ki-cross-circle text-danger"
+                                                                    data-tooltip="#draft_tooltip"
+                                                                >
+                                                                </i>
+                                                            )}
                                                         </button>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* Bonus */}
+                                <div className="flex flex-col flex-1 gap-2">
+                                    <span className="text-base font-semibold text-gray-900">
+                                        4. Apply Bonus (Optional)
+                                    </span>
+
+                                    <InputFieldGroup
+                                        fieldTitle="4.1 Description"
+                                        description="Set a description of the bonus"
+                                        type="text"
+                                        placeholder=''
+                                        name="bonus.description"
+                                        value={formData.bonus.description}
+                                        onChange={handleChange}
+                                    />
+
+                                    <InputFieldGroup
+                                        fieldTitle="4.2 Value"
+                                        description="Set a total value of the bonus"
+                                        type="number"
+                                        placeholder=''
+                                        name="bonus.value"
+                                        value={formData.bonus.value}
+                                        onChange={handleChange}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -706,8 +750,17 @@ function EditOrder() {
                                             {selectedQuotation.name}
                                         </span>
                                         <span className="text-base font-normal text-gray-800">
-                                            Price: RM {formData.totalAmount ? formData.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : selectedQuotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            Price: RM {
+                                                // Check if formData.totalAmount exists, and calculate the price with or without bonus
+                                                formData.totalAmount
+                                                    ? (formData.totalAmount - (Number(formData.bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                    : (selectedQuotation.total_amount - (Number(formData.bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                            }
+                                            {formData.bonus.value &&
+                                                ` (Discount: RM${Number(formData.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
+                                            }
                                         </span>
+
                                         <span className="text-base font-normal text-slate-400">
                                             {selectedQuotation.description}
                                         </span>

@@ -123,23 +123,85 @@ function PreviousOrderDetail() {
                                             Total Amount:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {`RM ${selectedQuotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            {`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Status:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            <span className={`badge badge-sm p-2 cursor-default
+                                                ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
+                                                ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
+                                                badge-outline`}
+                                            >
+                                                {orderDetail.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {/* <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Preview Link:</td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            <button
+                                                className="btn btn-outline btn-sm btn-primary disabled"
+                                            >
+                                                View Order Overview
+                                            </button>
+                                        </td>
+                                    </tr> */}
+                                    <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Version:</td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {selectedQuotation.version ?
-                                                String.fromCharCode(64 + selectedQuotation.version)
+                                            {orderDetail.latest_quotation.version ?
+                                                String.fromCharCode(64 + orderDetail.latest_quotation.version)
                                                 : "N/A"}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated by:</td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {selectedQuotation.created_by.name}
+                                            {orderDetail.latest_quotation.created_by.name}
                                         </td>
                                     </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Discount/Bonus
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    {selectedQuotation.bonus ?
+                                        <>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Description:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {selectedQuotation.bonus.description}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Value:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    RM {selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                            </tr>
+                                        </>
+                                        :
+                                        <tr>
+                                            -
+                                        </tr>
+                                    }
+
                                 </tbody>
                             </table>
                         </div>
@@ -260,7 +322,8 @@ function PreviousOrderDetail() {
                                         {selectedQuotation.quotation_name}
                                     </span>
                                     <span className="text-base font-normal text-gray-800">
-                                        Price: RM {selectedQuotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        Price: RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
+                                        }
                                     </span>
                                     <span className="text-base font-normal text-slate-400">
                                         {selectedQuotation.description}

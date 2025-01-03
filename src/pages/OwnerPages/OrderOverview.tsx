@@ -120,6 +120,8 @@ function OrderOverview() {
         .filter(Boolean)
         .join(', ');
 
+    const bonus = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.bonus)))
+
 
     const renoAgreement = (
         <div className='flex flex-col w-full text-sm text-justify'>
@@ -423,6 +425,32 @@ function OrderOverview() {
                                             }
                                         </div>
                                     </div>
+
+                                    {
+                                        bonus && (
+                                            <div className="card flex-1 sm:mb-0 mb-2 mr-2">
+                                                <div className="card-header py-0 flex justify-between">
+                                                    <h2 className="card-title">
+                                                        Discount/Bonus
+                                                    </h2>
+                                                </div>
+                                                <div className="card-body">
+                                                    <div className="flex flex-col gap-8">
+                                                        <div className="flex flex-col">
+                                                            {/* <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span> */}
+                                                            <span className='text-sm text-gray-600'>Bonus:</span>
+                                                            <span className='text-sm text-gray-900 font-semibold'>{bonus.description}</span>
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className='text-sm text-gray-600'>Total Amount:</span>
+                                                            <span className='text-sm text-gray-900 font-semibold'>{`RM ${bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )
+                                    }
+
 
                                     <div className="card flex-1 sm:mb-0 mb-2 mr-2">
                                         <div className="card-header">

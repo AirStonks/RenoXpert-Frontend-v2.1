@@ -68,7 +68,7 @@ export interface Product {
             status?: string;
         }
     }
-    attachments? : {
+    attachments?: {
         thumbnail?: Attachment;
         photos?: Attachment[];
     }
@@ -158,6 +158,10 @@ export interface Order {
     unit_no?: string,
     total_amount?: number,
     description?: string,
+    bonus?: {
+        description?: string,
+        value?: number | string,
+    },
     status?: string,
     metadata?: JSON,
     created_by?: User;
@@ -178,6 +182,10 @@ export interface OrderQuotation {
     description?: string,
     version: number,
     packages?: Package[],
+    bonus?: {
+        description?: string,
+        value?: number | string,
+    },
     metadata?: JSON,
     created_by?: User,
     updated_by?: string,

@@ -201,6 +201,44 @@ function OrderDetail() {
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
+                                Discount/Bonus
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    {selectedQuotation.bonus ?
+                                        <>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Description:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {selectedQuotation.bonus.description}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Value:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    RM {selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                            </tr>
+                                        </>
+                                        :
+                                        <tr>
+                                            -
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
                                 Owner
                             </h3>
                         </div>
@@ -351,7 +389,8 @@ function OrderDetail() {
                                         {selectedQuotation.quotation_name}
                                     </span>
                                     <span className="text-base font-normal text-gray-800">
-                                        Price: RM {selectedQuotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        Price: RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
+                                        }
                                     </span>
                                     <span className="text-base font-normal text-slate-400">
                                         {selectedQuotation.description}
@@ -635,6 +674,31 @@ function OrderDetail() {
                                             }
                                         </div>
                                     </div>
+
+                                    {
+                                        orderDetail.latest_quotation.bonus && (
+                                            <div className="card flex-1 sm:mb-0 mb-2 mr-2">
+                                                <div className="card-header py-0 flex justify-between">
+                                                    <h2 className="card-title">
+                                                        Discount/Bonus
+                                                    </h2>
+                                                </div>
+                                                <div className="card-body">
+                                                    <div className="flex flex-col gap-8">
+                                                        <div className="flex flex-col">
+                                                            {/* <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span> */}
+                                                            <span className='text-sm text-gray-600'>Bonus:</span>
+                                                            <span className='text-sm text-gray-900 font-semibold'>{orderDetail.latest_quotation.bonus.description}</span>
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className='text-sm text-gray-600'>Total Amount:</span>
+                                                            <span className='text-sm text-gray-900 font-semibold'>{`RM ${orderDetail.latest_quotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )
+                                    }
 
                                     <div className="card flex-1 mb-2">
                                         <div className="card-header">
