@@ -378,7 +378,6 @@ function QuotationMain() {
                                                 <div className="flex justify-around gap-2">
                                                     <Link
                                                         to={`/quotations/${quotation.id}`}
-                                                        state={{ fromUrl: '/quotations/archives' }}
                                                         className="btn btn-sm btn-secondary"
                                                     >
                                                         View

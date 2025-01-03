@@ -335,7 +335,6 @@ function PackageMain() {
                                                 <div className="flex justify-around gap-2">
                                                     <Link
                                                         to={`/packages/${pkg.id}`}
-                                                        state={{ fromUrl: '/packages/archives' }}
                                                         className="btn btn-sm btn-secondary"
                                                     >
                                                         View
