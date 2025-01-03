@@ -103,10 +103,46 @@ function CreateOrder() {
             }
         }
 
-        initDropdown();
-
     }, [formId]); // Add formId to the dependency array
 
+    const handleOpenOwnerDropdown = async () => {
+        setSearchUserTerm('');
+        inputUserRef.current.value = '';
+        inputUserRef.current.focus();
+        try {
+            const data = await fetchUsers('', 'owner');
+            setUsers(data.data);
+
+        } catch (error) {
+            console.error('Failed to fetch quotations:', error);
+        }
+    }
+
+    const handleOpenPropertyDropdown = async () => {
+        setSearchPropertyTerm('');
+        inputPropertyRef.current.value = '';
+        inputPropertyRef.current.focus();
+        try {
+            const data = await fetchProperties('', 6);
+            setProperties(data.data);
+
+        } catch (error) {
+            console.error('Failed to fetch quotations:', error);
+        }
+    }
+
+    const handleOpenQuotationDropdown = async () => {
+        setSearchQuotationTerm('');
+        inputQuotationRef.current.value = '';
+        inputQuotationRef.current.focus();
+        try {
+            const data = await fetchQuotations('', 6);
+            setQuotations(data.data);
+
+        } catch (error) {
+            console.error('Failed to fetch quotations:', error);
+        }
+    }
 
     const handleSearchForm = async (formId: string) => {
 
@@ -149,51 +185,6 @@ function CreateOrder() {
             toast.error("Failed to fetch registration form");
         }
     };
-
-    const initDropdown = async () => {
-        const ownerEl = document.querySelector('#owner_dropdown') as HTMLElement;
-        const ownerDropdown = KTDropdown.getInstance(ownerEl);
-
-        const propertyEl = document.querySelector('#property_dropdown') as HTMLElement;
-        const propertyDropdown = KTDropdown.getInstance(propertyEl);
-
-        const quotationEl = document.querySelector('#quotation_dropdown') as HTMLElement;
-        const quotationDropdown = KTDropdown.getInstance(quotationEl);
-
-
-        ownerDropdown.on('shown', async () => {
-            inputUserRef.current.focus();
-            try {
-                const data = await fetchUsers('', 'owner');
-                setUsers(data.data);
-
-            } catch (error) {
-                console.error('Failed to fetch quotations:', error);
-            }
-        });
-
-        propertyDropdown.on('shown', async () => {
-            inputPropertyRef.current.focus();
-            try {
-                const data = await fetchProperties('', 6);
-                setProperties(data.data);
-
-            } catch (error) {
-                console.error('Failed to fetch quotations:', error);
-            }
-        });
-
-        quotationDropdown.on('shown', async () => {
-            inputQuotationRef.current.focus();
-            try {
-                const data = await fetchQuotations('', 6);
-                setQuotations(data.data);
-
-            } catch (error) {
-                console.error('Failed to fetch quotations:', error);
-            }
-        });
-    }
 
     const handleBackClick = () => {
         localStorage.removeItem('create_order_data');
@@ -417,9 +408,6 @@ function CreateOrder() {
 
     if (loading) return <Loading />;
 
-    initDropdown();
-
-
     return (
         <>
             <div className="flex justify-between items-center flex-wrap mb-6">
@@ -445,7 +433,10 @@ function CreateOrder() {
                                         1. Select an Owner
                                     </span>
                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="owner_dropdown">
-                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                        <button
+                                            className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
+                                            onClick={handleOpenOwnerDropdown}
+                                        >
                                             <span>Owner</span>
                                             <i className="ki-filled ki-down"></i>
                                         </button>
@@ -488,13 +479,16 @@ function CreateOrder() {
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 <div className="flex flex-col flex-1 gap-2">
                                     <span className="text-base font-semibold text-gray-900">
                                         2. Select a Property
                                     </span>
                                     <div className="dropdow" data-dropdown="true" data-dropdown-trigger="click" id='property_dropdown'>
-                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                        <button
+                                            className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
+                                            onClick={handleOpenPropertyDropdown}
+                                        >
                                             <span>Property</span>
                                             <i className="ki-filled ki-down"></i>
                                         </button>
@@ -645,7 +639,10 @@ function CreateOrder() {
                                         3. Select a Quotation
                                     </span>
                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
-                                        <button className="dropdown-toggle btn btn-light w-full flex justify-between items-center">
+                                        <button
+                                            className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
+                                            onClick={handleOpenQuotationDropdown}
+                                        >
                                             <span>Quotation</span>
                                             <i className="ki-filled ki-down"></i>
                                         </button>
