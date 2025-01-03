@@ -762,7 +762,10 @@ function CreateProduct() {
             </div>
 
             <div className="flex justify-end gap-6">
-                <button className="btn btn-lg btn-light">
+                <button
+                    className="btn btn-lg btn-light"
+                    onClick={handleBackClick}
+                >
                     Cancel
                 </button>
                 <button

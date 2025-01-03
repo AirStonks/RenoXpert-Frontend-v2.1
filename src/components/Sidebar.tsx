@@ -1,9 +1,19 @@
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import Loading from './Loading';
+import { useEffect } from 'react';
+import { KTDrawer, KTScrollable } from '../metronic/core';
 
 function Sidebar() {
   const { currentUser, loading, error } = useUser();
+  const height = window.innerHeight;
+
+
+
+  useEffect(() => {
+    KTDrawer.init();
+    KTScrollable.init();
+  }, []);
 
   if (loading) return <Loading />;
   if (error) return <div>Error: {error}</div>;
@@ -58,7 +68,7 @@ function Sidebar() {
         data-scrollable-dependencies="#sidebar_header"
         data-scrollable-height="auto"
         data-scrollable-offset="0px"
-        data-scrollable-wrappers="#sidebar_content"
+        data-scrollable-wrappers="#sidebar_content" 
         id="sidebar_scrollable"
       >
         <div

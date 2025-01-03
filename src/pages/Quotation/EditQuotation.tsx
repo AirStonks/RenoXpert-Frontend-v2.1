@@ -41,7 +41,7 @@ function EditQuotation() {
 
     const handleBackClick = () => {
         localStorage.removeItem('include_packages');
-        navigate('/quotations');
+        navigate('/quotations/' + quotationId);
     };
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -714,7 +714,10 @@ function EditQuotation() {
             </div>
 
             <div className="flex justify-end gap-6">
-                <button className="btn btn-lg btn-light">
+                <button
+                    className="btn btn-lg btn-light"
+                    onClick={handleBackClick}
+                >
                     Cancel
                 </button>
                 <button

@@ -469,7 +469,7 @@ function PackageArchive() {
                 modalPrompt='Are you sure to permanently remove this package:'
                 notifySuccess='Package Removed Successfully!'
                 notifyError='Package remove failed'
-                navigateUrl='/packages'
+                navigateUrl='/packages/archives'
                 deleteFunction={handleRemovePackage}
             />
         </>

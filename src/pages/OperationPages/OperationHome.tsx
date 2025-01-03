@@ -4,6 +4,7 @@ import { fetchDIForms, fetchQCForms, retrieveRenoProgresses, userDetail } from "
 import { DefectInspectionForm, QCForm, RenoProgress, User } from "../../types";
 import Loading from "../../components/Loading";
 import KTComponents from "../../metronic/core";
+import { logoutOperation } from "../../services/auth";
 
 function OperationHome() {
     const [activeTab, setActiveTab] = useState('tab_1_1');
@@ -92,6 +93,17 @@ function OperationHome() {
         setLoading(false);
     }
 
+    const handleLogout = async () => {
+        try {
+            await logoutOperation();
+            // Redirect to login page or home page
+            window.location.href = '/op'; // Adjust the redirection path as needed
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Optionally show an error message to the user
+        }
+    };
+
     return (
         <>
             {loading && <Loading />}
@@ -110,7 +122,12 @@ function OperationHome() {
                                     <span className="text-gray-300 text-sm font-medium">+60 {user.phone_no.replace(/(\d{2})\d{4}(\d{3})/, '$1***$2')}</span>
                                 </div>
                                 <div className="text-danger">
-                                    <i className="ki-filled ki-entrance-right text-xl font-semibold"></i>
+                                    <button
+                                        className="btn btn-icon"
+                                        onClick={handleLogout}
+                                    >
+                                        <i className="ki-filled ki-entrance-right text-xl font-semibold"></i>
+                                    </button>
                                 </div>
                             </div>
                             :

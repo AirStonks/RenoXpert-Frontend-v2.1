@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createOrder, fetchProperties, fetchProperty, fetchQuotation, fetchQuotations, fetchRegistrationForm, fetchUser, fetchUsers } from '../../services/api';
 import { Order, OwnerRegistrationForm, Property, Quotation, User } from '../../types';
-import { KTDropdown } from '../../metronic/core';
+import { KTDropdown, KTTooltip } from '../../metronic/core';
 import { Package } from '../../types/index';
 import { Link } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
@@ -103,7 +103,12 @@ function CreateOrder() {
             }
         }
 
-    }, [formId]); // Add formId to the dependency array
+        if (quotations.length > 0) {
+            // Call KTTooltip.createInstances after quotations are updated
+            KTTooltip.createInstances();
+        }
+
+    }, [formId, quotations]); // Add formId to the dependency array
 
     const handleOpenOwnerDropdown = async () => {
         setSearchUserTerm('');
@@ -138,7 +143,6 @@ function CreateOrder() {
         try {
             const data = await fetchQuotations('', 6);
             setQuotations(data.data);
-
         } catch (error) {
             console.error('Failed to fetch quotations:', error);
         }
@@ -663,10 +667,17 @@ function CreateOrder() {
                                                 {quotations.map((quotation, index) => (
                                                     <div className="menu-item" key={index} data-id={quotation.id}>
                                                         <button
-                                                            className="menu-link"
+                                                            className="menu-link flex justify-between items-center"
                                                             onClick={() => handleSelectQuotation(quotation)}
                                                         >
                                                             <span className="menu-title">{quotation.name}</span>
+                                                            {!quotation.is_ready && (
+                                                                <i
+                                                                    className="ki-outline ki-cross-circle text-danger"
+                                                                    data-tooltip="#draft_tooltip"
+                                                                >
+                                                                </i>
+                                                            )}
                                                         </button>
                                                     </div>
                                                 ))}
@@ -1778,6 +1789,10 @@ function CreateOrder() {
                         </div>
                     }
                 </div>
+            </div>
+
+            <div className="tooltip" id="draft_tooltip">
+                This quotation template is in <strong>Draft Mode</strong>. But you still can select it.
             </div>
         </>
     );

@@ -350,6 +350,7 @@ function ProductDetail() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
                                             <span>{product.uom}</span>
+                                            <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>
                                     <tr>
@@ -657,7 +658,6 @@ function ProductDetail() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
                                             <span>{product.color || 'N/A'}</span>
-                                            <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>
                                     <tr>
@@ -666,7 +666,6 @@ function ProductDetail() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
                                             <span>{product.material || 'N/A'}</span>
-                                            <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>
                                     <tr>
@@ -675,7 +674,6 @@ function ProductDetail() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center ">
                                             <span>{product.width || 'N/A'}</span>
-                                            <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>
                                     <tr>
@@ -684,7 +682,6 @@ function ProductDetail() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
                                             <span>{product.height || 'N/A'}</span>
-                                            <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>
                                     <tr>
@@ -693,7 +690,6 @@ function ProductDetail() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
                                             <span>{product.depth || 'N/A'}</span>
-                                            <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>
                                 </tbody>

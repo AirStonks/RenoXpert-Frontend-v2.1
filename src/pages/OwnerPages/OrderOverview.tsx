@@ -494,7 +494,10 @@ function OrderOverview() {
                                                                                 {invoice.invoice_no}
                                                                             </h3>
                                                                             <div className="flex flex-col mr-8 mb-2">
-                                                                                <span className={`badge badge-outline ${invoice.status === 'paid' ? 'badge-success' : ''}`}>
+                                                                                <span className={`badge badge-outline 
+                                                                                    ${invoice.status === 'paid' ? 'badge-success' : ''}
+                                                                                    ${invoice.status === 'overdue' ? 'badge-danger' : ''}
+                                                                                `}>
                                                                                     {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
                                                                                 </span>
                                                                             </div>

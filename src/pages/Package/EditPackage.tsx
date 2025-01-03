@@ -31,7 +31,7 @@ function EditPackage() {
 
     const handleBackClick = () => {
         localStorage.removeItem('include_prod_selected_products');
-        navigate('/packages');
+        navigate('/packages/' + packageId);
     };
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -127,6 +127,11 @@ function EditPackage() {
 
     const handleSubmit = async () => {
         const storedProducts = localStorage.getItem('include_prod_selected_products');
+
+        if (selectedProducts.length === 0) {
+            notify('error', "Please select at least one product.");
+            return;
+        }
 
         try {
             let newProducts: Product[] = [];
@@ -251,10 +256,6 @@ function EditPackage() {
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!packageDetail) return <div>Package not found</div>;
-
-    // if (selectedProducts) {
-    //     console.log(selectedProducts);
-    // }
 
     return (
         <>
@@ -471,7 +472,10 @@ function EditPackage() {
             </div>
 
             <div className="flex justify-end gap-6">
-                <button className="btn btn-lg btn-light">
+                <button
+                    className="btn btn-lg btn-light"
+                    onClick={handleBackClick}
+                >
                     Cancel
                 </button>
                 <button

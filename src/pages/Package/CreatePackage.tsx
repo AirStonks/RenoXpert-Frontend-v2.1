@@ -84,7 +84,7 @@ function CreatePackage() {
 
                     // Update the totalPrice state
                     setTotalPrice(calculatedTotalPrice);
-                    
+
                     setFormData({
                         ...formData,
                         packageName: data.name,
@@ -160,6 +160,11 @@ function CreatePackage() {
 
     const handleSubmit = async () => {
         const storedProducts = localStorage.getItem('include_prod_selected_products');
+
+        if (selectedProducts.length === 0) {
+            notify('error', "Please select at least one product.");
+            return;
+        }
 
         try {
             let newProducts: Product[] = [];
@@ -474,7 +479,10 @@ function CreatePackage() {
             </div>
 
             <div className="flex justify-end gap-6">
-                <button className="btn btn-lg btn-light">
+                <button
+                    className="btn btn-lg btn-light"
+                    onClick={handleBackClick}
+                >
                     Cancel
                 </button>
                 <button
