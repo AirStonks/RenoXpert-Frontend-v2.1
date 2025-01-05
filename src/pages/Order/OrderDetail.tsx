@@ -82,6 +82,7 @@ function OrderDetail() {
         .filter(Boolean)
         .join(', ');
 
+
     return (
         <>
             <div className="flex justify-between items-center flex-wrap mb-6">
@@ -150,10 +151,21 @@ function OrderDetail() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Original Amount:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {`RM ${orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Total Amount:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
+                                            </td>
+
                                         </td>
                                     </tr>
                                     <tr>
@@ -198,7 +210,7 @@ function OrderDetail() {
                             </table>
                         </div>
                     </div>
-                    <div className="card">
+                    <div className="card bg-info-light">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
                                 Discount/Bonus
@@ -214,7 +226,11 @@ function OrderDetail() {
                                                     Description:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {selectedQuotation.bonus.description}
+                                                    <ul className='text-sm text-gray-900 list-inside'>
+                                                        {selectedQuotation.bonus.description.split('\n').map((item, index) => (
+                                                            <li key={index}>{item}</li>
+                                                        ))}
+                                                    </ul>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -643,62 +659,65 @@ function OrderDetail() {
                                             </span>
                                         </div>
                                         <div className="card-body">
-                                            <div className="flex justify-between flex-wrap gap-8">
+                                            <div className="flex justify-between flex-wrap gap-8 mb-4">
                                                 <div className="flex flex-col">
                                                     {/* <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span> */}
                                                     <span className='text-sm text-gray-600'>QUO Number:</span>
                                                     <span className='text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span>
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className='text-sm text-gray-600'>Total Amount:</span>
-                                                    <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                                    <span className='text-sm text-gray-600'>Date Created:</span>
+                                                    <span className='text-sm text-gray-900 font-semibold'>
+                                                        {new Date(orderDetail.created_at).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'long',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </span>
                                                 </div>
                                             </div>
                                             {orderDetail.status === 'confirmed' &&
                                                 <>
-                                                    {/* <div className="flex mb-2">
-                                                                            <div className="flex flex-col">
-                                                                                <span className='text-sm text-gray-600'>Paid Amount:</span>
-                                                                                <span className='text-sm text-gray-900'>RM </span>
-                                                                            </div>
-                                                                        </div> */}
-                                                    <div className="flex mb-2">
-                                                        <div className="flex flex-col">
-                                                            <span className='text-sm text-gray-600'>Amount Balance:</span>
-                                                            <span className='text-sm text-gray-900'>
-                                                                RM {(orderDetail.sale.remaining_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </span>
+                                                    {
+                                                        selectedQuotation.bonus && (
+                                                            <div className="card-body p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg shadow-md mb-4">
+                                                                <div className="flex flex-col gap-4">
+                                                                    <div className="flex flex-col">
+                                                                        <span className='text-lg text-teal-600 font-bold'>Bonus:</span> {/* Increased font size and boldness */}
+                                                                        <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
+                                                                            {selectedQuotation.bonus.description.split('\n').map((item, index) => (
+                                                                                <li key={index} className="mb-1">
+                                                                                    <span className="block bg-teal-100 p-2 rounded-md shadow-sm">{item}</span>
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </div>
+                                                                    <div className="flex flex-col mt-4">
+                                                                        <span className='text-sm text-gray-600 font-semibold'>Discount:</span>
+                                                                        <span className='text-xl text-teal-600 font-bold'>
+                                                                            {`RM ${selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    }
+
+                                                    {/* Total Amount section */}
+                                                    <div className="card-body p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg shadow-md mb-4">
+                                                        <div className="flex flex-col gap-4">
+                                                            <div className="flex flex-col">
+                                                                <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
+                                                                <span className='text-xl text-gray-900 font-semibold'>
+                                                                    {`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </>
                                             }
                                         </div>
                                     </div>
-
-                                    {
-                                        orderDetail.latest_quotation.bonus && (
-                                            <div className="card flex-1 sm:mb-0 mb-2 mr-2">
-                                                <div className="card-header py-0 flex justify-between">
-                                                    <h2 className="card-title">
-                                                        Discount/Bonus
-                                                    </h2>
-                                                </div>
-                                                <div className="card-body">
-                                                    <div className="flex flex-col gap-8">
-                                                        <div className="flex flex-col">
-                                                            {/* <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span> */}
-                                                            <span className='text-sm text-gray-600'>Bonus:</span>
-                                                            <span className='text-sm text-gray-900 font-semibold'>{orderDetail.latest_quotation.bonus.description}</span>
-                                                        </div>
-                                                        <div className="flex flex-col">
-                                                            <span className='text-sm text-gray-600'>Total Amount:</span>
-                                                            <span className='text-sm text-gray-900 font-semibold'>{`RM ${orderDetail.latest_quotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )
-                                    }
 
                                     <div className="card flex-1 mb-2">
                                         <div className="card-header">
@@ -877,6 +896,43 @@ function OrderDetail() {
                                                 ))}
                                             </tbody>
                                         </table>
+
+                                        {
+                                            selectedQuotation.bonus && (
+                                                <div className="card-body p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg shadow-md mb-4">
+                                                    <div className="flex flex-col gap-4">
+                                                        <div className="flex flex-col">
+                                                            <span className='text-lg text-teal-600 font-bold'>Bonus:</span> {/* Increased font size and boldness */}
+                                                            <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
+                                                                {selectedQuotation.bonus.description.split('\n').map((item, index) => (
+                                                                    <li key={index} className="mb-1">
+                                                                        <span className="block bg-teal-100 p-2 rounded-md shadow-sm">{item}</span>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                        <div className="flex flex-col mt-4">
+                                                            <span className='text-sm text-gray-600 font-semibold'>Discount:</span>
+                                                            <span className='text-xl text-teal-600 font-bold'>
+                                                                {`RM ${selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+
+                                        {/* Total Amount section */}
+                                        <div className="card-body p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg shadow-md mb-4">
+                                            <div className="flex flex-col gap-4">
+                                                <div className="flex flex-col">
+                                                    <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
+                                                    <span className='text-xl text-gray-900 font-semibold'>
+                                                        {`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <div className="flex flex-col items-start gap-4">
                                             <label className="form-label flex items-center gap-2 flex-wrap">

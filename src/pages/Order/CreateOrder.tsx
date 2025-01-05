@@ -357,7 +357,7 @@ function CreateOrder() {
         // setQuotations([]);
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
         // Check if the field is inside the "bonus" object
@@ -717,15 +717,23 @@ function CreateOrder() {
                                         4. Apply Bonus (Optional)
                                     </span>
 
-                                    <InputFieldGroup
-                                        fieldTitle="4.1 Description"
-                                        description="Set a description of the bonus"
-                                        type="text"
-                                        placeholder=''
-                                        name="bonus.description"
-                                        value={formData.bonus.description}
-                                        onChange={handleChange}
-                                    />
+                                    <div className="flex flex-col mb-4">
+                                        <label className='mb-2 text-sm font-medium text-gray-900'>
+                                            4.1 Description
+                                        </label>
+                                        <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                            Set a description of the bonus
+                                        </span>
+
+                                        <textarea
+                                            className="textarea"
+                                            name='bonus.description'
+                                            rows={5}
+                                            value={formData.bonus.description || ''}
+                                            onChange={handleChange}
+                                        >
+                                        </textarea>
+                                    </div>
 
                                     <InputFieldGroup
                                         fieldTitle="4.2 Value"
