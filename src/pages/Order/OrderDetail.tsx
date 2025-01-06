@@ -710,6 +710,11 @@ function OrderDetail() {
                                                                 <span className='text-xl text-gray-900 font-semibold'>
                                                                     {`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </span>
+                                                                {selectedQuotation.bonus && (
+                                                                    <span className='text-gray-900 text-sm'>
+                                                                        Original Price: {`RM ${orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -930,6 +935,11 @@ function OrderDetail() {
                                                     <span className='text-xl text-gray-900 font-semibold'>
                                                         {`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                     </span>
+                                                    {selectedQuotation.bonus && (
+                                                        <span className='text-gray-900 text-sm'>
+                                                            Original Price: {`RM ${orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

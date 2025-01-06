@@ -278,7 +278,9 @@ function PackageDetail() {
                                             <td>
                                                 <div className="flex flex-col">
                                                     <span>{product.name}</span>
-                                                    <span className="text-xs text-slate-400 font-semibold">SKU: {product.SKU || '-'}</span>
+                                                    <div className="inline-block">
+                                                        <span className="text-xs text-slate-400 font-semibold badge badge-xs badge-pill">SKU: {product.SKU || '-'}</span>
+                                                    </div>
                                                     <span className="text-xs text-slate-400">{product.description}</span>
                                                 </div>
                                             </td>
