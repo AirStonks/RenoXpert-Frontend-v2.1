@@ -164,15 +164,25 @@ function PreviousOrderDetail() {
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Version:</td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.latest_quotation.version ?
-                                                String.fromCharCode(64 + orderDetail.latest_quotation.version)
+                                            {selectedQuotation.version ?
+                                                String.fromCharCode(64 + selectedQuotation.version)
                                                 : "N/A"}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated Date:</td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {new Date(selectedQuotation.created_at).toLocaleString('en-GB', {
+                                                day: '2-digit',
+                                                month: 'long',
+                                                year: 'numeric'
+                                            })}
                                         </td>
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated by:</td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.latest_quotation.created_by.name}
+                                            {selectedQuotation.created_by.name}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -195,7 +205,11 @@ function PreviousOrderDetail() {
                                                     Description:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {selectedQuotation.bonus.description}
+                                                    <ul className='text-sm text-gray-900 list-inside'>
+                                                        {selectedQuotation.bonus.description.split('\n').map((item, index) => (
+                                                            <li key={index}>{item}</li>
+                                                        ))}
+                                                    </ul>
                                                 </td>
                                             </tr>
                                             <tr>

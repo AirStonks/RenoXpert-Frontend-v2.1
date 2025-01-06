@@ -404,7 +404,7 @@ function RegistrationFormMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={6} className="text-center text-gray-500">
+                                        <td colSpan={7} className="text-center text-gray-500">
                                             No regForms available
                                         </td>
                                     </tr>

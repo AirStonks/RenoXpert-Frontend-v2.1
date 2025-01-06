@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { json, useNavigate, useParams } from 'react-router-dom';
 import { fetchUser, fetchUsers, fetchProperties, fetchProperty, fetchQuotations, updateOrder, fetchRegistrationForm } from '../../services/api';
 import { User, Order, Property, Quotation, OwnerRegistrationForm } from '../../types';
-import { KTDropdown } from '../../metronic/core';
+import { KTAccordion, KTDropdown } from '../../metronic/core';
 import { Package } from '../../types/index';
 import { Link } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
@@ -75,80 +75,85 @@ function EditOrder() {
     };
 
     useEffect(() => {
-        document.title = "Revise Quotation Order | RenoXpert";
+        const runAsyncTasks = async () => {
+            document.title = "Revise Quotation Order | RenoXpert";
 
-        if (orderDetail) {
-
-            if (orderDetail.form_id) {
-                handleSearchForm(orderDetail.form_id);
-            }
-
-            setFormData({
-                userId: orderDetail.user_id || '',
-                propertyId: orderDetail.property_id || '',
-                quotationId: orderDetail.latest_quotation.quotation_id || '',
-                totalAmount: orderDetail.latest_quotation.total_amount || 0,
-                block: orderDetail.block || '',
-                floor: orderDetail.floor || '',
-                unitNo: orderDetail.unit_no || '',
-                status: orderDetail.status || '',
-                bedroom_count: orderDetail.bedroom_count || 1,
-                bathroom_count: orderDetail.bathroom_count || 1,
-                bonus: {
-                    description: orderDetail.latest_quotation.bonus?.description,
-                    value: orderDetail.latest_quotation.bonus?.value.toString(),
+            if (orderDetail) {
+                // Set form data and perform other operations
+                if (orderDetail.form_id) {
+                    handleSearchForm(orderDetail.form_id);
                 }
-            });
 
-            const tmpEditOrder = {
-                userId: orderDetail.user_id || '',
-                propertyId: orderDetail.property_id || '',
-                quotationId: orderDetail.latest_quotation.quotation_id || '',
-                totalAmount: orderDetail.latest_quotation.total_amount || 0,
-                block: orderDetail.block || '',
-                floor: orderDetail.floor || '',
-                unitNo: orderDetail.unit_no || '',
-                status: orderDetail.status || '',
-                bedroom_count: orderDetail.bedroom_count || 1,
-                bathroom_count: orderDetail.bathroom_count || 1,
-                bonus: {
-                    description: orderDetail.latest_quotation.bonus?.description,
-                    value: orderDetail.latest_quotation.bonus?.value.toString(),
+                setFormData({
+                    userId: orderDetail.user_id || '',
+                    propertyId: orderDetail.property_id || '',
+                    quotationId: orderDetail.latest_quotation.quotation_id || '',
+                    totalAmount: orderDetail.latest_quotation.total_amount || 0,
+                    block: orderDetail.block || '',
+                    floor: orderDetail.floor || '',
+                    unitNo: orderDetail.unit_no || '',
+                    status: orderDetail.status || '',
+                    bedroom_count: orderDetail.bedroom_count || 1,
+                    bathroom_count: orderDetail.bathroom_count || 1,
+                    bonus: {
+                        description: orderDetail.latest_quotation.bonus?.description,
+                        value: orderDetail.latest_quotation.bonus?.value.toString(),
+                    }
+                });
+
+                const tmpEditOrder = {
+                    userId: orderDetail.user_id || '',
+                    propertyId: orderDetail.property_id || '',
+                    quotationId: orderDetail.latest_quotation.quotation_id || '',
+                    totalAmount: orderDetail.latest_quotation.total_amount || 0,
+                    block: orderDetail.block || '',
+                    floor: orderDetail.floor || '',
+                    unitNo: orderDetail.unit_no || '',
+                    status: orderDetail.status || '',
+                    bedroom_count: orderDetail.bedroom_count || 1,
+                    bathroom_count: orderDetail.bathroom_count || 1,
+                    bonus: {
+                        description: orderDetail.latest_quotation.bonus?.description,
+                        value: orderDetail.latest_quotation.bonus?.value.toString(),
+                    }
                 }
+
+                if (localStorage.getItem('e:edit_order_data')) {
+                    setFormData((prevData) => ({
+                        ...prevData,
+                        totalAmount: JSON.parse(localStorage.getItem('e:edit_order_data')).totalAmount,
+                    }));
+                    localStorage.setItem('edit_order_data', localStorage.getItem('e:edit_order_data'));
+                } else {
+                    localStorage.setItem('edit_order_data', JSON.stringify(tmpEditOrder));
+                }
+
+                if (!localStorage.getItem('include_packages')) {
+                    localStorage.setItem('include_packages', JSON.stringify(orderDetail.latest_quotation.packages));
+                }
+
+                if (orderDetail.user_id) {
+                    handleSelectUserById(Number(orderDetail.user_id));
+                }
+
+                if (orderDetail.property_id) {
+                    handleSelectPropertytById(Number(orderDetail.property_id));
+                }
+
+                if (orderDetail.latest_quotation.id) {
+                    handleSelectQuotationtById();
+                }
+
+                // Run KTAccordion.createInstances() after all other tasks have completed
+                await new Promise(resolve => setTimeout(resolve, 1));
+                KTAccordion.createInstances();
             }
+        };
 
-            if (localStorage.getItem('e:edit_order_data')) {
-
-                setFormData((prevData) => ({
-                    ...prevData,
-                    totalAmount: JSON.parse(localStorage.getItem('e:edit_order_data')).totalAmount,
-                }));
-
-                localStorage.setItem('edit_order_data', localStorage.getItem('e:edit_order_data'));
-            } else {
-                localStorage.setItem('edit_order_data', JSON.stringify(tmpEditOrder));
-            }
-
-
-            if (!localStorage.getItem('include_packages')) {
-                localStorage.setItem('include_packages', JSON.stringify(orderDetail.latest_quotation.packages));
-            }
-
-
-            if (orderDetail.user_id) {
-                handleSelectUserById(Number(orderDetail.user_id));
-            }
-
-            if (orderDetail.property_id) {
-                handleSelectPropertytById(Number(orderDetail.property_id));
-            }
-
-            if (orderDetail.latest_quotation.id) {
-                handleSelectQuotationtById();
-            }
-        }
-
+        runAsyncTasks();
     }, [orderDetail]);
+
+
 
     const handleOpenOwnerDropdown = async () => {
         setSearchUserTerm('');
@@ -806,8 +811,12 @@ function EditOrder() {
                                                                 {prodPackage.description}
                                                             </span>
                                                         </div>
+                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block">
+                                                        </i>
+                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden">
+                                                        </i>
                                                     </button>
-                                                    <div className="accordion-content active border-t" id={"package_content_" + prodPackage.id.toString()}>
+                                                    <div className="accordion-content border-t hidden" id={"package_content_" + prodPackage.id.toString()}>
                                                         <div className="product-list flex flex-col">
                                                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                                                 <thead>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createOrder, fetchProperties, fetchProperty, fetchQuotation, fetchQuotations, fetchRegistrationForm, fetchUser, fetchUsers } from '../../services/api';
 import { Order, OwnerRegistrationForm, Property, Quotation, User } from '../../types';
-import { KTDropdown, KTTooltip } from '../../metronic/core';
+import { KTAccordion, KTDropdown, KTTooltip } from '../../metronic/core';
 import { Package } from '../../types/index';
 import { Link } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
@@ -108,12 +108,22 @@ function CreateOrder() {
             }
         }
 
+        // Ensure KTTooltip.createInstances runs asynchronously after quotations are updated
+        const runAsyncTasks = async () => {
+            // Always run KTAccordion.createInstances after all other updates
+            await new Promise((resolve) => setTimeout(resolve, 0)); // Ensure it runs after the rest of the side effects
+            KTAccordion.createInstances();
+        };
+
+        runAsyncTasks(); // Execute the async function that runs KTTooltip and KTAccordion
+
         if (quotations.length > 0) {
             // Call KTTooltip.createInstances after quotations are updated
             KTTooltip.createInstances();
         }
 
-    }, [formId, quotations]); // Add formId to the dependency array
+    }, [formId]); // Re-run effect when formId or quotations change
+
 
     const handleOpenOwnerDropdown = async () => {
         setSearchUserTerm('');
@@ -805,8 +815,12 @@ function CreateOrder() {
                                                                 {prodPackage.description}
                                                             </span>
                                                         </div>
+                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block">
+                                                        </i>
+                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden">
+                                                        </i>
                                                     </button>
-                                                    <div className="accordion-content active border-t" id={"package_content_" + prodPackage.id.toString()}>
+                                                    <div className="accordion-content border-t hidden" id={"package_content_" + prodPackage.id.toString()}>
                                                         <div className="product-list flex flex-col">
                                                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                                                 <thead>

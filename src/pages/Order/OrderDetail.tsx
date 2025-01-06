@@ -228,6 +228,16 @@ function OrderDetail() {
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated Date:</td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {new Date(orderDetail.latest_quotation.created_at).toLocaleString('en-GB', {
+                                                day: '2-digit',
+                                                month: 'long',
+                                                year: 'numeric'
+                                            })}
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated by:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             {orderDetail.latest_quotation.created_by.name}

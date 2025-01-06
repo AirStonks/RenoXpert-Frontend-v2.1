@@ -58,6 +58,16 @@ function RegistrationFormDetail() {
                                 <span className="font-normal">Form No:</span>
                                 <span className="font-semibold">{formDetail.form_no}</span>
                             </div>
+                            <div className="flex flex-col">
+                                <span className="font-normal">Status:</span>
+                                <span className={`badge badge-pill p-2 cursor-default
+                                    ${formDetail.status === 'rejected' ? 'badge-danger' : ''} 
+                                    ${formDetail.status === 'approved' ? 'badge-success' : ''} 
+                                    badge-outline`}
+                                >
+                                    {formDetail.status.charAt(0).toUpperCase() + formDetail.status.slice(1)}
+                                </span>
+                            </div>
                         </div>
                     </div>
 

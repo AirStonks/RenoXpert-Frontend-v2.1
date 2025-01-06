@@ -355,26 +355,27 @@ function DefectInspectionFormPage() {
 
         try {
             const response = await fetchRenoProgressDetail(Number(renoProgressId)); // Fetch reno progress data
+            const progress: RenoProgress = response.data;
 
             if (response?.success) {
                 setFormData((prevData) => ({
                     ...prevData,
-                    owner_email: response.data.owner.email,
+                    owner_email: progress.sale?.user?.email,
                     reno_progress_id: renoProgressId,
                     property: {
                         ...prevData.property,
-                        property_name: response.data.property.id,
-                        block: response.data.block,
-                        level: response.data.level,
-                        unit: response.data.unit,
+                        property_name: progress.property?.id,
+                        block: progress.property?.block,
+                        level: progress.property?.floor,
+                        unit: progress.property?.unit_no,
                     },
-                    bedroom_count: response.data.bedroom_count?.toString(),
-                    bathroom_count: response.data.bathroom_count.toString(),
+                    bedroom_count: progress.sale?.order?.bedroom_count?.toString(),
+                    bathroom_count: progress.sale?.order?.bathroom_count?.toString(),
                 }));
             }
 
-            handleDynamicBedroomByNumber(response.data.bedroom_count);
-            handleDynamicBathroomByNumber(response.data.bathroom_count);
+            handleDynamicBedroomByNumber(progress.sale?.order?.bedroom_count);
+            handleDynamicBathroomByNumber(progress.sale?.order?.bathroom_count);
 
         } catch (error) {
             console.error('Error fetching reno progress or sale data:', error);

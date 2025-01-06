@@ -103,7 +103,7 @@ function EditOrderQuotation() {
 
             // if (response?.success) {
             notify('success', "Quotation Updated Successfully!");
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            navigate('/orders/edit/' + orderId);
             // }
         } catch (error) {
             if (error.response?.status === 422) {
@@ -525,8 +525,10 @@ function EditOrderQuotation() {
                                                     Remove
                                                     {/* <i className="ki-solid ki-cross-square text-danger text-2xl"></i> */}
                                                 </button>
-                                                <i className="ki-outline ki-up text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block">
+                                                </i>
+                                                <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden">
+                                                </i>
                                             </div>
                                         </button>
                                         <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
