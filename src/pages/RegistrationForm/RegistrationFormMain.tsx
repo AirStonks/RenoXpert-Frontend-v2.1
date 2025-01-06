@@ -127,6 +127,7 @@ function RegistrationFormMain() {
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+        initRegFormTable(1, newSize, searchTerm, sortOrder, sortField);
     };
 
     const handleSort = (field: string) => {
@@ -370,7 +371,6 @@ function RegistrationFormMain() {
                                                             {regForm.other_property === null &&
                                                                 <button
                                                                     className="btn-delete btn btn-sm btn-success ${!regForm.property ? 'disabled' : ''}"
-                                                                    data-tooltip="#${!data.property ? 'disabled_tooltip' : 'approve_tooltip'}"
                                                                     data-action="approve"
                                                                     data-id="${data.id}"
                                                                     data-modal-toggle="#confirm_item_modal"

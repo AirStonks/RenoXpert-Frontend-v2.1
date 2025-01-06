@@ -1,6 +1,6 @@
 // src/hooks/useFetchOrder.ts
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchOrder } from '../services/api';
 import { Order } from '../types';
 
@@ -9,7 +9,7 @@ const useFetchOrder = (orderId: number | null) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
+    const fetchOrderData = useCallback(() => {
         if (orderId === null) {
             setLoading(false); // No need to load if orderId is null
             setOrder(null);
@@ -29,7 +29,11 @@ const useFetchOrder = (orderId: number | null) => {
             });
     }, [orderId]);
 
-    return { orderDetail, loading, error };
+    useEffect(() => {
+        fetchOrderData();
+    }, [orderId, fetchOrderData]);
+
+    return { orderDetail, loading, error, refetch: fetchOrderData };
 };
 
 export default useFetchOrder;

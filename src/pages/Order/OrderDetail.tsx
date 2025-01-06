@@ -8,6 +8,7 @@ import { OrderQuotation, Package, Product } from "../../types";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
+import { releaseOrder } from "../../services/api";
 
 function OrderDetail() {
     const navigate = useNavigate();
@@ -15,9 +16,10 @@ function OrderDetail() {
     const { id } = useParams<{ id: string }>();
     const orderId = id ? parseInt(id, 10) : null;
 
-    const { orderDetail, loading, error } = useFetchOrder(orderId);
+    const { orderDetail, loading, error, refetch } = useFetchOrder(orderId);
 
     const [activeTab, setActiveTab] = useState('tab_1_1');
+    const [isLoading, setIsLoading] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -64,6 +66,22 @@ function OrderDetail() {
         }
     };
 
+    const handleReleaseOrder = async () => {
+        setIsLoading(true);
+        try {
+            const response = await releaseOrder(orderId);
+
+            if (response?.success) {
+                notify('success', 'Order released successfully!');
+                refetch();
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+        setIsLoading(false);
+    };
+
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!orderDetail) return <div>Order not found</div>;
@@ -95,6 +113,14 @@ function OrderDetail() {
                     </span>
                 </div>
                 <div className="flex gap-3">
+                    {orderDetail?.status === 'unreleased' && (
+                        <button
+                            className="btn btn-primary btn-sm"
+                            onClick={handleReleaseOrder}
+                        >
+                            Release Order
+                        </button>
+                    )}
                     <Link
                         to={`/orders/edit/${orderId}`}
                         className="btn btn-sm btn-info"
@@ -174,6 +200,7 @@ function OrderDetail() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <span className={`badge badge-sm p-2 cursor-default
+                                                ${orderDetail.status === 'released' ? 'badge-primary' : ''} 
                                                 ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
                                                 ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
                                                 badge-outline`}

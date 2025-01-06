@@ -19,7 +19,7 @@ const useFetchProduct = (id: number) => {
           setProduct(data.data);
           setLoading(false);
         })
-        .catch((err) => {
+        .catch(() => {
           setError('Failed to fetch product');
           setLoading(false);
         });

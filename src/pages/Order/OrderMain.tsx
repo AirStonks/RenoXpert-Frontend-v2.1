@@ -307,6 +307,7 @@ function OrderMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <span className={`badge badge-pill p-2 cursor-default
+                                                    ${order.status === 'released' ? 'badge-primary' : ''} 
                                                     ${order.status === 'confirmed' ? 'badge-success' : ''} 
                                                     ${order.status === 'revoked' ? 'badge-danger' : ''} 
                                                     badge-outline`}
