@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import KTComponents from '../../metronic/core';
 import { operationLogin } from '../../services/auth';
+import { Slide, toast } from 'react-toastify';
 
 interface LoginForm {
     mobile: string;
@@ -11,10 +12,24 @@ interface LoginForm {
 }
 
 const OperationLogin: React.FC = () => {
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
+
     useEffect(() => {
         document.title = "Login | RenoXpert";
         KTComponents.init();
     }, []);
+
     const [formData, setFormData] = useState<LoginForm>({ mobile: '', password: '' });
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -39,7 +54,9 @@ const OperationLogin: React.FC = () => {
                 navigate('/op/home'); // Redirect to dashboard on successful userLogin
             }
         } catch (err) {
-            setError('Invalid userLogin credentials. Please try again.');
+            setError('Invalid user credentials. Please try again.');
+            notify('error', 'Invalid user credentials. Please try again.');
+
         } finally {
             setLoading(false);
         }
@@ -74,6 +91,7 @@ const OperationLogin: React.FC = () => {
                                 Login to Operation Portal
                             </span>
                         </div>
+                        {error && <p className="text-red-500">{error}</p>}
                     </div>
                     <div className="flex flex-col gap-1 justify-center">
                         <label className="form-label font-normal text-gray-900">Email</label>

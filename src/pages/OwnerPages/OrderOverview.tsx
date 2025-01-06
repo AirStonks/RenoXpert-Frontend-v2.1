@@ -73,7 +73,7 @@ function OrderOverview() {
                 <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
                 <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
 
-                <h2 className="text-xl font-semibold text-slate-900">Order not found or invalid</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Order not found or invalid</h2>
             </div>
         </div>
 
@@ -276,12 +276,12 @@ function OrderOverview() {
                         <div className="flex gap-4 justify-center">
                             <Link
                                 to={'/owner/home'}
-                                className="ki-solid ki-arrow-left items-center">
+                                className="ki-solid ki-arrow-left items-center text-gray-900">
                             </Link>
                             {orderDetail.status === 'confirmed' ?
-                                <span className="text-lg font-semibold">Quotation Order Overview</span>
+                                <span className="text-lg text-gray-900 font-semibold">Quotation Order Overview</span>
                                 :
-                                <span className="text-lg font-semibold">Quotation Order Agreement</span>
+                                <span className="text-lg text-gray-900 font-semibold">Quotation Order Agreement</span>
                             }
 
                         </div>
@@ -422,7 +422,7 @@ function OrderOverview() {
                                                                         <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
                                                                             {bonus.description.split('\n').map((item, index) => (
                                                                                 <li key={index} className="mb-1">
-                                                                                    <span className="block bg-teal-100 p-2 rounded-md shadow-sm">{item}</span>
+                                                                                    <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
                                                                                 </li>
                                                                             ))}
                                                                         </ul>
@@ -505,7 +505,7 @@ function OrderOverview() {
                                                     <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
                                                     <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
 
-                                                    <h2 className="text-xl font-semibold text-slate-900">There is no Payment Invoices here</h2>
+                                                    <h2 className="text-xl font-semibold text-gray-900">There is no Payment Invoices here</h2>
                                                 </div>
                                                 : orderDetail.sale.invoices.map((invoice, index) => (
                                                     <Link
@@ -593,6 +593,7 @@ function OrderOverview() {
                                                     <th className="p-2 text-left">Description</th>
                                                     <th className="p-2 text-center">UOM</th>
                                                     <th className="p-2 text-center">QTY</th>
+                                                    <th className="p-2 text-center"></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -614,15 +615,15 @@ function OrderOverview() {
                                                                         <span className='text-gray-900'>{product.name}</span>
                                                                         <span className='text-gray-500 text-2xs'>{product.description}</span>
                                                                     </td>
-                                                                    <td className="p-2 text-center">
+                                                                    <td className="p-2 text-center text-gray-900">
                                                                         {product.uom}
                                                                     </td>
-                                                                    <td className="p-2 text-center">
+                                                                    <td className="p-2 text-center text-gray-900">
                                                                         {!product.pivot.included
                                                                             ? 0
                                                                             : product.pivot.quantity}
                                                                     </td>
-                                                                    <td className="p-2 text-center hidden md:table-cell">
+                                                                    <td className="p-2 text-center hidden md:table-cell text-gray-900">
                                                                         {!product.pivot.included
                                                                             ? `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                             : null}
@@ -646,7 +647,7 @@ function OrderOverview() {
                                                             <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
                                                                 {bonus.description.split('\n').map((item, index) => (
                                                                     <li key={index} className="mb-1">
-                                                                        <span className="block bg-teal-100 p-2 rounded-md shadow-sm">{item}</span>
+                                                                        <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
                                                                     </li>
                                                                 ))}
                                                             </ul>
@@ -717,6 +718,7 @@ function OrderOverview() {
                                                 <th className="p-2 text-sm text-left">Description</th>
                                                 <th className="p-2 text-center">UOM</th>
                                                 <th className="p-2 text-center">QTY</th>
+                                                <th className="p-2 text-center"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -738,15 +740,15 @@ function OrderOverview() {
                                                                     <span className='text-gray-900'>{product.name}</span>
                                                                     <span className='text-gray-500 text-2xs'>{product.description}</span>
                                                                 </td>
-                                                                <td className="p-2 text-center">
+                                                                <td className="p-2 text-center text-gray-900">
                                                                     {product.uom}
                                                                 </td>
-                                                                <td className="p-2 text-center">
+                                                                <td className="p-2 text-center text-gray-900">
                                                                     {!product.pivot.included
                                                                         ? 0
                                                                         : product.pivot.quantity}
                                                                 </td>
-                                                                <td className="p-2 text-center hidden md:table-cell">
+                                                                <td className="p-2 text-center hidden md:table-cell text-gray-900">
                                                                     {!product.pivot.included
                                                                         ? `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                         : null}

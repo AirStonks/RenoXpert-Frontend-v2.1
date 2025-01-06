@@ -408,7 +408,7 @@ function OrderDetail() {
                                         Price: RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
                                         }
                                     </span>
-                                    <span className="text-base font-normal text-slate-400">
+                                    <span className="text-base font-normal text-gray-400">
                                         {selectedQuotation.description}
                                     </span>
                                 </div>
@@ -434,7 +434,7 @@ function OrderDetail() {
                                                         <span className='text-base text-gray-700'>
                                                             RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </span>
-                                                        <span className='text-sm text-slate-400'>
+                                                        <span className='text-sm text-gray-400'>
                                                             {prodPackage.description}
                                                         </span>
                                                     </div>
@@ -488,7 +488,7 @@ function OrderDetail() {
                                                                         <td>
                                                                             <div className="flex flex-col">
                                                                                 <span>{product.name}</span>
-                                                                                <span className="text-xs text-slate-400">{product.description}</span>
+                                                                                <span className="text-xs text-gray-400">{product.description}</span>
                                                                             </div>
                                                                         </td>
                                                                         <td className='text-center text-lg'>
@@ -644,7 +644,6 @@ function OrderDetail() {
                                 }
 
                                 <div className="flex flex-col mb-4">
-
                                     <div className="card flex-1 mb-2">
                                         <div className="card-header py-0 flex justify-between">
                                             <h2 className="card-title">
@@ -687,7 +686,7 @@ function OrderDetail() {
                                                                         <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
                                                                             {selectedQuotation.bonus.description.split('\n').map((item, index) => (
                                                                                 <li key={index} className="mb-1">
-                                                                                    <span className="block bg-teal-100 p-2 rounded-md shadow-sm">{item}</span>
+                                                                                    <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
                                                                                 </li>
                                                                             ))}
                                                                         </ul>
@@ -770,7 +769,7 @@ function OrderDetail() {
                                                     <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
                                                     <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
 
-                                                    <h2 className="text-xl font-semibold text-slate-900">There is no Payment Invoices here</h2>
+                                                    <h2 className="text-xl font-semibold text-gray-900">There is no Payment Invoices here</h2>
                                                 </div>
                                                 : orderDetail.sale.invoices.map((invoice, index) => (
                                                     <div
@@ -857,6 +856,7 @@ function OrderDetail() {
                                                     <th className="p-2 text-left">Description</th>
                                                     <th className="p-2 text-center">UOM</th>
                                                     <th className="p-2 text-center">QTY</th>
+                                                    <th className="p-2 text-center"></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -878,15 +878,15 @@ function OrderDetail() {
                                                                         <span className='text-gray-900'>{product.name}</span>
                                                                         <span className='text-gray-500 text-2xs'>{product.description}</span>
                                                                     </td>
-                                                                    <td className="p-2 text-center">
+                                                                    <td className="p-2 text-center text-gray-900">
                                                                         {product.uom}
                                                                     </td>
-                                                                    <td className="p-2 text-center">
+                                                                    <td className="p-2 text-center text-gray-900">
                                                                         {!product.pivot.included
                                                                             ? 0
                                                                             : product.pivot.quantity}
                                                                     </td>
-                                                                    <td className="p-2 text-center hidden md:table-cell"></td>
+                                                                    <td className="p-2 text-center hidden md:table-cell text-gray-900"></td>
                                                                 </tr>
                                                             ) : (
                                                                 ""
@@ -906,7 +906,7 @@ function OrderDetail() {
                                                             <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
                                                                 {selectedQuotation.bonus.description.split('\n').map((item, index) => (
                                                                     <li key={index} className="mb-1">
-                                                                        <span className="block bg-teal-100 p-2 rounded-md shadow-sm">{item}</span>
+                                                                        <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
                                                                     </li>
                                                                 ))}
                                                             </ul>
@@ -974,6 +974,7 @@ function OrderDetail() {
                                                 <th className="p-2 text-sm text-left">Description</th>
                                                 <th className="p-2 text-center">UOM</th>
                                                 <th className="p-2 text-center">QTY</th>
+                                                <th className="p-2 text-center"></th>
                                             </tr>
                                         </thead>
                                         <tbody>

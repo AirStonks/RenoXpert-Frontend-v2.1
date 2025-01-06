@@ -65,9 +65,9 @@ function OwnerHome() {
                             dangerouslySetInnerHTML={{ __html: svgString }}
                             className="absolute top-16 flex justify-center items-center size-20 rounded-full border-2 border-success shrink-0 bg-white"
                         />
-                        <span className="text-slate-900 text-xl font-bold mt-6">{owner.name}</span>
-                        <span className="text-slate-900 text-base">+60 {owner.phone_no}</span>
-                        <span className="text-slate-900 text-base mb-3">{owner.email ? owner.email : '-'}</span>
+                        <span className="text-gray-900 text-xl font-bold mt-6">{owner.name}</span>
+                        <span className="text-gray-900 text-base">+60 {owner.phone_no}</span>
+                        <span className="text-gray-900 text-base mb-3">{owner.email ? owner.email : '-'}</span>
                         <div className="flex gap-4">
                             <button className="btn btn-sm btn-danger" onClick={handleLogout}>Logout</button>
                         </div>
@@ -104,7 +104,7 @@ function OwnerHome() {
             <div className={activeTab === 'tab_1_1' ? '' : 'hidden'} id="tab_1_1">
                 <div className="flex flex-col">
                     <div className="flex justify-between items-center mb-2">
-                        <span className="text-lg font-bold text-slate-900">Quotation</span>
+                        <span className="text-lg font-bold text-gray-900">Quotation</span>
                     </div>
 
                     {orders.length === 0 ? (
@@ -112,7 +112,7 @@ function OwnerHome() {
                             <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
                             <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
 
-                            <h2 className="text-xl font-semibold text-slate-900">There is no Quotation here</h2>
+                            <h2 className="text-xl font-semibold text-gray-900">There is no Quotation here</h2>
                         </div>
                     ) : (
                         <div className="flex flex-wrap gap-4">
@@ -184,7 +184,7 @@ function OwnerHome() {
             <div className={activeTab === 'tab_1_2' ? '' : 'hidden'} id="tab_1_2">
                 <div className="flex flex-col">
                     <div className="flex justify-between items-center mb-2">
-                        <span className="text-lg font-bold text-slate-900">Registration Form</span>
+                        <span className="text-lg font-bold text-gray-900">Registration Form</span>
                         <Link
                             to={'/owner/reno-registration-form'}
                             className="btn btn-sm btn-secondary"
@@ -198,7 +198,7 @@ function OwnerHome() {
                             <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
                             <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
 
-                            <h2 className="text-xl font-semibold text-slate-900">There is no Reno Registration Forms here</h2>
+                            <h2 className="text-xl font-semibold text-gray-900">There is no Reno Registration Forms here</h2>
                         </div>
                     ) : (
                         <div className="flex flex-wrap gap-4">
@@ -270,14 +270,14 @@ function OwnerHome() {
 
             <div className={activeTab === 'tab_1_3' ? '' : 'hidden'} id="tab_1_3">
                 <div className="flex justify-between items-center mb-2">
-                    <span className="text-lg font-bold text-slate-900">Reno Progress</span>
+                    <span className="text-lg font-bold text-gray-900">Reno Progress</span>
                 </div>
 
                 <div className="flex flex-col items-center">
                     <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/9.svg" />
                     <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/9.svg" />
 
-                    <h2 className="text-xl font-semibold text-slate-900">Reno Progress Features Comming Soon</h2>
+                    <h2 className="text-xl font-semibold text-gray-900">Reno Progress Features Comming Soon</h2>
                 </div>
 
                 {/* <div className="flex flex-wrap gap-4">

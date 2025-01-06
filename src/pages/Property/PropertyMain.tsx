@@ -79,11 +79,13 @@ function PropertyMain() {
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
+        initPropertyTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+        initPropertyTable(1, newSize, searchTerm, sortOrder, sortField);
     };
 
     const handleSort = (field: string) => {

@@ -103,6 +103,7 @@ function PackageArchive() {
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+        initPackageTable(1, newSize, searchTerm, sortOrder, sortField);
     };
 
     const handleSort = (field: string) => {

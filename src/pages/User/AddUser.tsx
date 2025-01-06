@@ -8,6 +8,7 @@ import { addUser } from "../../services/api";
 const roles = [
     { value: 'owner', label: 'Owner', description: 'Create an owner account' },
     { value: 'vendor', label: 'Vendor', description: 'Create a vendor account' },
+    { value: 'technician', label: 'Technician', description: 'Create a technician account' },
 ]
 
 function AddUser() {
