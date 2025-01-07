@@ -296,24 +296,32 @@ function EditOrderQuotation() {
                         if (product.id === id) {
                             const key = property === 'install' ? 'includeInstall' : 'includeSupply';
 
+                            const updatedPivot = {
+                                ...product.pivot,
+                                [key]: product.pivot ? !product.pivot[key] : true, // Toggle the specified property
+                            };
+
+                            // Check if both includeSupply and includeInstall are false, and set quantity to 1
+                            if (!updatedPivot.includeSupply && !updatedPivot.includeInstall) {
+                                updatedPivot.quantity = 1; // Reset quantity to 1
+                            }
+
                             return {
                                 ...product,
-                                pivot: {
-                                    ...product.pivot,
-                                    [key]: product.pivot ? (product.pivot[key] ? 0 : 1) : 1, // handle case if pivot is undefined
-                                },
+                                pivot: updatedPivot,
                             };
                         }
                         return product; // Return the original product if not matched
                     });
 
                     const packageTotalPrice = updatedProducts.reduce((sum, product) => {
-                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) +
+                            (product.provisioning.install.retail_price * product.pivot.quantity);
                     }, 0);
 
-                    let newTotalPrice = packageTotalPrice
+                    let newTotalPrice = packageTotalPrice;
 
-                    updatedProducts.map((product) => {
+                    updatedProducts.forEach((product) => {
                         if (!product.pivot.includeSupply) {
                             newTotalPrice -= (product.provisioning.supply.excluded_price * product.pivot.quantity);
                         }
@@ -322,8 +330,6 @@ function EditOrderQuotation() {
                             newTotalPrice -= (product.provisioning.install.excluded_price * product.pivot.quantity);
                         }
                     });
-
-
 
                     return {
                         ...prodPackage,
@@ -347,6 +353,39 @@ function EditOrderQuotation() {
                 if (prodPackage.id === packId) {
                     const updatedProducts = prodPackage.products.map((product) => {
                         if (product.id === prodId) {
+                            // New condition: When quantity is 1, action is increase, and both includes are false
+                            if (product.pivot.quantity === 1 &&
+                                action === 'increase' &&
+                                !product.pivot.includeSupply &&
+                                !product.pivot.includeInstall) {
+                                return {
+                                    ...product,
+                                    pivot: {
+                                        ...product.pivot,
+                                        includeSupply: true,
+                                        includeInstall: true
+                                    }
+                                };
+                            }
+
+                            // Block increase/decrease if either includeSupply or includeInstall is false
+                            if (!product.pivot.includeSupply && !product.pivot.includeInstall) {
+                                return product; // Return the product unchanged if both are false
+                            }
+
+                            // Handle decrease action with quantity of 1
+                            if (action === 'decrease' && product.pivot.quantity === 1) {
+                                return {
+                                    ...product,
+                                    pivot: {
+                                        ...product.pivot,
+                                        includeSupply: false,
+                                        includeInstall: false
+                                    }
+                                };
+                            }
+
+                            // Calculate new quantity based on action
                             const newQty = action === 'increase'
                                 ? product.pivot.quantity + 1
                                 : Math.max(1, product.pivot.quantity - 1);
@@ -359,20 +398,19 @@ function EditOrderQuotation() {
                                 }
                             };
                         }
-                        return product; // Return the original product if not matched
+                        return product;
                     });
 
                     const packageTotalPrice = updatedProducts.reduce((sum, product) => {
-                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) +
+                            (product.provisioning.install.retail_price * product.pivot.quantity);
                     }, 0);
 
-                    let newTotalPrice = packageTotalPrice
-
-                    updatedProducts.map((product) => {
+                    let newTotalPrice = packageTotalPrice;
+                    updatedProducts.forEach((product) => {
                         if (!product.pivot.includeSupply) {
                             newTotalPrice -= (product.provisioning.supply.excluded_price * product.pivot.quantity);
                         }
-
                         if (!product.pivot.includeInstall) {
                             newTotalPrice -= (product.provisioning.install.excluded_price * product.pivot.quantity);
                         }
@@ -381,14 +419,14 @@ function EditOrderQuotation() {
                     return {
                         ...prodPackage,
                         products: updatedProducts,
-                        total_price: newTotalPrice // Update total price
+                        total_price: newTotalPrice
                     };
                 }
-                return prodPackage; // Return the original package if not matched
+                return prodPackage;
             });
 
             const newTotalAmount = calculateTotalAmount(updatedPackages);
-            setTotalAmount(newTotalAmount); // Update totalAmount
+            setTotalAmount(newTotalAmount);
             updateLocalStorage(updatedPackages);
             return updatedPackages;
         });
@@ -560,6 +598,7 @@ function EditOrderQuotation() {
                                                         {prodPackage.products.map((product) => (
                                                             <tr
                                                                 key={product.id}
+                                                                className={`${!product.pivot.includeSupply && !product.pivot.includeInstall ? 'light:bg-orange-50 dark:bg-orange-950' : ''}`}
                                                             >
                                                                 <td>
                                                                     <span></span>
@@ -602,7 +641,7 @@ function EditOrderQuotation() {
                                                                                 <i className="ki-solid ki-minus-squared"></i>
                                                                             </button>
                                                                             <span className="mx-2 text-base">
-                                                                                {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                                {product.pivot.included ? ((!product.pivot.includeSupply && !product.pivot.includeInstall ? 0 : product.pivot.quantity)) : '0'}
                                                                             </span>
                                                                             <button
                                                                                 data-action='increase'

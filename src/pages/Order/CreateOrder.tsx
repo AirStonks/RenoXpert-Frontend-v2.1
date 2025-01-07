@@ -109,20 +109,21 @@ function CreateOrder() {
         }
 
         // Ensure KTTooltip.createInstances runs asynchronously after quotations are updated
-        const runAsyncTasks = async () => {
-            // Always run KTAccordion.createInstances after all other updates
-            await new Promise((resolve) => setTimeout(resolve, 500)); // Ensure it runs after the rest of the side effects
-            KTAccordion.createInstances();
-        };
+        // const runAsyncTasks = async () => {
+        //     // Always run KTAccordion.createInstances after all other updates
+        //     await new Promise((resolve) => setTimeout(resolve, 0)); // Ensure it runs after the rest of the side effects
+        //     KTAccordion.createInstances();
+        // };
 
-        runAsyncTasks(); // Execute the async function that runs KTTooltip and KTAccordion
+        // runAsyncTasks(); // Execute the async function that runs KTTooltip and KTAccordion
 
         if (quotations.length > 0) {
             // Call KTTooltip.createInstances after quotations are updated
             KTTooltip.createInstances();
+            KTAccordion.createInstances();
         }
 
-    }, [formId]); // Re-run effect when formId or quotations change
+    }, [formId, quotations.length]); // Re-run effect when formId or quotations change
 
 
     const handleOpenOwnerDropdown = async () => {
@@ -283,14 +284,29 @@ function CreateOrder() {
         setSearchQuotationTerm('');
         setQuotations([]);
 
-        // Store selected quotation package
-        localStorage.setItem('include_packages', JSON.stringify(quotation.metadata));
-        const storedPackages = localStorage.getItem('include_packages');
+        // Check if quotation.metadata is null or an empty array
+        const metadata = quotation.metadata;
+        if (metadata && Array.isArray(metadata) && metadata.length > 0) {
+            // Store selected quotation package
+            localStorage.setItem('include_packages', JSON.stringify(metadata));
+        } else {
+            // Store empty array if metadata is null or empty
+            localStorage.setItem('include_packages', JSON.stringify([]));
+        }
 
+        // Retrieve stored packages and set selected packages
+        const storedPackages = localStorage.getItem('include_packages');
         if (storedPackages) {
             setSelectedPackages(JSON.parse(storedPackages));
         }
+
+        // Delay the call to KTAccordion.createInstances() to run last
+        setTimeout(() => {
+            KTAccordion.createInstances();
+        }, 0);
     };
+
+
 
     const handleSelectUserById = async (id: number) => {
         try {
@@ -357,6 +373,11 @@ function CreateOrder() {
         } catch (error) {
             console.error('Error fetching properties:', error);
         }
+
+        // Delay the call to KTAccordion.createInstances() to run last
+        setTimeout(() => {
+            KTAccordion.createInstances();
+        }, 0);
 
         // setFormData((prev) => ({
         //     ...prev,
@@ -800,117 +821,119 @@ function CreateOrder() {
                                         Packages:
                                     </div>
                                     <div className="flex flex-col gap-5" data-accordion="true" data-accordion-expand-all="true">
-                                        {selectedPackages.map((prodPackage: Package) => (
-                                            <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
-                                                <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
-                                                    <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
-                                                        <div className="flex flex-col items-start">
-                                                            <span className="text-base text-gray-900 font-medium">
-                                                                {prodPackage.name}
-                                                            </span>
-                                                            <span className='text-base text-gray-700'>
-                                                                RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </span>
-                                                            <span className='text-sm text-slate-400'>
-                                                                {prodPackage.description}
-                                                            </span>
-                                                        </div>
-                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block">
-                                                        </i>
-                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden">
-                                                        </i>
-                                                    </button>
-                                                    <div className="accordion-content border-t" id={"package_content_" + prodPackage.id.toString()}>
-                                                        <div className="product-list flex flex-col">
-                                                            <table className="table align-middle text-gray-700 font-medium text-sm">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th className='w-[10px] text-center'>Supply</th>
-                                                                        <th className='w-[10px] text-center'>Install</th>
-                                                                        <th className='w-[250px]'>Product</th>
-                                                                        <th className='w-[100px] text-center'>Quantity</th>
-                                                                        <th className='w-[100px] text-center'>Unit Price</th>
-                                                                        <th className='w-[100px] text-center'>Discount</th>
-                                                                        <th className='w-[100px] text-center'>Total Price</th>
-                                                                        <th className='w-[10px] text-center'></th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {prodPackage.products.map((product) => (
-                                                                        <tr
-                                                                            key={product.id}
-                                                                        >
-                                                                            <td>
-                                                                                <span></span>
-                                                                                <div className="flex flex-col items-center">
-                                                                                    <input
-                                                                                        className="checkbox"
-                                                                                        name="supply"
-                                                                                        type="checkbox"
-                                                                                        checked={!!product.pivot.includeSupply}
-                                                                                        readOnly
-                                                                                    />
-                                                                                </div>
-                                                                            </td>
-                                                                            <td>
-                                                                                <div className="flex flex-col items-center">
-                                                                                    <input
-                                                                                        className="checkbox"
-                                                                                        name="install"
-                                                                                        type="checkbox"
-                                                                                        checked={!!product.pivot.includeInstall}
-                                                                                        readOnly
-                                                                                    />
-                                                                                </div>
-                                                                            </td>
-                                                                            <td>
-                                                                                <div className="flex flex-col">
-                                                                                    <span>{product.name}</span>
-                                                                                    <span className="text-xs text-slate-400">{product.description}</span>
-                                                                                </div>
-                                                                            </td>
-                                                                            <td className='text-center text-lg'>
-                                                                                <span className="mx-2 text-base">
-                                                                                    {product.pivot.included ? product.pivot.quantity : '0'}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td className="text-center">
-                                                                                RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                            </td>
-                                                                            <td className='text-center'>
-                                                                                {!product.pivot.includeSupply || !product.pivot.includeInstall
-                                                                                    ? `- RM ${(
-                                                                                        (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0) +
-                                                                                        (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
-                                                                                    )
-                                                                                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                                    : null}
-                                                                            </td>
-                                                                            <td className="text-center">
-                                                                                {!product.pivot.included
-                                                                                    ? null
-                                                                                    : `RM ${(
-                                                                                        (product.provisioning.supply.retail_price * product.pivot.quantity -
-                                                                                            (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0)
-                                                                                        ) +
-                                                                                        (product.provisioning.install.retail_price * product.pivot.quantity -
+                                        {selectedPackages &&
+                                            selectedPackages.map((prodPackage: Package) => (
+                                                <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
+                                                    <div className="accordion-item border rounded-xl w-full active" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
+                                                        <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
+                                                            <div className="flex flex-col items-start">
+                                                                <span className="text-base text-gray-900 font-medium">
+                                                                    {prodPackage.name}
+                                                                </span>
+                                                                <span className='text-base text-gray-700'>
+                                                                    RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                </span>
+                                                                <span className='text-sm text-slate-400'>
+                                                                    {prodPackage.description}
+                                                                </span>
+                                                            </div>
+                                                            <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block">
+                                                            </i>
+                                                            <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden">
+                                                            </i>
+                                                        </button>
+                                                        <div className="accordion-content border-t" id={"package_content_" + prodPackage.id.toString()}>
+                                                            <div className="product-list flex flex-col">
+                                                                <table className="table align-middle text-gray-700 font-medium text-sm">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th className='w-[10px] text-center'>Supply</th>
+                                                                            <th className='w-[10px] text-center'>Install</th>
+                                                                            <th className='w-[250px]'>Product</th>
+                                                                            <th className='w-[100px] text-center'>Quantity</th>
+                                                                            <th className='w-[100px] text-center'>Unit Price</th>
+                                                                            <th className='w-[100px] text-center'>Discount</th>
+                                                                            <th className='w-[100px] text-center'>Total Price</th>
+                                                                            <th className='w-[10px] text-center'></th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {prodPackage.products.map((product) => (
+                                                                            <tr
+                                                                                key={product.id}
+                                                                            >
+                                                                                <td>
+                                                                                    <span></span>
+                                                                                    <div className="flex flex-col items-center">
+                                                                                        <input
+                                                                                            className="checkbox"
+                                                                                            name="supply"
+                                                                                            type="checkbox"
+                                                                                            checked={!!product.pivot.includeSupply}
+                                                                                            readOnly
+                                                                                        />
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <div className="flex flex-col items-center">
+                                                                                        <input
+                                                                                            className="checkbox"
+                                                                                            name="install"
+                                                                                            type="checkbox"
+                                                                                            checked={!!product.pivot.includeInstall}
+                                                                                            readOnly
+                                                                                        />
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <div className="flex flex-col">
+                                                                                        <span>{product.name}</span>
+                                                                                        <span className="text-xs text-slate-400">{product.description}</span>
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td className='text-center text-lg'>
+                                                                                    <span className="mx-2 text-base">
+                                                                                        {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="text-center">
+                                                                                    RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                </td>
+                                                                                <td className='text-center'>
+                                                                                    {!product.pivot.includeSupply || !product.pivot.includeInstall
+                                                                                        ? `- RM ${(
+                                                                                            (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0) +
                                                                                             (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
                                                                                         )
-                                                                                    )
-                                                                                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                            </td>
-                                                                            <td className="text-center">
-                                                                                {!product.pivot.visibility && <i className="ki-solid ki-eye-slash text-2xl"></i>}
-                                                                            </td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
+                                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                                        : null}
+                                                                                </td>
+                                                                                <td className="text-center">
+                                                                                    {!product.pivot.included
+                                                                                        ? null
+                                                                                        : `RM ${(
+                                                                                            (product.provisioning.supply.retail_price * product.pivot.quantity -
+                                                                                                (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0)
+                                                                                            ) +
+                                                                                            (product.provisioning.install.retail_price * product.pivot.quantity -
+                                                                                                (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
+                                                                                            )
+                                                                                        )
+                                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                </td>
+                                                                                <td className="text-center">
+                                                                                    {!product.pivot.visibility && <i className="ki-solid ki-eye-slash text-2xl"></i>}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))
+                                        }
                                     </div>
                                 </div>
                             </div>

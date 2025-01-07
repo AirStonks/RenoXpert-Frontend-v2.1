@@ -835,6 +835,7 @@ function EditOrder() {
                                                                     {prodPackage.products.map((product) => (
                                                                         <tr
                                                                             key={product.id}
+                                                                            className={`${!product.pivot.includeSupply && !product.pivot.includeInstall ? 'light:bg-orange-50 dark:bg-orange-950' : ''}`}
                                                                         >
                                                                             <td>
                                                                                 <span></span>
@@ -867,7 +868,7 @@ function EditOrder() {
                                                                             </td>
                                                                             <td className='text-center text-lg'>
                                                                                 <span className="mx-2 text-base">
-                                                                                    {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                                    {product.pivot.included ? ((!product.pivot.includeSupply && !product.pivot.includeInstall ? 0 : product.pivot.quantity)) : '0'}
                                                                                 </span>
                                                                             </td>
                                                                             <td className="text-center">

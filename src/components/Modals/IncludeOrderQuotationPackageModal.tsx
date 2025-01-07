@@ -157,7 +157,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
             const packagesData = localStorage.getItem('packages_data');
 
             /// Check if the prodPackage ID is already selected
-            const packageIndex = selectedPackages.findIndex(prodPackage => prodPackage.id === Number(id));
+            const packageIndex = selectedPackages ? selectedPackages.findIndex(prodPackage => prodPackage.id === Number(id)) : -1;
 
             if (packageIndex > -1) {
                 // If it is selected, remove it
@@ -266,7 +266,8 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                                             const selectedPackagesString = localStorage.getItem('selected_quotation_packages');
                                             const selectedPackages = selectedPackagesString ? JSON.parse(selectedPackagesString) : [];
 
-                                            const isSelected = selectedPackages.some((prodPackage: { id: number }) => prodPackage.id === pkg.id);
+                                            const isSelected = selectedPackages?.some((prodPackage: { id: number }) => prodPackage.id === pkg.id) ?? false;
+
 
                                             const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
                                             const action = isSelected ? 'remove' : 'select';

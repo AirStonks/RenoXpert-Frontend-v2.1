@@ -344,7 +344,7 @@ function QuotationMain() {
                                                 {quotation.name}
                                             </td>
                                             <td>
-                                                {quotation.property.name}
+                                                {quotation.property ? quotation.property.name : '-'}
                                             </td>
                                             <td className='text-center'>
                                                 <label className="switch switch-lg flex justify-center">

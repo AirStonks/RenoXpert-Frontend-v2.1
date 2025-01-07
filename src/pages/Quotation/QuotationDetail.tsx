@@ -254,74 +254,75 @@ function QuotationDetail() {
                         </div>
 
                         <div className="flex flex-col gap-5 p-4" data-accordion="true">
-                            {selectedPackages.map((prodPackage: Package) => (
-                                <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
-                                    <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
-                                        <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
-                                            <div className="flex flex-col items-start">
-                                                <span className="text-base text-gray-900 font-medium">
-                                                    {prodPackage.name}
-                                                </span>
-                                                <span className='text-base text-gray-700'>
-                                                    RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </span>
-                                                <span className='flex items-center gap-2 text-sm text-slate-400'>
-                                                    {prodPackage.description_internal && <>
-                                                        <i className="ki-filled ki-information-2 text-warning text-xl"></i>
-                                                        {prodPackage.description_internal}
-                                                    </>}
-                                                </span>
-                                            </div>
-                                            <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
-                                            </i>
-                                            <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
-                                            </i>
-                                        </button>
-                                        <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
-                                            <div className="product-list flex flex-col">
-                                                <table className="table align-middle text-gray-700 font-medium text-sm">
-                                                    <thead>
-                                                        <tr>
-                                                            <th className='w-[250px]'>Product</th>
-                                                            <th className='w-[100px] text-center'>Quantity</th>
-                                                            <th className='w-[120px] text-center'>Selling Price</th>
-                                                            <th className='w-[120px] text-center'>Total Price</th>
-                                                            <th className='w-[60px] text-center'>Visibility</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {prodPackage.products.map((product) => (
-                                                            <React.Fragment key={product.id}>
-                                                                <tr>
-                                                                    <td>
-                                                                        <div className="flex flex-col">
-                                                                            <span>{product.name}</span>
-                                                                            <span className="text-xs text-slate-400">{product.description}</span>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className='text-center text-lg'>
-                                                                        <span className="mx-2 text-base">
-                                                                            {product.pivot.quantity}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className='text-center'>
-                                                                        RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                    </td>
-                                                                    <td className='text-center'>
-                                                                        RM {((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                    </td>
-                                                                    <td className='text-center'>
-                                                                        <label className="switch flex justify-center">
-                                                                            <input
-                                                                                name="visibility"
-                                                                                type="checkbox"
-                                                                                checked={product.pivot.visibility}
-                                                                                readOnly
-                                                                            />
-                                                                        </label>
-                                                                    </td>
-                                                                </tr>
-                                                                {/* <tr>
+                            {selectedPackages &&
+                                selectedPackages.map((prodPackage: Package) => (
+                                    <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
+                                        <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
+                                            <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
+                                                <div className="flex flex-col items-start">
+                                                    <span className="text-base text-gray-900 font-medium">
+                                                        {prodPackage.name}
+                                                    </span>
+                                                    <span className='text-base text-gray-700'>
+                                                        RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </span>
+                                                    <span className='flex items-center gap-2 text-sm text-slate-400'>
+                                                        {prodPackage.description_internal && <>
+                                                            <i className="ki-filled ki-information-2 text-warning text-xl"></i>
+                                                            {prodPackage.description_internal}
+                                                        </>}
+                                                    </span>
+                                                </div>
+                                                <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
+                                                </i>
+                                                <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
+                                                </i>
+                                            </button>
+                                            <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
+                                                <div className="product-list flex flex-col">
+                                                    <table className="table align-middle text-gray-700 font-medium text-sm">
+                                                        <thead>
+                                                            <tr>
+                                                                <th className='w-[250px]'>Product</th>
+                                                                <th className='w-[100px] text-center'>Quantity</th>
+                                                                <th className='w-[120px] text-center'>Selling Price</th>
+                                                                <th className='w-[120px] text-center'>Total Price</th>
+                                                                <th className='w-[60px] text-center'>Visibility</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {prodPackage.products.map((product) => (
+                                                                <React.Fragment key={product.id}>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <div className="flex flex-col">
+                                                                                <span>{product.name}</span>
+                                                                                <span className="text-xs text-slate-400">{product.description}</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className='text-center text-lg'>
+                                                                            <span className="mx-2 text-base">
+                                                                                {product.pivot.quantity}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className='text-center'>
+                                                                            RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </td>
+                                                                        <td className='text-center'>
+                                                                            RM {((product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </td>
+                                                                        <td className='text-center'>
+                                                                            <label className="switch flex justify-center">
+                                                                                <input
+                                                                                    name="visibility"
+                                                                                    type="checkbox"
+                                                                                    checked={product.pivot.visibility}
+                                                                                    readOnly
+                                                                                />
+                                                                            </label>
+                                                                        </td>
+                                                                    </tr>
+                                                                    {/* <tr>
                                                                 <td colSpan={8}>
                                                                     <input
                                                                         type="text"
@@ -331,15 +332,16 @@ function QuotationDetail() {
                                                                     />
                                                                 </td>
                                                             </tr> */}
-                                                            </React.Fragment>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
+                                                                </React.Fragment>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            }
                         </div>
                     </div>
                 </div>
