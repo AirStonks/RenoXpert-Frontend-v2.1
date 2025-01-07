@@ -111,7 +111,7 @@ function CreateOrder() {
         // Ensure KTTooltip.createInstances runs asynchronously after quotations are updated
         const runAsyncTasks = async () => {
             // Always run KTAccordion.createInstances after all other updates
-            await new Promise((resolve) => setTimeout(resolve, 0)); // Ensure it runs after the rest of the side effects
+            await new Promise((resolve) => setTimeout(resolve, 500)); // Ensure it runs after the rest of the side effects
             KTAccordion.createInstances();
         };
 
@@ -820,7 +820,7 @@ function CreateOrder() {
                                                         <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden">
                                                         </i>
                                                     </button>
-                                                    <div className="accordion-content border-t hidden" id={"package_content_" + prodPackage.id.toString()}>
+                                                    <div className="accordion-content border-t" id={"package_content_" + prodPackage.id.toString()}>
                                                         <div className="product-list flex flex-col">
                                                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                                                 <thead>
