@@ -713,7 +713,7 @@ function OrderDetail() {
                                                                                 <span>{product.name}</span>
                                                                                 <span className="text-xs text-gray-400">
                                                                                     {(!product.pivot.includeSupply && !product.pivot.includeInstall)
-                                                                                        ? "Supply and Installation of ..."
+                                                                                        ? product.description.replace("Supply & installation of", "").trim()
                                                                                         : !product.pivot.includeSupply
                                                                                             ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
                                                                                             : !product.pivot.includeInstall
@@ -1115,7 +1115,7 @@ function OrderDetail() {
                                                                         <span className='text-gray-900'>{product.name}</span>
                                                                         <span className='text-gray-500 text-2xs'>
                                                                             {(!product.pivot.includeSupply && !product.pivot.includeInstall)
-                                                                                ? "Supply and Installation of ..."
+                                                                                ? product.description.replace("Supply & installation of", "").trim()
                                                                                 : !product.pivot.includeSupply
                                                                                     ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
                                                                                     : !product.pivot.includeInstall
@@ -1246,7 +1246,7 @@ function OrderDetail() {
                                                                     <span className='text-gray-900'>{product.name}</span>
                                                                     <span className='text-gray-500 text-2xs'>
                                                                         {(!product.pivot.includeSupply && !product.pivot.includeInstall)
-                                                                            ? "Supply and Installation of ..."
+                                                                            ? product.description.replace("Supply & installation of", "").trim()
                                                                             : !product.pivot.includeSupply
                                                                                 ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
                                                                                 : !product.pivot.includeInstall

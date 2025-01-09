@@ -618,7 +618,15 @@ function OrderOverview() {
                                                                     <td className="p-2 hidden md:table-cell"></td>
                                                                     <td className="p-2 flex flex-col">
                                                                         <span className='text-gray-900'>{product.name}</span>
-                                                                        <span className='text-gray-500 text-2xs'>{product.description}</span>
+                                                                        <span className='text-gray-500 text-2xs'>
+                                                                            {(!product.pivot.includeSupply && !product.pivot.includeInstall)
+                                                                                ? product.description.replace("Supply & installation of", "").trim()
+                                                                                : !product.pivot.includeSupply
+                                                                                    ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
+                                                                                    : !product.pivot.includeInstall
+                                                                                        ? `Supply of ${product.description.replace("Supply & installation of", "").trim()}`
+                                                                                        : product.description}
+                                                                        </span>
                                                                     </td>
                                                                     <td className="p-2 text-center text-gray-900">
                                                                         {product.uom}
@@ -748,7 +756,15 @@ function OrderOverview() {
                                                                 <td className="p-2 hidden md:table-cell"></td>
                                                                 <td className="p-2 flex flex-col">
                                                                     <span className='text-gray-900'>{product.name}</span>
-                                                                    <span className='text-gray-500 text-2xs'>{product.description}</span>
+                                                                    <span className='text-gray-500 text-2xs'>
+                                                                        {(!product.pivot.includeSupply && !product.pivot.includeInstall)
+                                                                            ? product.description.replace("Supply & installation of", "").trim()
+                                                                            : !product.pivot.includeSupply
+                                                                                ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
+                                                                                : !product.pivot.includeInstall
+                                                                                    ? `Supply of ${product.description.replace("Supply & installation of", "").trim()}`
+                                                                                    : product.description}
+                                                                    </span>
                                                                 </td>
                                                                 <td className="p-2 text-center text-gray-900">
                                                                     {product.uom}
