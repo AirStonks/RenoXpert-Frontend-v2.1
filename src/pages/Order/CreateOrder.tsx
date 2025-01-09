@@ -328,6 +328,7 @@ function CreateOrder() {
         });
         setSearchQuotationTerm('');
         setQuotations([]);
+        setSelectedPackages([]);
         localStorage.setItem('include_packages', JSON.stringify([]));
 
         notify('success', 'Custom quotation added.');
