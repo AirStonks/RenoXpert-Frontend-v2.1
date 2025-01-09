@@ -384,6 +384,26 @@ function EditOrder() {
         }
     };
 
+    const handleCustomQuotation = () => {
+        setFormData((prev) => ({
+            ...prev,
+            quotationId: '0',
+            totalAmount: 0,
+        }));
+        setSelectedQuotation({
+            id: '0',
+            name: 'Custom Quotation',
+            total_amount: 0,
+            metadata: null
+        });
+        setSearchQuotationTerm('');
+        setQuotations([]);
+        setSelectedPackages([]);
+        localStorage.setItem('include_packages', JSON.stringify([]));
+
+        notify('success', 'Custom quotation added.');
+    }
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
@@ -723,6 +743,14 @@ function EditOrder() {
                                             </div>
                                         </div>
                                     </div>
+                                    <span className='text-md font-semibold text-gray-900'>
+                                        Or <button
+                                            className='link'
+                                            onClick={handleCustomQuotation}
+                                        >
+                                            create a custom quotation
+                                        </button>
+                                    </span>
                                 </div>
 
                                 {/* Bonus */}
