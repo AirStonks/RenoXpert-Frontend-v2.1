@@ -329,6 +329,8 @@ function CreateOrder() {
         setSearchQuotationTerm('');
         setQuotations([]);
         localStorage.setItem('include_packages', JSON.stringify([]));
+
+        notify('success', 'Custom quotation added.');
     }
 
     const handleSelectUserById = async (id: number) => {

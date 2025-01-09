@@ -130,7 +130,7 @@ const EditProduct: React.FC = () => {
 
             if (response?.success) {
                 notify('success', "Product Edited Successfully!");
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                navigate('/products/' + productId);
             }
 
         } catch (error) {
