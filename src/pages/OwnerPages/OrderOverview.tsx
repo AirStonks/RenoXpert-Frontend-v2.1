@@ -116,9 +116,15 @@ function OrderOverview() {
         orderDetail.user.address.postcode,
         orderDetail.user.address.city,
         orderDetail.user.address.state,
-    ]
-        .filter(Boolean)
-        .join(', ');
+    ].filter(Boolean).join(', ');
+
+    const propertyAddress = [
+        orderDetail.property.address,
+        orderDetail.property.street,
+        orderDetail.property.postcode,
+        orderDetail.property.city,
+        orderDetail.property.state
+    ].filter(part => part !== null && part !== '')
 
     const bonus = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.bonus)))
 
@@ -134,7 +140,7 @@ function OrderOverview() {
             </div>
             <div className="flex flex-col gap-6 mb-6">
                 <span className='font-bold'>WHEREAS:</span>
-                <span>The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the services of the Contractor for the renovation of the Owner’s property described as <strong>A (1) unit of Service Residence known as {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}, {orderDetail.property.name}, {address}</strong> (the “Property”) subject to the terms and conditions hereinafter appearing.</span>
+                <span>The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the services of the Contractor for the renovation of the Owner’s property described as <strong>A (1) unit of Service Residence known as {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}, {orderDetail.property.name}, {propertyAddress}</strong> (the “Property”) subject to the terms and conditions hereinafter appearing.</span>
                 <span><strong>NOW THIS AGREEMENT WITNESSETH</strong> as follows:-</span>
                 <div className="flex flex-col gap-3">
                     <span><strong>1. CONTRACT SUM</strong></span>

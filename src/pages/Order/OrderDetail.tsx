@@ -112,6 +112,14 @@ function OrderDetail() {
         .filter(Boolean)
         .join(', ');
 
+    const propertyAddress = [
+        orderDetail.property.address,
+        orderDetail.property.street,
+        orderDetail.property.postcode,
+        orderDetail.property.city,
+        orderDetail.property.state
+    ].filter(part => part !== null && part !== '')
+
     const tnc = (
         <ul className="list-disc list-inside space-y-4 text-sm">
             <li>This quotation is only valid for 7 days. If BeLive receives the Client’s confirmation after 7 days, BeLive reserves the right to make changes to the quotation.</li>
@@ -153,7 +161,7 @@ function OrderDetail() {
             </div>
             <div className="flex flex-col gap-6 mb-6">
                 <span className='font-bold'>WHEREAS:</span>
-                <span>The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the services of the Contractor for the renovation of the Owner’s property described as <strong>A (1) unit of Service Residence known as {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}, {orderDetail.property.name}, {address}</strong> (the “Property”) subject to the terms and conditions hereinafter appearing.</span>
+                <span>The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the services of the Contractor for the renovation of the Owner’s property described as <strong>A (1) unit of Service Residence known as {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}, {orderDetail.property.name}, {propertyAddress}</strong> (the “Property”) subject to the terms and conditions hereinafter appearing.</span>
                 <span><strong>NOW THIS AGREEMENT WITNESSETH</strong> as follows:-</span>
                 <div className="flex flex-col gap-3">
                     <span><strong>1. CONTRACT SUM</strong></span>
