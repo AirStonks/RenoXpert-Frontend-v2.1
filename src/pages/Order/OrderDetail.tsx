@@ -712,13 +712,17 @@ function OrderDetail() {
                                                                             <div className="flex flex-col">
                                                                                 <span>{product.name}</span>
                                                                                 <span className="text-xs text-gray-400">
-                                                                                    {(!product.pivot.includeSupply && !product.pivot.includeInstall)
-                                                                                        ? product.description.replace("Supply & installation of", "").trim()
-                                                                                        : !product.pivot.includeSupply
-                                                                                            ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
-                                                                                            : !product.pivot.includeInstall
-                                                                                                ? `Supply of ${product.description.replace("Supply & installation of", "").trim()}`
-                                                                                                : product.description}
+                                                                                    {(!product.description || product.description === "")
+                                                                                        ? ""
+                                                                                        : product.description.startsWith("Supply & installation of")
+                                                                                            ? (!product.pivot.includeSupply && !product.pivot.includeInstall)
+                                                                                                ? product.description.replace("Supply & installation of", "").trim()
+                                                                                                : !product.pivot.includeSupply
+                                                                                                    ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
+                                                                                                    : !product.pivot.includeInstall
+                                                                                                        ? `Supply of ${product.description.replace("Supply & installation of", "").trim()}`
+                                                                                                        : product.description
+                                                                                            : product.description}
                                                                                 </span>
                                                                             </div>
 
@@ -1108,19 +1112,23 @@ function OrderDetail() {
                                                         </tr>
                                                         {quotationPackage.products.map((product: Product, prodIndex: number) => (
                                                             // Check if product.pivot.visibility is true
-                                                            product.pivot.visibility ? (
+                                                            (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
                                                                 <tr key={prodIndex} className="border-b text-xs">
                                                                     <td className="p-2 hidden md:table-cell"></td>
                                                                     <td className="p-2 flex flex-col">
                                                                         <span className='text-gray-900'>{product.name}</span>
                                                                         <span className='text-gray-500 text-2xs'>
-                                                                            {(!product.pivot.includeSupply && !product.pivot.includeInstall)
-                                                                                ? product.description.replace("Supply & installation of", "").trim()
-                                                                                : !product.pivot.includeSupply
-                                                                                    ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
-                                                                                    : !product.pivot.includeInstall
-                                                                                        ? `Supply of ${product.description.replace("Supply & installation of", "").trim()}`
-                                                                                        : product.description}
+                                                                            {(!product.description || product.description === "")
+                                                                                ? ""
+                                                                                : product.description.startsWith("Supply & installation of")
+                                                                                    ? (!product.pivot.includeSupply && !product.pivot.includeInstall)
+                                                                                        ? product.description.replace("Supply & installation of", "").trim()
+                                                                                        : !product.pivot.includeSupply
+                                                                                            ? `Installation of ${product.description.replace("Supply & i.nstallation of", "").trim()}`
+                                                                                            : !product.pivot.includeInstall
+                                                                                                ? `Supply of ${product.description.replace("Supply & installation of", "").trim()}`
+                                                                                                : product.description
+                                                                                    : product.description}
                                                                         </span>
                                                                     </td>
                                                                     <td className="p-2 text-center text-gray-900">
@@ -1239,19 +1247,23 @@ function OrderDetail() {
                                                     </tr>
                                                     {quotationPackage.products.map((product: Product, prodIndex: number) => (
                                                         // Check if product.pivot.visibility is true
-                                                        product.pivot.visibility ? (
+                                                        (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
                                                             <tr key={prodIndex} className="border-b text-2xs">
                                                                 <td className="p-2 hidden md:table-cell"></td>
                                                                 <td className="p-2 flex flex-col">
                                                                     <span className='text-gray-900'>{product.name}</span>
                                                                     <span className='text-gray-500 text-2xs'>
-                                                                        {(!product.pivot.includeSupply && !product.pivot.includeInstall)
-                                                                            ? product.description.replace("Supply & installation of", "").trim()
-                                                                            : !product.pivot.includeSupply
-                                                                                ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
-                                                                                : !product.pivot.includeInstall
-                                                                                    ? `Supply of ${product.description.replace("Supply & installation of", "").trim()}`
-                                                                                    : product.description}
+                                                                        {(!product.description || product.description === "")
+                                                                            ? ""
+                                                                            : product.description.startsWith("Supply & installation of")
+                                                                                ? (!product.pivot.includeSupply && !product.pivot.includeInstall)
+                                                                                    ? product.description.replace("Supply & installation of", "").trim()
+                                                                                    : !product.pivot.includeSupply
+                                                                                        ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
+                                                                                        : !product.pivot.includeInstall
+                                                                                            ? `Supply of ${product.description.replace("Supply & installation of", "").trim()}`
+                                                                                            : product.description
+                                                                                : product.description}
                                                                     </span>
                                                                 </td>
                                                                 <td className="p-2 text-center">

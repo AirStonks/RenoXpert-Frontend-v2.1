@@ -26,7 +26,7 @@ function EditNewOrderQuotation() {
     const queryParams = new URLSearchParams(location.search);
     const formId = queryParams.get('formId');
 
-    const { quotationDetail, loading, error } = useFetchQuotation(quotationId);
+    const { quotationDetail, loading, error } = quotationId !== 0 ? useFetchQuotation(quotationId) : { quotationDetail: null, loading: false, error: null };
 
     const qtyBtnRef = useRef(null);
 
@@ -471,9 +471,11 @@ function EditNewOrderQuotation() {
         }, 0);
     };
 
-    if (loading) return <Loading />;
-    if (error) return <div>{error}</div>;
-    if (!quotationDetail) return <div>Quotation not found</div>;
+    if (quotationId !== 0) {
+        if (loading) return <Loading />;
+        if (error) return <div>{error}</div>;
+        if (!quotationDetail) return <div>Quotation not found</div>;
+    }
 
     return (
         <>
@@ -492,7 +494,7 @@ function EditNewOrderQuotation() {
                 <div className="card mb-6">
                     <div className="card-body flex flex-col gap-4">
                         <span className="text-xl text-gray-900 font-semibold">
-                            Quotation: {quotationDetail.name}
+                            Quotation: {quotationDetail ? quotationDetail.name : 'Custom Quotation'}
                         </span>
                         <span className="text-xl text-gray-900 font-semibold">
                             Total Amount: RM {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

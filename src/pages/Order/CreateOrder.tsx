@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { createOrder, fetchProperties, fetchProperty, fetchQuotation, fetchQuotations, fetchRegistrationForm, fetchUser, fetchUsers } from '../../services/api';
-import { Order, OwnerRegistrationForm, Property, Quotation, User } from '../../types';
+import { Order, OwnerRegistrationForm, Property, User } from '../../types';
 import { KTAccordion, KTDropdown, KTTooltip } from '../../metronic/core';
-import { Package } from '../../types/index';
+import { Package, Quotation } from '../../types/index';
 import { Link } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
 import Loading from '../../components/Loading';
@@ -97,7 +97,11 @@ function CreateOrder() {
             }
 
             if (parsedSessionData.quotationId) {
-                handleSelectQuotationtById(parsedSessionData.quotationId);
+                if (parsedSessionData.quotationId === '0') {
+                    handleSelectCustomQuotation();
+                } else {
+                    handleSelectQuotationtById(parsedSessionData.quotationId);
+                }
             }
 
             if (parsedSessionData.totalAmount) {
@@ -117,13 +121,16 @@ function CreateOrder() {
 
         // runAsyncTasks(); // Execute the async function that runs KTTooltip and KTAccordion
 
+    }, [formId]); // Re-run effect when formId or quotations change
+
+    useEffect(() => {
         if (quotations.length > 0) {
+
             // Call KTTooltip.createInstances after quotations are updated
             KTTooltip.createInstances();
             KTAccordion.createInstances();
         }
-
-    }, [formId, quotations.length]); // Re-run effect when formId or quotations change
+    }, [quotations.length]);
 
 
     const handleOpenOwnerDropdown = async () => {
@@ -280,6 +287,7 @@ function CreateOrder() {
             quotationId: quotation.id,
             totalAmount: quotation.total_amount,
         }));
+
         setSelectedQuotation(quotation);
         setSearchQuotationTerm('');
         setQuotations([]);
@@ -306,7 +314,22 @@ function CreateOrder() {
         }, 0);
     };
 
-
+    const handleCustomQuotation = () => {
+        setFormData((prev) => ({
+            ...prev,
+            quotationId: '0',
+            totalAmount: 0,
+        }));
+        setSelectedQuotation({
+            id: '0',
+            name: 'Custom Quotation',
+            total_amount: 0,
+            metadata: null
+        });
+        setSearchQuotationTerm('');
+        setQuotations([]);
+        localStorage.setItem('include_packages', JSON.stringify([]));
+    }
 
     const handleSelectUserById = async (id: number) => {
         try {
@@ -387,6 +410,26 @@ function CreateOrder() {
         // setSearchQuotationTerm('');
         // setQuotations([]);
     };
+
+    const handleSelectCustomQuotation = () => {
+        setSearchQuotationTerm('');
+        setQuotations([{
+            id: '0',
+            name: 'Custom Quotation',
+            total_amount: 0,
+            metadata: null
+        }]);
+        setSelectedQuotation({
+            id: '0',
+            name: 'Custom Quotation',
+            total_amount: 0,
+            metadata: null
+        });
+
+        const storedPackages = localStorage.getItem('include_packages');
+
+        setSelectedPackages(JSON.parse(storedPackages));
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -740,6 +783,14 @@ function CreateOrder() {
                                             </div>
                                         </div>
                                     </div>
+                                    <span className='text-md font-semibold text-gray-900'>
+                                        Or <button
+                                            className='link'
+                                            onClick={handleCustomQuotation}
+                                        >
+                                            create a custom quotation
+                                        </button>
+                                    </span>
                                 </div>
 
                                 {/* Bonus */}

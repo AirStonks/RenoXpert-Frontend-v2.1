@@ -111,12 +111,12 @@ export interface Package {
 
 export interface Quotation {
     id?: string;
-    name: string;
+    name?: string;
     property_id?: string,
     property?: Property,
     description?: string;
     is_ready?: boolean;
-    total_amount: number;
+    total_amount?: number;
     valid_from?: string;
     valid_until?: string;
     metadata?: JSON;

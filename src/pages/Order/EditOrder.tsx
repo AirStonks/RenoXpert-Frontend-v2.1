@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { json, useNavigate, useParams } from 'react-router-dom';
 import { fetchUser, fetchUsers, fetchProperties, fetchProperty, fetchQuotations, updateOrder, fetchRegistrationForm } from '../../services/api';
 import { User, Order, Property, Quotation, OwnerRegistrationForm } from '../../types';
-import { KTAccordion, KTDropdown } from '../../metronic/core';
+import { KTAccordion, KTDropdown, KTTooltip } from '../../metronic/core';
 import { Package } from '../../types/index';
 import { Link } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
@@ -153,6 +153,14 @@ function EditOrder() {
         runAsyncTasks();
     }, [orderDetail]);
 
+    useEffect(() => {
+        if (quotations.length > 0) {
+
+            // Call KTTooltip.createInstances after quotations are updated
+            KTTooltip.createInstances();
+            KTAccordion.createInstances();
+        }
+    }, [quotations.length]);
 
 
     const handleOpenOwnerDropdown = async () => {
