@@ -1,6 +1,6 @@
 // src/hooks/useFetchProduct.ts
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchInvoice } from '../services/api';
 import { Invoice } from '../types';
 
@@ -9,7 +9,7 @@ const useFetchInvoice = (invoiceId: number | null) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
+    const fetchInvoiceData = useCallback(() => {
         if (invoiceId === null) {
             setLoading(false); // No need to load if invoiceId is null
             setInvoice(null);
@@ -29,7 +29,11 @@ const useFetchInvoice = (invoiceId: number | null) => {
             });
     }, [invoiceId]);
 
-    return { invoiceDetail, loading, error };
+    useEffect(() => {
+        fetchInvoiceData();
+    }, [invoiceId, fetchInvoiceData]);
+
+    return { invoiceDetail, loading, error, refetch: fetchInvoiceData };
 };
 
 export default useFetchInvoice;

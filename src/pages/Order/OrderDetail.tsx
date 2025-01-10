@@ -9,6 +9,16 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { releaseOrder } from "../../services/api";
+import ConfirmOrderModal from "./components/ConfirmOrderModal";
+
+const APP_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_APP_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_APP_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? import.meta.env.VITE_LOCAL_APP_URL
+                : null;
 
 const getCurrentDate = () => {
     const date = new Date();
@@ -314,6 +324,14 @@ function OrderDetail() {
                             Release Order
                         </button>
                     )}
+                    {orderDetail?.status === 'released' &&
+                        <button
+                            className="btn btn-success btn-sm"
+                            data-modal-toggle="#confirm_order_modal"
+                        >
+                            Confirm Order
+                        </button>
+                    }
                     <Link
                         to={`/orders/edit/${orderId}`}
                         className="btn btn-sm btn-info"
@@ -330,7 +348,22 @@ function OrderDetail() {
                             <i className="ki-filled ki-dots-vertical"></i>
                         </button>
 
-                        <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
+                        <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
+                            <div className="menu-item">
+                                <button
+                                    className="menu-link copy-link"
+                                    data-clipboard-text={`${APP_URL}owner/order/overview/id/${orderId}`}
+                                >
+                                    <span className="menu-title">
+                                        <div className="flex gap-2 items-center">
+                                            <i className="ki-outline ki-copy text-lg"></i>
+                                            <span className="text-gray-900">
+                                                Copy Quotation Order Link
+                                            </span>
+                                        </div>
+                                    </span>
+                                </button>
+                            </div>
                             <div className="menu-item">
                                 <button
                                     className="menu-link"
@@ -338,7 +371,7 @@ function OrderDetail() {
                                 >
                                     <span className="menu-title">
                                         <div className="flex gap-2 items-center">
-                                            <i className="ki-filled ki-phone"></i>
+                                            <i className="ki-filled ki-phone text-lg"></i>
                                             <span>Preview in Owner View</span>
                                         </div>
                                     </span>
@@ -1306,6 +1339,11 @@ function OrderDetail() {
                     </div>
                 </div>
             </div>
+
+            <ConfirmOrderModal
+                order={{ id: orderDetail.id, name: orderDetail.order_no }}
+                onSubmit={refetch}
+            />
         </>
     )
 }

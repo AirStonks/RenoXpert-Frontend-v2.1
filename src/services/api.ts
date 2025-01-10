@@ -1070,6 +1070,17 @@ export const fetchPublicInvoice = async (invoiceId: number) => {
     }
 }
 
+export const markInvoiceAsPaid = async (invoiceId: number) => {
+    try {
+        const response = await axios.put(API_URL + `invoices/${invoiceId}/paid`, {}, {
+            headers: getAuthHeaders(),
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
 export const changeInvoiceLinkStatus = async (invoiceId: number, status: string) => {
     try {
         const response = await axios.put(API_URL + `invoices/${invoiceId}/link/status/${status}`, {}, {

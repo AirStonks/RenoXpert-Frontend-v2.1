@@ -114,9 +114,6 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
     }
 
     const handleSelectDiscountFee = (discountFee: DiscountFee) => {
-        console.log(discountFee);
-
-
         const { name, type, percentage, amount } = discountFee;
 
         const newDiscountFee = {
@@ -131,6 +128,10 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
         } else {
             setFees((prevFees) => [...prevFees, newDiscountFee]);
         }
+
+        const discountFeeDropdownEl = document.querySelector('#discount_fee_dropdown') as HTMLElement;
+        const discountFeeDropdown = KTDropdown.getInstance(discountFeeDropdownEl);
+        discountFeeDropdown.hide();
     };
 
     const handleRemoveFee = (index: number) => {

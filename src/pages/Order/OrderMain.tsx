@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { orderIndex, removeOrder } from '../../services/api';
+import { orderIndex, releaseOrder, removeOrder } from '../../services/api';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import Loading from '../../components/Loading';
 import { Order } from '../../types';
 import { Slide, toast } from 'react-toastify';
 import ClipboardJS from 'clipboard';
+import ConfirmOrderModal from './components/ConfirmOrderModal';
 
 const APP_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -173,6 +174,22 @@ function OrderMain() {
 
     const totalPages = Math.ceil(totalItems / size);
 
+    const handleReleaseOrder = async (orderId: number) => {
+        setIsLoading(true);
+        try {
+            const response = await releaseOrder(orderId);
+
+            if (response?.success) {
+                notify('success', 'Order released successfully!');
+                await handleRefreshTable();
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+        setIsLoading(false);
+    };
+
     const handleRemoveOrder = async (orderId: number) => {
         try {
             const response = await removeOrder(orderId);
@@ -262,7 +279,7 @@ function OrderMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[100px]'>Order No.</th>
+                                    <th className='w-[140px]'>Order No.</th>
                                     <th className='w-[100px] text-center'>Status</th>
                                     <th className='w-[120px] text-center'>Owner</th>
                                     <th className='w-[80px] text-center'>Unit</th>
@@ -285,7 +302,7 @@ function OrderMain() {
                                             Updated Date {getSortIcon('updated_at')}
                                         </div>
                                     </th>
-                                    <th className='w-[120px] text-center'>Action</th>
+                                    <th className='w-[100px] text-center'>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -346,64 +363,91 @@ function OrderMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <button
-                                                        className="btn btn-sm btn-outline btn-info copy-link"
-                                                        data-clipboard-text={`${APP_URL}owner/order/overview/id/${order.id}`}
-                                                    >
-                                                        Copy Link
-                                                    </button>
-
-                                                    {order.status !== 'confirmed' && order.status !== 'revoked' ?
-                                                        <>
-                                                            {/* <button
-                                                                className="btn-confirm btn btn-xs btn-success"
-                                                                data-tooltip="#confirm_tooltip"
-                                                                data-action="confirm"
-                                                                data-id="${data.id}"
-                                                            >
-                                                                C
-                                                            </button> */}
-                                                            <Link
-                                                                to={`/orders/edit/${order.id}`}
-                                                                className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                                            >
-                                                                <i className="ki-outline ki-notepad-edit"></i>
-                                                            </Link>
-                                                            <button
-                                                                className="btn-delete btn btn-sm btn-icon btn-clear btn-light"
-                                                                data-modal-toggle="#delete_item_modal"
-                                                                onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
-                                                            >
-                                                                <i className="ki-outline ki-trash"></i>
-                                                            </button>
-                                                        </>
-                                                        :
-                                                        ''
-                                                    }
-
-                                                    {order.status === 'confirmed' ?
-                                                        <Link
-                                                            to={`/orders/edit/${order.id}`}
-                                                            className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
-                                                        >
-                                                            <i className="ki-outline ki-notepad-edit"></i>
-                                                        </Link>
-                                                        :
-                                                        ''
-                                                    }
-
-                                                    {order.status === 'revoked' ?
-                                                        <button
-                                                            className="btn-regenerate btn btn-sm btn-warning"
-                                                            data-tooltip="#regenerate_tooltip"
-                                                            data-action="regenerate"
-                                                            data-id="${data.id}"
-                                                        >
-                                                            Regenerate Order
+                                                    <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                                                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                                                            <i className="ki-filled ki-dots-vertical"></i>
                                                         </button>
-                                                        :
-                                                        ''
-                                                    }
+
+                                                        <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
+                                                            <div className="menu-item">
+                                                                <button
+                                                                    className="menu-link copy-link"
+                                                                    data-clipboard-text={`${APP_URL}owner/order/overview/id/${order.id}`}
+                                                                >
+                                                                    <span className="menu-title">
+                                                                        <div className="flex gap-2 items-center">
+                                                                            <i className="ki-outline ki-copy"></i>
+                                                                            <span className="text-gray-900">
+                                                                                Copy Quotation Order Link
+                                                                            </span>
+                                                                        </div>
+                                                                    </span>
+                                                                </button>
+                                                            </div>
+                                                            {order.status === 'unreleased' &&
+                                                                <div className="menu-item">
+                                                                    <button
+                                                                        className="menu-link"
+                                                                        onClick={() => handleReleaseOrder(Number(order.id))}
+                                                                    >
+                                                                        <span className="menu-title">
+                                                                            <div className="flex gap-2 items-center">
+                                                                                <i className="ki-outline ki-check-circle"></i>
+                                                                                <span>Release Order</span>
+                                                                            </div>
+                                                                        </span>
+                                                                    </button>
+                                                                </div>
+                                                            }
+                                                            {order.status === 'released' &&
+                                                                <div className="menu-item">
+                                                                    <button
+                                                                        className="menu-link"
+                                                                        data-modal-toggle="#confirm_order_modal"
+                                                                        onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
+                                                                    >
+                                                                        <span className="menu-title">
+                                                                            <div className="flex gap-2 items-center text-success">
+                                                                                <i className="ki-outline ki-check-circle"></i>
+                                                                                <span>Confirm Order</span>
+                                                                            </div>
+                                                                        </span>
+                                                                    </button>
+                                                                </div>
+                                                            }
+                                                            {order.status !== 'confirmed' &&
+                                                                <>
+                                                                    <div className="menu-item">
+                                                                        <Link
+                                                                            to={`/orders/edit/${order.id}`}
+                                                                            className="menu-link"
+                                                                        >
+                                                                            <span className="menu-title">
+                                                                                <div className="flex gap-2 items-center">
+                                                                                    <i className="ki-outline ki-notepad-edit"></i>
+                                                                                    <span>Edit Order</span>
+                                                                                </div>
+                                                                            </span>
+                                                                        </Link>
+                                                                    </div>
+                                                                    <div className="menu-item">
+                                                                        <button
+                                                                            className="menu-link"
+                                                                            data-modal-toggle="#delete_item_modal"
+                                                                            onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
+                                                                        >
+                                                                            <span className="menu-title">
+                                                                                <div className="flex gap-2 items-center text-danger">
+                                                                                    <i className="ki-outline ki-trash"></i>
+                                                                                    <span>Delete Order</span>
+                                                                                </div>
+                                                                            </span>
+                                                                        </button>
+                                                                    </div>
+                                                                </>
+                                                            }
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -511,6 +555,11 @@ function OrderMain() {
                     </div>
                 </div>
             </div>
+
+            <ConfirmOrderModal
+                order={selectedOrder}
+                onSubmit={handleRefreshTable}
+            />
 
             <DeleteModal
                 item={selectedOrder}

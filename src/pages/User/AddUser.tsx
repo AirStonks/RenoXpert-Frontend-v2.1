@@ -11,15 +11,38 @@ const roles = [
     { value: 'technician', label: 'Technician', description: 'Create a technician account' },
 ]
 
+const salutationOptions = [
+    { value: 'mr', label: 'Mr' },
+    { value: 'ms', label: 'Ms' },
+    { value: 'mrs', label: 'Mrs' },
+    { value: 'doctor', label: 'Doctor' },
+    { value: 'datuk', label: 'Datuk' },
+    { value: 'dato', label: 'Dato' },
+    { value: 'datin', label: 'Datin' },
+    { value: 'datuk_seri', label: 'Datuk Seri' },
+    { value: 'dato_seri', label: 'Dato Seri' },
+    { value: 'datin_seri', label: 'Datin Seri' },
+];
+
 function AddUser() {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        name_first: '',
-        name_last: '',
         email: '',
         type: '',
-        phone: ''
+        phone: '',
+        name_first: '',
+        name_last: '',
+        name_preferred: '',
+        salutations: 'mr',
+        ic: '',
+        address: {
+            address_1: '',
+            address_2: '',
+            city: '',
+            state: '',
+            postcode: '',
+        }
     });
     const [isLoading, setIsLoading] = useState(false);
     const [validationErrors, setValidationErrors] = useState({});
@@ -58,12 +81,66 @@ function AddUser() {
 
     }, []);
 
+    const formatICNumber = (value: string): string => {
+        // Remove all non-digit characters
+        const digits = value.replace(/\D/g, '');
+
+        // Limit to 12 digits
+        const truncated = digits.slice(0, 12);
+
+        // Add hyphens according to format
+        let formatted = '';
+        if (truncated.length > 0) {
+            // First 6 digits
+            formatted += truncated.slice(0, 6);
+
+            // Add first hyphen and next 2 digits
+            if (truncated.length > 6) {
+                formatted += '-' + truncated.slice(6, 8);
+
+                // Add second hyphen and last 4 digits
+                if (truncated.length > 8) {
+                    formatted += '-' + truncated.slice(8);
+                }
+            }
+        }
+
+        return formatted;
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value
-        }));
+
+        if (name.startsWith('address.')) {
+            const key = name.split('.')[1];
+
+            setFormData((prevData) => ({
+                ...prevData,
+                address: {
+                    ...prevData.address,
+                    [key]: value,
+                },
+            }));
+        } else if (name === 'ic') {
+            const formattedIC = formatICNumber(value);
+            setFormData((prevData) => ({
+                ...prevData,
+                ic: formattedIC,
+            }));
+
+            // Clear error for IC field
+            setValidationErrors((prevErrors) => ({
+                ...prevErrors,
+                ic: '',
+            }));
+
+            return;
+        } else {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value
+            }));
+        }
     };
 
     const handleReset = () => {
@@ -79,37 +156,69 @@ function AddUser() {
         setIsLoading(true);
         setValidationErrors({}); // Reset previous errors
         try {
-            const userData: User = {
-                name_first: formData.name_first,
-                name_last: formData.name_last,
-                email: formData.email,
-                type: formData.type,
-                phone_no: formData.phone,
-            };
+            let userData: User;
+
+            if (formData.type === 'owner') {
+                userData = {
+                    name_first: formData.name_first,
+                    name_last: formData.name_last,
+                    name_preferred: formData.name_preferred,
+                    salutations: formData.salutations,
+                    ic: formData.ic,
+                    email: formData.email,
+                    type: formData.type,
+                    phone_no: formData.phone,
+                    address: {
+                        address_1: formData.address.address_1,
+                        address_2: formData.address.address_2,
+                        city: formData.address.city,
+                        state: formData.address.state,
+                        postcode: formData.address.postcode,
+                    },
+                };
+            } else {
+                userData = {
+                    name_first: formData.name_first,
+                    name_last: formData.name_last,
+                    email: formData.email,
+                    type: formData.type,
+                    phone_no: formData.phone,
+                };
+            }
 
             const response = await addUser(userData);
 
             if (response?.success) {
-                setFormData({
-                    ...formData,
-                    email: response.data[0].email
-                });
-                setSuccess(true);
+
                 notify('success', 'User Created Successfully!');
+
+                if (formData.type === 'owner') {
+                    console.log('yes');
+                    
+                    setIsLoading(false);
+                    navigate('/users/' + response.data.id);
+                    return
+                } else {
+
+                    setFormData({
+                        ...formData,
+                        email: response.data[0].email
+                    });
+
+                    setSuccess(true);
+                }
             } else {
                 console.log(response.data);
 
                 setValidationErrors(response.data);
             }
 
-
         } catch (error) {
             setValidationErrors(error.response?.data?.data);
-        } finally {
-            setIsLoading(false);
         }
-    }
 
+        setIsLoading(false);
+    }
 
     return (
         <>
@@ -178,6 +287,41 @@ function AddUser() {
                                     )}
                                 </div>
                             </div>
+                            {formData.type === 'owner' && (
+                                <>
+                                    <div className="flex flex-col mb-4 w-full">
+                                        <label className='mb-2 text-sm font-medium text-gray-900'>Salutations</label>
+                                        <div className="flex items-center mb-2">
+                                            <select className={`select ${validationErrors.salutations ? 'border-danger' : ''}`} name="salutations" id="salutations" onChange={handleChange} value={formData?.salutations?.toLowerCase().replace(/\s+/g, '_')}>
+                                                <option value="">Please Select</option>
+                                                {salutationOptions.map(option => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        {validationErrors.salutations && (
+                                            <span className="text-red-500 text-sm">{validationErrors.salutations.join(', ')}</span>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col mb-4 w-full">
+                                        <label className='mb-2 text-sm font-medium text-gray-900'>Preferred Name</label>
+                                        <div className="flex items-center mb-2">
+                                            <input
+                                                className='input mr-2'
+                                                type='text'
+                                                name='name_preferred'
+                                                value={formData.name_preferred}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                        {validationErrors.name_preferred && (
+                                            <span className="text-red-500 text-sm">{validationErrors.name_preferred.join(', ')}</span>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                             <div className="flex flex-col mb-4 w-full">
                                 <label className='mb-2 text-sm font-medium text-gray-900'>Email</label>
                                 <div className="flex items-center mb-2">
@@ -212,6 +356,102 @@ function AddUser() {
                                     <span className="text-red-500 text-sm">{validationErrors.phone.join(', ')}</span>
                                 )}
                             </div>
+
+                            {formData.type === 'owner' && (
+                                <>
+                                    <div className="flex flex-col mb-4 w-full">
+                                        <label className='mb-2 text-sm font-medium text-gray-900'>IC Number</label>
+                                        <div className="flex items-center mb-2">
+                                            <input
+                                                className='input mr-2'
+                                                placeholder="xxxxxx-xx-xxxx"
+                                                type='text'
+                                                name='ic'
+                                                value={formData.ic}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                        {validationErrors.ic && (
+                                            <span className="text-red-500 text-sm">{validationErrors.ic.join(', ')}</span>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col mb-4 w-full">
+                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="address_1">Owner current residence address</label>
+
+                                        <div className="flex flex-col mb-8">
+                                            <input
+                                                className={`input ${validationErrors.address_1 ? 'border-danger' : ''}`}
+                                                type="text"
+                                                name="address.address_1"
+                                                id="address_1"
+                                                value={formData.address.address_1}
+                                                onChange={handleChange}
+                                            />
+                                            <span className="text-slate-500 text-xs">Address Line 1</span>
+                                            {validationErrors.address_1 && <span className="text-red-500 text-xs mt-2">{validationErrors.address_1}</span>}
+                                        </div>
+
+                                        <div className="flex flex-col mb-8">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="address.address_2"
+                                                id="address_2"
+                                                value={formData.address.address_2}
+                                                onChange={handleChange}
+                                            />
+                                            <span className="text-slate-500 text-xs">Address Line 2 (optional)</span>
+                                        </div>
+
+                                        <div className="flex flex-col mb-8">
+                                            <div className="flex gap-2 ">
+                                                <div className="flex flex-col w-full">
+                                                    <input
+                                                        className={`input ${validationErrors.city ? 'border-danger' : ''}`}
+                                                        type="text"
+                                                        name="address.city"
+                                                        id="city"
+                                                        value={formData.address.city}
+                                                        onChange={handleChange}
+                                                    />
+                                                    <span className="text-slate-500 text-xs">City</span>
+                                                </div>
+                                                <div className="flex flex-col w-full">
+                                                    <input
+                                                        className={`input ${validationErrors.state ? 'border-danger' : ''}`}
+                                                        type="text"
+                                                        name="address.state"
+                                                        id="state"
+                                                        value={formData.address.state}
+                                                        onChange={handleChange}
+                                                    />
+                                                    <span className="text-slate-500 text-xs">State / Province</span>
+                                                </div>
+                                            </div>
+                                            {(validationErrors['address.city'] || validationErrors['address.state']) &&
+                                                <div className="mt-2 flex flex-col">
+                                                    {validationErrors['address.city'] && <span className="text-red-500 text-xs">{validationErrors['address.city']}</span>}
+                                                    {validationErrors['address.state'] && <span className="text-red-500 text-xs">{validationErrors['address.state']}</span>}
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <input
+                                                className={`input ${validationErrors.postcode ? 'border-danger' : ''}`}
+                                                type="text"
+                                                name="address.postcode"
+                                                id="postcode"
+                                                value={formData.address.postcode}
+                                                onChange={handleChange}
+                                            />
+                                            <span className="text-slate-500 text-xs">Postal / Zip Code</span>
+                                            {validationErrors.postcode && <span className="text-red-500 text-xs mt-2">{validationErrors.postcode}</span>}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
                             <div className="flex flex-col w-full">
                                 <label className='mb-2 text-sm font-medium text-gray-900'>User Type/Role</label>
                                 <div className="flex flex-col items-start gap-6">

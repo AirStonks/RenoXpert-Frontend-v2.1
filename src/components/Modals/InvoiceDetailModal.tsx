@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import ClipboardJS from "clipboard";
 import useFetchInvoice from "../../hook/useFetchInvoice";
 import Loading from "../Loading";
-import { changeInvoiceLinkStatus } from "../../services/api";
+import { changeInvoiceLinkStatus, markInvoiceAsPaid } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import { Invoice } from "../../types";
 
@@ -21,7 +21,7 @@ const APP_URL =
                 : null;
 
 function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
-    const { invoiceDetail, loading, error } = useFetchInvoice(invoiceId);
+    const { invoiceDetail, loading, error, refetch } = useFetchInvoice(invoiceId);
     const [invoice, setInvoice] = useState<Invoice | null>(null);
     const [linkStatusLoading, setLinkStatusLoading] = useState(false);
 
@@ -92,6 +92,19 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
         }
     };
 
+    const handleMarkAsPaid = async (invoiceId: number) => {
+        try {
+            const response = await markInvoiceAsPaid(invoiceId);
+
+            if (response?.success) {
+                notify('success', "Invoice marked as paid.");
+                refetch();
+            }
+            
+        } catch (error) {
+            console.error('Error changing invoice link status:', error);
+        }
+    };
 
     let content;
 
@@ -112,6 +125,29 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">General Info</h3>
+                            <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                                <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                                    <i className="ki-filled ki-dots-vertical"></i>
+                                </button>
+
+                                <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
+                                    <div className="menu-item">
+                                        <button
+                                            className="menu-link copy-link"
+                                            onClick={() => handleMarkAsPaid(invoice.id)}
+                                        >
+                                            <span className="menu-title">
+                                                <div className="flex gap-2 items-center">
+                                                    <i className="ki-outline ki-copy"></i>
+                                                    <span className="text-gray-900">
+                                                        Mark as Paid
+                                                    </span>
+                                                </div>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
