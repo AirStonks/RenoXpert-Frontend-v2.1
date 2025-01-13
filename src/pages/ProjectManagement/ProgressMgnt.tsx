@@ -784,13 +784,15 @@ function ProgressMgnt() {
                                                                     </td>
                                                                     <td>
                                                                         <div className="flex flex-col items-center">
-                                                                            {task.is_defect_form ?
+                                                                            {task.is_defect_form ? (
                                                                                 renoProgress.defect_inspection_form ? (
                                                                                     <span>{renoProgress.defect_inspection_form.status.charAt(0).toUpperCase() + renoProgress.defect_inspection_form.status.slice(1)}</span>
-                                                                                )
-                                                                                    :
+                                                                                ) : (
                                                                                     'Not Submitted'
-                                                                                :
+                                                                                )
+                                                                            ) : task.is_key_form ? (
+                                                                                <span>Not Submitted</span>
+                                                                            ) : (
                                                                                 <select
                                                                                     className="select select-bordered w-full max-w-xs"
                                                                                     name="status"
@@ -802,8 +804,9 @@ function ProgressMgnt() {
                                                                                     <option value="in_progress">In Progress</option>
                                                                                     <option value="completed">Completed</option>
                                                                                 </select>
-                                                                            }
+                                                                            )}
                                                                         </div>
+
                                                                     </td>
                                                                     <td className="text-center">
                                                                         {task.install_date
@@ -815,14 +818,21 @@ function ProgressMgnt() {
                                                                             : ''}
                                                                     </td>
                                                                     <td className="text-center">
-                                                                        {task.is_defect_form ?
+                                                                        {task.is_defect_form ? (
                                                                             <Link
                                                                                 to={`/reno-progress/${renoProgress.id}/defect-inspection-report`}
                                                                                 className="btn btn-info btn-sm"
                                                                             >
                                                                                 DIR Overview
                                                                             </Link>
-                                                                            :
+                                                                        ) : task.is_key_form ? (
+                                                                            <Link
+                                                                                to={`/reno-progress/${renoProgress.id}/defect-inspection-report`}
+                                                                                className="btn btn-info btn-sm"
+                                                                            >
+                                                                                Key Form
+                                                                            </Link>
+                                                                        ) : (
                                                                             <button
                                                                                 className="btn btn-primary btn-sm"
                                                                                 data-modal-toggle="#document_modal"
@@ -830,6 +840,7 @@ function ProgressMgnt() {
                                                                             >
                                                                                 Add/View
                                                                             </button>
+                                                                        )
                                                                         }
 
                                                                     </td>

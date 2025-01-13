@@ -984,6 +984,7 @@ export interface JobTask {
     },
     is_defect_form?: boolean,
     is_qc_form?: boolean,
+    is_key_form?: boolean,
     is_visible?: boolean,
     status?: string,
     owner_comment?: string,
