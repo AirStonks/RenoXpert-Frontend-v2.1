@@ -456,11 +456,8 @@ function OrderDetail() {
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated Date:</td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {new Date(orderDetail.latest_quotation.created_at).toLocaleString('en-GB', {
-                                                day: '2-digit',
-                                                month: 'long',
-                                                year: 'numeric'
-                                            })}
+                                            {formatDate(orderDetail.latest_quotation.created_at)}
+                                            
                                         </td>
                                     </tr>
                                     <tr>
@@ -944,11 +941,7 @@ function OrderDetail() {
                                                 <div className="flex flex-col">
                                                     <span className='text-sm text-gray-600'>Date Created:</span>
                                                     <span className='text-sm text-gray-900 font-semibold'>
-                                                        {new Date(orderDetail.created_at).toLocaleDateString('en-GB', {
-                                                            day: '2-digit',
-                                                            month: 'long',
-                                                            year: 'numeric'
-                                                        })}
+                                                        {formatDate(orderDetail.created_at)}
                                                     </span>
                                                 </div>
                                             </div>
