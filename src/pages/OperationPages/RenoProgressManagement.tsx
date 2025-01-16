@@ -419,7 +419,7 @@ function RenoProgressManagement() {
                                             <div className="flex">
                                                 <div className="flex mr-24">
                                                 </div>
-                                                <i className="ki-outline ki-up text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
                                                 <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                             </div>
                                         </button>

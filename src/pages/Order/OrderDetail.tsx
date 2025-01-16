@@ -457,7 +457,7 @@ function OrderDetail() {
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated Date:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             {formatDate(orderDetail.latest_quotation.created_at)}
-                                            
+
                                         </td>
                                     </tr>
                                     <tr>
@@ -698,10 +698,8 @@ function OrderDetail() {
                                                             {prodPackage.description}
                                                         </span>
                                                     </div>
-                                                    <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block">
-                                                    </i>
-                                                    <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden">
-                                                    </i>
+                                                    <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                    <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                                 </button>
                                                 <div className="accordion-content active border-t" id={"package_content_" + prodPackage.id.toString()}>
                                                     <div className="product-list flex flex-col">

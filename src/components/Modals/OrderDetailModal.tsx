@@ -244,10 +244,8 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                                                     {prodPackage.description}
                                                                 </span>
                                                             </div>
-                                                            <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
-                                                            </i>
-                                                            <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
-                                                            </i>
+                                                            <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                            <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                                         </button>
                                                         <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
                                                             <div className="product-list flex flex-col">
@@ -263,46 +261,46 @@ function OrderDetailModal({ orderId }: QuotationDetailModalProps) {
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                            {prodPackage.products.map((product) => (
-                                                                                <tr
-                                                                                    key={product.id}
-                                                                                >
-                                                                                    <td>
-                                                                                        <div className="flex flex-col">
-                                                                                            <span>{product.name}</span>
-                                                                                            <span className="text-xs text-slate-400">{product.description}</span>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className='text-center text-lg'>
-                                                                                        <span className="mx-2 text-base">
-                                                                                            {product.pivot.included ? product.pivot.quantity : '0'}
-                                                                                        </span>
-                                                                                    </td>
-                                                                                    <td className="text-center">
-                                                                                        RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                                    </td>
-                                                                                    <td className='text-center'>
-                                                                                        {!product.pivot.included
-                                                                                            ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                                            : null}
-                                                                                    </td>
-                                                                                    <td className="text-center">
-                                                                                        {!product.pivot.included
-                                                                                            ? null
-                                                                                            : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                                    </td>
-                                                                                    <td className='text-center'>
-                                                                                        <label className="switch flex justify-center">
-                                                                                            <input
-                                                                                                name="included"
-                                                                                                type="checkbox"
-                                                                                                checked={product.pivot.included}
-                                                                                                readOnly
-                                                                                            />
-                                                                                        </label>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            ))}
+                                                                        {prodPackage.products.map((product) => (
+                                                                            <tr
+                                                                                key={product.id}
+                                                                            >
+                                                                                <td>
+                                                                                    <div className="flex flex-col">
+                                                                                        <span>{product.name}</span>
+                                                                                        <span className="text-xs text-slate-400">{product.description}</span>
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td className='text-center text-lg'>
+                                                                                    <span className="mx-2 text-base">
+                                                                                        {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="text-center">
+                                                                                    RM {product.product_retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                </td>
+                                                                                <td className='text-center'>
+                                                                                    {!product.pivot.included
+                                                                                        ? `- RM ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                                        : null}
+                                                                                </td>
+                                                                                <td className="text-center">
+                                                                                    {!product.pivot.included
+                                                                                        ? null
+                                                                                        : `RM ${(product.product_retail_price * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                </td>
+                                                                                <td className='text-center'>
+                                                                                    <label className="switch flex justify-center">
+                                                                                        <input
+                                                                                            name="included"
+                                                                                            type="checkbox"
+                                                                                            checked={product.pivot.included}
+                                                                                            readOnly
+                                                                                        />
+                                                                                    </label>
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
                                                                     </tbody>
                                                                 </table>
                                                             </div>

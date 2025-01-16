@@ -23,7 +23,7 @@ function QuotationDetailModal({ quotationId, onClose }: QuotationDetailModalProp
         if (quotationDetail) {
             setSelectedPackages(JSON.parse(JSON.stringify(quotationDetail.metadata)));
         }
-        
+
     }, [quotationDetail]);
 
     if (!quotationId) return null; // Early return for null quotationId
@@ -135,10 +135,8 @@ function QuotationDetailModal({ quotationId, onClose }: QuotationDetailModalProp
                                                     {prodPackage.description}
                                                 </span>
                                             </div>
-                                            <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block">
-                                            </i>
-                                            <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden">
-                                            </i>
+                                            <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                            <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                         </button>
                                         <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
                                             <div className="product-list flex flex-col">

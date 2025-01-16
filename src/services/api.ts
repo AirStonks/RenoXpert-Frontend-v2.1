@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { DiscountFee, Invoice, Order, OwnerRegistrationForm, Package, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
+import { DiscountFee, Invoice, KeyManagement, Order, OwnerRegistrationForm, Package, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -1440,6 +1440,128 @@ export const changeRenoProgressContractorHandoverDate = async (renoProgressId: n
 export const fetchDefectInspectionForm = async (diFormId: number) => {
     try {
         const response = await axios.get(API_URL + `defect-inspection-forms/${diFormId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const fetchProgressKeyManagement = async (keyManagementId: number) => {
+    try {
+        const response = await axios.get(API_URL + `key-management/${keyManagementId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const addKeyManagementItem = async (keyManagementId: number, category: string) => {
+    try {
+        const response = await axios.get(API_URL + `key-management/${keyManagementId}/${category}/add`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const changeKeyManagementItemName = async (keyManagementId: number, category: string, itemIndex: number, name: string) => {
+    try {
+        const response = await axios.post(API_URL + `key-management/${keyManagementId}/${category}/change/${itemIndex}/name`, { name }, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const changeKeyManagementItemRemark = async (keyManagementId: number, category: string, itemIndex: number, remark: string) => {
+    try {
+        const response = await axios.post(API_URL + `key-management/${keyManagementId}/${category}/change/${itemIndex}/remark`, { remark }, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const uploadKeyManagementItemPhoto = async (keyManagementId: number, category: string, itemIndex: number, file: File) => {
+    try {
+        const formData = new FormData();
+
+        formData.append('attachment', file);
+
+        const response = await axios.post(
+            `${API_URL}key-management/${keyManagementId}/${category}/upload/${itemIndex}/photo`, formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handle401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+}
+
+export const changeKeyManagementItemPhoto = async (keyManagementId: number, category: string, itemIndex: number, file: File) => {
+    try {
+        const formData = new FormData();
+
+        formData.append('attachment', file);
+
+        const response = await axios.post(
+            `${API_URL}key-management/${keyManagementId}/${category}/change/${itemIndex}/photo`, formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handle401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+}
+
+export const removeKeyManagementItem = async (keyManagementId: number, category: string, itemIndex: number) => {
+    try {
+        const response = await axios.get(API_URL + `key-management/${keyManagementId}/${category}/remove/${itemIndex}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const updateKeyManagementInfo = async (keyManagementId: number, keyManagement: KeyManagement) => {
+    try {
+        const response = await axios.post(API_URL + `key-management/${keyManagementId}/info/update`, keyManagement, {
             headers: getAuthHeaders()
         });
         return response.data; // Return product data

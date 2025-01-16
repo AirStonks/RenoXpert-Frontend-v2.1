@@ -908,6 +908,7 @@ export interface RenoProgress {
         unit_no?: string,
     }
     defect_inspection_form?: DefectInspectionForm,
+    key_management?: KeyManagement,
     user?: User,
     status?: string,
     contractual_start_date?: string,
@@ -992,6 +993,8 @@ export interface JobTask {
     completed_at?: string,
     created_at?: string,
     updated_at?: string,
+    created_by?: User;
+    updated_by?: User;
 }
 
 export interface RenoAccetanceForm {
@@ -1080,4 +1083,21 @@ export interface POItem {
     delivered_date?: string,
     created_by?: string,
     updated_by?: string,
+}
+
+
+export interface KeyManagement {
+    id?: string,
+    reno_progress_id?: string,
+    date_received_key?: string,
+    date_posted?: string,
+    pic_name?: string,
+    no_main_door?: number,
+    no_room?: number,
+    status?: string,
+    metadata?: [],
+    created_by?: string,
+    updated_by?: string,
+    created_at?: User,
+    updated_at?: User,
 }

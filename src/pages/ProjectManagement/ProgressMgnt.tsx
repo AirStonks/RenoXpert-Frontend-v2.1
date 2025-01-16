@@ -751,8 +751,8 @@ function ProgressMgnt() {
                                                             <span className="font-semibold text-gray-600 mr-3">Progress: </span>
                                                             <span className="font-semibold">{jobProgress.toFixed(2)}%</span>
                                                         </div>
-                                                        <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                        <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                                     </div>
                                                 </button>
                                                 <div className="accordion-content hidden border-t" id={"package_content_" + job.id}>
@@ -762,7 +762,8 @@ function ProgressMgnt() {
                                                                 <th className='w-[220px]'>Product</th>
                                                                 <th className='w-[80px] text-center'>Owner Visibility</th>
                                                                 <th className='w-[100px] text-center'>Status</th>
-                                                                <th className='w-[100px] text-center'>Last Update Date</th>
+                                                                <th className='w-[100px] text-center'>Updated Date</th>
+                                                                <th className='w-[100px] text-center'>Updated By</th>
                                                                 <th className='w-[100px] text-center'>Documents</th>
                                                                 <th className='w-[150px] text-center'>Comment to Owner</th>
                                                                 <th className='w-[150px] text-center'>Internal Comment</th>
@@ -791,7 +792,17 @@ function ProgressMgnt() {
                                                                                     'Not Submitted'
                                                                                 )
                                                                             ) : task.is_key_form ? (
-                                                                                <span>Not Submitted</span>
+                                                                                <select
+                                                                                    className="w-full max-w-xs appearance-none"
+                                                                                    name="status"
+                                                                                    value={task.status}
+                                                                                    disabled
+                                                                                >
+                                                                                    <option value="not_started">Not Started</option>
+                                                                                    <option value="started">Started</option>
+                                                                                    <option value="in_progress">In Progress</option>
+                                                                                    <option value="completed">Completed</option>
+                                                                                </select>
                                                                             ) : (
                                                                                 <select
                                                                                     className="select select-bordered w-full max-w-xs"
@@ -818,6 +829,9 @@ function ProgressMgnt() {
                                                                             : ''}
                                                                     </td>
                                                                     <td className="text-center">
+                                                                        {task.updated_by ? task.updated_by.name : ''}
+                                                                    </td>
+                                                                    <td className="text-center">
                                                                         {task.is_defect_form ? (
                                                                             <Link
                                                                                 to={`/reno-progress/${renoProgress.id}/defect-inspection-report`}
@@ -827,10 +841,10 @@ function ProgressMgnt() {
                                                                             </Link>
                                                                         ) : task.is_key_form ? (
                                                                             <Link
-                                                                                to={`/reno-progress/${renoProgress.id}/defect-inspection-report`}
+                                                                                to={`/reno-progress/${renoProgress.id}/key-management`}
                                                                                 className="btn btn-info btn-sm"
                                                                             >
-                                                                                Key Form
+                                                                                Key Management
                                                                             </Link>
                                                                         ) : (
                                                                             <button
@@ -893,8 +907,8 @@ function ProgressMgnt() {
                                                             <span className="font-semibold text-gray-600 mr-3">Progress: </span>
                                                             <span className="font-semibold">{jobProgress.toFixed(2)}%</span>
                                                         </div>
-                                                        <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                        <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                                     </div>
                                                 </button>
                                                 <div className="accordion-content hidden border-t" id={"package_content_" + job.id}>
@@ -1010,8 +1024,8 @@ function ProgressMgnt() {
                                                             <span className="font-semibold text-gray-600 mr-3">Progress: </span>
                                                             <span className="font-semibold">{jobProgress.toFixed(2)}%</span>
                                                         </div>
-                                                        <i className="ki-outline ki-plus text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                        <i className="ki-outline ki-minus text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                                     </div>
                                                 </button>
                                                 <div className="accordion-content hidden border-t" id={"package_content_" + job.id}>

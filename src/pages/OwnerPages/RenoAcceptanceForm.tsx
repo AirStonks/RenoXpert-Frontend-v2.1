@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { RenoAccetanceForm } from "../../types";
 import Loading from "../../components/Loading";
 import SignatureCanvas from 'react-signature-canvas';
-import useFetchOwnerRenoProgress from "../../hook/useFetchOwnerRenoProgress";
+import useFetchOwnerRenoProgress from "../../hook/useFetchOwnerRenoProgresses";
 
 const initialFormData: RenoAccetanceForm = {
     reno_progress_id: '',

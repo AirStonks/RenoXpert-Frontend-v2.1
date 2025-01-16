@@ -84,6 +84,9 @@ import RenoProgressPhaseAttachments from './pages/OwnerPages/RenoProgressPhaseAt
 import ProductArchive from './pages/Product/ProductArchive';
 import PackageArchive from './pages/Package/PackageArchive';
 import QuotationArchive from './pages/Quotation/QuotationArchive';
+import KeyManagementForm from './pages/OwnerPages/KeyManagementForm';
+import KeyManagementOverview from './pages/ProjectManagement/KeyManagementOverview';
+import UpdateKeyManagement from './pages/ProjectManagement/UpdateKeyManagement';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -226,6 +229,8 @@ const routes = [
   { path: '/reno-progress', element: <PMMain />, layout: ProtectedLayout },
   { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
   { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
+  { path: '/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
+  { path: '/reno-progress/:id/key-management/update', element: <UpdateKeyManagement />, layout: ProtectedLayout },
 
 
   /*--- USERS ---*/

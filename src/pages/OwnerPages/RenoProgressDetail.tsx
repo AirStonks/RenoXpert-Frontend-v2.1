@@ -52,6 +52,10 @@ function RenoProgressDetail() {
     //     return totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0;
     // };
 
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
     return (
         <>
             {/* Loading Overlay */}
@@ -151,7 +155,7 @@ function RenoProgressDetail() {
                 </div>
             </div>
 
-            <div className="flex w-full px-2">
+            {/* <div className="flex w-full px-2">
                 <div className="card w-full">
                     <div className="card-header flex">
                         <span className="text-lg font-semibold">Acceptance Form</span>
@@ -166,7 +170,7 @@ function RenoProgressDetail() {
                         </Link>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             <div className="flex flex-col gap-4 w-full px-2" data-accordion="true">
 
@@ -202,7 +206,7 @@ function RenoProgressDetail() {
                                                 {/* <span className="font-semibold text-gray-600 mr-3">Progress: </span> */}
                                                 {/* <span className="font-semibold">{jobProgress.toFixed(2)}%</span> */}
                                             </div>
-                                            <i className="ki-outline ki-up text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                            <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
                                             <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                         </div>
                                     </button>
@@ -238,87 +242,11 @@ function RenoProgressDetail() {
                                                         {phase.jobs
                                                             .sort((a, b) => b.priority - a.priority) // Sort jobs by priority (higher number comes first)
                                                             .map((job, jobIndex) => {
-                                                                // const jobProgress = calculateJobProgress(job);
-
-                                                                // return (
-                                                                //     <div className="card-group flex flex-col" key={jobIndex}>
-                                                                //         <div className="flex justify-between">
-                                                                //             <span className="text-md font-semibold">{job.name}</span>
-                                                                //             <Link
-                                                                //                 to={`/owner/reno/progress/${renoProgressId}/job/${job.id}/attachments`}
-                                                                //                 className="btn btn-info btn-sm"
-                                                                //             >
-                                                                //                 View
-                                                                //             </Link>
-                                                                //         </div>
-                                                                //         <span>Progress: {jobProgress.toFixed(2)}%</span>
-                                                                //         <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                                                //             <div
-                                                                //                 className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                                                //                 style={{
-                                                                //                     width: `${jobProgress}%`,
-                                                                //                     height: '8px'
-                                                                //                 }}
-                                                                //             />
-                                                                //         </div>
-                                                                //         <div className="flex flex-col">
-                                                                //             {job.tasks.map((task, taskIndex) => (
-                                                                //                 <div className="flex flex-col mb-4" key={taskIndex}>
-                                                                //                     <div className="flex">
-                                                                //                         <span className="text-sm">{task.name}</span>
-                                                                //                     </div>
-                                                                //                     <div className="flex">
-                                                                //                         <span className="text-sm">Status: <span className="text-sm font-semibold">{task.status}</span></span>
-
-                                                                //                     </div>
-                                                                //                 </div>
-                                                                //             ))}
-                                                                //         </div>
-                                                                //     </div>
-                                                                // )
-
-                                                                // return (
-                                                                //     <div className="relative pl-8 sm:pl-32 py-6 group">
-                                                                //         <div className="flex justify-between">
-                                                                //             <div className="font-caveat font-medium text-md text-indigo-500 mb-1 sm:mb-0">
-                                                                //                 {job.name}
-                                                                //             </div>
-                                                                //             <Link
-                                                                //                 to={`/owner/reno/progress/${renoProgressId}/job/${job.id}/attachments`}
-                                                                //                 className="btn btn-info btn-sm"
-                                                                //             >
-                                                                //                 View
-                                                                //             </Link>
-                                                                //         </div>
-                                                                //         <div className="flex flex-col sm:flex-row items-start mb-1 group-last:before:hidden before:absolute before:left-2 sm:before:left-0 before:h-full before:px-px before:bg-slate-300 sm:before:ml-[6.5rem] before:self-start before:-translate-x-1/2 before:translate-y-3 after:absolute after:left-2 sm:after:left-0 after:w-2 after:h-2 after:bg-indigo-600 after:border-4 after:box-content after:border-slate-50 after:rounded-full sm:after:ml-[6.5rem] after:-translate-x-1/2 after:translate-y-1.5">
-                                                                //             <time className="sm:absolute left-0 translate-y-0.5 inline-flex items-center justify-center text-xs font-semibold uppercase w-20 h-6 mb-3 sm:mb-0 text-emerald-600 bg-emerald-100 rounded-full">
-                                                                //                 14 Dec 2024
-                                                                //             </time>
-                                                                //             {/* <div className="text-md font-bold text-slate-900">
-                                                                //                 Acme was founded in Milan, Italy
-                                                                //             </div> */}
-                                                                //             <span className="text-md font-semibold">Progress: {jobProgress.toFixed(2)}%</span>
-                                                                //             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                                                //                 <div
-                                                                //                     className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                                                //                     style={{
-                                                                //                         width: `${jobProgress}%`,
-                                                                //                         height: '8px'
-                                                                //                     }}
-                                                                //                 />
-                                                                //             </div>
-                                                                //         </div>
-                                                                //         {/* <div className="text-slate-500">
-                                                                //             Pretium lectus quam id leo. Urna et pharetra pharetra massa massa. Adipiscing enim eu neque aliquam vestibulum morbi blandit cursus risus.
-                                                                //         </div> */}
-                                                                //     </div>
-                                                                // )
-
                                                                 return (
                                                                     <div className="relative" key={jobIndex}>
                                                                         <div className="md:flex items-center space-x-4">
                                                                             <div className="flex items-center space-x-4">
-                                                                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow md:order-1">
+                                                                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow">
                                                                                     <svg className="fill-emerald-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
                                                                                         <path d="M8 0a8 8 0 1 0 8 8 8.009 8.009 0 0 0-8-8Zm0 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z" />
                                                                                     </svg>
