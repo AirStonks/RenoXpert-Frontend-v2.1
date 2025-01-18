@@ -62,7 +62,7 @@ const EditProduct: React.FC = () => {
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
+        const { name, value } = e.target;        
 
         if (name.startsWith('provisioning.supply')) {
             const property = name.split('.')[2];
@@ -436,8 +436,8 @@ const EditProduct: React.FC = () => {
 
                                         <Dropdown
                                             options={dropdownOptions}
-                                            name="pm_category"
-                                            value={formData?.pm_category}
+                                            name="pm_category_id"
+                                            value={formData?.pm_category_id}
                                             onChange={handleChange}
                                         />
                                     </div>

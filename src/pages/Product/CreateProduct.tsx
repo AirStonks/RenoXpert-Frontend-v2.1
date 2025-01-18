@@ -316,8 +316,8 @@ function CreateProduct() {
                                         placeholder="Text"
                                         rows={6}
                                         onChange={(e) => handleChange(e)}
+                                        value={formData.description}
                                     >
-                                        {formData.description}
                                     </textarea>
                                 </div>
 
@@ -335,8 +335,8 @@ function CreateProduct() {
                                         placeholder="Text"
                                         rows={6}
                                         onChange={(e) => handleChange(e)}
+                                        value={formData.internal_desc}
                                     >
-                                        {formData.internal_desc}
                                     </textarea>
                                 </div>
 
@@ -686,8 +686,8 @@ function CreateProduct() {
 
                                 <Dropdown
                                     options={dropdownOptions}
-                                    name="pm_category"
-                                    value={formData.pm_category}
+                                    name="pm_category_id"
+                                    value={formData?.pm_category_id}
                                     onChange={handleChange}
                                 />
                             </div>

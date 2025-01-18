@@ -414,9 +414,9 @@ function OrderDetail() {
                                             Total Amount:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            <td className="text-sm text-gray-900 pb-3">
+                                            <span className="text-sm text-gray-900 pb-3">
                                                 RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
-                                            </td>
+                                            </span>
 
                                         </td>
                                     </tr>
@@ -504,7 +504,9 @@ function OrderDetail() {
                                         </>
                                         :
                                         <tr>
-                                            -
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                N/A
+                                            </td>
                                         </tr>
                                     }
 

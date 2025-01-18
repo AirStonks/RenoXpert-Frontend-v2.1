@@ -518,7 +518,7 @@ function ProgressMgnt() {
                     <div className="card-body">
                         <div className="flex flex-col mb-4">
                             <div className="flex justify-between items-center mb-1">
-                                <span className="text-lg font-semibold">Pre Reno</span>
+                                <span className="text-lg text-gray-900 font-semibold">Pre Reno</span>
                                 <span className="text-xs">{(renoProgress.pre_reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
@@ -543,7 +543,7 @@ function ProgressMgnt() {
                         </div>
                         <div className="flex flex-col mb-4">
                             <div className="flex justify-between items-center mb-1">
-                                <span className="text-lg font-semibold">Reno</span>
+                                <span className="text-lg text-gray-900 font-semibold">Reno</span>
                                 <span className="text-xs">{(renoProgress.reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
@@ -568,7 +568,7 @@ function ProgressMgnt() {
                         </div>
                         <div className="flex flex-col">
                             <div className="flex justify-between items-center mb-1">
-                                <span className="text-lg font-semibold">Post Reno</span>
+                                <span className="text-lg text-gray-900 font-semibold">Post Reno</span>
                                 <span className="text-xs">{(renoProgress.post_reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
@@ -644,7 +644,7 @@ function ProgressMgnt() {
                     </div>
                     <div className="card-body">
                         <div className="flex flex-col mb-4 gap-2">
-                            <span className="font-semibold">Contractual Date:</span>
+                            <span className="text-gray-900 font-semibold">Contractual Date:</span>
                             <div className="flex gap-4">
                                 <span className="badge badge-lg">
                                     {renoProgress.contractual_start_date
@@ -655,7 +655,7 @@ function ProgressMgnt() {
                                         })
                                         : '-'}
                                 </span>
-                                <span>to</span>
+                                <span className="text-gray-900">to</span>
                                 <span className="badge badge-lg">
                                     {renoProgress.contractual_end_date
                                         ? new Date(renoProgress.contractual_end_date).toLocaleDateString('en-GB', {
@@ -668,7 +668,7 @@ function ProgressMgnt() {
                             </div>
                         </div>
                         <div className="flex flex-col gap-2">
-                            <span className="font-semibold">Contractor Date:</span>
+                            <span className="text-gray-900 font-semibold">Contractor Date:</span>
                             <div className="flex gap-4">
                                 <span className="badge badge-lg">
                                     {renoProgress.contractor_start_date
@@ -679,7 +679,7 @@ function ProgressMgnt() {
                                         })
                                         : '-'}
                                 </span>
-                                <span>to</span>
+                                <span className="text-gray-900">to</span>
                                 <span className="badge badge-lg">
                                     {renoProgress.contractor_end_date
                                         ? new Date(renoProgress.contractor_end_date).toLocaleDateString('en-GB', {
@@ -705,7 +705,7 @@ function ProgressMgnt() {
             </div>
 
             <div className="flex flex-col">
-                <div className="text-xl font-semibold mb-2">
+                <div className="text-xl text-gray-900 font-semibold mb-2">
                     Project Management
                 </div>
 
@@ -749,7 +749,7 @@ function ProgressMgnt() {
                                                     <div className="flex">
                                                         <div className="flex mr-24">
                                                             <span className="font-semibold text-gray-600 mr-3">Progress: </span>
-                                                            <span className="font-semibold">{jobProgress.toFixed(2)}%</span>
+                                                            <span className="font-semibold text-gray-900">{jobProgress.toFixed(2)}%</span>
                                                         </div>
                                                         <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
                                                         <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
@@ -905,7 +905,7 @@ function ProgressMgnt() {
                                                     <div className="flex">
                                                         <div className="flex mr-24">
                                                             <span className="font-semibold text-gray-600 mr-3">Progress: </span>
-                                                            <span className="font-semibold">{jobProgress.toFixed(2)}%</span>
+                                                            <span className="font-semibold text-gray-900">{jobProgress.toFixed(2)}%</span>
                                                         </div>
                                                         <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
                                                         <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
@@ -1022,7 +1022,7 @@ function ProgressMgnt() {
                                                     <div className="flex">
                                                         <div className="flex mr-24">
                                                             <span className="font-semibold text-gray-600 mr-3">Progress: </span>
-                                                            <span className="font-semibold">{jobProgress.toFixed(2)}%</span>
+                                                            <span className="font-semibold text-gray-900">{jobProgress.toFixed(2)}%</span>
                                                         </div>
                                                         <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
                                                         <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>

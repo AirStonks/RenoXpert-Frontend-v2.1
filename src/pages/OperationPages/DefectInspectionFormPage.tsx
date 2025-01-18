@@ -1,10 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DefectInspectionForm, Property, RenoProgress, Sale } from '../../types';
 import KTComponents, { KTStepper } from '../../metronic/core';
 import { Slide, toast } from 'react-toastify';
-import { fetchProperties, fetchRenoProgressDetail, submitDIForm } from '../../services/operationApi';
+import { fetchProperties, fetchRenoProgressDetail, liveUpdateDIForm, removeDIFormAttachment, submitDIForm } from '../../services/operationApi';
 import Loading from '../../components/Loading';
 import { useNavigate } from 'react-router-dom';
+
+const AWS_S3_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
 
 interface FormErrors {
     [key: string]: string | FormErrors | undefined; // Use string or undefined for error messages
@@ -283,6 +290,7 @@ const initInspectionForm: DefectInspectionForm = {
 
 function DefectInspectionFormPage() {
     const navigate = useNavigate();
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
     const queryParams = new URLSearchParams(location.search);
     const renoProgressId = queryParams.get('progressId');
 
@@ -371,6 +379,7 @@ function DefectInspectionFormPage() {
                     },
                     bedroom_count: progress.sale?.order?.bedroom_count?.toString(),
                     bathroom_count: progress.sale?.order?.bathroom_count?.toString(),
+                    area: progress.defect_inspection_form?.area
                 }));
             }
 
@@ -385,8 +394,11 @@ function DefectInspectionFormPage() {
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+
+        console.log(formData);
+
 
         if (name.startsWith('property.')) {
             const key = name.split('.')[1];
@@ -451,6 +463,33 @@ function DefectInspectionFormPage() {
                     }
                 }));
 
+                try {
+                    const [a, cat, rooms, question, val] = name.split('.');
+
+                    const updateFormData = {
+                        area: cat,
+                        sub_area: rooms,
+                        question: question,
+                        [val]: value,
+                    }
+
+                    if (debounceTimeout.current) {
+                        clearTimeout(debounceTimeout.current);
+                    }
+
+                    debounceTimeout.current = setTimeout(async () => {
+                        const response = await liveUpdateDIForm(Number(renoProgressId), updateFormData);
+
+                        console.log(updateFormData);
+
+                        if (response?.success) {
+                            console.log(response?.data);
+                        }
+                    }, 500);
+                } catch (error) {
+                    notify('error', error.response.data.message);
+                }
+
             } else {
                 const [a, cat, question, val] = name.split('.');
 
@@ -483,6 +522,32 @@ function DefectInspectionFormPage() {
                         }
                     }
                 }));
+
+                try {
+                    const [a, cat, question, val] = name.split('.');
+
+                    const updateFormData = {
+                        area: cat,
+                        question: question,
+                        [val]: value,
+                    }
+
+                    if (debounceTimeout.current) {
+                        clearTimeout(debounceTimeout.current);
+                    }
+
+                    debounceTimeout.current = setTimeout(async () => {
+                        const response = await liveUpdateDIForm(Number(renoProgressId), updateFormData);
+
+                        console.log(updateFormData);
+
+                        if (response?.success) {
+                            console.log(response?.data);
+                        }
+                    }, 500);
+                } catch (error) {
+                    notify('error', error.response.data.message);
+                }
             }
         } else {
             // Update form data
@@ -517,8 +582,8 @@ function DefectInspectionFormPage() {
 
         // Top level fields
         if (!formData.owner_email) newErrors.owner_email = "Please fill in the field";
-        if (!formData.contractor_name) newErrors.contractor_name = "Please fill in the field";
-        if (!formData.contractor_email) newErrors.contractor_email = "Please fill in the field";
+        // if (!formData.contractor_name) newErrors.contractor_name = "Please fill in the field";
+        // if (!formData.contractor_email) newErrors.contractor_email = "Please fill in the field";
         if (!formData.bedroom_count) newErrors.bedroom_count = "Please select bedroom count";
         if (!formData.bathroom_count) newErrors.bathroom_count = "Please select bathroom count";
 
@@ -669,10 +734,12 @@ function DefectInspectionFormPage() {
             return;
         } else {
             try {
-                await submitDIForm(formData);
-                
-                notify('success', 'Form successfully submitted.');
-                navigate('/op/form/submit/success');
+                const response = await submitDIForm(Number(renoProgressId));
+
+                if (response?.success) {
+                    notify('success', 'Form successfully submitted.');
+                    navigate('/op/form/submit/success');
+                }
 
             } catch (error) {
                 console.log(error);
@@ -873,71 +940,120 @@ function DefectInspectionFormPage() {
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, areaKey: string, questionKey: string, dynamicKey?: string) => {
         setAttanhmentErr(null); // Reset any previous errors
 
-        if (event.target.files) {
-            // Get the specific area and question dynamically
-            const updatedFormData = { ...formData };
-            let targetArea = updatedFormData.area?.[areaKey];
+        try {
+            let updatedFormData = {
+                area: areaKey,
+                sub_area: null,
+                question: questionKey,
+                attachment: event.target.files[0],
+            }
 
             if (dynamicKey) {
-                // Handle dynamic areas like bedrooms and bathrooms
-                targetArea = updatedFormData.area?.[areaKey]?.[dynamicKey];
+                updatedFormData = {
+                    area: areaKey,
+                    sub_area: dynamicKey,
+                    question: questionKey,
+                    attachment: event.target.files[0],
+                }
             }
 
-            const targetQuestion = targetArea?.[questionKey];
+            const response = await liveUpdateDIForm(Number(renoProgressId), updatedFormData);
 
-            if (targetQuestion) {
-                // Check if the total number of files exceeds 5 for the specific question
-                const currentFileCount = targetQuestion?.attachments ? Object.keys(targetQuestion?.attachments).length : 0;
-                if (currentFileCount + event.target.files.length > 5) {
-                    setAttanhmentErr('You can upload a maximum of 5 files.');
-                    notify('error', 'You can upload a maximum of 5 files.');
-                    return;
+            if (response?.success) {
+                if (dynamicKey) {
+                    const updatedFormData = { ...formData };
+                    const targetArea = updatedFormData.area?.[areaKey]?.[dynamicKey];
+                    const targetQuestion = targetArea?.[questionKey];
+
+                    targetQuestion.attachments = response?.data?.area[areaKey][dynamicKey][questionKey]?.attachments;
+                    setFormData(updatedFormData);
+                    notify('success', 'File uploaded successfully.');
+                } else {
+                    const updatedFormData = { ...formData };
+                    const targetArea = updatedFormData.area?.[areaKey];
+                    const targetQuestion = targetArea?.[questionKey];
+
+                    targetQuestion.attachments = response?.data?.area[areaKey][questionKey]?.attachments;
+                    setFormData(updatedFormData);
+                    notify('success', 'File uploaded successfully.');
                 }
-
-                const newFiles: { [key: string]: { id: string, original_name: string, file_url: string, file_size: string, file: File } } = {};
-
-                for (let i = 0; i < event.target.files.length; i++) {
-                    const uploadedFile = event.target.files[i];
-
-                    // Validate file type (you can adjust this function to support specific file types)
-                    if (!isAcceptedFileType(uploadedFile.type)) {
-                        setAttanhmentErr(`File type not accepted: ${uploadedFile.name}`);
-                        notify('error', `File type not accepted: ${uploadedFile.name}`);
-                        continue; // Skip this file
-                    }
-
-                    // Create a unique ID for the file and generate a preview URL
-                    const fileId = Date.now().toString() + i;
-
-                    // Calculate the file size in KB (you can also use MB by dividing by 1024 again)
-                    const fileSizeInKB = Math.round(uploadedFile.size / 1024);
-
-                    newFiles[fileId] = {
-                        id: fileId,
-                        original_name: uploadedFile.name,
-                        file_url: URL.createObjectURL(uploadedFile),
-                        file_size: `${fileSizeInKB} KB`,  // Display file size
-                        file: uploadedFile
-                    };
-                }
-
-                // Initialize attachments if necessary
-                if (!targetQuestion.attachments) {
-                    targetQuestion.attachments = {};
-                }
-
-                // Merge the new files with existing attachments
-                targetQuestion.attachments = { ...targetQuestion.attachments, ...newFiles };
-
-                setFormData(updatedFormData);
             }
 
-            // Clear the input file field
-            const fileInput = document.querySelector(`input[name="${areaKey}.${dynamicKey ? `${dynamicKey}.` : ''}${questionKey}.attachments"]`) as HTMLInputElement;
-            if (fileInput) {
-                fileInput.value = ''; // Clear the file input
-            }
+        } catch (error) {
+            notify('error', 'Error uploading file.');
         }
+
+        // const updateFormData = {
+        //     area: cat,
+        //     question: question,
+        //     [val]: value,
+        // }
+
+        // if (event.target.files) {
+        //     // Get the specific area and question dynamically
+        //     const updatedFormData = { ...formData };
+        //     let targetArea = updatedFormData.area?.[areaKey];
+
+        //     if (dynamicKey) {
+        //         // Handle dynamic areas like bedrooms and bathrooms
+        //         targetArea = updatedFormData.area?.[areaKey]?.[dynamicKey];
+        //     }
+
+        //     const targetQuestion = targetArea?.[questionKey];
+
+        //     if (targetQuestion) {
+        //         // Check if the total number of files exceeds 10 for the specific question
+        //         const currentFileCount = targetQuestion?.attachments ? Object.keys(targetQuestion?.attachments).length : 0;
+        //         if (currentFileCount + event.target.files.length > 10) {
+        //             setAttanhmentErr('You can upload a maximum of 10 files.');
+        //             notify('error', 'You can upload a maximum of 10 files.');
+        //             return;
+        //         }
+
+        //         // const newFiles: { [key: string]: { id: string, original_name: string, file_url: string, file_size: string, file: File } } = {};
+
+        //         // for (let i = 0; i < event.target.files.length; i++) {
+        //         //     const uploadedFile = event.target.files[i];
+
+        //         //     // Validate file type (you can adjust this function to support specific file types)
+        //         //     if (!isAcceptedFileType(uploadedFile.type)) {
+        //         //         setAttanhmentErr(`File type not accepted: ${uploadedFile.name}`);
+        //         //         notify('error', `File type not accepted: ${uploadedFile.name}`);
+        //         //         continue; // Skip this file
+        //         //     }
+
+        //         //     // Create a unique ID for the file and generate a preview URL
+        //         //     const fileId = Date.now().toString() + i;
+
+        //         //     // Calculate the file size in KB (you can also use MB by dividing by 1024 again)
+        //         //     const fileSizeInKB = Math.round(uploadedFile.size / 1024);
+
+        //         //     newFiles[fileId] = {
+        //         //         id: fileId,
+        //         //         original_name: uploadedFile.name,
+        //         //         file_url: URL.createObjectURL(uploadedFile),
+        //         //         file_size: `${fileSizeInKB} KB`,  // Display file size
+        //         //         file: uploadedFile
+        //         //     };
+        //         // }
+
+        //         // // Initialize attachments if necessary
+        //         // if (!targetQuestion.attachments) {
+        //         //     targetQuestion.attachments = {};
+        //         // }
+
+        //         // // Merge the new files with existing attachments
+        //         // targetQuestion.attachments = { ...targetQuestion.attachments, ...newFiles };
+
+        //         setFormData(updatedFormData);
+        //     }
+
+        //     // Clear the input file field
+        //     const fileInput = document.querySelector(`input[name="${areaKey}.${dynamicKey ? `${dynamicKey}.` : ''}${questionKey}.attachments"]`) as HTMLInputElement;
+        //     if (fileInput) {
+        //         fileInput.value = ''; // Clear the file input
+        //     }
+        // }
     };
 
     const formatFileSize = (size: number) => {
@@ -950,48 +1066,87 @@ function DefectInspectionFormPage() {
     };
 
     const handleDelete = async (
-        fileId: string, // The ID of the file to be deleted
+        fileIndex: string, // The ID of the file to be deleted
         areaKey: string, // The area key for the specific area
         questionKey: string, // The question key for the specific question
         dynamicKey?: string, // Optional dynamic key (e.g., for dynamic sections like bedrooms or bathrooms)
-        file_url?: string
     ) => {
         setAttanhmentErr(null); // Reset any previous errors
 
-        // Get the current formData
-        const updatedFormData = { ...formData };
-        let targetArea = updatedFormData.area?.[areaKey];
+        let updatedFormData = {
+            area: areaKey,
+            sub_area: null,
+            question: questionKey,
+            file_index: Number(fileIndex),
+        }
 
         if (dynamicKey) {
-            // Handle dynamic areas like bedrooms and bathrooms
-            targetArea = updatedFormData.area?.[areaKey]?.[dynamicKey];
+            updatedFormData = {
+                area: areaKey,
+                sub_area: dynamicKey,
+                question: questionKey,
+                file_index: Number(fileIndex),
+            }
         }
 
-        const targetQuestion = targetArea?.[questionKey];
+        const response = await removeDIFormAttachment(Number(renoProgressId), updatedFormData);
 
-        if (targetQuestion && targetQuestion.attachments) {
-            // Check if the fileId exists in the attachments
-            if (targetQuestion.attachments[fileId]) {
-                // Remove the file from attachments
-                const { [fileId]: deletedFile, ...remainingFiles } = targetQuestion.attachments;
+        if (response?.success) {
+            if (dynamicKey) {
+                const updatedFormData = { ...formData };
+                const targetArea = updatedFormData.area?.[areaKey]?.[dynamicKey];
+                const targetQuestion = targetArea?.[questionKey];
 
-                // Update the formData with the remaining files
-                targetQuestion.attachments = remainingFiles;
-
-                // Update the formData state
+                targetQuestion.attachments = response?.data?.area[areaKey][dynamicKey][questionKey]?.attachments;
                 setFormData(updatedFormData);
 
-                if (file_url) {
-                    // const response = await removeFile(file_url);
-                }
+                notify('success', 'File deleted successfully');
             } else {
-                setAttanhmentErr('File not found.');
-                notify('error', 'File not found.');
+                const updatedFormData = { ...formData };
+                const targetArea = updatedFormData.area?.[areaKey];
+                const targetQuestion = targetArea?.[questionKey];
+
+                targetQuestion.attachments = response?.data?.area[areaKey][questionKey]?.attachments;
+                setFormData(updatedFormData);
+
+                notify('success', 'File deleted successfully');
             }
-        } else {
-            setAttanhmentErr('No attachments available.');
-            notify('error', 'No attachments available.');
         }
+
+        // // Get the current formData
+        // const updatedFormData = { ...formData };
+        // let targetArea = updatedFormData.area?.[areaKey];
+
+        // if (dynamicKey) {
+        //     // Handle dynamic areas like bedrooms and bathrooms
+        //     targetArea = updatedFormData.area?.[areaKey]?.[dynamicKey];
+        // }
+
+        // const targetQuestion = targetArea?.[questionKey];
+
+        // if (targetQuestion && targetQuestion.attachments) {
+        //     // Check if the fileId exists in the attachments
+        //     if (targetQuestion.attachments[fileId]) {
+        //         // Remove the file from attachments
+        //         const { [fileId]: deletedFile, ...remainingFiles } = targetQuestion.attachments;
+
+        //         // Update the formData with the remaining files
+        //         targetQuestion.attachments = remainingFiles;
+
+        //         // Update the formData state
+        //         setFormData(updatedFormData);
+
+        //         if (file_url) {
+        //             // const response = await removeFile(file_url);
+        //         }
+        //     } else {
+        //         setAttanhmentErr('File not found.');
+        //         notify('error', 'File not found.');
+        //     }
+        // } else {
+        //     setAttanhmentErr('No attachments available.');
+        //     notify('error', 'No attachments available.');
+        // }
     };
 
     if (loading) return <Loading />;
@@ -1152,17 +1307,17 @@ function DefectInspectionFormPage() {
                             }
                         </div>
 
-                        <div className="flex flex-col mb-8">
-                            <label className="text-slate-900 mb-2 font-medium" htmlFor="contractor_name">Contractor</label>
+                        {/* <div className="flex flex-col mb-8">
+                            <label className="text-slate-900 mb-2 font-medium" htmlFor="contractor_name">Inspector</label>
                             <input className={`input ${errors.contractor_name ? 'border-danger' : ''}`} type="text" name="contractor_name" id="contractor_name" value={formData.contractor_name} onChange={handleChange} />
                             {errors.contractor_name && <span className="text-red-500 text-xs mt-2">{errors.contractor_name}</span>}
                         </div>
 
                         <div className="flex flex-col mb-8">
-                            <label className="text-slate-900 mb-2 font-medium" htmlFor="contractor_email">Contractor's Email</label>
+                            <label className="text-slate-900 mb-2 font-medium" htmlFor="contractor_email">Inspector's Email</label>
                             <input className={`input ${errors.contractor_email ? 'border-danger' : ''}`} type="text" name="contractor_email" id="contractor_email" value={formData.contractor_email} onChange={handleChange} />
                             {errors.contractor_email && <span className="text-red-500 text-xs mt-2">{errors.contractor_email}</span>}
-                        </div>
+                        </div> */}
 
                         <div className="flex flex-col mb-8">
                             <div className="flex gap-2 mb-2">
@@ -1267,8 +1422,8 @@ function DefectInspectionFormPage() {
                                 <div className="card-body">
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.foyer.q1.attachments"
                                         onChange={(e) => handleFileUpload(e, 'foyer', 'q1')}
                                     />
@@ -1278,12 +1433,12 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{formatFileSize(uploadedFile.file.size)}</span>
@@ -1343,8 +1498,8 @@ function DefectInspectionFormPage() {
                                 <div className="card-body">
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.foyer.q2.attachments"
                                         onChange={(e) => handleFileUpload(e, 'foyer', 'q2')}
                                     />
@@ -1354,15 +1509,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -1419,8 +1574,8 @@ function DefectInspectionFormPage() {
                                 <div className="card-body">
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.foyer.q3.attachments"
                                         onChange={(e) => handleFileUpload(e, 'foyer', 'q3')}
                                     />
@@ -1430,15 +1585,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -1495,8 +1650,8 @@ function DefectInspectionFormPage() {
                                 <div className="card-body">
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.foyer.q4.attachments"
                                         onChange={(e) => handleFileUpload(e, 'foyer', 'q4')}
                                     />
@@ -1506,15 +1661,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -1581,8 +1736,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.kitchen.q1.attachments"
                                         onChange={(e) => handleFileUpload(e, 'kitchen', 'q1')}
                                     />
@@ -1592,15 +1747,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -1659,8 +1814,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.kitchen.q2.attachments"
                                         onChange={(e) => handleFileUpload(e, 'kitchen', 'q2')}
                                     />
@@ -1670,15 +1825,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -1737,8 +1892,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.kitchen.q3.attachments"
                                         onChange={(e) => handleFileUpload(e, 'kitchen', 'q3')}
                                     />
@@ -1748,15 +1903,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -1815,8 +1970,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.kitchen.q4.attachments"
                                         onChange={(e) => handleFileUpload(e, 'kitchen', 'q4')}
                                     />
@@ -1826,15 +1981,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -1904,8 +2059,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.kitchen.q5.attachments"
                                         onChange={(e) => handleFileUpload(e, 'kitchen', 'q5')}
                                     />
@@ -1915,15 +2070,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -1993,8 +2148,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.kitchen.q6.attachments"
                                         onChange={(e) => handleFileUpload(e, 'kitchen', 'q6')}
                                     />
@@ -2004,15 +2159,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2082,8 +2237,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.kitchen.q7.attachments"
                                         onChange={(e) => handleFileUpload(e, 'kitchen', 'q7')}
                                     />
@@ -2093,15 +2248,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2171,8 +2326,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.kitchen.q8.attachments"
                                         onChange={(e) => handleFileUpload(e, 'kitchen', 'q8')}
                                     />
@@ -2182,15 +2337,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2268,8 +2423,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.yard.q1.attachments"
                                         onChange={(e) => handleFileUpload(e, 'yard', 'q1')}
                                     />
@@ -2279,15 +2434,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2357,8 +2512,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.yard.q2.attachments"
                                         onChange={(e) => handleFileUpload(e, 'yard', 'q2')}
                                     />
@@ -2368,15 +2523,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2446,8 +2601,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.yard.q3.attachments"
                                         onChange={(e) => handleFileUpload(e, 'yard', 'q3')}
                                     />
@@ -2457,15 +2612,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2535,8 +2690,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.yard.q4.attachments"
                                         onChange={(e) => handleFileUpload(e, 'yard', 'q4')}
                                     />
@@ -2546,15 +2701,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2624,8 +2779,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.yard.q5.attachments"
                                         onChange={(e) => handleFileUpload(e, 'yard', 'q5')}
                                     />
@@ -2635,15 +2790,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2713,8 +2868,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.yard.q6.attachments"
                                         onChange={(e) => handleFileUpload(e, 'yard', 'q6')}
                                     />
@@ -2724,15 +2879,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2799,8 +2954,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.living.q1.attachments"
                                         onChange={(e) => handleFileUpload(e, 'living', 'q1')}
                                     />
@@ -2810,15 +2965,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2877,8 +3032,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.living.q2.attachments"
                                         onChange={(e) => handleFileUpload(e, 'living', 'q2')}
                                     />
@@ -2888,15 +3043,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -2955,8 +3110,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.living.q3.attachments"
                                         onChange={(e) => handleFileUpload(e, 'living', 'q3')}
                                     />
@@ -2966,15 +3121,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3033,8 +3188,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.living.q4.attachments"
                                         onChange={(e) => handleFileUpload(e, 'living', 'q4')}
                                     />
@@ -3044,15 +3199,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3122,8 +3277,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.living.q5.attachments"
                                         onChange={(e) => handleFileUpload(e, 'living', 'q5')}
                                     />
@@ -3133,15 +3288,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3211,8 +3366,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.living.q6.attachments"
                                         onChange={(e) => handleFileUpload(e, 'living', 'q6')}
                                     />
@@ -3222,15 +3377,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3300,8 +3455,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.living.q7.attachments"
                                         onChange={(e) => handleFileUpload(e, 'living', 'q7')}
                                     />
@@ -3311,15 +3466,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3378,8 +3533,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.living.q8.attachments"
                                         onChange={(e) => handleFileUpload(e, 'living', 'q8')}
                                     />
@@ -3389,15 +3544,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3467,8 +3622,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.living.q9.attachments"
                                         onChange={(e) => handleFileUpload(e, 'living', 'q9')}
                                     />
@@ -3478,15 +3633,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3564,8 +3719,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.balcony.q1.attachments"
                                         onChange={(e) => handleFileUpload(e, 'balcony', 'q1')}
                                     />
@@ -3575,15 +3730,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3653,8 +3808,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.balcony.q2.attachments"
                                         onChange={(e) => handleFileUpload(e, 'balcony', 'q2')}
                                     />
@@ -3664,15 +3819,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3742,8 +3897,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.balcony.q3.attachments"
                                         onChange={(e) => handleFileUpload(e, 'balcony', 'q3')}
                                     />
@@ -3753,15 +3908,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3831,8 +3986,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.balcony.q4.attachments"
                                         onChange={(e) => handleFileUpload(e, 'balcony', 'q4')}
                                     />
@@ -3842,15 +3997,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3917,8 +4072,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.hallway.q1.attachments"
                                         onChange={(e) => handleFileUpload(e, 'hallway', 'q1')}
                                     />
@@ -3928,15 +4083,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -3995,8 +4150,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.hallway.q2.attachments"
                                         onChange={(e) => handleFileUpload(e, 'hallway', 'q2')}
                                     />
@@ -4006,15 +4161,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -4073,8 +4228,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.hallway.q3.attachments"
                                         onChange={(e) => handleFileUpload(e, 'hallway', 'q3')}
                                     />
@@ -4084,15 +4239,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -4151,8 +4306,8 @@ function DefectInspectionFormPage() {
 
                                     <input
                                         className="file-input file-input-sm badge mb-2"
-                                        multiple={true}
                                         type="file"
+                                        accept="image/*"
                                         name="area.hallway.q4.attachments"
                                         onChange={(e) => handleFileUpload(e, 'hallway', 'q4')}
                                     />
@@ -4162,15 +4317,15 @@ function DefectInspectionFormPage() {
                                             <div key={key} className="flex items-center space-x-4 mb-4">
                                                 <div className="flex-1 flex flex-col">
                                                     <a
-                                                        href={uploadedFile.file_url}
+                                                        href={AWS_S3_URL + uploadedFile.file_url}
                                                         className="text-slate-700"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.original_name}
+                                                        {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                        <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                     </div>
                                                 </div>
                                                 <button
@@ -4258,8 +4413,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bedrooms.${bedroomKey}.q1.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bedrooms', 'q1', bedroomKey)}
                                                 />
@@ -4269,15 +4425,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -4347,8 +4503,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bedrooms.${bedroomKey}.q2.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bedrooms', 'q2', bedroomKey)}
                                                 />
@@ -4358,15 +4515,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -4436,8 +4593,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bedrooms.${bedroomKey}.q3.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bedrooms', 'q3', bedroomKey)}
                                                 />
@@ -4447,15 +4605,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -4525,8 +4683,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bedrooms.${bedroomKey}.q4.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bedrooms', 'q4', bedroomKey)}
                                                 />
@@ -4536,15 +4695,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -4614,8 +4773,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bedrooms.${bedroomKey}.q5.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bedrooms', 'q5', bedroomKey)}
                                                 />
@@ -4625,15 +4785,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -4703,8 +4863,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bedrooms.${bedroomKey}.q6.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bedrooms', 'q6', bedroomKey)}
                                                 />
@@ -4714,15 +4875,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -4792,8 +4953,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bedrooms.${bedroomKey}.q7.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bedrooms', 'q7', bedroomKey)}
                                                 />
@@ -4803,15 +4965,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -4870,8 +5032,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bedrooms.${bedroomKey}.q8.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bedrooms', 'q8', bedroomKey)}
                                                 />
@@ -4881,15 +5044,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -4959,8 +5122,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bedrooms.${bedroomKey}.q9.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bedrooms', 'q9', bedroomKey)}
                                                 />
@@ -4970,15 +5134,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -5068,8 +5232,8 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bathrooms.${bathroomKey}.q1.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bathrooms', 'q1', bathroomKey)}
                                                 />
@@ -5079,15 +5243,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -5157,8 +5321,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bathrooms.${bathroomKey}.q2.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bathrooms', 'q2', bathroomKey)}
                                                 />
@@ -5168,15 +5333,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -5246,8 +5411,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bathrooms.${bathroomKey}.q3.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bathrooms', 'q3', bathroomKey)}
                                                 />
@@ -5257,15 +5423,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -5335,8 +5501,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bathrooms.${bathroomKey}.q4.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bathrooms', 'q4', bathroomKey)}
                                                 />
@@ -5346,15 +5513,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -5424,8 +5591,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bathrooms.${bathroomKey}.q5.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bathrooms', 'q5', bathroomKey)}
                                                 />
@@ -5435,15 +5603,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -5513,8 +5681,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bathrooms.${bathroomKey}.q6.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bathrooms', 'q6', bathroomKey)}
                                                 />
@@ -5524,15 +5693,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -5602,8 +5771,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bathrooms.${bathroomKey}.q7.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bathrooms', 'q7', bathroomKey)}
                                                 />
@@ -5613,15 +5783,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -5691,8 +5861,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bathrooms.${bathroomKey}.q8.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bathrooms', 'q8', bathroomKey)}
                                                 />
@@ -5702,15 +5873,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -5780,8 +5951,9 @@ function DefectInspectionFormPage() {
 
                                                 <input
                                                     className="file-input file-input-sm badge mb-2"
-                                                    multiple={true}
+                                                    // multiple={true}
                                                     type="file"
+                                                    accept="image/*"
                                                     name={`area.bathrooms.${bathroomKey}.q9.attachments`}
                                                     onChange={(e) => handleFileUpload(e, 'bathrooms', 'q9', bathroomKey)}
                                                 />
@@ -5791,15 +5963,15 @@ function DefectInspectionFormPage() {
                                                         <div key={key} className="flex items-center space-x-4 mb-4">
                                                             <div className="flex-1 flex flex-col">
                                                                 <a
-                                                                    href={uploadedFile.file_url}
+                                                                    href={AWS_S3_URL + uploadedFile.file_url}
                                                                     className="text-slate-700"
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.original_name}
+                                                                    {uploadedFile.name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                                    <span>{uploadedFile.file_url ? `${Math.round(uploadedFile.file_url.length / 1024)} KB` : 'N/A'}</span>
+                                                                    <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
                                                                 </div>
                                                             </div>
                                                             <button
@@ -5833,7 +6005,7 @@ function DefectInspectionFormPage() {
                 <button
                     className="btn btn-lg btn-primary rounded-3xl shadow-lg stepper-last:hidden"
                     data-stepper-next="true"
-                    onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 >
                     Next
                 </button>

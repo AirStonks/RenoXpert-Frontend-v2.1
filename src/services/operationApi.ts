@@ -91,9 +91,37 @@ export const fetchDIForm = async (formId: number) => {
     }
 }
 
-export const submitDIForm = async (formData) => {
+export const liveUpdateDIForm = async (formId: number, formData) => {
     try {
-        const response = await axios.post(API_URL + `op/reno/defect-inspection-form/submit`, formData, {
+        const response = await axios.post(API_URL + `op/reno/defect-inspection-forms/${formId}/save`, formData, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('p_token')}`,
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const removeDIFormAttachment = async (formId: number, formData) => {
+    try {
+        // op/reno/defect-inspection-forms/{id}/attachment/remove
+        const response = await axios.post(API_URL + `op/reno/defect-inspection-forms/${formId}/attachment/remove`, formData, {
+            headers: getAuthHeaders(),
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const submitDIForm = async (formId: number) => {
+    try {
+        const response = await axios.get(API_URL + `op/reno/defect-inspection-form/${formId}/submit`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('p_token')}`,
                 'Content-Type': 'multipart/form-data',
