@@ -1441,7 +1441,7 @@ function DefectInspectionFormPage() {
                                                         {uploadedFile.name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
-                                                        <span>{formatFileSize(uploadedFile.file.size)}</span>
+                                                        <span>{formatFileSize(uploadedFile.size)}</span>
                                                     </div>
                                                 </div>
                                                 <button
