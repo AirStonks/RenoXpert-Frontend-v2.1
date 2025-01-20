@@ -50,7 +50,7 @@ function OwnerHome() {
         }
     };
 
-    if (ordersLoading || formsLoading || loading) return <Loading />;
+    if (ordersLoading || formsLoading || renoProgressesLoading || loading) return <Loading />;
     if (ordersError) return <div>Error fetching orders: {ordersError}</div>;
     if (formsError) return <div>Error fetching orders: {ordersError}</div>;
     if (userError) return <div>{userError}</div>;
