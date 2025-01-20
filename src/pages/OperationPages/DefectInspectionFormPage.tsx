@@ -945,6 +945,9 @@ function DefectInspectionFormPage() {
             return;
         }
 
+        console.log(event.target.files[0]);
+        
+
         try {
             let updatedFormData = {
                 area: areaKey,
