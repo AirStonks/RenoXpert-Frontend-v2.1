@@ -830,7 +830,7 @@ function OrderOverview() {
             </div>
 
 
-            {orderDetail.status === 'pending' ?
+            {orderDetail.status === 'released' ?
                 <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2">
                     <button
                         className="btn btn-lg btn-primary rounded-3xl shadow-lg"
