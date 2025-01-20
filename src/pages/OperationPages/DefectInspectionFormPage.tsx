@@ -5,6 +5,7 @@ import { Slide, toast } from 'react-toastify';
 import { fetchProperties, fetchRenoProgressDetail, liveUpdateDIForm, removeDIFormAttachment, submitDIForm } from '../../services/operationApi';
 import Loading from '../../components/Loading';
 import { useNavigate } from 'react-router-dom';
+import imageCompression from 'browser-image-compression';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -945,15 +946,23 @@ function DefectInspectionFormPage() {
             return;
         }
 
-        console.log(event.target.files[0]);
-        
 
         try {
+            const options = {
+                maxSizeMB: 2, // Max file size (in MB)
+                maxWidthOrHeight: 800, // Max image width/height
+                useWebWorker: true, // Use a web worker to compress the image in the background
+            };
+            
+            
+            // Compress the image using browser-image-compression
+            const compressedFile = await imageCompression(event.target.files[0], options);
+
             let updatedFormData = {
                 area: areaKey,
                 sub_area: null,
                 question: questionKey,
-                attachment: event.target.files[0],
+                attachment: compressedFile,
             }
 
             if (dynamicKey) {
