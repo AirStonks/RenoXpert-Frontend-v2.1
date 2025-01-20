@@ -1,11 +1,47 @@
 /** @type {import('tailwindcss').Config} */
+import plugin from './src/metronic/core/plugins/plugin'
+import theme from './src/metronic/core/plugins/components/theme'
+import breakpoints from './src/metronic/core/plugins/components/breakpoints'
+import typography from './src/metronic/core/plugins/components/typography'
+import menu from './src/metronic/core/plugins/components/menu'
+import dropdown from './src/metronic/core/plugins/components/dropdown'
+import accordion from './src/metronic/core/plugins/components/accordion'
+import input from './src/metronic/core/plugins/components/input'
+import inputGroup from './src/metronic/core/plugins/components/input-group'
+import select from './src/metronic/core/plugins/components/select'
+import textarea from './src/metronic/core/plugins/components/textarea'
+import fileInput from './src/metronic/core/plugins/components/file-input'
+import switchComponent from './src/metronic/core/plugins/components/switch'
+import checkbox from './src/metronic/core/plugins/components/checkbox'
+import radio from './src/metronic/core/plugins/components/radio'
+import range from './src/metronic/core/plugins/components/range'
+import container from './src/metronic/core/plugins/components/container'
+import imageInput from './src/metronic/core/plugins/components/image-input'
+import modal from './src/metronic/core/plugins/components/modal'
+import drawer from './src/metronic/core/plugins/components/drawer'
+import tooltip from './src/metronic/core/plugins/components/tooltip'
+import popover from './src/metronic/core/plugins/components/popover'
+import btn from './src/metronic/core/plugins/components/btn'
+import btnGroup from './src/metronic/core/plugins/components/btn-group'
+import tabs from './src/metronic/core/plugins/components/tabs'
+import pagination from './src/metronic/core/plugins/components/pagination'
+import card from './src/metronic/core/plugins/components/card'
+import table from './src/metronic/core/plugins/components/table'
+import badge from './src/metronic/core/plugins/components/badge'
+import rating from './src/metronic/core/plugins/components/rating'
+import scrollable from './src/metronic/core/plugins/components/scrollable'
+import progress from './src/metronic/core/plugins/components/progress'
+import apexcharts from './src/metronic/core/plugins/components/apexcharts'
+import leaflet from './src/metronic/core/plugins/components/leaflet'
+
+
 export default {
-  content: [
-    "./index.html",
-	'./src/components/**/*.{ts,js}',
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  safelist: [
+	content: [
+		"./index.html",
+		'./src/components/**/*.{ts,js}',
+		"./src/**/*.{js,ts,jsx,tsx}",
+	],
+	safelist: [
 		'demo1',
 		'hidden',
 		'ki-filled',
@@ -45,7 +81,7 @@ export default {
 						}
 					},
 					contextual: {
-						light: { 
+						light: {
 							brand: {
 								default: '#FF6F1E',
 								active: '#F15700',
@@ -309,37 +345,37 @@ export default {
 				],
 				'3xs': [
 					'0.625rem',									// 10px
-					{						
+					{
 						lineHeight: '0.75rem' 		// 12px
 					}
 				],
 				'2xs': [
 					'0.6875rem',								// 11px
-					{						
+					{
 						lineHeight: '0.75rem', 		// 12px
 					}
 				],
 				'2sm': [
 					'0.8125rem',								// 13px
-					{						
+					{
 						lineHeight: '1.125rem' 		// 18px
 					}
 				],
 				'md': [
 					'0.9375rem',								// 15px
-					{						
+					{
 						lineHeight: '1.375rem' 		// 22px
 					}
 				],
 				'1.5xl': [
 					'1.375rem',									// 22px
-					{						
+					{
 						lineHeight: '1.8125rem' 	// 29px
 					}
 				],
 				'2.5xl': [
 					'1.625rem',									// 26px
-					{						
+					{
 						lineHeight: '2.125rem' 		// 34px
 					}
 				]
@@ -559,7 +595,7 @@ export default {
 						width: '2.375rem'
 					},
 				},
-				card: {					
+				card: {
 					px: theme('spacing')['7.5'],
 					py: {
 						header: theme('spacing.3'),
@@ -599,40 +635,40 @@ export default {
 		})
 	},
 	plugins: [
-		require('./src/metronic/core/plugins/plugin'),
-		require('./src/metronic/core/plugins/components/theme'),
-		require('./src/metronic/core/plugins/components/breakpoints'),
-		require('./src/metronic/core/plugins/components/typography'),
-		require('./src/metronic/core/plugins/components/menu'),
-		require('./src/metronic/core/plugins/components/dropdown'),
-		require('./src/metronic/core/plugins/components/accordion'),
-		require('./src/metronic/core/plugins/components/input'),
-		require('./src/metronic/core/plugins/components/input-group'),
-		require('./src/metronic/core/plugins/components/select'),
-		require('./src/metronic/core/plugins/components/textarea'),
-		require('./src/metronic/core/plugins/components/file-input'),
-		require('./src/metronic/core/plugins/components/switch'),
-		require('./src/metronic/core/plugins/components/checkbox'),
-		require('./src/metronic/core/plugins/components/radio'),
-		require('./src/metronic/core/plugins/components/range'),
-		require('./src/metronic/core/plugins/components/container'),
-		require('./src/metronic/core/plugins/components/image-input'),
-		require('./src/metronic/core/plugins/components/modal'),
-		require('./src/metronic/core/plugins/components/drawer'),
-		require('./src/metronic/core/plugins/components/tooltip'),
-		require('./src/metronic/core/plugins/components/popover'),
-		require('./src/metronic/core/plugins/components/btn'),
-		require('./src/metronic/core/plugins/components/btn-group'),
-		require('./src/metronic/core/plugins/components/tabs'),
-		require('./src/metronic/core/plugins/components/pagination'),
-		require('./src/metronic/core/plugins/components/card'),
-		require('./src/metronic/core/plugins/components/table'),
-		require('./src/metronic/core/plugins/components/badge'),
-		require('./src/metronic/core/plugins/components/rating'),
-		require('./src/metronic/core/plugins/components/scrollable'),
-		require('./src/metronic/core/plugins/components/progress'),
-		require('./src/metronic/core/plugins/components/apexcharts'),
-		require('./src/metronic/core/plugins/components/leaflet')
+		plugin,
+		theme,
+		breakpoints,
+		typography,
+		menu,
+		dropdown,
+		accordion,
+		input,
+		inputGroup,
+		select,
+		textarea,
+		fileInput,
+		switchComponent,
+		checkbox,
+		radio,
+		range,
+		container,
+		imageInput,
+		modal,
+		drawer,
+		tooltip,
+		popover,
+		btn,
+		btnGroup,
+		tabs,
+		pagination,
+		card,
+		table,
+		badge,
+		rating,
+		scrollable,
+		progress,
+		apexcharts,
+		leaflet
 	]
 }
 
