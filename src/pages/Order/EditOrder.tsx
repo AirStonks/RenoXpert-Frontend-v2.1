@@ -44,6 +44,7 @@ function EditOrder() {
         propertyId: '',
         quotationId: '',
         totalAmount: 0,
+        completion_day: 0,
         block: '',
         floor: '',
         unitNo: '',
@@ -95,6 +96,7 @@ function EditOrder() {
                     status: orderDetail.status || '',
                     bedroom_count: orderDetail.bedroom_count || 1,
                     bathroom_count: orderDetail.bathroom_count || 1,
+                    completion_day: orderDetail.completion_day || 1,
                     bonus: {
                         description: orderDetail.latest_quotation.bonus?.description,
                         value: orderDetail.latest_quotation.bonus?.value.toString(),
@@ -112,6 +114,7 @@ function EditOrder() {
                     status: orderDetail.status || '',
                     bedroom_count: orderDetail.bedroom_count || 1,
                     bathroom_count: orderDetail.bathroom_count || 1,
+                    completion_day: orderDetail.completion_day || 1,
                     bonus: {
                         description: orderDetail.latest_quotation.bonus?.description,
                         value: orderDetail.latest_quotation.bonus?.value.toString(),
@@ -443,6 +446,7 @@ function EditOrder() {
                 bedroom_count: formData.bedroom_count,
                 bathroom_count: formData.bathroom_count,
                 description: '',
+                completion_day: formData.completion_day,
                 bonus: formData.bonus,
                 metadata: JSON.parse(localStorage.getItem('include_packages')),
             }
@@ -696,61 +700,75 @@ function EditOrder() {
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Quotation</h2>
 
                             <div className="flex gap-8">
-                                {/* Quotation */}
-                                <div className="flex flex-col flex-1 gap-2">
-                                    <span className="text-base font-semibold text-gray-900">
-                                        3. Select a Quotation
-                                    </span>
-                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
-                                        <button
-                                            className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
-                                            onClick={handleOpenQuotationDropdown}
-                                        >
-                                            <span>Quotation</span>
-                                            <i className="ki-filled ki-down"></i>
-                                        </button>
-                                        <div className="dropdown-content w-full max-w-xl">
-                                            <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                                <label className="input input-sm">
-                                                    <i className="ki-filled ki-magnifier"></i>
-                                                    <input
-                                                        ref={inputQuotationRef}
-                                                        placeholder="Search quotation"
-                                                        type="text"
-                                                        value={searchQuotationTerm}
-                                                        onChange={handleSearchQuotation}
-                                                    />
-                                                </label>
-                                            </div>
-                                            <div className="menu menu-default flex flex-col">
-                                                {quotations.map((quotation, index) => (
-                                                    <div className="menu-item" key={index} data-id={quotation.id}>
-                                                        <button
-                                                            className="menu-link flex justify-between items-center"
-                                                            onClick={() => handleSelectQuotation(quotation)}
-                                                        >
-                                                            <span className="menu-title">{quotation.name}</span>
-                                                            {!quotation.is_ready && (
-                                                                <i
-                                                                    className="ki-outline ki-cross-circle text-danger"
-                                                                    data-tooltip="#draft_tooltip"
-                                                                >
-                                                                </i>
-                                                            )}
-                                                        </button>
-                                                    </div>
-                                                ))}
+                                {/* Quotation and Completion Day */}
+                                <div className="flex flex-col flex-1 gap-8">
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-base font-semibold text-gray-900">
+                                            3. Select a Quotation
+                                        </span>
+                                        <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
+                                            <button
+                                                className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
+                                                onClick={handleOpenQuotationDropdown}
+                                            >
+                                                <span>Quotation</span>
+                                                <i className="ki-filled ki-down"></i>
+                                            </button>
+                                            <div className="dropdown-content w-full max-w-xl">
+                                                <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                                    <label className="input input-sm">
+                                                        <i className="ki-filled ki-magnifier"></i>
+                                                        <input
+                                                            ref={inputQuotationRef}
+                                                            placeholder="Search quotation"
+                                                            type="text"
+                                                            value={searchQuotationTerm}
+                                                            onChange={handleSearchQuotation}
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <div className="menu menu-default flex flex-col">
+                                                    {quotations.map((quotation, index) => (
+                                                        <div className="menu-item" key={index} data-id={quotation.id}>
+                                                            <button
+                                                                className="menu-link flex justify-between items-center"
+                                                                onClick={() => handleSelectQuotation(quotation)}
+                                                            >
+                                                                <span className="menu-title">{quotation.name}</span>
+                                                                {!quotation.is_ready && (
+                                                                    <i
+                                                                        className="ki-outline ki-cross-circle text-danger"
+                                                                        data-tooltip="#draft_tooltip"
+                                                                    >
+                                                                    </i>
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
+                                        <span className='text-md font-semibold text-gray-900'>
+                                            Or <button
+                                                className='link'
+                                                onClick={handleCustomQuotation}
+                                            >
+                                                create a custom quotation
+                                            </button>
+                                        </span>
                                     </div>
-                                    <span className='text-md font-semibold text-gray-900'>
-                                        Or <button
-                                            className='link'
-                                            onClick={handleCustomQuotation}
-                                        >
-                                            create a custom quotation
-                                        </button>
-                                    </span>
+
+                                    <div className="flex flex-col flex-1 gap-2">
+                                        <InputFieldGroup
+                                            fieldTitle="Completion Day(s)"
+                                            description="Set the period for this renovation work completion day(s) (Working days)"
+                                            type="number"
+                                            placeholder=''
+                                            name="completion_day"
+                                            value={formData.completion_day}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* Bonus */}

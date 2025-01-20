@@ -158,6 +158,7 @@ export interface Order {
     unit_no?: string,
     total_amount?: number,
     description?: string,
+    completion_day?: number,
     bonus?: {
         description?: string,
         value?: number | string,

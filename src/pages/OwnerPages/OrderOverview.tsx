@@ -7,6 +7,22 @@ import KTComponent from '../../metronic/core';
 import useFetchOwnerOrder from '../../hook/useFetchOwnerOrder';
 import { Link } from 'react-router-dom';
 
+const convertToWords = (num: number) => {
+    const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+    const teens = ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+    const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+
+    if (num < 10) {
+        return ones[num];
+    } else if (num >= 10 && num < 20) {
+        return teens[num - 10];
+    } else {
+        const tenPart = Math.floor(num / 10);
+        const onePart = num % 10;
+        return tens[tenPart] + (onePart > 0 ? "-" + ones[onePart] : "");
+    }
+}
+
 function OrderOverview() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -163,7 +179,7 @@ function OrderOverview() {
                         <span>(b) the Owner has made the second Fifty (50%) per cent as stated in the <strong>First Schedule</strong> as deposit;</span>
                         <span>the commencement date for renovation work shall be after <strong>Seven (7) working days</strong> from the date when the <strong>clause 2.2(a) and (b)</strong> have been fulfilled following the sequence of <strong>clause 2.2(a) and (b)</strong>. Failure to comply with the above-mentioned conditions, the Owner shall unconditionally allow the Contractor to extend the commencement and completion date without any interest.</span>
                     </div>
-                    <span>2.3 The period for this renovation work shall take <strong>Sixty (60) working days</strong> or any approved extension period by all parties (“the said Contract Time”). Time wherever mentioned shall be of the essence of this Agreement.</span>
+                    <span>2.3 The period for this renovation work shall take <strong>{convertToWords(orderDetail.completion_day).toUpperCase()} {orderDetail.completion_day} working days</strong> or any approved extension period by all parties (“the said Contract Time”). Time wherever mentioned shall be of the essence of this Agreement.</span>
                     <span>2.4 For the avoidance of doubt, renovation Phase 1 includes wiring, painting, and installation of smart devices while renovation Phase 2 includes the supply and installation of furniture and loose items.</span>
                 </div>
                 <div className="flex flex-col gap-3">
