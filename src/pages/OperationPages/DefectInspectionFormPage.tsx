@@ -940,6 +940,11 @@ function DefectInspectionFormPage() {
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, areaKey: string, questionKey: string, dynamicKey?: string) => {
         setAttanhmentErr(null); // Reset any previous errors
 
+        const fileInput = event.target;
+        if (!fileInput.files || fileInput.files.length === 0) {
+            return;
+        }
+
         try {
             let updatedFormData = {
                 area: areaKey,
