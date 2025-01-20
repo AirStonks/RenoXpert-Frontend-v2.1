@@ -950,7 +950,7 @@ function DefectInspectionFormPage() {
         try {
             const options = {
                 maxSizeMB: 2, // Max file size (in MB)
-                maxWidthOrHeight: 800, // Max image width/height
+                maxWidthOrHeight: 1920, // Max image width/height
                 useWebWorker: true, // Use a web worker to compress the image in the background
             };
             
@@ -958,11 +958,17 @@ function DefectInspectionFormPage() {
             // Compress the image using browser-image-compression
             const compressedFile = await imageCompression(event.target.files[0], options);
 
+            const compressedImage = new File(
+                [compressedFile], 
+                event.target.files[0].name, 
+                { type: event.target.files[0].type }
+            );
+
             let updatedFormData = {
                 area: areaKey,
                 sub_area: null,
                 question: questionKey,
-                attachment: compressedFile,
+                attachment: compressedImage,
             }
 
             if (dynamicKey) {
