@@ -9,6 +9,12 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 
+const formatDate = (dateStr: string) => {
+    const [day, month, year] = dateStr.split("/");
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${day} ${monthNames[parseInt(month) - 1]} ${year}`;
+};
+
 function PreviousOrderDetail() {
     const navigate = useNavigate();
     const { id, verId } = useParams<{ id: string, verId: string }>();
@@ -172,11 +178,7 @@ function PreviousOrderDetail() {
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated Date:</td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {new Date(selectedQuotation.created_at).toLocaleString('en-GB', {
-                                                day: '2-digit',
-                                                month: 'long',
-                                                year: 'numeric'
-                                            })}
+                                            {formatDate(selectedQuotation.created_at)}
                                         </td>
                                     </tr>
                                     <tr>

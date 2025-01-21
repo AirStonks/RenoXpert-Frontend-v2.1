@@ -165,28 +165,6 @@ function DefectInspectionReport() {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Time:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {diForm?.created_at
-                                                ? new Date(diForm?.created_at).toLocaleTimeString('en-GB', {
-                                                    hour: 'numeric',
-                                                    minute: 'numeric',
-                                                    hour12: true  // This will use a 24-hour format. Set to true for 12-hour format.
-                                                })
-                                                : 'N/A'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Submitter:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {diForm?.created_by?.name || 'N/A'}
-                                        </td>
-                                    </tr>
-                                    <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Form Link:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <button
@@ -304,11 +282,12 @@ function DefectInspectionReport() {
                                                             </div>
                                                             <div className="card-body text-sm px-4">
                                                                 <div className="w-full">
-                                                                    <div className="grid grid-cols-8 gap-4">
+                                                                    <div className="grid grid-cols-12 gap-4">
                                                                         {/* Header Row */}
                                                                         <div className="col-start-6 col-span-1 text-xs text-center text-gray-900 font-semibold">Has Defect</div>
                                                                         <div className="col-start-7 col-span-1 text-xs text-center text-gray-900 font-semibold">No Defect / YES</div>
                                                                         <div className="col-start-8 col-span-1 text-xs text-center text-gray-900 font-semibold">No Available</div>
+                                                                        <div className="col-start-9 col-span-4 text-xs text-center text-gray-900 font-semibold">Attachments</div>
 
                                                                         {/* Inspection Item Component */}
                                                                         {[
@@ -344,65 +323,50 @@ function DefectInspectionReport() {
                                                                                     }
                                                                                 </div>
 
+                                                                                <div className="col-start-9 col-span-4 ">
+                                                                                    {
+                                                                                        diForm?.area?.foyer ? (
+                                                                                            (() => {
+                                                                                                // You can use 'attachments' here as needed, for example:
+                                                                                                return (
+                                                                                                    <div className="flex flex-wrap gap-4 border-gray-200">
+                                                                                                        {diForm?.area?.foyer?.[path]?.attachments?.map((attachment, index) => (
+                                                                                                            <div className="flex gap-4 relative" key={index}>
+                                                                                                                <a
+                                                                                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                    href={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                    target="_blank"
+                                                                                                                    rel="noopener noreferrer"
+                                                                                                                >
+                                                                                                                    <img
+                                                                                                                        src={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                        alt={attachment.original_name}
+                                                                                                                        className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                    />
+                                                                                                                </a>
+                                                                                                            </div>
+                                                                                                        ))}
+                                                                                                    </div>
+                                                                                                );
+                                                                                            })()
+                                                                                        ) : null
+                                                                                    }
+                                                                                </div>
+
                                                                                 <div className="col-span-8">
                                                                                     <div className="flex flex-col w-full">
                                                                                         <span className="text-slate-900 mb-2 font-medium">Remark</span>
                                                                                         <span className="textarea text-slate-900 mb-2 font-medium">{diForm?.area?.foyer?.[path]?.remark}</span>
                                                                                     </div>
                                                                                 </div>
+
+                                                                                <div className="col-span-12">
+                                                                                    <hr />
+                                                                                </div>
                                                                             </React.Fragment>
                                                                         ))}
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex-[1]">
-                                                        <div className="card rounded-md">
-                                                            <div className="card-header">
-                                                                <div className="card-title">
-                                                                    Attachments
-                                                                </div>
-                                                            </div>
-                                                            <div className="card-body">
-                                                                {
-                                                                    diForm?.area?.foyer ? (
-                                                                        (() => {
-                                                                            // Extract attachments
-                                                                            const onlyAttachments = Object.values(diForm?.area?.foyer || {}).reduce((acc, section) => {
-                                                                                if (section?.attachments) {
-                                                                                    Object.entries(section.attachments).forEach(([key, attachment]) => {
-                                                                                        acc[key] = attachment;
-                                                                                    });
-                                                                                }
-                                                                                return acc;
-                                                                            }, {});
-
-                                                                            // You can use 'attachments' here as needed, for example:
-                                                                            return (
-                                                                                <div className="flex flex-wrap justify-center gap-4">
-                                                                                    {Object.values(onlyAttachments).map((attachment, index) => (
-                                                                                        <div className="flex gap-4 items-center relative" key={index}>
-                                                                                            <a
-                                                                                                className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
-                                                                                                href={AWS_S3_URL + (attachment.file_url)}
-                                                                                                target="_blank"
-                                                                                                rel="noopener noreferrer"
-                                                                                            >
-                                                                                                <img
-                                                                                                    src={AWS_S3_URL + (attachment.file_url)}
-                                                                                                    alt={attachment.original_name}
-                                                                                                    className="w-32 h-32 object-cover border border-gray-300 rounded"
-                                                                                                />
-                                                                                            </a>
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            );
-                                                                        })()
-                                                                    ) : null
-                                                                }
                                                             </div>
                                                         </div>
                                                     </div>
@@ -417,65 +381,103 @@ function DefectInspectionReport() {
                                                             </div>
                                                             <div className="card-body text-sm px-4">
                                                                 <div className="w-full">
-                                                                    <div className="grid grid-cols-8 gap-4">
-                                                                        {/* Header Row */}
-                                                                        <div className="col-start-6 col-span-1 text-xs text-center text-gray-900 font-semibold">Has Defect</div>
-                                                                        <div className="col-start-7 col-span-1 text-xs text-center text-gray-900 font-semibold">No Defect / YES</div>
-                                                                        <div className="col-start-8 col-span-1 text-xs text-center text-gray-900 font-semibold">No Available</div>
+                                                                    <div className="flex">
+                                                                        <div className="grid grid-cols-12 gap-4">
+                                                                            {/* Header Row */}
+                                                                            <div className="col-start-6 col-span-1 text-xs text-center text-gray-900 font-semibold">Has Defect</div>
+                                                                            <div className="col-start-7 col-span-1 text-xs text-center text-gray-900 font-semibold">No Defect / YES</div>
+                                                                            <div className="col-start-8 col-span-1 text-xs text-center text-gray-900 font-semibold">No Available</div>
+                                                                            <div className="col-start-9 col-span-4 text-xs text-center text-gray-900 font-semibold">Attachments</div>
 
-                                                                        {/* Inspection Item Component */}
-                                                                        {[
-                                                                            { label: "2.1 Floor & skirting", path: 'q1' },
-                                                                            { label: "2.2 Wall & ceiling", path: 'q2' },
-                                                                            { label: "2.3 Electrical & wiring (plug point, switches, etc)", path: 'q3' },
-                                                                            { label: "2.4 Piping & water flow (Kitchen sink, etc)", path: 'q4' },
-                                                                            { label: "2.5 Kitchen cabinet (Kitchen top, drawer, cabinet door, accessories, etc)", path: 'q5' },
-                                                                            { label: "2.6 Electrical appliances (Fridge, microwave, oven, hood & hob, etc)", path: 'q6' },
-                                                                            { label: "2.7 Door (Frame, leaf, handle, accessories, etc)", path: 'q7' },
-                                                                            { label: "2.8 Window (Frame, panel, handle, accessories, etc)", path: 'q8' },
-                                                                        ].map(({ label, path }) => (
-                                                                            <React.Fragment key={path}>
-                                                                                {/* Label */}
-                                                                                <div className="col-span-5 flex items-center text-gray-900 font-semibold">
-                                                                                    {label}
-                                                                                </div>
-
-                                                                                {/* Has Defect */}
-                                                                                <div className="col-start-6 col-span-1 flex justify-center items-center">
-                                                                                    {diForm?.area?.kitchen?.[path]?.value === 'has-defect' &&
-                                                                                        <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
-                                                                                    }
-                                                                                </div>
-
-                                                                                {/* No Defect */}
-                                                                                <div className="col-start-7 col-span-1 flex justify-center items-center">
-                                                                                    {diForm?.area?.kitchen?.[path]?.value === 'no-defect' &&
-                                                                                        <i className="ki-solid ki-check-circle text-2xl text-success"></i>
-                                                                                    }
-                                                                                </div>
-
-                                                                                {/* N/A */}
-                                                                                <div className="col-start-8 col-span-1 flex justify-center items-center">
-                                                                                    {diForm?.area?.kitchen?.[path]?.value === 'not-available' &&
-                                                                                        <i className="ki-solid ki-check-circle text-2xl text-success"></i>
-                                                                                    }
-                                                                                </div>
-
-                                                                                <div className="col-span-8">
-                                                                                    <div className="flex flex-col w-full">
-                                                                                        <span className="text-slate-900 mb-2 font-medium">Remark</span>
-                                                                                        <span className="textarea text-slate-900 mb-2 font-medium">{diForm?.area?.kitchen?.[path]?.remark}</span>
+                                                                            {/* Inspection Item Component */}
+                                                                            {[
+                                                                                { label: "2.1 Floor & skirting", path: 'q1' },
+                                                                                { label: "2.2 Wall & ceiling", path: 'q2' },
+                                                                                { label: "2.3 Electrical & wiring (plug point, switches, etc)", path: 'q3' },
+                                                                                { label: "2.4 Piping & water flow (Kitchen sink, etc)", path: 'q4' },
+                                                                                { label: "2.5 Kitchen cabinet (Kitchen top, drawer, cabinet door, accessories, etc)", path: 'q5' },
+                                                                                { label: "2.6 Electrical appliances (Fridge, microwave, oven, hood & hob, etc)", path: 'q6' },
+                                                                                { label: "2.7 Door (Frame, leaf, handle, accessories, etc)", path: 'q7' },
+                                                                                { label: "2.8 Window (Frame, panel, handle, accessories, etc)", path: 'q8' },
+                                                                            ].map(({ label, path }) => (
+                                                                                <React.Fragment key={path}>
+                                                                                    {/* Label */}
+                                                                                    <div className="col-span-5 flex items-center text-gray-900 font-semibold">
+                                                                                        {label}
                                                                                     </div>
-                                                                                </div>
-                                                                            </React.Fragment>
-                                                                        ))}
+
+                                                                                    {/* Has Defect */}
+                                                                                    <div className="col-start-6 col-span-1 flex justify-center items-center">
+                                                                                        {diForm?.area?.kitchen?.[path]?.value === 'has-defect' &&
+                                                                                            <i className="ki-solid ki-check-circle text-2xl text-danger"></i>
+                                                                                        }
+                                                                                    </div>
+
+                                                                                    {/* No Defect */}
+                                                                                    <div className="col-start-7 col-span-1 flex justify-center items-center">
+                                                                                        {diForm?.area?.kitchen?.[path]?.value === 'no-defect' &&
+                                                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                                        }
+                                                                                    </div>
+
+                                                                                    {/* N/A */}
+                                                                                    <div className="col-start-8 col-span-1 flex justify-center items-center">
+                                                                                        {diForm?.area?.kitchen?.[path]?.value === 'not-available' &&
+                                                                                            <i className="ki-solid ki-check-circle text-2xl text-success"></i>
+                                                                                        }
+                                                                                    </div>
+
+                                                                                    <div className="col-start-9 col-span-4 ">
+                                                                                        {
+
+                                                                                            diForm?.area?.kitchen ? (
+                                                                                                (() => {
+                                                                                                    // You can use 'attachments' here as needed, for example:
+                                                                                                    return (
+                                                                                                        <div className="flex flex-wrap gap-4 border-gray-200">
+                                                                                                            {diForm?.area?.kitchen?.[path]?.attachments?.map((attachment, index) => (
+                                                                                                                <div className="flex gap-4 relative" key={index}>
+                                                                                                                    <a
+                                                                                                                        className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                        href={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                        target="_blank"
+                                                                                                                        rel="noopener noreferrer"
+                                                                                                                    >
+                                                                                                                        <img
+                                                                                                                            src={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                            alt={attachment.original_name}
+                                                                                                                            className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                        />
+                                                                                                                    </a>
+                                                                                                                </div>
+                                                                                                            ))}
+                                                                                                        </div>
+                                                                                                    );
+                                                                                                })()
+                                                                                            ) : null
+                                                                                        }
+                                                                                    </div>
+
+                                                                                    <div className="col-span-8">
+                                                                                        <div className="flex flex-col w-full">
+                                                                                            <span className="text-slate-900 mb-2 font-medium">Remark</span>
+                                                                                            <span className="textarea text-slate-900 mb-2 font-medium">{diForm?.area?.kitchen?.[path]?.remark}</span>
+                                                                                        </div>
+                                                                                    </div>
+
+                                                                                    <div className="col-span-12">
+                                                                                        <hr />
+                                                                                    </div>
+                                                                                </React.Fragment>
+                                                                            ))}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex-[1]">
+                                                    {/* <div className="flex-[1]">
                                                         <div className="card rounded-md">
                                                             <div className="card-header">
                                                                 <div className="card-title">
@@ -487,20 +489,16 @@ function DefectInspectionReport() {
                                                                     diForm?.area?.kitchen ? (
                                                                         (() => {
                                                                             // Extract attachments
-                                                                            const onlyAttachments = Object.values(diForm?.area?.kitchen || {}).reduce((acc, section) => {
-                                                                                if (section?.attachments) {
-                                                                                    Object.entries(section.attachments).forEach(([key, attachment]) => {
-                                                                                        acc[key] = attachment;
-                                                                                    });
-                                                                                }
-                                                                                return acc;
-                                                                            }, {});
+                                                                            const onlyAttachments = Object.values(diForm?.area?.kitchen)
+                                                                                .filter(question => question.attachments)
+                                                                                .map(question => question.attachments)
+                                                                                .flat();
 
                                                                             // You can use 'attachments' here as needed, for example:
                                                                             return (
                                                                                 <div className="flex flex-wrap justify-center gap-4">
                                                                                     {Object.values(onlyAttachments).map((attachment, index) => (
-                                                                                        <div className="flex gap-4 items-center relative" key={index}>
+                                                                                        <div className="flex gap-4 relative" key={index}>
                                                                                             <a
                                                                                                 className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
                                                                                                 href={AWS_S3_URL + (attachment.file_url)}
@@ -522,7 +520,7 @@ function DefectInspectionReport() {
                                                                 }
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </div> */}
                                                 </div>
                                             </div>
                                             <div className="hidden transition-opacity duration-700" id="tab_3">
@@ -534,11 +532,12 @@ function DefectInspectionReport() {
                                                             </div>
                                                             <div className="card-body text-sm px-4">
                                                                 <div className="w-full">
-                                                                    <div className="grid grid-cols-8 gap-4">
+                                                                    <div className="grid grid-cols-12 gap-4">
                                                                         {/* Header Row */}
                                                                         <div className="col-start-6 col-span-1 text-xs text-center text-gray-900 font-semibold">Has Defect</div>
                                                                         <div className="col-start-7 col-span-1 text-xs text-center text-gray-900 font-semibold">No Defect / YES</div>
                                                                         <div className="col-start-8 col-span-1 text-xs text-center text-gray-900 font-semibold">No Available</div>
+                                                                        <div className="col-start-9 col-span-4 text-xs text-center text-gray-900 font-semibold">Attachments</div>
 
                                                                         {/* Inspection Item Component */}
                                                                         {[
@@ -576,65 +575,51 @@ function DefectInspectionReport() {
                                                                                     }
                                                                                 </div>
 
+                                                                                <div className="col-start-9 col-span-4 ">
+                                                                                    {
+
+                                                                                        diForm?.area?.yard ? (
+                                                                                            (() => {
+                                                                                                // You can use 'attachments' here as needed, for example:
+                                                                                                return (
+                                                                                                    <div className="flex flex-wrap gap-4 border-gray-200">
+                                                                                                        {diForm?.area?.yard?.[path]?.attachments?.map((attachment, index) => (
+                                                                                                            <div className="flex gap-4 relative" key={index}>
+                                                                                                                <a
+                                                                                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                    href={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                    target="_blank"
+                                                                                                                    rel="noopener noreferrer"
+                                                                                                                >
+                                                                                                                    <img
+                                                                                                                        src={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                        alt={attachment.original_name}
+                                                                                                                        className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                    />
+                                                                                                                </a>
+                                                                                                            </div>
+                                                                                                        ))}
+                                                                                                    </div>
+                                                                                                );
+                                                                                            })()
+                                                                                        ) : null
+                                                                                    }
+                                                                                </div>
+
                                                                                 <div className="col-span-8">
                                                                                     <div className="flex flex-col w-full">
                                                                                         <span className="text-slate-900 mb-2 font-medium">Remark</span>
                                                                                         <span className="textarea text-slate-900 mb-2 font-medium">{diForm?.area?.yard?.[path]?.remark}</span>
                                                                                     </div>
                                                                                 </div>
+
+                                                                                <div className="col-span-12">
+                                                                                    <hr />
+                                                                                </div>
                                                                             </React.Fragment>
                                                                         ))}
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex-[1]">
-                                                        <div className="card rounded-md">
-                                                            <div className="card-header">
-                                                                <div className="card-title">
-                                                                    Attachments
-                                                                </div>
-                                                            </div>
-                                                            <div className="card-body">
-                                                                {
-                                                                    diForm?.area?.kitchen ? (
-                                                                        (() => {
-                                                                            // Extract attachments
-                                                                            const onlyAttachments = Object.values(diForm?.area?.yard || {}).reduce((acc, section) => {
-                                                                                if (section?.attachments) {
-                                                                                    Object.entries(section.attachments).forEach(([key, attachment]) => {
-                                                                                        acc[key] = attachment;
-                                                                                    });
-                                                                                }
-                                                                                return acc;
-                                                                            }, {});
-
-                                                                            // You can use 'attachments' here as needed, for example:
-                                                                            return (
-                                                                                <div className="flex flex-wrap justify-center gap-4">
-                                                                                    {Object.values(onlyAttachments).map((attachment, index) => (
-                                                                                        <div className="flex gap-4 items-center relative" key={index}>
-                                                                                            <a
-                                                                                                className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
-                                                                                                href={AWS_S3_URL + (attachment.file_url)}
-                                                                                                target="_blank"
-                                                                                                rel="noopener noreferrer"
-                                                                                            >
-                                                                                                <img
-                                                                                                    src={AWS_S3_URL + (attachment.file_url)}
-                                                                                                    alt={attachment.original_name}
-                                                                                                    className="w-32 h-32 object-cover border border-gray-300 rounded"
-                                                                                                />
-                                                                                            </a>
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            );
-                                                                        })()
-                                                                    ) : null
-                                                                }
                                                             </div>
                                                         </div>
                                                     </div>
@@ -649,11 +634,12 @@ function DefectInspectionReport() {
                                                             </div>
                                                             <div className="card-body text-sm px-4">
                                                                 <div className="w-full">
-                                                                    <div className="grid grid-cols-8 gap-4">
+                                                                    <div className="grid grid-cols-12 gap-4">
                                                                         {/* Header Row */}
                                                                         <div className="col-start-6 col-span-1 text-xs text-center text-gray-900 font-semibold">Has Defect</div>
                                                                         <div className="col-start-7 col-span-1 text-xs text-center text-gray-900 font-semibold">No Defect / YES</div>
                                                                         <div className="col-start-8 col-span-1 text-xs text-center text-gray-900 font-semibold">No Available</div>
+                                                                        <div className="col-start-9 col-span-4 text-xs text-center text-gray-900 font-semibold">Attachments</div>
 
                                                                         {/* Inspection Item Component */}
                                                                         {[
@@ -695,65 +681,51 @@ function DefectInspectionReport() {
                                                                                     }
                                                                                 </div>
 
+                                                                                <div className="col-start-9 col-span-4 ">
+                                                                                    {
+
+                                                                                        diForm?.area?.living ? (
+                                                                                            (() => {
+                                                                                                // You can use 'attachments' here as needed, for example:
+                                                                                                return (
+                                                                                                    <div className="flex flex-wrap gap-4 border-gray-200">
+                                                                                                        {diForm?.area?.living?.[path]?.attachments?.map((attachment, index) => (
+                                                                                                            <div className="flex gap-4 relative" key={index}>
+                                                                                                                <a
+                                                                                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                    href={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                    target="_blank"
+                                                                                                                    rel="noopener noreferrer"
+                                                                                                                >
+                                                                                                                    <img
+                                                                                                                        src={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                        alt={attachment.original_name}
+                                                                                                                        className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                    />
+                                                                                                                </a>
+                                                                                                            </div>
+                                                                                                        ))}
+                                                                                                    </div>
+                                                                                                );
+                                                                                            })()
+                                                                                        ) : null
+                                                                                    }
+                                                                                </div>
+
                                                                                 <div className="col-span-8">
                                                                                     <div className="flex flex-col w-full">
                                                                                         <span className="text-slate-900 mb-2 font-medium">Remark</span>
                                                                                         <span className="textarea text-slate-900 mb-2 font-medium">{diForm?.area?.living?.[path]?.remark}</span>
                                                                                     </div>
                                                                                 </div>
+
+                                                                                <div className="col-span-12">
+                                                                                    <hr />
+                                                                                </div>
                                                                             </React.Fragment>
                                                                         ))}
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex-[1]">
-                                                        <div className="card rounded-md">
-                                                            <div className="card-header">
-                                                                <div className="card-title">
-                                                                    Attachments
-                                                                </div>
-                                                            </div>
-                                                            <div className="card-body">
-                                                                {
-                                                                    diForm?.area?.living ? (
-                                                                        (() => {
-                                                                            // Extract attachments
-                                                                            const onlyAttachments = Object.values(diForm?.area?.living || {}).reduce((acc, section) => {
-                                                                                if (section?.attachments) {
-                                                                                    Object.entries(section.attachments).forEach(([key, attachment]) => {
-                                                                                        acc[key] = attachment;
-                                                                                    });
-                                                                                }
-                                                                                return acc;
-                                                                            }, {});
-
-                                                                            // You can use 'attachments' here as needed, for example:
-                                                                            return (
-                                                                                <div className="flex flex-wrap justify-center gap-4">
-                                                                                    {Object.values(onlyAttachments).map((attachment, index) => (
-                                                                                        <div className="flex gap-4 items-center relative" key={index}>
-                                                                                            <a
-                                                                                                className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
-                                                                                                href={AWS_S3_URL + (attachment.file_url)}
-                                                                                                target="_blank"
-                                                                                                rel="noopener noreferrer"
-                                                                                            >
-                                                                                                <img
-                                                                                                    src={AWS_S3_URL + (attachment.file_url)}
-                                                                                                    alt={attachment.original_name}
-                                                                                                    className="w-32 h-32 object-cover border border-gray-300 rounded"
-                                                                                                />
-                                                                                            </a>
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            );
-                                                                        })()
-                                                                    ) : null
-                                                                }
                                                             </div>
                                                         </div>
                                                     </div>
@@ -768,11 +740,12 @@ function DefectInspectionReport() {
                                                             </div>
                                                             <div className="card-body text-sm px-4">
                                                                 <div className="w-full">
-                                                                    <div className="grid grid-cols-8 gap-4">
+                                                                    <div className="grid grid-cols-12 gap-4">
                                                                         {/* Header Row */}
                                                                         <div className="col-start-6 col-span-1 text-xs text-center text-gray-900 font-semibold">Has Defect</div>
                                                                         <div className="col-start-7 col-span-1 text-xs text-center text-gray-900 font-semibold">No Defect / YES</div>
                                                                         <div className="col-start-8 col-span-1 text-xs text-center text-gray-900 font-semibold">No Available</div>
+                                                                        <div className="col-start-9 col-span-4 text-xs text-center text-gray-900 font-semibold">Attachments</div>
 
                                                                         {/* Inspection Item Component */}
                                                                         {[
@@ -808,65 +781,51 @@ function DefectInspectionReport() {
                                                                                     }
                                                                                 </div>
 
+                                                                                <div className="col-start-9 col-span-4 ">
+                                                                                    {
+
+                                                                                        diForm?.area?.balcony ? (
+                                                                                            (() => {
+                                                                                                // You can use 'attachments' here as needed, for example:
+                                                                                                return (
+                                                                                                    <div className="flex flex-wrap gap-4 border-gray-200">
+                                                                                                        {diForm?.area?.balcony?.[path]?.attachments?.map((attachment, index) => (
+                                                                                                            <div className="flex gap-4 relative" key={index}>
+                                                                                                                <a
+                                                                                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                    href={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                    target="_blank"
+                                                                                                                    rel="noopener noreferrer"
+                                                                                                                >
+                                                                                                                    <img
+                                                                                                                        src={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                        alt={attachment.original_name}
+                                                                                                                        className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                    />
+                                                                                                                </a>
+                                                                                                            </div>
+                                                                                                        ))}
+                                                                                                    </div>
+                                                                                                );
+                                                                                            })()
+                                                                                        ) : null
+                                                                                    }
+                                                                                </div>
+
                                                                                 <div className="col-span-8">
                                                                                     <div className="flex flex-col w-full">
                                                                                         <span className="text-slate-900 mb-2 font-medium">Remark</span>
                                                                                         <span className="textarea text-slate-900 mb-2 font-medium">{diForm?.area?.balcony?.[path]?.remark}</span>
                                                                                     </div>
                                                                                 </div>
+
+                                                                                <div className="col-span-12">
+                                                                                    <hr />
+                                                                                </div>
                                                                             </React.Fragment>
                                                                         ))}
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex-[1]">
-                                                        <div className="card rounded-md">
-                                                            <div className="card-header">
-                                                                <div className="card-title">
-                                                                    Attachments
-                                                                </div>
-                                                            </div>
-                                                            <div className="card-body">
-                                                                {
-                                                                    diForm?.area?.balcony ? (
-                                                                        (() => {
-                                                                            // Extract attachments
-                                                                            const onlyAttachments = Object.values(diForm?.area?.balcony || {}).reduce((acc, section) => {
-                                                                                if (section?.attachments) {
-                                                                                    Object.entries(section.attachments).forEach(([key, attachment]) => {
-                                                                                        acc[key] = attachment;
-                                                                                    });
-                                                                                }
-                                                                                return acc;
-                                                                            }, {});
-
-                                                                            // You can use 'attachments' here as needed, for example:
-                                                                            return (
-                                                                                <div className="flex flex-wrap justify-center gap-4">
-                                                                                    {Object.values(onlyAttachments).map((attachment, index) => (
-                                                                                        <div className="flex gap-4 items-center relative" key={index}>
-                                                                                            <a
-                                                                                                className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
-                                                                                                href={AWS_S3_URL + (attachment.file_url)}
-                                                                                                target="_blank"
-                                                                                                rel="noopener noreferrer"
-                                                                                            >
-                                                                                                <img
-                                                                                                    src={AWS_S3_URL + (attachment.file_url)}
-                                                                                                    alt={attachment.original_name}
-                                                                                                    className="w-32 h-32 object-cover border border-gray-300 rounded"
-                                                                                                />
-                                                                                            </a>
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            );
-                                                                        })()
-                                                                    ) : null
-                                                                }
                                                             </div>
                                                         </div>
                                                     </div>
@@ -881,11 +840,12 @@ function DefectInspectionReport() {
                                                             </div>
                                                             <div className="card-body text-sm px-4">
                                                                 <div className="w-full">
-                                                                    <div className="grid grid-cols-8 gap-4">
+                                                                    <div className="grid grid-cols-12 gap-4">
                                                                         {/* Header Row */}
                                                                         <div className="col-start-6 col-span-1 text-xs text-center text-gray-900 font-semibold">Has Defect</div>
                                                                         <div className="col-start-7 col-span-1 text-xs text-center text-gray-900 font-semibold">No Defect / YES</div>
                                                                         <div className="col-start-8 col-span-1 text-xs text-center text-gray-900 font-semibold">No Available</div>
+                                                                        <div className="col-start-9 col-span-4 text-xs text-center text-gray-900 font-semibold">Attachments</div>
 
                                                                         {/* Inspection Item Component */}
                                                                         {[
@@ -921,65 +881,51 @@ function DefectInspectionReport() {
                                                                                     }
                                                                                 </div>
 
+                                                                                <div className="col-start-9 col-span-4 ">
+                                                                                    {
+
+                                                                                        diForm?.area?.hallway ? (
+                                                                                            (() => {
+                                                                                                // You can use 'attachments' here as needed, for example:
+                                                                                                return (
+                                                                                                    <div className="flex flex-wrap gap-4 border-gray-200">
+                                                                                                        {diForm?.area?.hallway?.[path]?.attachments?.map((attachment, index) => (
+                                                                                                            <div className="flex gap-4 relative" key={index}>
+                                                                                                                <a
+                                                                                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                    href={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                    target="_blank"
+                                                                                                                    rel="noopener noreferrer"
+                                                                                                                >
+                                                                                                                    <img
+                                                                                                                        src={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                        alt={attachment.original_name}
+                                                                                                                        className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                    />
+                                                                                                                </a>
+                                                                                                            </div>
+                                                                                                        ))}
+                                                                                                    </div>
+                                                                                                );
+                                                                                            })()
+                                                                                        ) : null
+                                                                                    }
+                                                                                </div>
+
                                                                                 <div className="col-span-8">
                                                                                     <div className="flex flex-col w-full">
                                                                                         <span className="text-slate-900 mb-2 font-medium">Remark</span>
                                                                                         <span className="textarea text-slate-900 mb-2 font-medium">{diForm?.area?.hallway?.[path]?.remark}</span>
                                                                                     </div>
                                                                                 </div>
+
+                                                                                <div className="col-span-12">
+                                                                                    <hr />
+                                                                                </div>
                                                                             </React.Fragment>
                                                                         ))}
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex-[1]">
-                                                        <div className="card rounded-md">
-                                                            <div className="card-header">
-                                                                <div className="card-title">
-                                                                    Attachments
-                                                                </div>
-                                                            </div>
-                                                            <div className="card-body">
-                                                                {
-                                                                    diForm?.area?.hallway ? (
-                                                                        (() => {
-                                                                            // Extract attachments
-                                                                            const onlyAttachments = Object.values(diForm?.area?.hallway || {}).reduce((acc, section) => {
-                                                                                if (section?.attachments) {
-                                                                                    Object.entries(section.attachments).forEach(([key, attachment]) => {
-                                                                                        acc[key] = attachment;
-                                                                                    });
-                                                                                }
-                                                                                return acc;
-                                                                            }, {});
-
-                                                                            // You can use 'attachments' here as needed, for example:
-                                                                            return (
-                                                                                <div className="flex flex-wrap justify-center gap-4">
-                                                                                    {Object.values(onlyAttachments).map((attachment, index) => (
-                                                                                        <div className="flex gap-4 items-center relative" key={index}>
-                                                                                            <a
-                                                                                                className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
-                                                                                                href={AWS_S3_URL + (attachment.file_url)}
-                                                                                                target="_blank"
-                                                                                                rel="noopener noreferrer"
-                                                                                            >
-                                                                                                <img
-                                                                                                    src={AWS_S3_URL + (attachment.file_url)}
-                                                                                                    alt={attachment.original_name}
-                                                                                                    className="w-32 h-32 object-cover border border-gray-300 rounded"
-                                                                                                />
-                                                                                            </a>
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            );
-                                                                        })()
-                                                                    ) : null
-                                                                }
                                                             </div>
                                                         </div>
                                                     </div>
@@ -998,11 +944,12 @@ function DefectInspectionReport() {
                                                                     </div>
                                                                     <div className="card-body text-sm px-4">
                                                                         <div className="w-full">
-                                                                            <div className="grid grid-cols-8 gap-4">
+                                                                            <div className="grid grid-cols-12 gap-4">
                                                                                 {/* Header Row */}
                                                                                 <div className="col-start-6 col-span-1 text-xs text-center text-gray-900 font-semibold">Has Defect</div>
                                                                                 <div className="col-start-7 col-span-1 text-xs text-center text-gray-900 font-semibold">No Defect / YES</div>
                                                                                 <div className="col-start-8 col-span-1 text-xs text-center text-gray-900 font-semibold">No Available</div>
+                                                                                <div className="col-start-9 col-span-4 text-xs text-center text-gray-900 font-semibold">Attachments</div>
 
                                                                                 {/* Inspection Item Component */}
                                                                                 {[
@@ -1043,11 +990,41 @@ function DefectInspectionReport() {
                                                                                             }
                                                                                         </div>
 
+                                                                                        <div className="col-start-9 col-span-4 ">
+                                                                                            {
+                                                                                                Array.isArray(bedroom?.[path]?.attachments) && bedroom?.[path]?.attachments.length > 0 ? (
+                                                                                                    <div className="flex flex-wrap gap-4 border-gray-200">
+                                                                                                        {console.log(bedroomKey, ':', bedroom)} {/* Logs the attachments array */}
+                                                                                                        {bedroom?.[path]?.attachments.map((attachment, index) => (
+                                                                                                            <div className="flex gap-4 relative" key={index}>
+                                                                                                                <a
+                                                                                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                    href={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                    target="_blank"
+                                                                                                                    rel="noopener noreferrer"
+                                                                                                                >
+                                                                                                                    <img
+                                                                                                                        src={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                        alt={attachment.original_name}
+                                                                                                                        className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                    />
+                                                                                                                </a>
+                                                                                                            </div>
+                                                                                                        ))}
+                                                                                                    </div>
+                                                                                                ) : null
+                                                                                            }
+                                                                                        </div>
+
                                                                                         <div className="col-span-8">
                                                                                             <div className="flex flex-col w-full">
                                                                                                 <span className="text-slate-900 mb-2 font-medium">Remark</span>
                                                                                                 <span className="textarea text-slate-900 mb-2 font-medium">{bedroom?.[path]?.remark}</span>
                                                                                             </div>
+                                                                                        </div>
+
+                                                                                        <div className="col-span-12">
+                                                                                            <hr />
                                                                                         </div>
                                                                                     </React.Fragment>
                                                                                 ))}
@@ -1057,64 +1034,6 @@ function DefectInspectionReport() {
                                                                 </div>
                                                             )
                                                         })}
-                                                    </div>
-
-                                                    <div className="flex-[1]">
-                                                        <div className="card rounded-md">
-                                                            <div className="card-header">
-                                                                <div className="card-title">
-                                                                    Attachments
-                                                                </div>
-                                                            </div>
-                                                            <div className="card-body">
-                                                                {Object.keys(diForm?.area?.bedrooms || {}).map((bedroomKey) => {
-                                                                    const bedroom = diForm?.area?.bedrooms[bedroomKey];
-                                                                    return (
-                                                                        <div className="flex flex-col mb-6" key={bedroomKey}>
-                                                                            <span className="badge badge-lg mb-2">{bedroomKey}</span>
-
-                                                                            {
-                                                                                bedroom ? (
-                                                                                    (() => {
-                                                                                        // Extract attachments
-                                                                                        const onlyAttachments = Object.values(bedroom || {}).reduce((acc, section) => {
-                                                                                            if (section?.attachments) {
-                                                                                                Object.entries(section.attachments).forEach(([key, attachment]) => {
-                                                                                                    acc[key] = attachment;
-                                                                                                });
-                                                                                            }
-                                                                                            return acc;
-                                                                                        }, {});
-
-                                                                                        // You can use 'attachments' here as needed, for example:
-                                                                                        return (
-                                                                                            <div className="flex flex-wrap justify-center gap-4">
-                                                                                                {Object.values(onlyAttachments).map((attachment, index) => (
-                                                                                                    <div className="flex gap-4 items-center relative" key={index}>
-                                                                                                        <a
-                                                                                                            className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
-                                                                                                            href={AWS_S3_URL + (attachment.file_url)}
-                                                                                                            target="_blank"
-                                                                                                            rel="noopener noreferrer"
-                                                                                                        >
-                                                                                                            <img
-                                                                                                                src={AWS_S3_URL + (attachment.file_url)}
-                                                                                                                alt={attachment.original_name}
-                                                                                                                className="w-32 h-32 object-cover border border-gray-300 rounded"
-                                                                                                            />
-                                                                                                        </a>
-                                                                                                    </div>
-                                                                                                ))}
-                                                                                            </div>
-                                                                                        );
-                                                                                    })()
-                                                                                ) : null
-                                                                            }
-                                                                        </div>
-                                                                    )
-                                                                })}
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1131,11 +1050,12 @@ function DefectInspectionReport() {
                                                                     </div>
                                                                     <div className="card-body text-sm px-4">
                                                                         <div className="w-full">
-                                                                            <div className="grid grid-cols-8 gap-4">
+                                                                            <div className="grid grid-cols-12 gap-4">
                                                                                 {/* Header Row */}
                                                                                 <div className="col-start-6 col-span-1 text-xs text-center text-gray-900 font-semibold">Has Defect</div>
                                                                                 <div className="col-start-7 col-span-1 text-xs text-center text-gray-900 font-semibold">No Defect / YES</div>
                                                                                 <div className="col-start-8 col-span-1 text-xs text-center text-gray-900 font-semibold">No Available</div>
+                                                                                <div className="col-start-9 col-span-4 text-xs text-center text-gray-900 font-semibold">Attachments</div>
 
                                                                                 {/* Inspection Item Component */}
                                                                                 {[
@@ -1176,11 +1096,40 @@ function DefectInspectionReport() {
                                                                                             }
                                                                                         </div>
 
+                                                                                        <div className="col-start-9 col-span-4 ">
+                                                                                            {
+                                                                                                Array.isArray(bathroom?.[path]?.attachments) && bathroom?.[path]?.attachments.length > 0 ? (
+                                                                                                    <div className="flex flex-wrap gap-4 border-gray-200">
+                                                                                                        {bathroom?.[path]?.attachments.map((attachment, index) => (
+                                                                                                            <div className="flex gap-4 relative" key={index}>
+                                                                                                                <a
+                                                                                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                    href={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                    target="_blank"
+                                                                                                                    rel="noopener noreferrer"
+                                                                                                                >
+                                                                                                                    <img
+                                                                                                                        src={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                        alt={attachment.original_name}
+                                                                                                                        className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                    />
+                                                                                                                </a>
+                                                                                                            </div>
+                                                                                                        ))}
+                                                                                                    </div>
+                                                                                                ) : null
+                                                                                            }
+                                                                                        </div>
+
                                                                                         <div className="col-span-8">
                                                                                             <div className="flex flex-col w-full">
                                                                                                 <span className="text-slate-900 mb-2 font-medium">Remark</span>
                                                                                                 <span className="textarea text-slate-900 mb-2 font-medium">{bathroom?.[path]?.remark}</span>
                                                                                             </div>
+                                                                                        </div>
+
+                                                                                        <div className="col-span-12">
+                                                                                            <hr />
                                                                                         </div>
                                                                                     </React.Fragment>
                                                                                 ))}
@@ -1190,64 +1139,6 @@ function DefectInspectionReport() {
                                                                 </div>
                                                             )
                                                         })}
-                                                    </div>
-
-                                                    <div className="flex-[1]">
-                                                        <div className="card rounded-md">
-                                                            <div className="card-header">
-                                                                <div className="card-title">
-                                                                    Attachments
-                                                                </div>
-                                                            </div>
-                                                            <div className="card-body">
-                                                                {Object.keys(diForm?.area?.bathrooms || {}).map((bathroomKey) => {
-                                                                    const bathroom = diForm?.area?.bathrooms[bathroomKey];
-                                                                    return (
-                                                                        <div className="flex flex-col mb-6" key={bathroomKey}>
-                                                                            <span className="badge badge-lg mb-2">{bathroomKey}</span>
-
-                                                                            {
-                                                                                bathroom ? (
-                                                                                    (() => {
-                                                                                        // Extract attachments
-                                                                                        const onlyAttachments = Object.values(bathroom || {}).reduce((acc, section) => {
-                                                                                            if (section?.attachments) {
-                                                                                                Object.entries(section.attachments).forEach(([key, attachment]) => {
-                                                                                                    acc[key] = attachment;
-                                                                                                });
-                                                                                            }
-                                                                                            return acc;
-                                                                                        }, {});
-
-                                                                                        // You can use 'attachments' here as needed, for example:
-                                                                                        return (
-                                                                                            <div className="flex flex-wrap justify-center gap-4">
-                                                                                                {Object.values(onlyAttachments).map((attachment, index) => (
-                                                                                                    <div className="flex gap-4 items-center relative" key={index}>
-                                                                                                        <a
-                                                                                                            className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
-                                                                                                            href={AWS_S3_URL + (attachment.file_url)}
-                                                                                                            target="_blank"
-                                                                                                            rel="noopener noreferrer"
-                                                                                                        >
-                                                                                                            <img
-                                                                                                                src={AWS_S3_URL + (attachment.file_url)}
-                                                                                                                alt={attachment.original_name}
-                                                                                                                className="w-32 h-32 object-cover border border-gray-300 rounded"
-                                                                                                            />
-                                                                                                        </a>
-                                                                                                    </div>
-                                                                                                ))}
-                                                                                            </div>
-                                                                                        );
-                                                                                    })()
-                                                                                ) : null
-                                                                            }
-                                                                        </div>
-                                                                    )
-                                                                })}
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

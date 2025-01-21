@@ -768,18 +768,15 @@ function OrderDetail() {
                                                                                 <span className="text-xs text-gray-400">
                                                                                     {(!product.description || product.description === "")
                                                                                         ? ""
-                                                                                        : product.description.startsWith("Supply & installation of")
-                                                                                            ? (!product.pivot.includeSupply && !product.pivot.includeInstall)
-                                                                                                ? product.description.replace("Supply & installation of", "").trim()
-                                                                                                : !product.pivot.includeSupply
-                                                                                                    ? `Installation of ${product.description.replace("Supply & installation of", "").trim()}`
-                                                                                                    : !product.pivot.includeInstall
-                                                                                                        ? `Supply of ${product.description.replace("Supply & installation of", "").trim()}`
-                                                                                                        : product.description
-                                                                                            : product.description}
+                                                                                        : [
+                                                                                            product.pivot.includeSupply && "Supply",
+                                                                                            product.pivot.includeInstall && "Install"
+                                                                                          ]
+                                                                                          .filter(Boolean)
+                                                                                          .join(" and ") + (product.description ? " " + product.description : "")
+                                                                                    }
                                                                                 </span>
                                                                             </div>
-
                                                                         </td>
                                                                         <td className='text-center text-lg'>
                                                                             <span className="mx-2 text-base">
