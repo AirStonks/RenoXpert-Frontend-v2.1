@@ -61,7 +61,7 @@ function EditQuotation() {
         document.title = "Edit Quotation | RenoXpert";
 
         if (quotationDetail) {
-            localStorage.setItem('include_packages', JSON.stringify(quotationDetail.metadata));
+            localStorage.setItem('include_packages', JSON.stringify(quotationDetail.packages));
             const storedPackages = localStorage.getItem('include_packages');
 
             if (storedPackages) {

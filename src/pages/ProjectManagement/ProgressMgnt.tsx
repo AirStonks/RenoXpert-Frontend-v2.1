@@ -907,7 +907,7 @@ function ProgressMgnt() {
                     </div>
                     <div className={activeTab === 'p1_tab' ? '' : 'hidden'} id="p1_tab">
                         <div className="flex flex-col gap-5" data-accordion="true">
-                            {renoProgress.phases[1].jobs
+                            {renoProgress.phases[1]?.jobs
                                 .sort((a, b) => a.priority - b.priority) // Sort jobs by priority
                                 .map((job, jobIndex) => {
                                     const jobProgress = calculateJobProgress(job); // Get the job progress
@@ -1024,7 +1024,7 @@ function ProgressMgnt() {
                     </div>
                     <div className={activeTab === 'p2a_tab' ? '' : 'hidden'} id="p2a_tab">
                         <div className="flex flex-col gap-5" data-accordion="true">
-                            {renoProgress.phases[2].jobs
+                            {renoProgress.phases[2]?.jobs
                                 .sort((a, b) => a.priority - b.priority) // Sort jobs by priority
                                 .map((job, jobIndex) => {
                                     const jobProgress = calculateJobProgress(job); // Get the job progress
@@ -1141,7 +1141,7 @@ function ProgressMgnt() {
                     </div>
                     <div className={activeTab === 'p2b_tab' ? '' : 'hidden'} id="p2b_tab">
                         <div className="flex flex-col gap-5" data-accordion="true">
-                            {renoProgress.phases[3].jobs
+                            {renoProgress.phases[3]?.jobs
                                 .sort((a, b) => a.priority - b.priority) // Sort jobs by priority
                                 .map((job, jobIndex) => {
                                     const jobProgress = calculateJobProgress(job); // Get the job progress
@@ -1258,7 +1258,7 @@ function ProgressMgnt() {
                     </div>
                     <div className={activeTab === 'iot_tab' ? '' : 'hidden'} id="iot_tab">
                         <div className="flex flex-col gap-5" data-accordion="true">
-                            {renoProgress.phases[4].jobs
+                            {renoProgress.phases[4]?.jobs
                                 .sort((a, b) => a.priority - b.priority) // Sort jobs by priority
                                 .map((job, jobIndex) => {
                                     const jobProgress = calculateJobProgress(job); // Get the job progress
@@ -1375,7 +1375,7 @@ function ProgressMgnt() {
                     </div>
                     <div className={activeTab === 'post_reno_tab' ? '' : 'hidden'} id="post_reno_tab">
                         <div className="flex flex-col gap-5" data-accordion="true">
-                            {renoProgress.phases[5].jobs
+                            {renoProgress.phases[5]?.jobs
                                 .sort((a, b) => a.priority - b.priority) // Sort jobs by priority (higher number comes first)
                                 .map((job, jobIndex) => {
                                     const jobProgress = calculateJobProgress(job); // Get the job progress
