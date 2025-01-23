@@ -172,16 +172,17 @@ function CreateQuotation() {
             return updatedState;
         });
 
+        const selectedPackageIds = parsedPackages.map((pkg: Package) => pkg.id);
+
         const quotationData: Quotation = {
             name: formData.quotationName,
             property_id: selectedProperty.id,
             description: formData.description,
             is_ready: formData.is_ready,
             total_amount: formData.quotationPrice,
-            metadata: newMetadata,
         }
 
-        const response = await createQuotation(quotationData);
+        const response = await createQuotation(quotationData, selectedPackageIds);
 
         if (response?.success) {
             notify('success', "Quotation Created Successfully!");

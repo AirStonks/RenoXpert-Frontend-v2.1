@@ -176,12 +176,12 @@ const EditProduct: React.FC = () => {
                                 Edit Product
                             </span>
                         </div>
-                        <div className="flex gap-3 flex-wrap">
+                        {/* <div className="flex gap-3 flex-wrap">
                             <button className="btn btn-sm btn-danger" data-action="delete" data-id={productId} data-name={formData?.name} data-modal-toggle="#delete_item_modal" onClick={handleRemoveProduct}>
                                 <i className="ki-outline ki-trash"></i>
                                 Remove Product
                             </button>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="flex flex-wrap gap-8 mb-8">
@@ -527,7 +527,7 @@ const EditProduct: React.FC = () => {
                     </div>
                 </>
             }
-            <DeleteModal
+            {/* <DeleteModal
                 item={selectedProduct}
                 modalTitle='Remove Product'
                 modalPrompt='Are you sure to permanently remove this product:'
@@ -535,7 +535,7 @@ const EditProduct: React.FC = () => {
                 notifyError='Product remove failed'
                 navigateUrl='/products'
                 deleteFunction={removeProduct}
-            />
+            /> */}
         </>
     );
 };

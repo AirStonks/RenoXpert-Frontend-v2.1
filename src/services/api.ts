@@ -573,9 +573,14 @@ export const quotationIndexArchived = async (size: number = 5, page: number = 1,
     }
 };
 
-export const createQuotation = async (quotationData: Quotation) => {
+export const createQuotation = async (quotationData: Quotation, selectedPackageIds: number[]) => {
     try {
-        const response = await axios.post(API_URL + 'quotations', quotationData, {
+        const dataToSend = {
+            ...quotationData,
+            selectedPackageIds
+        };
+
+        const response = await axios.post(API_URL + 'quotations', dataToSend, {
             headers: {
                 ...getAuthHeaders(),
                 'Content-Type': 'application/json',

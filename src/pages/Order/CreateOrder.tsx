@@ -486,7 +486,7 @@ function CreateOrder() {
             form_id: formId,
             property_id: selectedProperty.id,
             quotation_id: selectedQuotation.id,
-            total_amount: formData.totalAmount ? (formData.totalAmount - (Number(formData.bonus.value) || 0)) : (selectedQuotation.total_amount - (Number(formData.bonus.value) || 0)),
+            total_amount: formData.totalAmount ? (formData.totalAmount - (Number(formData.bonus?.value) || 0)) : (selectedQuotation.total_amount - (Number(formData.bonus?.value) || 0)),
             block: formData.block,
             floor: formData.floor,
             unit_no: formData.unitNo,
@@ -829,7 +829,7 @@ function CreateOrder() {
                                             className="textarea"
                                             name='bonus.description'
                                             rows={5}
-                                            value={formData.bonus.description || ''}
+                                            value={formData.bonus?.description || ''}
                                             onChange={handleChange}
                                         >
                                         </textarea>
@@ -841,7 +841,7 @@ function CreateOrder() {
                                         type="number"
                                         placeholder=''
                                         name="bonus.value"
-                                        value={formData.bonus.value}
+                                        value={formData.bonus?.value}
                                         onChange={handleChange}
                                     />
                                 </div>
@@ -860,11 +860,11 @@ function CreateOrder() {
                                             Price: RM {
                                                 // Check if formData.totalAmount exists, and calculate the price with or without bonus
                                                 formData.totalAmount
-                                                    ? (formData.totalAmount - (Number(formData.bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                                                    : (selectedQuotation.total_amount - (Number(formData.bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                    ? (formData.totalAmount - (Number(formData.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                    : (selectedQuotation.total_amount - (Number(formData.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                             }
-                                            {formData.bonus.value &&
-                                                ` (Discount: RM${Number(formData.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
+                                            {formData.bonus?.value &&
+                                                ` (Discount: RM${Number(formData.bonus?.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
                                             }
                                         </span>
 

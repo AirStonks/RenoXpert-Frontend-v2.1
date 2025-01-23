@@ -718,10 +718,28 @@ function ProgressMgnt() {
                             Pre Reno
                         </button>
                         <button
-                            className={`tab ${activeTab === 'reno_tab' ? 'active' : ''}`}
-                            onClick={() => setActiveTab('reno_tab')}
+                            className={`tab ${activeTab === 'p1_tab' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('p1_tab')}
                         >
-                            Reno
+                            P1
+                        </button>
+                        <button
+                            className={`tab ${activeTab === 'p2a_tab' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('p2a_tab')}
+                        >
+                            P2-A
+                        </button>
+                        <button
+                            className={`tab ${activeTab === 'p2b_tab' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('p2b_tab')}
+                        >
+                            P2-B
+                        </button>
+                        <button
+                            className={`tab ${activeTab === 'iot_tab' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('iot_tab')}
+                        >
+                            IoT
                         </button>
                         <button
                             className={`tab ${activeTab === 'post_reno_tab' ? 'active' : ''}`}
@@ -887,10 +905,361 @@ function ProgressMgnt() {
                                 })}
                         </div>
                     </div>
-                    <div className={activeTab === 'reno_tab' ? '' : 'hidden'} id="reno_tab">
+                    <div className={activeTab === 'p1_tab' ? '' : 'hidden'} id="p1_tab">
                         <div className="flex flex-col gap-5" data-accordion="true">
                             {renoProgress.phases[1].jobs
-                                .sort((a, b) => b.priority - a.priority) // Sort jobs by priority
+                                .sort((a, b) => a.priority - b.priority) // Sort jobs by priority
+                                .map((job, jobIndex) => {
+                                    const jobProgress = calculateJobProgress(job); // Get the job progress
+                                    return (
+                                        <div className="flex item-center" key={job.id}>
+                                            <div className="card accordion-item border rounded-xl w-full" data-accordion-item="true" id={job.id}>
+                                                <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + job.id}>
+                                                    <div className="flex flex-col items-start">
+                                                        <span className="text-base text-gray-900 font-medium">
+                                                            {job.name}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex">
+                                                        <div className="flex mr-24">
+                                                            <span className="font-semibold text-gray-600 mr-3">Progress: </span>
+                                                            <span className="font-semibold text-gray-900">{jobProgress.toFixed(2)}%</span>
+                                                        </div>
+                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                    </div>
+                                                </button>
+                                                <div className="accordion-content hidden border-t" id={"package_content_" + job.id}>
+                                                    <table className="table align-middle text-gray-700 font-medium text-sm">
+                                                        <thead>
+                                                            <tr>
+                                                                <th className='w-[220px]'>Product</th>
+                                                                <th className='w-[80px] text-center'>Owner Visibility</th>
+                                                                <th className='w-[60px] text-center'>Quantity</th>
+                                                                <th className='w-[100px] text-center'>Status</th>
+                                                                <th className='w-[100px] text-center'>Last Update Date</th>
+                                                                <th className='w-[100px] text-center'>Documents</th>
+                                                                <th className='w-[150px] text-center'>Comment to Owner</th>
+                                                                <th className='w-[150px] text-center'>Internal Comment</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {job.tasks.map((task, taskIndex) => (
+                                                                <tr key={taskIndex}>
+                                                                    <td>{task.name}</td>
+                                                                    <td>
+                                                                        <label className="switch flex justify-center">
+                                                                            <input
+                                                                                name="visibility"
+                                                                                type="checkbox"
+                                                                                checked={task.is_visible ?? false}
+                                                                                onChange={() => handleToggleVisibility(Number(task.id))}
+                                                                            />
+                                                                        </label>
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        {task.qty}
+                                                                    </td>
+                                                                    <td>
+                                                                        <div className="flex flex-col items-center">
+                                                                            <select
+                                                                                className="select select-bordered w-full max-w-xs"
+                                                                                name="status"
+                                                                                value={task.status}
+                                                                                onChange={(e) => handleChangeStatus(e, Number(task.id))}
+                                                                            >
+                                                                                <option value="not_started">Not Started</option>
+                                                                                <option value="started">Started</option>
+                                                                                <option value="in_progress">In Progress</option>
+                                                                                <option value="completed">Completed</option>
+                                                                            </select>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        {task.install_date
+                                                                            ? new Date(task.install_date).toLocaleDateString('en-GB', {
+                                                                                day: '2-digit',
+                                                                                month: 'short',
+                                                                                year: 'numeric'
+                                                                            })
+                                                                            : ''}
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        <button
+                                                                            className="btn btn-primary btn-sm"
+                                                                            data-modal-toggle="#document_modal"
+                                                                            onClick={() => handleOpenDocumentModal(Number(task.id))}
+                                                                        >
+                                                                            Add/View
+                                                                        </button>
+                                                                    </td>
+                                                                    <td>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="input"
+                                                                            name={`1.jobs.${jobIndex}.tasks.${taskIndex}.owner_comment`}
+                                                                            value={task.owner_comment || ''}
+                                                                            onChange={(e) => handleOwnerCommentChange(e, Number(task.id))}
+                                                                        />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="input"
+                                                                            name={`1.jobs.${jobIndex}.tasks.${taskIndex}.internal_comment`}
+                                                                            value={task.internal_comment || ''}
+                                                                            onChange={(e) => handleInternalCommentChange(e, Number(task.id))}
+                                                                        />
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    </div>
+                    <div className={activeTab === 'p2a_tab' ? '' : 'hidden'} id="p2a_tab">
+                        <div className="flex flex-col gap-5" data-accordion="true">
+                            {renoProgress.phases[2].jobs
+                                .sort((a, b) => a.priority - b.priority) // Sort jobs by priority
+                                .map((job, jobIndex) => {
+                                    const jobProgress = calculateJobProgress(job); // Get the job progress
+                                    return (
+                                        <div className="flex item-center" key={job.id}>
+                                            <div className="card accordion-item border rounded-xl w-full" data-accordion-item="true" id={job.id}>
+                                                <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + job.id}>
+                                                    <div className="flex flex-col items-start">
+                                                        <span className="text-base text-gray-900 font-medium">
+                                                            {job.name}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex">
+                                                        <div className="flex mr-24">
+                                                            <span className="font-semibold text-gray-600 mr-3">Progress: </span>
+                                                            <span className="font-semibold text-gray-900">{jobProgress.toFixed(2)}%</span>
+                                                        </div>
+                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                    </div>
+                                                </button>
+                                                <div className="accordion-content hidden border-t" id={"package_content_" + job.id}>
+                                                    <table className="table align-middle text-gray-700 font-medium text-sm">
+                                                        <thead>
+                                                            <tr>
+                                                                <th className='w-[220px]'>Product</th>
+                                                                <th className='w-[80px] text-center'>Owner Visibility</th>
+                                                                <th className='w-[60px] text-center'>Quantity</th>
+                                                                <th className='w-[100px] text-center'>Status</th>
+                                                                <th className='w-[100px] text-center'>Last Update Date</th>
+                                                                <th className='w-[100px] text-center'>Documents</th>
+                                                                <th className='w-[150px] text-center'>Comment to Owner</th>
+                                                                <th className='w-[150px] text-center'>Internal Comment</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {job.tasks.map((task, taskIndex) => (
+                                                                <tr key={taskIndex}>
+                                                                    <td>{task.name}</td>
+                                                                    <td>
+                                                                        <label className="switch flex justify-center">
+                                                                            <input
+                                                                                name="visibility"
+                                                                                type="checkbox"
+                                                                                checked={task.is_visible ?? false}
+                                                                                onChange={() => handleToggleVisibility(Number(task.id))}
+                                                                            />
+                                                                        </label>
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        {task.qty}
+                                                                    </td>
+                                                                    <td>
+                                                                        <div className="flex flex-col items-center">
+                                                                            <select
+                                                                                className="select select-bordered w-full max-w-xs"
+                                                                                name="status"
+                                                                                value={task.status}
+                                                                                onChange={(e) => handleChangeStatus(e, Number(task.id))}
+                                                                            >
+                                                                                <option value="not_started">Not Started</option>
+                                                                                <option value="started">Started</option>
+                                                                                <option value="in_progress">In Progress</option>
+                                                                                <option value="completed">Completed</option>
+                                                                            </select>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        {task.install_date
+                                                                            ? new Date(task.install_date).toLocaleDateString('en-GB', {
+                                                                                day: '2-digit',
+                                                                                month: 'short',
+                                                                                year: 'numeric'
+                                                                            })
+                                                                            : ''}
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        <button
+                                                                            className="btn btn-primary btn-sm"
+                                                                            data-modal-toggle="#document_modal"
+                                                                            onClick={() => handleOpenDocumentModal(Number(task.id))}
+                                                                        >
+                                                                            Add/View
+                                                                        </button>
+                                                                    </td>
+                                                                    <td>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="input"
+                                                                            name={`1.jobs.${jobIndex}.tasks.${taskIndex}.owner_comment`}
+                                                                            value={task.owner_comment || ''}
+                                                                            onChange={(e) => handleOwnerCommentChange(e, Number(task.id))}
+                                                                        />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="input"
+                                                                            name={`1.jobs.${jobIndex}.tasks.${taskIndex}.internal_comment`}
+                                                                            value={task.internal_comment || ''}
+                                                                            onChange={(e) => handleInternalCommentChange(e, Number(task.id))}
+                                                                        />
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    </div>
+                    <div className={activeTab === 'p2b_tab' ? '' : 'hidden'} id="p2b_tab">
+                        <div className="flex flex-col gap-5" data-accordion="true">
+                            {renoProgress.phases[3].jobs
+                                .sort((a, b) => a.priority - b.priority) // Sort jobs by priority
+                                .map((job, jobIndex) => {
+                                    const jobProgress = calculateJobProgress(job); // Get the job progress
+                                    return (
+                                        <div className="flex item-center" key={job.id}>
+                                            <div className="card accordion-item border rounded-xl w-full" data-accordion-item="true" id={job.id}>
+                                                <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + job.id}>
+                                                    <div className="flex flex-col items-start">
+                                                        <span className="text-base text-gray-900 font-medium">
+                                                            {job.name}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex">
+                                                        <div className="flex mr-24">
+                                                            <span className="font-semibold text-gray-600 mr-3">Progress: </span>
+                                                            <span className="font-semibold text-gray-900">{jobProgress.toFixed(2)}%</span>
+                                                        </div>
+                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                    </div>
+                                                </button>
+                                                <div className="accordion-content hidden border-t" id={"package_content_" + job.id}>
+                                                    <table className="table align-middle text-gray-700 font-medium text-sm">
+                                                        <thead>
+                                                            <tr>
+                                                                <th className='w-[220px]'>Product</th>
+                                                                <th className='w-[80px] text-center'>Owner Visibility</th>
+                                                                <th className='w-[60px] text-center'>Quantity</th>
+                                                                <th className='w-[100px] text-center'>Status</th>
+                                                                <th className='w-[100px] text-center'>Last Update Date</th>
+                                                                <th className='w-[100px] text-center'>Documents</th>
+                                                                <th className='w-[150px] text-center'>Comment to Owner</th>
+                                                                <th className='w-[150px] text-center'>Internal Comment</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {job.tasks.map((task, taskIndex) => (
+                                                                <tr key={taskIndex}>
+                                                                    <td>{task.name}</td>
+                                                                    <td>
+                                                                        <label className="switch flex justify-center">
+                                                                            <input
+                                                                                name="visibility"
+                                                                                type="checkbox"
+                                                                                checked={task.is_visible ?? false}
+                                                                                onChange={() => handleToggleVisibility(Number(task.id))}
+                                                                            />
+                                                                        </label>
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        {task.qty}
+                                                                    </td>
+                                                                    <td>
+                                                                        <div className="flex flex-col items-center">
+                                                                            <select
+                                                                                className="select select-bordered w-full max-w-xs"
+                                                                                name="status"
+                                                                                value={task.status}
+                                                                                onChange={(e) => handleChangeStatus(e, Number(task.id))}
+                                                                            >
+                                                                                <option value="not_started">Not Started</option>
+                                                                                <option value="started">Started</option>
+                                                                                <option value="in_progress">In Progress</option>
+                                                                                <option value="completed">Completed</option>
+                                                                            </select>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        {task.install_date
+                                                                            ? new Date(task.install_date).toLocaleDateString('en-GB', {
+                                                                                day: '2-digit',
+                                                                                month: 'short',
+                                                                                year: 'numeric'
+                                                                            })
+                                                                            : ''}
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        <button
+                                                                            className="btn btn-primary btn-sm"
+                                                                            data-modal-toggle="#document_modal"
+                                                                            onClick={() => handleOpenDocumentModal(Number(task.id))}
+                                                                        >
+                                                                            Add/View
+                                                                        </button>
+                                                                    </td>
+                                                                    <td>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="input"
+                                                                            name={`1.jobs.${jobIndex}.tasks.${taskIndex}.owner_comment`}
+                                                                            value={task.owner_comment || ''}
+                                                                            onChange={(e) => handleOwnerCommentChange(e, Number(task.id))}
+                                                                        />
+                                                                    </td>
+                                                                    <td>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="input"
+                                                                            name={`1.jobs.${jobIndex}.tasks.${taskIndex}.internal_comment`}
+                                                                            value={task.internal_comment || ''}
+                                                                            onChange={(e) => handleInternalCommentChange(e, Number(task.id))}
+                                                                        />
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    </div>
+                    <div className={activeTab === 'iot_tab' ? '' : 'hidden'} id="iot_tab">
+                        <div className="flex flex-col gap-5" data-accordion="true">
+                            {renoProgress.phases[4].jobs
+                                .sort((a, b) => a.priority - b.priority) // Sort jobs by priority
                                 .map((job, jobIndex) => {
                                     const jobProgress = calculateJobProgress(job); // Get the job progress
                                     return (
@@ -1006,8 +1375,8 @@ function ProgressMgnt() {
                     </div>
                     <div className={activeTab === 'post_reno_tab' ? '' : 'hidden'} id="post_reno_tab">
                         <div className="flex flex-col gap-5" data-accordion="true">
-                            {renoProgress.phases[2].jobs
-                                .sort((a, b) => b.priority - a.priority) // Sort jobs by priority (higher number comes first)
+                            {renoProgress.phases[5].jobs
+                                .sort((a, b) => a.priority - b.priority) // Sort jobs by priority (higher number comes first)
                                 .map((job, jobIndex) => {
                                     const jobProgress = calculateJobProgress(job); // Get the job progress
                                     return (

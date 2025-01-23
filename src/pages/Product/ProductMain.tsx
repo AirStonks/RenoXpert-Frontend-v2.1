@@ -269,25 +269,17 @@ function ProductMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[100px] text-center'>
+                                    <th className='w-[120px] text-center'>
                                         <div className="flex items-center justify-center gap-2">
                                             Photo
                                         </div>
                                     </th>
                                     <th
-                                        className='w-[300px] text-center cursor-pointer hover:bg-gray-50'
+                                        className='w-[450px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('name')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
                                             Name {getSortIcon('name')}
-                                        </div>
-                                    </th>
-                                    <th
-                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('sku')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            SKU {getSortIcon('sku')}
                                         </div>
                                     </th>
                                     <th
@@ -316,15 +308,10 @@ function ProductMain() {
                                     </th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('task_weightage')}
+                                        onClick={() => handleSort('created_at')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
-                                            Task Weightage {getSortIcon('task_weightage')}
-                                        </div>
-                                    </th>
-                                    <th className='w-[80px] text-center'>
-                                        <div className="flex items-center justify-center gap-2">
-                                            Updated By
+                                            Created Date {getSortIcon('created_at')}
                                         </div>
                                     </th>
                                     <th
@@ -350,7 +337,7 @@ function ProductMain() {
                                                     <img
                                                         src={AWS_S3_URL + product.attachments.thumbnail.file_url}
                                                         alt={product.name}
-                                                        className="w-[64px] h-[64px] object-cover border border-gray-300 rounded"
+                                                        className="w-[72px] h-[72px] object-cover border border-gray-300 rounded"
                                                     />
                                                 )
                                                     :
@@ -360,10 +347,12 @@ function ProductMain() {
                                             <td>
                                                 <div className="flex flex-col">
                                                     <span>{product.name}</span>
+                                                    <div className="inline-block">
+                                                        <span className="text-xs font-semibold badge badge-outline badge-xs my-1">SKU: {product.SKU || '-'}</span>
+                                                    </div>
                                                     <span className="text-xs text-slate-400">{product.description || ''}</span>
                                                 </div>
                                             </td>
-                                            <td className='text-center'>{product.SKU}</td>
                                             <td className='text-center'>
                                                 <div className="flex flex-col justify-center items-center">
                                                     <span>RM {product.provisioning.supply.retail_price + product.provisioning.install.retail_price}</span>
@@ -371,9 +360,22 @@ function ProductMain() {
                                             </td>
                                             <td className='text-center capitalize'>{product.pm_category}</td>
                                             <td className='text-center capitalize'>{product.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</td>
-                                            <td className='text-center'>{product.task_weightage}</td>
-                                            <td className='text-center'>{product.updated_by ? product.updated_by.name : '-'}</td>
-                                            <td className='text-center'>{product.updated_at}</td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col">
+                                                    <span>{product.created_by ? product.created_by.name : '-'}</span>
+                                                    <div className="inline-block">
+                                                        <span className="text-sm font-semibold badge badge-outline badge-sm my-1">{product.created_at}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col">
+                                                    <span>{product.updated_by ? product.updated_by.name : '-'}</span>
+                                                    <div className="inline-block">
+                                                        <span className="text-sm font-semibold badge badge-outline badge-sm my-1">{product.updated_at}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
                                                     <Link

@@ -26,7 +26,7 @@ const initProductData: Product = {
     SKU: '',
     type: 'renovation',
     description: '',
-    pm_category: '1',
+    pm_category_id: 0,
     uom: '',
     provisioning: {
         supply: {
@@ -210,6 +210,7 @@ function CreateProduct() {
         const newErrors: FormErrors = {};
         if (!formData.name) newErrors.name = "Name required";
         if (!formData.uom) newErrors.uom = "UOM required";
+        if (!formData.pm_category_id || formData.pm_category_id === '') newErrors.pm_category_id = "PM Category required";
         if ((formData?.provisioning.supply.retail_price < 0 || formData?.provisioning.supply.retail_price === '') && (formData?.type !== 'roundup')) newErrors.supply_retail_price = "Retail Price required";
         if ((formData?.provisioning.supply.cogs < 0 || formData?.provisioning.supply.cogs === '') && (formData?.type !== 'roundup')) newErrors.supply_cogs = "Cost of Good Sold required";
         if ((formData?.provisioning.supply.excluded_price < 0 || formData?.provisioning.supply.excluded_price === '') && (formData?.type !== 'roundup')) newErrors.supply_excluded_price = "Excluded Price required";
@@ -221,6 +222,8 @@ function CreateProduct() {
     };
 
     const handleSubmit = async () => {
+        console.log(formData);
+        
         setErrors({});
         const validationErrors = validate();
 
@@ -265,10 +268,13 @@ function CreateProduct() {
     if (!pmCategory) return <div>Product Category not found</div>;
 
     // Convert pmCategory to the format needed for Dropdown options
-    const dropdownOptions = pmCategory.map((cat: ProductCategory) => ({
-        value: cat.id.toString(), // Ensure value is a string
-        label: cat.name // Assuming pmCategory has a 'name' property
-    }));
+    const dropdownOptions = [
+        { value: "", label: "Select a category" }, // Add an empty value as the first option
+        ...pmCategory.map((cat: ProductCategory) => ({
+            value: cat.id.toString(),
+            label: cat.name
+        }))
+    ];
 
     return (
         <>
@@ -684,12 +690,20 @@ function CreateProduct() {
                                     Define the category of the product. (for PM Management purpose)
                                 </span>
 
+                                <span className="text-xs text-danger tracking-wide mb-2">
+                                    ** please choose wisely, it will affect the later project management flow
+                                </span>
+
                                 <Dropdown
                                     options={dropdownOptions}
                                     name="pm_category_id"
                                     value={formData?.pm_category_id}
                                     onChange={handleChange}
                                 />
+                                
+                                <span className="text-xs text-danger tracking-wide mb-2">
+                                    {errors.pm_category_id}
+                                </span>
                             </div>
                         </div>
                     </div>

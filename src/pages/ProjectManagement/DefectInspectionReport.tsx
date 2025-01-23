@@ -150,7 +150,7 @@ function DefectInspectionReport() {
                                             </span> */}
                                         </td>
                                     </tr>
-                                    <tr>
+                                    {/* <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Submit Date:
                                         </td>
@@ -163,7 +163,7 @@ function DefectInspectionReport() {
                                                 })
                                                 : 'N/A'}
                                         </td>
-                                    </tr>
+                                    </tr> */}
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Form Link:</td>
                                         <td className="text-sm text-gray-900 pb-3">
