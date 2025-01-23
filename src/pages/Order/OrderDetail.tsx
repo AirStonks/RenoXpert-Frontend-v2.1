@@ -1187,15 +1187,7 @@ function OrderDetail() {
                                                                         <span className='text-gray-500 text-2xs'>
                                                                             {(!product.description || product.description === "")
                                                                                 ? ""
-                                                                                : product.description.startsWith("Supply & installation of")
-                                                                                    ? (!product.pivot.includeSupply && !product.pivot.includeInstall)
-                                                                                        ? product.description.replace("Supply & installation of", "").trim()
-                                                                                        : !product.pivot.includeSupply
-                                                                                            ? `Installation of ${product.description.replace("Supply & i.nstallation of", "").trim()}`
-                                                                                            : !product.pivot.includeInstall
-                                                                                                ? `Supply of ${product.description.replace("Supply & installation of", "").trim()}`
-                                                                                                : product.description
-                                                                                    : product.description}
+                                                                                : getProductDescription(product)}
                                                                         </span>
                                                                     </td>
                                                                     <td className="p-2 text-center text-gray-900">
