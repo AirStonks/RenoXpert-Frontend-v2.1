@@ -43,7 +43,7 @@ function PackageMain() {
     ) => {
         try {
             setIsLoading(true);
-            const response = await packageIndex(size, page, searchTerm, order, field);
+            const response = await packageIndex(size, page, searchTerm, order, field, true);
 
             const data = response?.data || [];
             setPackages(data);
@@ -75,7 +75,7 @@ function PackageMain() {
 
             try {
                 setIsLoading(true);
-                const response = await packageIndex(size, 1, value, sortOrder, sortField);
+                const response = await packageIndex(size, 1, value, sortOrder, sortField, true);
 
                 const data = response?.data || [];
                 setPackages(data);

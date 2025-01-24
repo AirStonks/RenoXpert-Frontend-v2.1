@@ -189,7 +189,7 @@ function EditNewOrderQuotation() {
             setSelectedPackages(JSON.parse(includePackages));
             localStorage.setItem('selected_quotation_packages', includePackages);
         } else if (quotationDetail) {
-            const packages = JSON.stringify(quotationDetail.metadata);
+            const packages = JSON.stringify(quotationDetail.packages);
             localStorage.setItem('include_packages', packages);
             setSelectedPackages(JSON.parse(packages));
             localStorage.setItem('selected_quotation_packages', packages);

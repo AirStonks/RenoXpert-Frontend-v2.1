@@ -51,7 +51,7 @@ function QuotationMain() {
     ) => {
         try {
             setIsLoading(true);
-            const response = await quotationIndex(size, page, searchTerm, order, field);
+            const response = await quotationIndex(size, page, searchTerm, order, field, true);
 
             const data = response?.data || [];
             setQuotations(data);
@@ -83,7 +83,7 @@ function QuotationMain() {
 
             try {
                 setIsLoading(true);
-                const response = await quotationIndex(size, 1, value, sortOrder, sortField);
+                const response = await quotationIndex(size, 1, value, sortOrder, sortField, true);
 
                 const data = response?.data || [];
                 setQuotations(data);

@@ -208,9 +208,13 @@ function PreviousOrderDetail() {
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
                                                     <ul className='text-sm text-gray-900 list-inside'>
-                                                        {selectedQuotation.bonus.description.split('\n').map((item, index) => (
-                                                            <li key={index}>{item}</li>
-                                                        ))}
+                                                        {selectedQuotation.bonus.description ?
+                                                            selectedQuotation.bonus.description.split('\n').map((item, index) => (
+                                                                <li key={index}>{item}</li>
+                                                            ))
+                                                            :
+                                                            <li>No Details</li>
+                                                        }
                                                     </ul>
                                                 </td>
                                             </tr>

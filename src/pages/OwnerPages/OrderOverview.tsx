@@ -438,11 +438,17 @@ function OrderOverview() {
                                                                     <div className="flex flex-col">
                                                                         <span className='text-lg text-teal-600 font-bold'>Bonus:</span> {/* Increased font size and boldness */}
                                                                         <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
-                                                                            {bonus.description.split('\n').map((item, index) => (
-                                                                                <li key={index} className="mb-1">
-                                                                                    <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
+                                                                            {bonus.description ?
+                                                                                bonus.description.split('\n').map((item, index) => (
+                                                                                    <li key={index} className="mb-1">
+                                                                                        <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
+                                                                                    </li>
+                                                                                ))
+                                                                                :
+                                                                                <li className="mb-1">
+                                                                                    <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">No Details</span>
                                                                                 </li>
-                                                                            ))}
+                                                                            }
                                                                         </ul>
                                                                     </div>
                                                                     <div className="flex flex-col mt-4">
@@ -680,11 +686,17 @@ function OrderOverview() {
                                                         <div className="flex flex-col">
                                                             <span className='text-lg text-teal-600 font-bold'>Bonus:</span> {/* Increased font size and boldness */}
                                                             <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
-                                                                {bonus.description.split('\n').map((item, index) => (
-                                                                    <li key={index} className="mb-1">
-                                                                        <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
+                                                                {bonus.description ?
+                                                                    bonus.description.split('\n').map((item, index) => (
+                                                                        <li key={index} className="mb-1">
+                                                                            <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
+                                                                        </li>
+                                                                    ))
+                                                                    :
+                                                                    <li className="mb-1">
+                                                                        <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">No Details</span>
                                                                     </li>
-                                                                ))}
+                                                                }
                                                             </ul>
                                                         </div>
                                                         <div className="flex flex-col mt-4">

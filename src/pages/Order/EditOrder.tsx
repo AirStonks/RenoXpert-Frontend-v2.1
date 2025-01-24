@@ -44,11 +44,13 @@ function EditOrder() {
         propertyId: '',
         quotationId: '',
         totalAmount: 0,
+        finalAmount: 0,
         completion_day: 0,
         block: '',
         floor: '',
         unitNo: '',
         status: '',
+        isFinalAmountEnable: false,
         bedroom_count: 1,
         bathroom_count: 1,
         bonus: {
@@ -90,10 +92,12 @@ function EditOrder() {
                     propertyId: orderDetail.property_id || '',
                     quotationId: orderDetail.latest_quotation.quotation_id || '',
                     totalAmount: orderDetail.latest_quotation.total_amount || 0,
+                    finalAmount: orderDetail.final_amount || 0,
                     block: orderDetail.block || '',
                     floor: orderDetail.floor || '',
                     unitNo: orderDetail.unit_no || '',
                     status: orderDetail.status || '',
+                    isFinalAmountEnable: orderDetail.final_amount ? true : false,
                     bedroom_count: orderDetail.bedroom_count || 1,
                     bathroom_count: orderDetail.bathroom_count || 1,
                     completion_day: orderDetail.completion_day || 1,
@@ -108,10 +112,12 @@ function EditOrder() {
                     propertyId: orderDetail.property_id || '',
                     quotationId: orderDetail.latest_quotation.quotation_id || '',
                     totalAmount: orderDetail.latest_quotation.total_amount || 0,
+                    finalAmount: orderDetail.final_amount || 0,
                     block: orderDetail.block || '',
                     floor: orderDetail.floor || '',
                     unitNo: orderDetail.unit_no || '',
                     status: orderDetail.status || '',
+                    isFinalAmountEnable: orderDetail.final_amount ? true : false,
                     bedroom_count: orderDetail.bedroom_count || 1,
                     bathroom_count: orderDetail.bathroom_count || 1,
                     completion_day: orderDetail.completion_day || 1,
@@ -432,6 +438,13 @@ function EditOrder() {
         }
     };
 
+    const toggleEnableFinalAmount = () => {
+        setFormData((prev) => ({
+            ...prev,
+            isFinalAmountEnable: !prev.isFinalAmountEnable
+        }))
+    }
+
     const handleSubmit = async () => {
         try {
             const newOrder: Order = {
@@ -440,6 +453,7 @@ function EditOrder() {
                 property_id: selectedProperty.id,
                 quotation_id: selectedQuotation.id,
                 total_amount: formData.totalAmount,
+                final_amount: formData.isFinalAmountEnable ? formData.finalAmount : null,
                 block: formData.block,
                 floor: formData.floor,
                 unit_no: formData.unitNo,
@@ -768,6 +782,40 @@ function EditOrder() {
                                             value={formData.completion_day}
                                             onChange={handleChange}
                                         />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium text-gray-900">
+                                            Final Pricing
+                                        </label>
+
+                                        <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                            The final price that will billed and display to owner at the end (excluded bonuses)
+                                        </span>
+
+                                        <label className="switch switch-lg">
+                                            <input
+                                                className="checkbox"
+                                                name="is_ready"
+                                                type="checkbox"
+                                                checked={!!formData.isFinalAmountEnable}
+                                                onChange={toggleEnableFinalAmount}
+                                            />
+                                            <span className="switch-label">
+                                                {formData.isFinalAmountEnable ? 'Enable' : 'Disable'}
+                                            </span>
+                                        </label>
+
+                                        {formData.isFinalAmountEnable && (
+                                            <input
+                                                className={`input mb-2`}
+                                                placeholder='Final Pricing'
+                                                type="number"
+                                                name="finalAmount"
+                                                value={formData.finalAmount}  // Display value as a string, but handle 0 properly
+                                                onChange={handleChange}
+                                            />
+                                        )}
                                     </div>
                                 </div>
 
@@ -1659,6 +1707,10 @@ function EditOrder() {
                         </div>
                     }
                 </div>
+            </div>
+
+            <div className="tooltip" id="draft_tooltip">
+                This quotation template is in <strong>Draft Mode</strong>. But you still can select it.
             </div>
         </>
     );

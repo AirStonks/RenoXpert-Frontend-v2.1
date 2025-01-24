@@ -45,11 +45,13 @@ function CreateOrder() {
         propertyId: '',
         quotationId: '',
         totalAmount: 0,
+        finalAmount: 0,
         completion_day: 0,
         block: '',
         floor: '',
         unitNo: '',
         status: '',
+        isFinalAmountEnable: false,
         bedroom_count: 1,
         bathroom_count: 1,
         bonus: {
@@ -293,13 +295,13 @@ function CreateOrder() {
         setSearchQuotationTerm('');
         setQuotations([]);
 
-        // Check if quotation.metadata is null or an empty array
-        const metadata = quotation.metadata;
-        if (metadata && Array.isArray(metadata) && metadata.length > 0) {
+        // Check if quotation.packages is null or an empty array
+        const packages = quotation.packages;
+        if (packages && Array.isArray(packages) && packages.length > 0) {
             // Store selected quotation package
-            localStorage.setItem('include_packages', JSON.stringify(metadata));
+            localStorage.setItem('include_packages', JSON.stringify(packages));
         } else {
-            // Store empty array if metadata is null or empty
+            // Store empty array if packages is null or empty
             localStorage.setItem('include_packages', JSON.stringify([]));
         }
 
@@ -460,6 +462,13 @@ function CreateOrder() {
         }
     };
 
+    const toggleEnableFinalAmount = () => {
+        setFormData((prev) => ({
+            ...prev,
+            isFinalAmountEnable: !prev.isFinalAmountEnable
+        }))
+    }
+
     const handleSubmit = async () => {
         if (!selectedUser) {
             notify('error', 'Please select a user.');
@@ -487,6 +496,7 @@ function CreateOrder() {
             property_id: selectedProperty.id,
             quotation_id: selectedQuotation.id,
             total_amount: formData.totalAmount ? (formData.totalAmount - (Number(formData.bonus?.value) || 0)) : (selectedQuotation.total_amount - (Number(formData.bonus?.value) || 0)),
+            final_amount: formData.isFinalAmountEnable ? formData.finalAmount : null,
             block: formData.block,
             floor: formData.floor,
             unit_no: formData.unitNo,
@@ -741,8 +751,8 @@ function CreateOrder() {
 
                             <div className="flex gap-8">
                                 {/* Quotation and Completion Day */}
-                                <div className="flex flex-col flex-1 gap-8">
-                                    <div className="flex flex-col gap-2">
+                                <div className="flex flex-col flex-1">
+                                    <div className="flex flex-col gap-2 mb-8">
                                         <span className="text-base font-semibold text-gray-900">
                                             3. Select a Quotation
                                         </span>
@@ -798,7 +808,7 @@ function CreateOrder() {
                                         </span>
                                     </div>
 
-                                    <div className="flex flex-col flex-1 gap-2">
+                                    <div className="flex flex-col gap-2">
                                         <InputFieldGroup
                                             fieldTitle="Completion Day(s)"
                                             description="Set the period for this renovation work completion day(s) (Working days)"
@@ -808,6 +818,40 @@ function CreateOrder() {
                                             value={formData.completion_day}
                                             onChange={handleChange}
                                         />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium text-gray-900">
+                                            Final Pricing
+                                        </label>
+
+                                        <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                            The final price that will billed and display to owner at the end (excluded bonuses)
+                                        </span>
+
+                                        <label className="switch switch-lg">
+                                            <input
+                                                className="checkbox"
+                                                name="is_ready"
+                                                type="checkbox"
+                                                checked={!!formData.isFinalAmountEnable}
+                                                onChange={toggleEnableFinalAmount}
+                                            />
+                                            <span className="switch-label">
+                                                {formData.isFinalAmountEnable ? 'Enable' : 'Disable'}
+                                            </span>
+                                        </label>
+
+                                        {formData.isFinalAmountEnable && (
+                                            <input
+                                                className={`input mb-2`}
+                                                placeholder='Final Pricing'
+                                                type="number"
+                                                name="finalAmount"
+                                                value={formData.finalAmount}  // Display value as a string, but handle 0 properly
+                                                onChange={handleChange}
+                                            />
+                                        )}
                                     </div>
                                 </div>
 

@@ -157,6 +157,7 @@ export interface Order {
     floor?: string,
     unit_no?: string,
     total_amount?: number,
+    final_amount?: number,
     description?: string,
     completion_day?: number,
     bonus?: {

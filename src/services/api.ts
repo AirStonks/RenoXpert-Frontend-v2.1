@@ -402,7 +402,7 @@ export const removeProductCategory = async (productCategoryId: number) => {
     }
 }
 
-export const packageIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+export const packageIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + 'packages', {
             headers: getAuthHeaders(),
@@ -411,7 +411,8 @@ export const packageIndex = async (size: number = 5, page: number = 1, searchTer
                 page: page,
                 search: searchTerm,
                 sortOrder: order,
-                sortField: field
+                sortField: field,
+                head: isHead
             }
         });
         return response.data;
@@ -537,7 +538,7 @@ export const restorePackage = async (packageId: number) => {
     }
 }
 
-export const quotationIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+export const quotationIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + 'quotations', {
             headers: getAuthHeaders(),
@@ -546,7 +547,8 @@ export const quotationIndex = async (size: number = 5, page: number = 1, searchT
                 page: page,
                 search: searchTerm,
                 sortOrder: order,
-                sortField: field
+                sortField: field,
+                head: isHead,
             }
         });
         return response.data;

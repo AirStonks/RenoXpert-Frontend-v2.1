@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
 import useFetchOrder from "../../hook/useFetchOrder";
-import { KTAccordion } from "../../metronic/core";
+import { KTAccordion, KTTooltip } from "../../metronic/core";
 import { OrderQuotation, Package, Product } from "../../types";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import ClipboardJS from "clipboard";
@@ -76,6 +76,7 @@ function OrderDetail() {
         document.title = "Quotation Order Detail | RenoXpert";
 
         KTAccordion.init();
+        KTTooltip.init();
 
         // if (orderDetail) {
         //     console.log(JSON.parse(JSON.stringify(orderDetail.total_amount)));
@@ -456,6 +457,20 @@ function OrderDetail() {
 
                                         </td>
                                     </tr>
+                                    {orderDetail.final_amount &&
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 flex items-center gap-1">
+                                                <i data-tooltip="#final_pricing_tooltip" className="ki-filled ki-information-2 textlg text-warning mt-[1.5px]"></i>
+                                                <span>Final Amount:</span>
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <span className="text-sm text-gray-900 pb-3">
+                                                    RM {(orderDetail.final_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
+                                                </span>
+
+                                            </td>
+                                        </tr>
+                                    }
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Status:
@@ -523,9 +538,13 @@ function OrderDetail() {
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
                                                     <ul className='text-sm text-gray-900 list-inside'>
-                                                        {selectedQuotation.bonus.description.split('\n').map((item, index) => (
-                                                            <li key={index}>{item}</li>
-                                                        ))}
+                                                        {selectedQuotation.bonus.description ?
+                                                            selectedQuotation.bonus.description.split('\n').map((item, index) => (
+                                                                <li key={index}>{item}</li>
+                                                            ))
+                                                            :
+                                                            <li>No Details</li>
+                                                        }
                                                     </ul>
                                                 </td>
                                             </tr>
@@ -987,11 +1006,17 @@ function OrderDetail() {
                                                                     <div className="flex flex-col">
                                                                         <span className='text-lg text-teal-600 font-bold'>Bonus:</span> {/* Increased font size and boldness */}
                                                                         <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
-                                                                            {selectedQuotation.bonus.description.split('\n').map((item, index) => (
-                                                                                <li key={index} className="mb-1">
-                                                                                    <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
+                                                                            {selectedQuotation.bonus.description ?
+                                                                                selectedQuotation.bonus.description.split('\n').map((item, index) => (
+                                                                                    <li key={index} className="mb-1">
+                                                                                        <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
+                                                                                    </li>
+                                                                                ))
+                                                                                :
+                                                                                <li className="mb-1">
+                                                                                    <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">No Details</span>
                                                                                 </li>
-                                                                            ))}
+                                                                            }
                                                                         </ul>
                                                                     </div>
                                                                     <div className="flex flex-col mt-4">
@@ -1011,11 +1036,11 @@ function OrderDetail() {
                                                             <div className="flex flex-col">
                                                                 <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
                                                                 <span className='text-xl text-gray-900 font-semibold'>
-                                                                    {`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    {orderDetail.final_amount > 0 ? `RM ${(orderDetail.final_amount - Number(selectedQuotation.bonus.value)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </span>
                                                                 {selectedQuotation.bonus && (
                                                                     <span className='text-gray-900 text-sm'>
-                                                                        Original Price: {`RM ${orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                        Original Price: RM {orderDetail.final_amount > 0 ? orderDetail.final_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </span>
                                                                 )}
                                                             </div>
@@ -1216,11 +1241,17 @@ function OrderDetail() {
                                                         <div className="flex flex-col">
                                                             <span className='text-lg text-teal-600 font-bold'>Bonus:</span> {/* Increased font size and boldness */}
                                                             <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
-                                                                {selectedQuotation.bonus.description.split('\n').map((item, index) => (
-                                                                    <li key={index} className="mb-1">
-                                                                        <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
+                                                                {selectedQuotation.bonus.description ?
+                                                                    selectedQuotation.bonus.description.split('\n').map((item, index) => (
+                                                                        <li key={index} className="mb-1">
+                                                                            <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
+                                                                        </li>
+                                                                    ))
+                                                                    :
+                                                                    <li className="mb-1">
+                                                                        <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">No Details</span>
                                                                     </li>
-                                                                ))}
+                                                                }
                                                             </ul>
                                                         </div>
                                                         <div className="flex flex-col mt-4">
@@ -1240,11 +1271,11 @@ function OrderDetail() {
                                                 <div className="flex flex-col">
                                                     <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
                                                     <span className='text-xl text-gray-900 font-semibold'>
-                                                        {`RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                        {orderDetail.final_amount > 0 ? `RM ${(orderDetail.final_amount - Number(selectedQuotation.bonus.value)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                     </span>
                                                     {selectedQuotation.bonus && (
                                                         <span className='text-gray-900 text-sm'>
-                                                            Original Price: {`RM ${orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                            Original Price: RM {orderDetail.final_amount > 0 ? orderDetail.final_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </span>
                                                     )}
                                                 </div>
@@ -1355,6 +1386,10 @@ function OrderDetail() {
                 order={{ id: orderDetail.id, name: orderDetail.order_no }}
                 onSubmit={refetch}
             />
+
+            <div className="tooltip" id="final_pricing_tooltip">
+                This is the price that will be display to the owner
+            </div>
         </>
     )
 }

@@ -43,7 +43,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
     ) => {
         try {
             setIsLoading(true);
-            const response = await packageIndex(size, page, searchTerm, order, field);
+            const response = await packageIndex(size, page, searchTerm, order, field, false);
             const data = response?.data || [];
 
             localStorage.setItem('packages_data', JSON.stringify(data));
@@ -73,7 +73,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
 
             try {
                 setIsLoading(true);
-                const response = await packageIndex(size, 1, value, sortOrder, sortField);
+                const response = await packageIndex(size, 1, value, sortOrder, sortField, false);
                 const data = response?.data || [];
 
                 localStorage.setItem('packages_data', JSON.stringify(data));
