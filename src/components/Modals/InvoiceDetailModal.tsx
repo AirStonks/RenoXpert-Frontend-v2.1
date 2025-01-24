@@ -100,7 +100,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                 notify('success', "Invoice marked as paid.");
                 refetch();
             }
-            
+
         } catch (error) {
             console.error('Error changing invoice link status:', error);
         }
@@ -131,21 +131,23 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                 </button>
 
                                 <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
-                                    <div className="menu-item">
-                                        <button
-                                            className="menu-link copy-link"
-                                            onClick={() => handleMarkAsPaid(invoice.id)}
-                                        >
-                                            <span className="menu-title">
-                                                <div className="flex gap-2 items-center">
-                                                    <i className="ki-outline ki-copy"></i>
-                                                    <span className="text-gray-900">
-                                                        Mark as Paid
-                                                    </span>
-                                                </div>
-                                            </span>
-                                        </button>
-                                    </div>
+                                    {invoice.status === "unpaid" && (
+                                        <div className="menu-item">
+                                            <button
+                                                className="menu-link copy-link"
+                                                onClick={() => handleMarkAsPaid(Number(invoice.id))}
+                                            >
+                                                <span className="menu-title">
+                                                    <div className="flex gap-2 items-center">
+                                                        <i className="ki-outline ki-copy"></i>
+                                                        <span className="text-gray-900">
+                                                            Mark as Paid
+                                                        </span>
+                                                    </div>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

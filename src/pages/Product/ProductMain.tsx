@@ -397,7 +397,7 @@ function ProductMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={9} className="text-center text-gray-500">
+                                        <td colSpan={8} className="text-center text-gray-500">
                                             No products available
                                         </td>
                                     </tr>

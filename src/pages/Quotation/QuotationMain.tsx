@@ -287,7 +287,7 @@ function QuotationMain() {
                             <thead>
                                 <tr>
                                     <th
-                                        className='w-[150px] text-center cursor-pointer hover:bg-gray-50'
+                                        className='w-[200px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('name')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
@@ -312,7 +312,6 @@ function QuotationMain() {
                                             Total Amount {getSortIcon('total_amount')}
                                         </div>
                                     </th>
-                                    <th className='w-[80px] text-center'>Created By</th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('created_at')}
@@ -321,7 +320,6 @@ function QuotationMain() {
                                             Created Date {getSortIcon('created_at')}
                                         </div>
                                     </th>
-                                    <th className='w-[80px] text-center'>Updated By</th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('updated_at')}
@@ -364,16 +362,20 @@ function QuotationMain() {
                                                 RM {quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                             <td className='text-center'>
-                                                {quotation.created_by ? quotation.created_by.name : '-'}
+                                                <div className="flex flex-col">
+                                                    <span>{quotation.created_by ? quotation.created_by.name : '-'}</span>
+                                                    <div className="inline-block">
+                                                        <span className="text-sm font-semibold badge badge-outline badge-sm my-1">{quotation.created_at}</span>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className='text-center'>
-                                                {quotation.created_at}
-                                            </td>
-                                            <td className='text-center'>
-                                                {quotation.updated_by ? quotation.updated_by.name : '-'}
-                                            </td>
-                                            <td className='text-center'>
-                                                {quotation.updated_at}
+                                                <div className="flex flex-col">
+                                                    <span>{quotation.updated_by ? quotation.updated_by.name : '-'}</span>
+                                                    <div className="inline-block">
+                                                        <span className="text-sm font-semibold badge badge-outline badge-sm my-1">{quotation.updated_at}</span>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
@@ -400,7 +402,7 @@ function QuotationMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={9} className="text-center text-gray-500">
+                                        <td colSpan={7} className="text-center text-gray-500">
                                             No quotations available
                                         </td>
                                     </tr>

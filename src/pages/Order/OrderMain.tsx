@@ -284,7 +284,6 @@ function OrderMain() {
                                     <th className='w-[120px] text-center'>Owner</th>
                                     <th className='w-[80px] text-center'>Unit</th>
                                     <th className='w-[150px] text-center'>Property</th>
-                                    <th className='w-[80px] text-center'>Created By</th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('created_at')}
@@ -293,7 +292,6 @@ function OrderMain() {
                                             Created Date {getSortIcon('created_at')}
                                         </div>
                                     </th>
-                                    <th className='w-[80px] text-center'>Updated By</th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('updated_at')}
@@ -350,16 +348,20 @@ function OrderMain() {
                                                 </div>
                                             </td>
                                             <td className='text-center'>
-                                                {order.created_by ? order.created_by.name : '-'}
+                                                <div className="flex flex-col">
+                                                    <span>{order.created_by ? order.created_by.name : '-'}</span>
+                                                    <div className="inline-block">
+                                                        <span className="text-sm font-semibold badge badge-outline badge-sm my-1">{order.created_at}</span>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className='text-center'>
-                                                {order.created_at}
-                                            </td>
-                                            <td className='text-center'>
-                                                {order.updated_by ? order.updated_by.name : '-'}
-                                            </td>
-                                            <td className='text-center'>
-                                                {order.updated_at}
+                                                <div className="flex flex-col">
+                                                    <span>{order.updated_by ? order.updated_by.name : '-'}</span>
+                                                    <div className="inline-block">
+                                                        <span className="text-sm font-semibold badge badge-outline badge-sm my-1">{order.updated_at}</span>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
@@ -454,7 +456,7 @@ function OrderMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={11} className="text-center text-gray-500">
+                                        <td colSpan={9} className="text-center text-gray-500">
                                             No orders available
                                         </td>
                                     </tr>
