@@ -974,6 +974,7 @@ export interface JobTask {
     qty?: number,
     priority?: number,
     task_weightage?: number,
+    area?: string,
     is_supplied?: boolean,
     is_installed?: boolean,
     supply_date?: string,

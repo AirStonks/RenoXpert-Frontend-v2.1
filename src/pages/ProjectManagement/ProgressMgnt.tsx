@@ -946,7 +946,16 @@ function ProgressMgnt() {
                                                         <tbody>
                                                             {job.tasks.map((task, taskIndex) => (
                                                                 <tr key={taskIndex}>
-                                                                    <td>{task.name}</td>
+                                                                    <td>
+                                                                        <div className="flex flex-col">
+                                                                            <span>
+                                                                                {task.name}
+                                                                            </span>
+                                                                            <span className="text-xs text-gray-500">
+                                                                                {task.area}
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
                                                                     <td>
                                                                         <label className="switch flex justify-center">
                                                                             <input
@@ -1180,7 +1189,16 @@ function ProgressMgnt() {
                                                         <tbody>
                                                             {job.tasks.map((task, taskIndex) => (
                                                                 <tr key={taskIndex}>
-                                                                    <td>{task.name}</td>
+                                                                    <td>
+                                                                        <div className="flex flex-col">
+                                                                            <span>
+                                                                                {task.name}
+                                                                            </span>
+                                                                            <span className="text-xs text-gray-500">
+                                                                                {task.area}
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
                                                                     <td>
                                                                         <label className="switch flex justify-center">
                                                                             <input
