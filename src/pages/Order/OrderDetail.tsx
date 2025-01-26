@@ -452,7 +452,7 @@ function OrderDetail() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <span className="text-sm text-gray-900 pb-3">
-                                                RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
+                                                RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus>.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
                                             </span>
 
                                         </td>
@@ -465,7 +465,7 @@ function OrderDetail() {
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <span className="text-sm text-gray-900 pb-3">
-                                                    RM {(orderDetail.final_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
+                                                    RM {(orderDetail.final_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus?.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
                                                 </span>
 
                                             </td>
@@ -722,7 +722,7 @@ function OrderDetail() {
                                         {selectedQuotation.quotation_name}
                                     </span>
                                     <span className="text-base font-normal text-gray-800">
-                                        Price: RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
+                                        Price: RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus?.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
                                         }
                                     </span>
                                     <span className="text-base font-normal text-gray-400">
@@ -1036,7 +1036,7 @@ function OrderDetail() {
                                                             <div className="flex flex-col">
                                                                 <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
                                                                 <span className='text-xl text-gray-900 font-semibold'>
-                                                                    {orderDetail.final_amount > 0 ? `RM ${(orderDetail.final_amount - Number(selectedQuotation.bonus.value)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    {orderDetail.final_amount > 0 ? `RM ${(orderDetail.final_amount - Number(selectedQuotation.bonus?.value)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </span>
                                                                 {selectedQuotation.bonus && (
                                                                     <span className='text-gray-900 text-sm'>
@@ -1271,7 +1271,7 @@ function OrderDetail() {
                                                 <div className="flex flex-col">
                                                     <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
                                                     <span className='text-xl text-gray-900 font-semibold'>
-                                                        {orderDetail.final_amount > 0 ? `RM ${(orderDetail.final_amount - Number(selectedQuotation.bonus.value)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                        {orderDetail.final_amount > 0 ? `RM ${(orderDetail.final_amount - Number(selectedQuotation.bonus?.value)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                     </span>
                                                     {selectedQuotation.bonus && (
                                                         <span className='text-gray-900 text-sm'>
