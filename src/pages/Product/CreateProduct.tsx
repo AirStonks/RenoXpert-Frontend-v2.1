@@ -251,6 +251,7 @@ function CreateProduct() {
 
         } catch (error) {
             console.error('Product creation failed:', error);
+            notify('error', error.response.data.message);
         }
     };
 
