@@ -333,7 +333,6 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                                         type="file"
                                         id="file-upload"
                                         multiple
-                                        accept='image/*'
                                         onChange={handleFileSelect}
                                         className="hidden"
                                     />

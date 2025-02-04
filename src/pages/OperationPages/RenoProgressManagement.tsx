@@ -640,12 +640,13 @@ function RenoProgressManagement() {
                             </div>
                         </div>
 
-                        <div
-                            className={`flex bg-center w-full p-5 lg:p-7 bg-no-repeat bg-[length:550px] border border-gray-300 rounded border-dashed branding-bg mb-4 
+                        <label
+                            className={`flex bg-center w-full p-1 lg:p-2 bg-no-repeat bg-[length:550px] border border-gray-300 rounded-xl border-dashed branding-bg mb-4 
                                 ${dragging ? 'border-primary border-1 bg-gray-100' : ''}`} // Add custom styles when dragging
                             onDragOver={handleDragOver}
                             onDragLeave={handleDragLeave}
                             onDrop={handleDrop}
+                            htmlFor="file-upload"
                         >
                             <div className="flex flex-col place-items-center place-content-center text-center rounded w-full">
                                 <div className="flex items-center mb-2.5">
@@ -675,18 +676,17 @@ function RenoProgressManagement() {
                                     onChange={handleFileSelect}
                                     className="hidden"
                                 />
-                                <label
-                                    htmlFor="file-upload"
+                                <span
                                     className="text-gray-900 text-xs font-medium hover:text-primary-active mb-px cursor-pointer"
                                 >
                                     Click or Drag & Drop
-                                </label>
+                                </span>
 
                                 <span className="text-2xs text-gray-700 text-nowrap">
                                     max size: 50MB | max files: {maxFiles}
                                 </span>
                             </div>
-                        </div>
+                        </label>
 
                         {pendingUploadItems !== null ?
                             pendingUploadItems.length > 0 && (
