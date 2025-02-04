@@ -946,7 +946,6 @@ function DefectInspectionFormPage() {
             return;
         }
 
-
         try {
             const options = {
                 maxSizeMB: 2, // Max file size (in MB)

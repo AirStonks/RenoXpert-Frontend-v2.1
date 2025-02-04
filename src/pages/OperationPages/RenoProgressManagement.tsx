@@ -7,6 +7,7 @@ import { KTAccordion } from "../../metronic/core";
 import Loading from "../../components/Loading";
 import { Slide, toast } from "react-toastify";
 import { changeTaskStatus, fetchRenoProgressDetail, fetchTaskDocuments, removeTaskDocument, updateSelectedTaskComments, uploadTaskDocuments } from "../../services/operationApi";
+import imageCompression from 'browser-image-compression';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -84,7 +85,33 @@ function RenoProgressManagement() {
     }, []);
 
     // Handle file selection from input
-    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+
+        // const fileInput = event.target;
+        // if (!fileInput.files || fileInput.files.length === 0) {
+        //     return;
+        // }
+
+        // try {
+        //     const options = {
+        //         maxSizeMB: 2, // Max file size (in MB)
+        //         maxWidthOrHeight: 1920, // Max image width/height
+        //         useWebWorker: true, // Use a web worker to compress the image in the background
+        //     };
+
+        //     // Compress the image using browser-image-compression
+        //     const compressedFile = await imageCompression(event.target.files[0], options);
+
+        //     const compressedImage = new File(
+        //         [compressedFile],
+        //         event.target.files[0].name,
+        //         { type: event.target.files[0].type }
+        //     );
+
+        // } catch (error) {
+        //     notify('error', 'Error uploading file.');
+        // }
+
         const selectedFiles = Array.from(event.target.files ?? []);
         const newPendingUploadItems = [...pendingUploadItems, ...selectedFiles];
 
@@ -401,9 +428,18 @@ function RenoProgressManagement() {
                                 currentPhase = 'pre_reno';
                                 currentPhaseCompletion = 'pre_reno_completion';
                             } else if (phaseIndex === 1) {
-                                currentPhase = 'reno';
-                                currentPhaseCompletion = 'reno_completion';
+                                currentPhase = 'p1';
+                                currentPhaseCompletion = 'p1_completion';
                             } else if (phaseIndex === 2) {
+                                currentPhase = 'p2a';
+                                currentPhaseCompletion = 'p2a_completion';
+                            } else if (phaseIndex === 3) {
+                                currentPhase = 'p2b';
+                                currentPhaseCompletion = 'p2b_completion';
+                            } else if (phaseIndex === 4) {
+                                currentPhase = 'iot';
+                                currentPhaseCompletion = 'iot_completion';
+                            } else if (phaseIndex === 5) {
                                 currentPhase = 'post_reno';
                                 currentPhaseCompletion = 'post_reno_completion';
                             }
@@ -488,8 +524,14 @@ function RenoProgressManagement() {
                                                                                 {job.tasks.map((task, taskIndex) => (
                                                                                     <div className="flex flex-col mb-8" key={taskIndex}>
                                                                                         <div className="flex mb-1 items-center gap-2">
-                                                                                            <span className="text-sm font-bold">{task.name}</span>
+                                                                                            <span className="text-sm font-bold">{task.name} {currentPhase === 'p1' || currentPhase === 'iot' ? task.area : 'no'}</span>
                                                                                         </div>
+                                                                                        {(currentPhase === 'p1' || currentPhase === 'iot') &&
+                                                                                            <div className="flex mb-1 items-center gap-2">
+                                                                                                <span className="text-xs text-gray-500 font-semibold">Room/Area: </span>
+                                                                                                <span className="text-xs text-gray-500 font-semibold">{task.area}</span>
+                                                                                            </div>
+                                                                                        }
                                                                                         <div className="flex mb-1 items-center gap-2">
                                                                                             <span className="text-xs text-gray-500 font-semibold">Lastest Date: </span>
                                                                                             <span className="text-xs text-gray-500 font-semibold">{task.updated_at}</span>
