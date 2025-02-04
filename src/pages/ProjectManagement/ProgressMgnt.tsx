@@ -522,15 +522,6 @@ function ProgressMgnt() {
                                 <span className="text-xs">{(renoProgress.pre_reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                {/* Issued progress bar (outer) */}
-                                <div
-                                    className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                    style={{
-                                        width: `${renoProgress.pre_reno_completion * 100}%`,
-                                        height: '8px'
-                                    }}
-                                />
-
                                 {/* Paid progress bar (inner) */}
                                 <div
                                     className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
@@ -544,27 +535,33 @@ function ProgressMgnt() {
                         <div className="flex flex-col mb-4">
                             <div className="flex justify-between items-center mb-1">
                                 <span className="text-lg text-gray-900 font-semibold">Reno</span>
-                                <span className="text-xs">{(renoProgress.reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                {/* Issued progress bar (outer) */}
-                                <div
-                                    className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                    style={{
-                                        width: `${renoProgress.reno_completion * 100}%`,
-                                        height: '8px'
-                                    }}
-                                />
+                            {['p1', 'p2a', 'p2b', 'iot'].map((key) => {
+                                const completionKey = `${key}_completion` as keyof RenoProgress; // Type assertion
+                                const completionValue = renoProgress[completionKey];
 
-                                {/* Paid progress bar (inner) */}
-                                <div
-                                    className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                    style={{
-                                        width: `${renoProgress.reno_completion * 100}%`,
-                                        height: '8px'
-                                    }}
-                                />
-                            </div>
+                                // Ensure completionValue is a number
+                                if (typeof completionValue !== 'number') {
+                                    return null; // Skip rendering if the value is not a number
+                                }
+
+                                return (
+                                    <div key={key} className="flex flex-col flex-1 mb-3">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="text-sm text-gray-900 font-semibold">{key.toUpperCase()}</span>
+                                            <span className="text-xs">
+                                                {(completionValue * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-[8px] relative overflow-hidden">
+                                            <div
+                                                className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                                style={{ width: `${completionValue * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                         <div className="flex flex-col">
                             <div className="flex justify-between items-center mb-1">
@@ -572,15 +569,6 @@ function ProgressMgnt() {
                                 <span className="text-xs">{(renoProgress.post_reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                {/* Issued progress bar (outer) */}
-                                <div
-                                    className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                    style={{
-                                        width: `${renoProgress.post_reno_completion * 100}%`,
-                                        height: '8px'
-                                    }}
-                                />
-
                                 {/* Paid progress bar (inner) */}
                                 <div
                                     className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"

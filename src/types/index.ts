@@ -900,6 +900,7 @@ export interface Attachment {
 export interface RenoProgress {
     id?: string,
     sale_id?: string,
+    sales_no?: string,
     sale?: Sale,
     phases?: ProgressPhase[],
     property?: {
@@ -936,8 +937,13 @@ export interface RenoProgress {
     contractor_pc_start_date?: string,
     contractor_handover_date?: string,
     pre_reno_completion?: number,
-    reno_completion?: number,
+    p1_completion?: number,
+    p2a_completion?: number,
+    p2b_completion?: number,
+    iot_completion?: number,
     post_reno_completion?: number,
+    remaining_percentage?: number,
+    paid_percentage?: number,
     completed_at?: string,
     created_at?: string,
     updated_at?: string,

@@ -37,8 +37,8 @@ function PMMain() {
 
     useEffect(() => {
         document.title = "Project Management | RenoXpert";
-        initRenoProgressTable(page, size, searchTerm, sortOrder, sortField);
-    }, [page, size, searchTerm, sortOrder, sortField]);
+        initRenoProgressTable(1, 10, '', null, '');
+    }, []);
 
     const initRenoProgressTable = async (
         page: number,
@@ -94,9 +94,47 @@ function PMMain() {
         setPage(1); // Reset to the first page when changing the page size
     };
 
+    const handleSort = (field: string) => {
+        if (sortField === field) {
+            // Cycle through states: null -> asc -> desc -> null
+            if (sortOrder === null) {
+                setSortOrder('asc');
+                initRenoProgressTable(page, size, searchTerm, 'asc', field);
+            } else if (sortOrder === 'asc') {
+                setSortOrder('desc');
+                initRenoProgressTable(page, size, searchTerm, 'desc', field);
+            } else {
+                setSortOrder(null);
+                setSortField('');
+                initRenoProgressTable(page, size, searchTerm, null, '');
+            }
+        } else {
+            // New field, start with ascending
+            setSortField(field);
+            setSortOrder('asc');
+            initRenoProgressTable(page, size, searchTerm, 'asc', field);
+        }
+    };
+
+    const getSortIcon = (field: string) => {
+        if (sortField !== field) {
+            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+        switch (sortOrder) {
+            case 'asc':
+                return <i className="ki-outline ki-arrow-up text-primary" />;
+            case 'desc':
+                return <i className="ki-outline ki-arrow-down text-primary" />;
+            default:
+                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+        }
+    };
+
     const toProgressDetail = (id: number) => {
         navigate(`/reno-progress/${id}`);
     }
+
+    const totalPages = Math.ceil(totalItems / size);
 
     return (
         <>
@@ -119,20 +157,129 @@ function PMMain() {
                     <div className="card-title">
                         Project Overview
                     </div>
+                    <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
+                        <button
+                            className="btn-refresh"
+                            onClick={handleRefreshTable}
+                        >
+                            <i className="ki-solid ki-arrows-circle text-lg"></i>
+                        </button>
+                        <div className="flex">
+                            <label className="input input-sm">
+                                <i className="ki-filled ki-magnifier"></i>
+                                <input
+                                    placeholder="Search products"
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={handleSearch}
+                                />
+                            </label>
+                        </div>
+                        <div className="flex flex-wrap gap-2.5">
+                            {/* <select className="select select-sm w-28">
+                                    <option value="1">
+                                        Latest
+                                    </option>
+                                    <option value="2">
+                                        Older
+                                    </option>
+                                    <option value="3">
+                                        Oldest
+                                    </option>
+                                </select>
+                                <button className="btn btn-sm btn-outline btn-primary">
+                                    <i className="ki-filled ki-setting-4">
+                                    </i>
+                                    Filters
+                                </button>
+                                <label className="switch switch-sm">
+                                    <input className="order-2" name="check" type="checkbox" value="1" />
+                                    <span className="switch-label order-1">Push Alerts</span>
+                                </label> */}
+                        </div>
+                    </div>
                 </div>
                 <div className="card-table">
                     <table className="table align-middle text-gray-700 font-medium text-sm">
                         <thead>
                             <tr>
-                                <th className='w-[100px] text-center'>Sales</th>
-                                <th className='w-[100px] text-center'>Payment Progress</th>
-                                <th className='w-[100px] text-center'>Condo</th>
-                                <th className='w-[100px] text-center'>Contractual Date</th>
-                                <th className='w-[100px] text-center'>Contractor Date</th>
-                                <th className='w-[80px] text-center'>Pre-Reno</th>
-                                <th className='w-[80px] text-center'>Reno</th>
-                                <th className='w-[80px] text-center'>Post-Reno</th>
-                                <th className='w-[80px] text-center'>Completion</th>
+                                <th
+                                    className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        Condo
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        Payment Progress
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        Contractual Date
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        Contractor Date
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        Pre-Reno
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        P1
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        P2-A
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        P2-B
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        IOT
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        Post-Reno
+                                    </div>
+                                </th>
+                                <th
+                                    className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                >
+                                    <div className="flex items-center justify-center gap-2">
+                                        Completion
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -144,22 +291,28 @@ function PMMain() {
                                         onClick={() => toProgressDetail(Number(progress.id))}
                                     >
                                         <td className="text-center">
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold mb-1">{progress.property.name}</span>
+                                                <span className="badge badge-xs text-md text-gray-600 mb-2">
+                                                    {progress.property.block}-{progress.property.floor}-{progress.property.unit_no}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="text-center">
                                             <Link
                                                 to={'/sales/' + progress.sale_id}
                                                 state={{ fromUrl: '/reno-progress' }}
                                                 onClick={(e) => e.stopPropagation()} // Prevent tr onClick
                                                 className="link text-orange-500"
                                             >
-                                                {progress.sale.sales_no}
+                                                {progress.sales_no}
                                             </Link>
-                                        </td>
-                                        <td className="text-center">
-                                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-2 relative overflow-hidden">
+                                            <div className="w-full bg-gray-200 rounded-full h-[8px] my-2 relative overflow-hidden">
                                                 {/* Issued progress bar (outer) */}
                                                 <div
                                                     className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
                                                     style={{
-                                                        width: `${100 - progress.sale.remaining_percentage * 100}%`,
+                                                        width: `${100 - progress.remaining_percentage * 100}%`,
                                                         height: '8px'
                                                     }}
                                                 />
@@ -168,22 +321,14 @@ function PMMain() {
                                                 <div
                                                     className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
                                                     style={{
-                                                        width: `${progress.sale.paid_percentage * 100}%`,
+                                                        width: `${progress.paid_percentage * 100}%`,
                                                         height: '8px'
                                                     }}
                                                 />
                                             </div>
                                             <div className="flex gap-2 justify-center">
-                                                <span className="text-xs badge badge-sm badge-pill badge-outline border-blue-200 bg-blue-50 text-blue-400">{100 - (progress.sale.remaining_percentage * 100)}%</span>
-                                                <span className="text-xs badge badge-sm badge-pill badge-outline badge-success">{progress.sale.paid_percentage * 100}%</span>
-                                            </div>
-                                        </td>
-                                        <td className="text-center">
-                                            <div className="flex flex-col items-center">
-                                                <span className="font-semibold mb-1">{progress.sale.order.property.name}</span>
-                                                <span className="badge badge-sm badge-pill text-xs text-gray-600">
-                                                    {progress.sale.order.block}-{progress.sale.order.floor}-{progress.sale.order.unit_no}
-                                                </span>
+                                                <span className="text-xs badge badge-sm badge-pill badge-outline border-blue-200 bg-blue-50 text-blue-400">{100 - (progress.remaining_percentage * 100)}%</span>
+                                                <span className="text-xs badge badge-sm badge-pill badge-outline badge-success">{progress.paid_percentage * 100}%</span>
                                             </div>
                                         </td>
                                         <td className="text-center">
@@ -264,7 +409,7 @@ function PMMain() {
                                                 <div
                                                     className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
                                                     style={{
-                                                        width: `${progress.reno_completion * 100}%`,
+                                                        width: `${progress.p1_completion * 100}%`,
                                                         height: '8px'
                                                     }}
                                                 />
@@ -273,12 +418,78 @@ function PMMain() {
                                                 <div
                                                     className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
                                                     style={{
-                                                        width: `${progress.reno_completion * 100}%`,
+                                                        width: `${progress.p1_completion * 100}%`,
                                                         height: '8px'
                                                     }}
                                                 />
                                             </div>
-                                            <span className="text-xs">{(progress.reno_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                                            <span className="text-xs">{(progress.p1_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                                        </td>
+                                        <td className="text-center">
+                                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
+                                                {/* Issued progress bar (outer) */}
+                                                <div
+                                                    className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
+                                                    style={{
+                                                        width: `${progress.p2a_completion * 100}%`,
+                                                        height: '8px'
+                                                    }}
+                                                />
+
+                                                {/* Paid progress bar (inner) */}
+                                                <div
+                                                    className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                                    style={{
+                                                        width: `${progress.p2a_completion * 100}%`,
+                                                        height: '8px'
+                                                    }}
+                                                />
+                                            </div>
+                                            <span className="text-xs">{(progress.p2a_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                                        </td>
+                                        <td className="text-center">
+                                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
+                                                {/* Issued progress bar (outer) */}
+                                                <div
+                                                    className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
+                                                    style={{
+                                                        width: `${progress.p2b_completion * 100}%`,
+                                                        height: '8px'
+                                                    }}
+                                                />
+
+                                                {/* Paid progress bar (inner) */}
+                                                <div
+                                                    className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                                    style={{
+                                                        width: `${progress.p2b_completion * 100}%`,
+                                                        height: '8px'
+                                                    }}
+                                                />
+                                            </div>
+                                            <span className="text-xs">{(progress.p2b_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                                        </td>
+                                        <td className="text-center">
+                                            <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
+                                                {/* Issued progress bar (outer) */}
+                                                <div
+                                                    className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
+                                                    style={{
+                                                        width: `${progress.iot_completion * 100}%`,
+                                                        height: '8px'
+                                                    }}
+                                                />
+
+                                                {/* Paid progress bar (inner) */}
+                                                <div
+                                                    className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
+                                                    style={{
+                                                        width: `${progress.iot_completion * 100}%`,
+                                                        height: '8px'
+                                                    }}
+                                                />
+                                            </div>
+                                            <span className="text-xs">{(progress.iot_completion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
                                         </td>
                                         <td className="text-center">
                                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
@@ -304,25 +515,16 @@ function PMMain() {
                                         </td>
                                         <td className="text-center">
                                             <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                                {/* Issued progress bar (outer) */}
-                                                <div
-                                                    className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                                    style={{
-                                                        width: `${((progress.pre_reno_completion * 0.2) + (progress.reno_completion * 0.7) + (progress.post_reno_completion * 0.1)) * 100}%`,
-                                                        height: '8px'
-                                                    }}
-                                                />
-
                                                 {/* Paid progress bar (inner) */}
                                                 <div
                                                     className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
                                                     style={{
-                                                        width: `${((progress.pre_reno_completion * 0.2) + (progress.reno_completion * 0.7) + (progress.post_reno_completion * 0.1)) * 100}%`,
+                                                        width: `${((progress.pre_reno_completion * 0.2) + (progress.p1_completion * 0.175) + (progress.p2a_completion * 0.175) + (progress.p2b_completion * 0.175) + (progress.iot_completion * 0.175) + (progress.post_reno_completion * 0.1)) * 100}%`,
                                                         height: '8px'
                                                     }}
                                                 />
                                             </div>
-                                            <span className="text-xs">{(((progress.pre_reno_completion * 0.2) + (progress.reno_completion * 0.7) + (progress.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
+                                            <span className="text-xs">{(((progress.pre_reno_completion * 0.2) + (progress.p1_completion * 0.175) + (progress.p2a_completion * 0.175) + (progress.p2b_completion * 0.175) + (progress.iot_completion * 0.175) + (progress.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</span>
                                         </td>
                                     </tr>
                                 ))
@@ -335,6 +537,96 @@ function PMMain() {
                             )}
                         </tbody>
                     </table>
+                </div>
+                <div className="card-footer justify-center md:justify-between flex-col md:flex-row gap-3 text-gray-600 text-2sm font-medium">
+                    <div className="flex items-center gap-2">
+                        Show
+                        <select
+                            className="select select-sm w-16"
+                            name="perpage"
+                            value={size}
+                            onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                        >
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                        </select>
+                        per page
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span>
+                        <div className="pagination">
+                            {/* Previous Page Button */}
+                            <button
+                                className={`btn ${page === 1 ? 'disabled' : ''}`}
+                                onClick={() => handlePageChange(page - 1)}
+                            >
+                                <i className="ki-outline ki-black-left"></i>
+                            </button>
+
+                            {/* Page Number Buttons with Ellipses */}
+                            {totalPages > 0 && (
+                                <>
+                                    {page > 3 && (
+                                        <>
+                                            <button
+                                                className="btn"
+                                                onClick={() => handlePageChange(1)}
+                                            >
+                                                1
+                                            </button>
+                                            <span className="btn btn-disabled">...</span>
+                                        </>
+                                    )}
+
+                                    {Array.from({
+                                        length: Math.min(3, totalPages)
+                                    }, (_, index) => {
+                                        // Determine the start of the 3-page window
+                                        const startPage = Math.max(1,
+                                            Math.min(
+                                                page - 1,
+                                                totalPages - 2
+                                            )
+                                        );
+
+                                        const currentPage = startPage + index;
+                                        return (
+                                            <button
+                                                key={currentPage}
+                                                className={`btn ${page === currentPage ? 'active' : ''}`}
+                                                onClick={() => handlePageChange(currentPage)}
+                                            >
+                                                {currentPage}
+                                            </button>
+                                        );
+                                    })}
+
+                                    {page < totalPages - 2 && (
+                                        <>
+                                            <span className="btn btn-disabled">...</span>
+                                            <button
+                                                className="btn"
+                                                onClick={() => handlePageChange(totalPages)}
+                                            >
+                                                {totalPages}
+                                            </button>
+                                        </>
+                                    )}
+                                </>
+                            )}
+
+                            {/* Next Page Button */}
+                            <button
+                                className={`btn ${page === totalPages ? 'disabled' : ''}`}
+                                onClick={() => handlePageChange(page + 1)}
+                            >
+                                <i className="ki-outline ki-black-right"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
