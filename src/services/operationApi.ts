@@ -259,6 +259,35 @@ export const uploadTaskDocuments = async (renoProgressId: number, taskId: number
     }
 };
 
+export const liveUploadProgressAttachment = async (renoProgressId: number, taskId: number, file: File) => {
+    try {
+        // Create a new FormData instance
+        const formData = new FormData();
+
+        // Append file to the FormData object
+        formData.append('attachment', file);
+
+        // Make the API request
+        const response = await axios.post(
+            `${API_URL}reno-progress/${renoProgressId}/task/${taskId}/document/upload`,
+            formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handleOperation401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+}
+
 export const removeTaskDocument = async (renoProgressId: number, taskId: number, documentIndex: number) => {
     try {
         const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/documents/${documentIndex}/remove`, {

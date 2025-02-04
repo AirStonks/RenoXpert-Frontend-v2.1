@@ -87,30 +87,30 @@ function RenoProgressManagement() {
     // Handle file selection from input
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
-        // const fileInput = event.target;
-        // if (!fileInput.files || fileInput.files.length === 0) {
-        //     return;
-        // }
+        const fileInput = event.target;
+        if (!fileInput.files || fileInput.files.length === 0) {
+            return;
+        }
 
-        // try {
-        //     const options = {
-        //         maxSizeMB: 2, // Max file size (in MB)
-        //         maxWidthOrHeight: 1920, // Max image width/height
-        //         useWebWorker: true, // Use a web worker to compress the image in the background
-        //     };
+        try {
+            const options = {
+                maxSizeMB: 2, // Max file size (in MB)
+                maxWidthOrHeight: 1920, // Max image width/height
+                useWebWorker: true, // Use a web worker to compress the image in the background
+            };
 
-        //     // Compress the image using browser-image-compression
-        //     const compressedFile = await imageCompression(event.target.files[0], options);
+            // Compress the image using browser-image-compression
+            const compressedFile = await imageCompression(event.target.files[0], options);
 
-        //     const compressedImage = new File(
-        //         [compressedFile],
-        //         event.target.files[0].name,
-        //         { type: event.target.files[0].type }
-        //     );
+            const compressedImage = new File(
+                [compressedFile],
+                event.target.files[0].name,
+                { type: event.target.files[0].type }
+            );
 
-        // } catch (error) {
-        //     notify('error', 'Error uploading file.');
-        // }
+        } catch (error) {
+            notify('error', 'Error uploading file.');
+        }
 
         const selectedFiles = Array.from(event.target.files ?? []);
         const newPendingUploadItems = [...pendingUploadItems, ...selectedFiles];
