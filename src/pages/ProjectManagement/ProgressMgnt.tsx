@@ -697,7 +697,7 @@ function ProgressMgnt() {
                     Project Management
                 </div>
 
-                <div>
+                <div className="mb-16">
                     <div className="tabs mb-5" data-tabs="true">
                         <button
                             className={`tab ${activeTab === 'pre_reno_tab' ? 'active' : ''}`}

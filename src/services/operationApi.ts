@@ -43,10 +43,17 @@ export const fetchProperties = async () => {
     }
 }
 
-export const retrieveRenoProgresses = async () => {
+export const retrieveRenoProgresses = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
         const response = await axios.get(API_URL + `op/reno/progresses`, {
-            headers: getAuthHeaders()
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
         });
         return response.data; // Return product data
     } catch (error) {

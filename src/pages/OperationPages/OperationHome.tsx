@@ -1,18 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchDIForms, fetchQCForms, retrieveRenoProgresses, userDetail } from "../../services/operationApi";
 import { DefectInspectionForm, QCForm, RenoProgress, User } from "../../types";
 import Loading from "../../components/Loading";
 import KTComponents from "../../metronic/core";
 import { logoutOperation } from "../../services/auth";
+import { Slide, toast } from "react-toastify";
 
 function OperationHome() {
     const [activeTab, setActiveTab] = useState('tab_1_1');
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [user, setUser] = useState<User>(null);
     const [renoProgresses, setRenoProgresses] = useState<RenoProgress[] | null>(null);
     const [qcForms, setQCForms] = useState<QCForm[] | null>(null);
     const [diForms, setDIForms] = useState<DefectInspectionForm[] | null>(null);
+    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [page, setPage] = useState<number>(1);
+    const [size, setSize] = useState<number>(10);
 
     const [loading, setLoading] = useState(false);
     const [selectedProgressStatus, setSelectedProgressStatus] = useState<string | null>(null);
@@ -20,6 +25,19 @@ function OperationHome() {
 
     const toggleStatus = (status: string) => {
         setSelectedProgressStatus(prevStatus => (prevStatus === status ? null : status));
+    };
+
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
     };
 
     useEffect(() => {
@@ -35,6 +53,29 @@ function OperationHome() {
 
         initFunction();
     }, []);
+
+    const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        setSearchTerm(value);
+
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+        debounceTimeout.current = setTimeout(async () => {
+            try {
+                setLoading(true);
+                const response = await retrieveRenoProgresses(size, page, value);
+
+                const data = response?.data || [];
+                setRenoProgresses(data);
+            } catch (error) {
+                console.error('Error searching renoProgress:', error);
+            } finally {
+                setLoading(false);
+            }
+        }, 500);
+    };
 
     const getUserDetail = async () => {
         setLoading(true);
@@ -173,8 +214,8 @@ function OperationHome() {
                                         <input
                                             placeholder="Search units"
                                             type="text"
-                                        // value={searchTerm}
-                                        // onChange={handleSearch}
+                                            value={searchTerm}
+                                            onChange={handleSearch}
                                         />
                                     </label>
                                 </div>
@@ -280,14 +321,14 @@ function OperationHome() {
                                                                         </div>
                                                                     </div>
                                                                     <span className="text-gray-900 text-xs">
-                                                                        {(((progress.pre_reno_completion * 0.2) + (progress.reno_completion * 0.7) + (progress.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% Completed
+                                                                        {(((progress.pre_reno_completion * 0.2) + (progress.p1_completion * 0.175) + (progress.p2a_completion * 0.175) + (progress.p2b_completion * 0.175) + (progress.iot_completion * 0.175) + (progress.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% Completed
                                                                     </span>
                                                                 </div>
                                                             </div>
                                                         </Link>
                                                     ))
                                             ) : (
-                                                <span className="text-center text-gray-700 text-sm font-semibold">No progress found for selected status</span>
+                                                <span className="text-center text-gray-700 text-sm font-semibold">No progress found</span>
                                             )
                                         )
                                     }

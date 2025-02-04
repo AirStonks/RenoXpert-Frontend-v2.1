@@ -10,6 +10,7 @@ import InvoiceDetailModal from "../../components/Modals/InvoiceDetailModal";
 import CreateAddonInvoiceModal from "../../components/Modals/CreateAddonInvoiceModal";
 import { Link } from "react-router-dom";
 import { testGenerateProgress } from "../../services/api";
+import NewPaymentDetailModal from "./components/NewPaymentDetailModal";
 
 function SaleDetail() {
     const navigate = useNavigate();
@@ -422,6 +423,10 @@ function SaleDetail() {
             />
 
             <InvoiceDetailModal
+                invoiceId={selectedInvoiceId}
+            />
+
+            <NewPaymentDetailModal
                 invoiceId={selectedInvoiceId}
             />
 

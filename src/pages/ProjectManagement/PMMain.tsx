@@ -87,11 +87,13 @@ function PMMain() {
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
+        initRenoProgressTable(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
+        initRenoProgressTable(1, newSize, searchTerm, sortOrder, sortField);
     };
 
     const handleSort = (field: string) => {
@@ -168,7 +170,7 @@ function PMMain() {
                             <label className="input input-sm">
                                 <i className="ki-filled ki-magnifier"></i>
                                 <input
-                                    placeholder="Search products"
+                                    placeholder="Search Unit/Property"
                                     type="text"
                                     value={searchTerm}
                                     onChange={handleSearch}
