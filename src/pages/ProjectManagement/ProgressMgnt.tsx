@@ -4,10 +4,11 @@ import Loading from "../../components/Loading";
 import { useEffect, useRef, useState } from "react";
 import KTComponents from "../../metronic/core";
 import { PhaseJob, RenoProgress } from "../../types";
-import { changeInternalComment, changeOwnerComment, changeRenoProgressContractorDate, changeRenoProgressContractorHandoverDate, changeRenoProgressContractualDate, changeRenoProgressContractualHandoverDate, changeTaskStatus, fetchRenoProgress, fetchTaskDocuments, removeTaskDocument, toggleTaskVisibility, uploadTaskDocuments } from "../../services/api";
+import { changeInternalComment, changeOwnerComment, changeRenoProgressContractorDate, changeRenoProgressContractorHandoverDate, changeRenoProgressContractualDate, changeRenoProgressContractualHandoverDate, changeTaskStatus, fetchRenoProgress, fetchTaskDocuments, liveUploadTaskAttachment, removeTaskDocument, toggleTaskVisibility, uploadTaskDocuments } from "../../services/api";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
+import imageCompression from 'browser-image-compression';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -361,6 +362,45 @@ function ProgressMgnt() {
         setPendingUploadItems([]);
     };
 
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
+        const fileInput = event.target;
+
+        setIsLoading(true);
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const options = {
+                maxSizeMB: 2, // Max file size (in MB)
+                maxWidthOrHeight: 1920, // Max image width/height
+                useWebWorker: true, // Use a web worker to compress the image in the background
+            };
+
+            const compressedFile = await imageCompression(event.target.files[0], options);
+
+            const compressedImage = new File(
+                [compressedFile],
+                event.target.files[0].name,
+                { type: event.target.files[0].type }
+            );
+
+            const response = await liveUploadTaskAttachment(renoProgressId, taskId, compressedImage);
+
+            if (response?.success) {
+                setDocumentItems(response.data);
+                notify('success', 'File uploaded successfully.');
+            }
+
+        } catch (error) {
+            notify('error', 'Error while uploading file.');
+        }
+
+        setIsLoading(false);
+    }
+
     // Upload files (placeholder function)
     const uploadFiles = async (taskId: number) => {
         setIsLoading(true);
@@ -425,6 +465,8 @@ function ProgressMgnt() {
             started: 0.25,
             in_progress: 0.75,
             completed: 1,
+            not_available: 1,
+            submitted: 1,
         };
 
         // Calculate the weighted sum of task statuses using task_weightage
@@ -808,6 +850,7 @@ function ProgressMgnt() {
                                                                                     <option value="started">Started</option>
                                                                                     <option value="in_progress">In Progress</option>
                                                                                     <option value="completed">Completed</option>
+                                                                                    <option value="not_available">Not Available</option>
                                                                                 </select>
                                                                             ) : (
                                                                                 <select
@@ -820,6 +863,7 @@ function ProgressMgnt() {
                                                                                     <option value="started">Started</option>
                                                                                     <option value="in_progress">In Progress</option>
                                                                                     <option value="completed">Completed</option>
+                                                                                    <option value="not_available">Not Available</option>
                                                                                 </select>
                                                                             )}
                                                                         </div>
@@ -969,6 +1013,7 @@ function ProgressMgnt() {
                                                                                 <option value="started">Started</option>
                                                                                 <option value="in_progress">In Progress</option>
                                                                                 <option value="completed">Completed</option>
+                                                                                <option value="not_available">Not Available</option>
                                                                             </select>
                                                                         </div>
                                                                     </td>
@@ -1086,6 +1131,7 @@ function ProgressMgnt() {
                                                                                 <option value="started">Started</option>
                                                                                 <option value="in_progress">In Progress</option>
                                                                                 <option value="completed">Completed</option>
+                                                                                <option value="not_available">Not Available</option>
                                                                             </select>
                                                                         </div>
                                                                     </td>
@@ -1212,6 +1258,7 @@ function ProgressMgnt() {
                                                                                 <option value="started">Started</option>
                                                                                 <option value="in_progress">In Progress</option>
                                                                                 <option value="completed">Completed</option>
+                                                                                <option value="not_available">Not Available</option>
                                                                             </select>
                                                                         </div>
                                                                     </td>
@@ -1329,6 +1376,7 @@ function ProgressMgnt() {
                                                                                 <option value="started">Started</option>
                                                                                 <option value="in_progress">In Progress</option>
                                                                                 <option value="completed">Completed</option>
+                                                                                <option value="not_available">Not Available</option>
                                                                             </select>
                                                                         </div>
                                                                     </td>
@@ -1463,6 +1511,7 @@ function ProgressMgnt() {
                                                                                     <option value="started">Started</option>
                                                                                     <option value="in_progress">In Progress</option>
                                                                                     <option value="completed">Completed</option>
+                                                                                    <option value="not_available">Not Available</option>
                                                                                 </select>
                                                                             }
                                                                         </div>
@@ -1535,12 +1584,13 @@ function ProgressMgnt() {
                     </div>
                     <div className="modal-body overflow-y-auto scrollable-y">
                         <div className="flex flex-col">
-                            <div
+                            <label
                                 className={`flex bg-center w-full p-5 lg:p-7 bg-no-repeat bg-[length:550px] border border-gray-300 rounded-xl border-dashed branding-bg mb-8 
                                     ${dragging ? 'border-primary border-1 bg-gray-100' : ''}`} // Add custom styles when dragging
                                 onDragOver={handleDragOver}
                                 onDragLeave={handleDragLeave}
                                 onDrop={handleDrop}
+                                htmlFor="file-upload"
                             >
                                 <div className="flex flex-col place-items-center place-content-center text-center rounded-xl w-full">
                                     <div className="flex items-center mb-2.5">
@@ -1567,21 +1617,20 @@ function ProgressMgnt() {
                                         type="file"
                                         id="file-upload"
                                         multiple
-                                        onChange={handleFileSelect}
+                                        onChange={e => handleFileUpload(e, selectedDocumentTaskId)}
                                         className="hidden"
                                     />
-                                    <label
-                                        htmlFor="file-upload"
+                                    <span
                                         className="text-gray-900 text-xs font-medium hover:text-primary-active mb-px cursor-pointer"
                                     >
                                         Click or Drag & Drop
-                                    </label>
+                                    </span>
 
                                     <span className="text-2xs text-gray-700 text-nowrap">
                                         max size: 50MB | max files: {maxFiles}
                                     </span>
                                 </div>
-                            </div>
+                            </label>
 
                             {pendingUploadItems !== null ?
                                 pendingUploadItems.length > 0 && (

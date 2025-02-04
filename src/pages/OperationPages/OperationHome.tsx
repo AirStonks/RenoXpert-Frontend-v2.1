@@ -7,17 +7,22 @@ import KTComponents from "../../metronic/core";
 import { logoutOperation } from "../../services/auth";
 import { Slide, toast } from "react-toastify";
 
+type SortOrder = 'asc' | 'desc' | null;
+
 function OperationHome() {
     const [activeTab, setActiveTab] = useState('tab_1_1');
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [user, setUser] = useState<User>(null);
     const [renoProgresses, setRenoProgresses] = useState<RenoProgress[] | null>(null);
+    const [totalItems, setTotalItems] = useState<number>(0);
     const [qcForms, setQCForms] = useState<QCForm[] | null>(null);
     const [diForms, setDIForms] = useState<DefectInspectionForm[] | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [page, setPage] = useState<number>(1);
     const [size, setSize] = useState<number>(10);
+    const [sortField, setSortField] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
     const [loading, setLoading] = useState(false);
     const [selectedProgressStatus, setSelectedProgressStatus] = useState<string | null>(null);
@@ -77,6 +82,27 @@ function OperationHome() {
         }, 500);
     };
 
+    const initRenoProgress = async (
+        page: number,
+        size: number,
+        searchTerm?: string,
+        order?: string,
+        field?: string
+    ) => {
+        try {
+            setLoading(true);
+            const response = await retrieveRenoProgresses(size, page, searchTerm, order, field);
+            const data = response?.data || [];
+            setRenoProgresses(data);
+            setTotalItems(response?.totalCount || 0);
+        } catch (error) {
+            console.error('Error fetching renoProgress:', error);
+            notify('error', 'Failed to load renoProgress');
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const getUserDetail = async () => {
         setLoading(true);
         try {
@@ -97,7 +123,7 @@ function OperationHome() {
             const response = await retrieveRenoProgresses();
 
             setRenoProgresses(response.data);
-
+            setTotalItems(response?.totalCount || 0);
         } catch (error) {
             console.log(error);
         }
@@ -144,6 +170,20 @@ function OperationHome() {
             // Optionally show an error message to the user
         }
     };
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
+        setPage(newPage);
+        initRenoProgress(newPage, size, searchTerm, sortOrder, sortField);
+    };
+
+    const handleSizeChange = (newSize: number) => {
+        setSize(newSize);
+        setPage(1); // Reset to the first page when changing the page size
+        initRenoProgress(1, newSize, searchTerm, sortOrder, sortField);
+    };
+    
+    const totalPages = Math.ceil(totalItems / size);
 
     return (
         <>
@@ -332,6 +372,97 @@ function OperationHome() {
                                             )
                                         )
                                     }
+                                </div>
+
+                                <div className="flex flex-col gap-2 justify-center items-center">
+                                    <div className="flex items-center gap-2">
+                                        Show
+                                        <select
+                                            className="select select-sm w-16"
+                                            name="perpage"
+                                            value={size}
+                                            onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                                        >
+                                            <option value="5">5</option>
+                                            <option value="10">10</option>
+                                            <option value="20">20</option>
+                                            <option value="30">30</option>
+                                            <option value="50">50</option>
+                                        </select>
+                                        per page
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        {/* <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span> */}
+                                        <div className="pagination">
+                                            {/* Previous Page Button */}
+                                            <button
+                                                className={`btn ${page === 1 ? 'disabled' : ''}`}
+                                                onClick={() => handlePageChange(page - 1)}
+                                            >
+                                                <i className="ki-outline ki-black-left"></i>
+                                            </button>
+
+                                            {/* Page Number Buttons with Ellipses */}
+                                            {totalPages > 0 && (
+                                                <>
+                                                    {page > 3 && (
+                                                        <>
+                                                            <button
+                                                                className="btn"
+                                                                onClick={() => handlePageChange(1)}
+                                                            >
+                                                                1
+                                                            </button>
+                                                            <span className="btn btn-disabled">...</span>
+                                                        </>
+                                                    )}
+
+                                                    {Array.from({
+                                                        length: Math.min(3, totalPages)
+                                                    }, (_, index) => {
+                                                        // Determine the start of the 3-page window
+                                                        const startPage = Math.max(1,
+                                                            Math.min(
+                                                                page - 1,
+                                                                totalPages - 2
+                                                            )
+                                                        );
+
+                                                        const currentPage = startPage + index;
+                                                        return (
+                                                            <button
+                                                                key={currentPage}
+                                                                className={`btn ${page === currentPage ? 'active' : ''}`}
+                                                                onClick={() => handlePageChange(currentPage)}
+                                                            >
+                                                                {currentPage}
+                                                            </button>
+                                                        );
+                                                    })}
+
+                                                    {page < totalPages - 2 && (
+                                                        <>
+                                                            <span className="btn btn-disabled">...</span>
+                                                            <button
+                                                                className="btn"
+                                                                onClick={() => handlePageChange(totalPages)}
+                                                            >
+                                                                {totalPages}
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {/* Next Page Button */}
+                                            <button
+                                                className={`btn ${page === totalPages ? 'disabled' : ''}`}
+                                                onClick={() => handlePageChange(page + 1)}
+                                            >
+                                                <i className="ki-outline ki-black-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

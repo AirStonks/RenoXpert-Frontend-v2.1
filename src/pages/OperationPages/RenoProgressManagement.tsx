@@ -6,7 +6,7 @@ import { JobTask, PhaseJob, RenoProgress } from "../../types";
 import { KTAccordion } from "../../metronic/core";
 import Loading from "../../components/Loading";
 import { Slide, toast } from "react-toastify";
-import { changeTaskStatus, fetchRenoProgressDetail, fetchTaskDocuments, removeTaskDocument, updateSelectedTaskComments, uploadTaskDocuments } from "../../services/operationApi";
+import { changeTaskStatus, fetchRenoProgressDetail, fetchTaskDocuments, liveUploadTaskAttachment, removeTaskDocument, updateSelectedTaskComments, uploadTaskDocuments } from "../../services/operationApi";
 import imageCompression from 'browser-image-compression';
 
 const AWS_S3_URL =
@@ -181,6 +181,45 @@ function RenoProgressManagement() {
         setPendingUploadItems([]);
     };
 
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
+        const fileInput = event.target;
+
+        setLoading(true);
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const options = {
+                maxSizeMB: 2, // Max file size (in MB)
+                maxWidthOrHeight: 1920, // Max image width/height
+                useWebWorker: true, // Use a web worker to compress the image in the background
+            };
+
+            const compressedFile = await imageCompression(event.target.files[0], options);
+
+            const compressedImage = new File(
+                [compressedFile], 
+                event.target.files[0].name, 
+                { type: event.target.files[0].type }
+            );
+
+            const response = await liveUploadTaskAttachment(renoProgressId, taskId, compressedImage);
+
+            if (response?.success) {
+                setDocumentItems(response.data);
+                notify('success', 'File uploaded successfully.');
+            }
+
+        } catch (error) {
+            notify('error', 'Error while uploading file.');
+        }
+
+        setLoading(false);
+    }
+
     // Upload files (placeholder function)
     const uploadFiles = async (taskId: number) => {
         setLoading(true);
@@ -333,6 +372,8 @@ function RenoProgressManagement() {
             started: 0.25,
             in_progress: 0.75,
             completed: 1,
+            not_available: 1,
+            submitted: 1,
         };
 
         // Calculate the weighted sum of task statuses using task_weightage
@@ -375,14 +416,14 @@ function RenoProgressManagement() {
                     </div>
 
                     <span className="text-sm font-semibold block mb-2">
-                        Complete: {(((renoProgress?.pre_reno_completion * 0.2) + (renoProgress?.reno_completion * 0.7) + (renoProgress?.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                        Complete: {(((renoProgress?.pre_reno_completion * 0.2) + (renoProgress?.p1_completion * 0.175) + (renoProgress?.p2a_completion * 0.175) + (renoProgress?.p2b_completion * 0.175) + (renoProgress?.iot_completion * 0.175) + (renoProgress?.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                     </span>
 
                     <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
                         <div
                             className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
                             style={{
-                                width: `${(((renoProgress?.pre_reno_completion * 0.2) + (renoProgress?.reno_completion * 0.7) + (renoProgress?.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`,
+                                width: `${((renoProgress?.pre_reno_completion * 0.2) + (renoProgress?.p1_completion * 0.175) + (renoProgress?.p2a_completion * 0.175) + (renoProgress?.p2b_completion * 0.175) + (renoProgress?.iot_completion * 0.175) + (renoProgress?.post_reno_completion * 0.1)) * 100}%`,
                                 height: '8px'
                             }}
                         />
@@ -549,7 +590,7 @@ function RenoProgressManagement() {
                                                                                             <span className="text-xs text-gray-500 font-semibold">{task.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</span>
                                                                                         </div>
                                                                                         <div className="flex items-center gap-2">
-                                                                                            {task.is_defect_form || task.is_qc_form ?
+                                                                                            {task.is_defect_form || task.is_qc_form || task.is_key_form ?
                                                                                                 ''
                                                                                                 :
                                                                                                 <>
@@ -643,6 +684,7 @@ function RenoProgressManagement() {
                                         <option value="started">Started</option>
                                         <option value="in_progress">In Progress</option>
                                         <option value="completed">Completed</option>
+                                        <option value="not_available">Not Available</option>
                                     </select>
                                 </div>
                             </div>}
@@ -715,7 +757,7 @@ function RenoProgressManagement() {
                                     type="file"
                                     id="file-upload"
                                     multiple
-                                    onChange={handleFileSelect}
+                                    onChange={e => handleFileUpload(e, selectedDocumentTaskId)}
                                     className="hidden"
                                 />
                                 <span

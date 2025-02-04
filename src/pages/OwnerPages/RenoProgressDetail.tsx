@@ -33,6 +33,7 @@ function RenoProgressDetail() {
     //         started: 0.25,
     //         in_progress: 0.75,
     //         completed: 1,
+    //         not_available: 1,
     //     };
 
     //     // Calculate the weighted sum of task statuses using task_weightage

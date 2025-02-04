@@ -259,7 +259,7 @@ export const uploadTaskDocuments = async (renoProgressId: number, taskId: number
     }
 };
 
-export const liveUploadProgressAttachment = async (renoProgressId: number, taskId: number, file: File) => {
+export const liveUploadTaskAttachment = async (renoProgressId: number, taskId: number, file: File) => {
     try {
         // Create a new FormData instance
         const formData = new FormData();

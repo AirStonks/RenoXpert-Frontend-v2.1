@@ -318,6 +318,7 @@ function UpdateKeyManagement() {
                                                 <option value="started">Started</option>
                                                 <option value="in_progress">In Progress</option>
                                                 <option value="completed">Completed</option>
+                                                <option value="not_available">Not Available</option>
                                             </select>
                                         </td>
                                     </tr>
