@@ -524,7 +524,7 @@ function RenoProgressManagement() {
                                                                                 {job.tasks.map((task, taskIndex) => (
                                                                                     <div className="flex flex-col mb-8" key={taskIndex}>
                                                                                         <div className="flex mb-1 items-center gap-2">
-                                                                                            <span className="text-sm font-bold">{task.name} {currentPhase === 'p1' || currentPhase === 'iot' ? task.area : 'no'}</span>
+                                                                                            <span className="text-sm font-bold">{task.name}</span>
                                                                                         </div>
                                                                                         {(currentPhase === 'p1' || currentPhase === 'iot') &&
                                                                                             <div className="flex mb-1 items-center gap-2">
