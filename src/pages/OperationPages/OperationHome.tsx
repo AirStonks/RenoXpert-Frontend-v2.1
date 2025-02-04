@@ -20,7 +20,7 @@ function OperationHome() {
     const [diForms, setDIForms] = useState<DefectInspectionForm[] | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [page, setPage] = useState<number>(1);
-    const [size, setSize] = useState<number>(10);
+    const [size, setSize] = useState<number>(5);
     const [sortField, setSortField] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
