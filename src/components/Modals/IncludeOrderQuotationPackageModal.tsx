@@ -150,6 +150,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
             const packageName = selectBtn.dataset.name;
             const packagePrice = parseFloat(selectBtn.dataset.price);
             const packageDescription = selectBtn.dataset.desc;
+            const packageCategory = selectBtn.dataset.cat;
 
             // Retrieve the current selected prodPackages from localStorage
             const storedPackages = localStorage.getItem('selected_quotation_packages');
@@ -175,6 +176,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                     name: packageName,
                     description: packageDescription,
                     total_price: packagePrice,
+                    category: packageCategory,
                     products: selectedPackage.products
                 });
 
@@ -300,6 +302,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                                                                 data-name={pkg.name}
                                                                 data-price={pkg.total_price}
                                                                 data-desc={pkg.description}
+                                                                data-cat={pkg.category}
                                                                 onClick={(e) => handleSelectPackage(e.target)}
                                                             >
                                                                 {buttonText}

@@ -102,6 +102,7 @@ export interface Package {
     total_price?: number;
     products?: Product[];
     description_internal?: string;
+    category?: string;
     status?: string;
     created_by?: User;
     updated_by?: User;

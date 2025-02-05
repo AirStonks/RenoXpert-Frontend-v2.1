@@ -8,6 +8,20 @@ import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
 import DeleteModal from "../../components/Modals/DeleteModal";
 
+const categoryOptions = [
+    { value: "renovation", label: "Renovation" },
+    { value: "partition", label: "Partition" },
+    { value: "carpentry", label: "Carpentry" },
+    { value: "furniture", label: "Furniture" },
+    { value: "electrical_appliances", label: "Electrical Appliances" },
+    { value: "air_conditioning", label: "Air Conditioning" },
+    { value: "smart_iot", label: "Smart IoT" },
+    { value: "project_management", label: "Project Management" },
+    { value: "loose_items", label: "Loose Items" },
+    { value: "others", label: "Others" },
+];
+
+
 function PackageDetail() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -246,6 +260,18 @@ function PackageDetail() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             {packageDetail.description_internal}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Category:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {packageDetail.category ?
+                                                categoryOptions.find(option => option.value === packageDetail.category)?.label
+                                                :
+                                                '-'
+                                            }
                                         </td>
                                     </tr>
                                 </tbody>
