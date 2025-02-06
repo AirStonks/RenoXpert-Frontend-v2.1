@@ -135,8 +135,8 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                         <div className="menu-item">
                                             <button
                                                 className="menu-link copy-link"
-                                                data-modal-toggle="#new_payment_detail_modal"
-                                                // onClick={() => handleMarkAsPaid(Number(invoice.id))}
+                                                // data-modal-toggle="#new_payment_detail_modal"
+                                                onClick={() => handleMarkAsPaid(Number(invoice.id))}
                                             >
                                                 <span className="menu-title">
                                                     <div className="flex gap-2 items-center">
