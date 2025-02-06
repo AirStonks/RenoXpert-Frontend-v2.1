@@ -9,6 +9,7 @@ import { Package, Product } from '../../types';
 import { createPackage, updatePackage } from '../../services/api';
 import useFetchPackage from '../../hook/useFetchPackage';
 import Loading from '../../components/Loading';
+import Dropdown from '../../components/Forms/Dropdown/Dropdown';
 
 function EditPackage() {
     const navigate = useNavigate();
@@ -22,6 +23,7 @@ function EditPackage() {
         packagePrice: 0,
         description: '',
         description_internal: '',
+        category: '',
         products: [],
     });
 
@@ -56,7 +58,8 @@ function EditPackage() {
                 ...prev,
                 packageName: packageDetail.name,
                 description: packageDetail.description,
-                description_internal: packageDetail.description_internal
+                description_internal: packageDetail.description_internal,
+                category: packageDetail.category
             }));
 
             const selectedProducts = [];
@@ -154,6 +157,7 @@ function EditPackage() {
                 total_price: formData.packagePrice,
                 description: formData.description,
                 description_internal: formData.description_internal,
+                category: formData.category,
                 products: newProducts,
             };
 
@@ -336,6 +340,35 @@ function EditPackage() {
                                 </textarea>
                             </div>
 
+
+
+                            <div className="flex flex-col mb-8">
+                                <label className='mb-2 text-sm font-medium text-gray-900'>
+                                    Category
+                                </label>
+
+                                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                    Define a category for the package. (Category will affect the category pricing in Quotation Order)
+                                </span>
+
+                                <Dropdown
+                                    options={[
+                                        { value: "renovation", label: "Renovation" },
+                                        { value: "partition", label: "Partition" },
+                                        { value: "carpentry", label: "Carpentry" },
+                                        { value: "furniture", label: "Furniture" },
+                                        { value: "electrical_appliances", label: "Electrical Appliances" },
+                                        { value: "air_conditioning", label: "Air Conditioning" },
+                                        { value: "smart_iot", label: "Smart IoT" },
+                                        { value: "project_management", label: "Project Management" },
+                                        { value: "loose_items", label: "Loose Items" },
+                                        { value: "others", label: "Others" },
+                                    ]}
+                                    name="category"
+                                    value={formData.category}
+                                    onChange={handleChange}
+                                />
+                            </div>
                         </div>
                     </div>
 
