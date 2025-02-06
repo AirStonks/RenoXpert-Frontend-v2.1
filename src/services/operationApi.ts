@@ -283,8 +283,8 @@ export const liveUploadTaskAttachment = async (renoProgressId: number, taskId: n
 
     } catch (error) {
         // Handle errors like 401 or other server-side errors
-        // handleOperation401Error(error as AxiosError);
-        // throw error; // Rethrow the error for further handling
+        handleOperation401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
     }
 }
 
