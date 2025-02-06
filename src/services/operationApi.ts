@@ -273,7 +273,7 @@ export const liveUploadTaskAttachment = async (renoProgressId: number, taskId: n
             formData,
             {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${localStorage.getItem('p_token')}`,
                     'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
                 }
             }
