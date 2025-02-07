@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { Product } from '../../types';
 import useFetchProductCategory from '../../hook/useFetchPMCategory';
 import Loading from '../../components/Loading';
+import { AxiosError } from 'axios';
 
 interface FormErrors {
     [key: string]: string | undefined; // Use string or undefined for error messages
@@ -27,7 +28,7 @@ const initProductData: Product = {
     type: 'renovation',
     description: '',
     pm_category_id: 0,
-    uom: '',
+    uom: 'set',
     provisioning: {
         supply: {
             retail_price: 0,
@@ -223,7 +224,7 @@ function CreateProduct() {
 
     const handleSubmit = async () => {
         console.log(formData);
-        
+
         setErrors({});
         const validationErrors = validate();
 
@@ -250,8 +251,15 @@ function CreateProduct() {
             }
 
         } catch (error) {
-            console.error('Product creation failed:', error);
-            notify('error', error.response.data.message);
+            if (error instanceof AxiosError) {
+                if (error.response.status === 422) {
+                    const firstKey = Object.keys(error.response.data.data)[0];  // Get the first key of the object
+                    const firstValue = error.response.data.data[firstKey];      // Get the value of the first key
+                    notify('error', firstValue[0]);
+                } else {
+                    notify('error', "Error Code: " + error.response.status);
+                }
+            }
         }
     };
 
@@ -348,16 +356,29 @@ function CreateProduct() {
                                 </div>
 
                                 {/* UOM */}
-                                <InputFieldGroup
-                                    fieldTitle="UOM"
-                                    description="Unit of Measurement of the product"
-                                    placeholder="measurement"
-                                    type="text"
-                                    name="uom"
-                                    value={formData.uom}
-                                    onChange={handleChange}
-                                    error={errors.uom}
-                                />
+                                <div className="flex flex-col mb-8">
+                                    <label className='mb-2 text-sm font-medium text-gray-900'>
+                                        UOM
+                                    </label>
+
+                                    <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                        Unit of Measurement of the product.
+                                    </span>
+
+                                    <Dropdown
+                                        options={[
+                                            { value: "set", label: "Set" },
+                                            { value: "lumpsum", label: "Lumpsum" },
+                                            { value: "unit", label: "Unit" },
+                                            { value: "pc", label: "Pc" },
+                                            { value: "ft", label: "Ft" },
+                                        ]}
+                                        name="uom"
+                                        value={formData?.uom}
+                                        onChange={handleChange}
+                                        error={errors.uom}
+                                    />
+                                </div>
 
                                 {/* Product Type */}
                                 <div className="flex flex-col mb-8">
@@ -701,7 +722,7 @@ function CreateProduct() {
                                     value={formData?.pm_category_id}
                                     onChange={handleChange}
                                 />
-                                
+
                                 <span className="text-xs text-danger tracking-wide mb-2">
                                     {errors.pm_category_id}
                                 </span>

@@ -20,6 +20,10 @@ const APP_URL =
                 ? import.meta.env.VITE_LOCAL_APP_URL
                 : null;
 
+
+// orderDetail.latest_quotation.packages.map((quotationPackage: Package, index: number) => ()
+// 
+
 const getCurrentDate = () => {
     const date = new Date();
     const options = { day: '2-digit', month: 'short', year: 'numeric' };
@@ -48,6 +52,16 @@ const convertToWords = (num: number) => {
     }
 }
 
+const categoryOptions = [
+    { value: "renovation", label: "Renovation" },
+    { value: "partition", label: "Partition" },
+    { value: "smart_iot", label: "Smart IoT" },
+    { value: "project_management", label: "Project Management" },
+    { value: "electrical_appliances", label: "Electrical Appliances" },
+    { value: "air_conditioning", label: "Air Conditioning" },
+    { value: "others", label: "Others" },
+];
+
 function OrderDetail() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -55,6 +69,7 @@ function OrderDetail() {
     const orderId = id ? parseInt(id, 10) : null;
 
     const { orderDetail, loading, error, refetch } = useFetchOrder(orderId);
+    const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number }[]>([]);
 
     const [activeTab, setActiveTab] = useState('tab_1_1');
     const [isLoading, setIsLoading] = useState(false);
@@ -93,7 +108,51 @@ function OrderDetail() {
             clipboard.destroy();
         };
 
-    }, [orderDetail]);
+    }, []);
+
+    useEffect(() => {
+        if (!orderDetail?.latest_quotation?.packages) return;
+
+        const categoryTotals = orderDetail.latest_quotation.packages.reduce((acc, quotationPackage) => {
+            const category = quotationPackage.category;
+            const categoryTotal = quotationPackage.products.reduce((total, product) => {
+                // Calculate supply price
+                let supplyPrice = 0;
+                if (product.pivot.includeSupply) {
+                    supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
+                } else {
+                    supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
+                }
+
+                // Calculate install price
+                let installPrice = 0;
+                if (product.pivot.includeInstall) {
+                    installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
+                } else {
+                    installPrice = (product.provisioning.install.retail_price - product.provisioning.install.excluded_price) || 0;
+                }
+
+                return total + supplyPrice + installPrice;
+            }, 0);
+
+            // Initialize the category if it doesn't exist
+            if (!acc[category]) {
+                acc[category] = 0;
+            }
+
+            // Add to the category total
+            acc[category] += categoryTotal;
+
+            return acc;
+        }, {} as Record<string, number>);
+
+        setPackageCategories(
+            Object.entries(categoryTotals).map(([category, total_price]) => ({
+                category: categoryOptions.find(option => option.value === category)?.label || category,
+                total_price
+            }))
+        );
+    }, [orderDetail?.latest_quotation?.packages]);
 
     if (!orderId) return null; // Early return for null orderId
 
@@ -705,6 +764,30 @@ function OrderDetail() {
                             </div>
                         </div>
                     </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Category Pricing
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    {packageCategories.map((category, index: number) => (
+                                        <tr key={index}>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                {category.category}:
+                                            </td>
+                                            <td className="text-sm text-gray-700 font-medium pb-3">
+                                                RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
                 </div>
 
                 <div className='flex flex-col right-column flex-[6] gap-4'>
@@ -751,6 +834,11 @@ function OrderDetail() {
                                                         <span className='text-base text-gray-700'>
                                                             RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </span>
+                                                        {prodPackage.category &&
+                                                            <div className="badge text-sm">
+                                                                {categoryOptions.find(option => option.value === prodPackage.category)?.label}
+                                                            </div>
+                                                        }
                                                         <span className='text-sm text-gray-400'>
                                                             {prodPackage.description}
                                                         </span>
@@ -999,6 +1087,34 @@ function OrderDetail() {
                                             </div>
                                             {orderDetail.status === 'confirmed' &&
                                                 <>
+
+                                                    {/* Summary */}
+                                                    <div className="card-body p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg shadow-sm mb-4">
+                                                        <div className="flex flex-col gap-5">
+                                                            {/* Header */}
+                                                            <div className="flex items-center gap-2">
+                                                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                                                </svg>
+                                                                <span className="text-xl text-purple-600 font-bold">Summary</span>
+                                                            </div>
+
+                                                            {/* Category Summary */}
+                                                            <div className="grid grid-cols-1 gap-4">
+                                                                {packageCategories.map((category, index) => (
+                                                                    <div key={index} className="flex justify-between items-center p-4 bg-white rounded-lg shadow-xs hover:shadow-md transition-shadow">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <span className="text-sm text-gray-600 font-medium">Total {category.category} Cost</span>
+                                                                        </div>
+                                                                        <span className="text-sm text-gray-700 font-semibold">
+                                                                            RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
                                                     {
                                                         selectedQuotation.bonus && (
                                                             <div className="card-body p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg shadow-md mb-4">
@@ -1233,6 +1349,33 @@ function OrderDetail() {
                                                 ))}
                                             </tbody>
                                         </table>
+
+                                        {/* Summary */}
+                                        <div className="card-body p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg shadow-sm mb-4">
+                                            <div className="flex flex-col gap-5">
+                                                {/* Header */}
+                                                <div className="flex items-center gap-2">
+                                                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                                    </svg>
+                                                    <span className="text-xl text-purple-600 font-bold">Summary</span>
+                                                </div>
+
+                                                {/* Category Summary */}
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    {packageCategories.map((category, index) => (
+                                                        <div key={index} className="flex justify-between items-center p-4 bg-white rounded-lg shadow-xs hover:shadow-md transition-shadow">
+                                                            <div className="flex items-center gap-3">
+                                                                <span className="text-sm text-gray-600 font-medium">Total {category.category} Cost</span>
+                                                            </div>
+                                                            <span className="text-sm text-gray-700 font-semibold">
+                                                                RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         {
                                             selectedQuotation.bonus && (

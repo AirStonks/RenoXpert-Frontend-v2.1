@@ -100,6 +100,7 @@ export interface Package {
     name?: string;
     description?: string;
     total_price?: number;
+    quantity?: number;
     products?: Product[];
     description_internal?: string;
     category?: string;

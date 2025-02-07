@@ -19,6 +19,16 @@ const AWS_S3_URL =
             ? import.meta.env.VITE_STAGING_AWS_S3_URL
             : null
 
+const categoryOptions = [
+    { value: "renovation", label: "Renovation" },
+    { value: "partition", label: "Partition" },
+    { value: "smart_iot", label: "Smart IoT" },
+    { value: "project_management", label: "Project Management" },
+    { value: "electrical_appliances", label: "Electrical Appliances" },
+    { value: "air_conditioning", label: "Air Conditioning" },
+    { value: "others", label: "Others" },
+];
+
 function EditOrder() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -906,6 +916,11 @@ function EditOrder() {
                                                             <span className="text-base text-gray-900 font-medium">
                                                                 {prodPackage.name}
                                                             </span>
+                                                            {prodPackage.category &&
+                                                                <div className="badge text-sm">
+                                                                    {categoryOptions.find(option => option.value === prodPackage.category)?.label}
+                                                                </div>
+                                                            }
                                                             <span className='text-base text-gray-700'>
                                                                 RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </span>

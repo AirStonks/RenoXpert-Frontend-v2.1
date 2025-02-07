@@ -575,11 +575,11 @@ export const quotationIndexArchived = async (size: number = 5, page: number = 1,
     }
 };
 
-export const createQuotation = async (quotationData: Quotation, selectedPackageIds: number[]) => {
+export const createQuotation = async (quotationData: Quotation, selectedPackages) => {
     try {
         const dataToSend = {
             ...quotationData,
-            selectedPackageIds
+            selectedPackages
         };
 
         const response = await axios.post(API_URL + 'quotations', dataToSend, {
