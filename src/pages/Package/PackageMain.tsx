@@ -12,6 +12,19 @@ import { Link } from 'react-router-dom';
 
 type SortOrder = 'asc' | 'desc' | null;
 
+const categoryOptions = [
+    { value: "renovation", label: "Renovation" },
+    { value: "partition", label: "Partition" },
+    { value: "carpentry", label: "Carpentry" },
+    { value: "furniture", label: "Furniture" },
+    { value: "electrical_appliances", label: "Electrical Appliances" },
+    { value: "air_conditioning", label: "Air Conditioning" },
+    { value: "smart_iot", label: "Smart IoT" },
+    { value: "project_management", label: "Project Management" },
+    { value: "loose_items", label: "Loose Items" },
+    { value: "others", label: "Others" },
+];
+
 function PackageMain() {
     const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -280,6 +293,7 @@ function PackageMain() {
                                         </div>
                                     </th>
                                     <th className='w-[110px] text-center'>Price</th>
+                                    <th className='w-[150px] text-center'>Category</th>
                                     <th className='w-[80px] text-center'>Created By</th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
@@ -319,6 +333,9 @@ function PackageMain() {
                                             </td>
                                             <td className='text-center'>
                                                 RM {pkg.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td className='text-center'>
+                                                {pkg.category ? categoryOptions.find(option => option.value === pkg.category)?.label : '-'}
                                             </td>
                                             <td className='text-center'>
                                                 {pkg.created_by ? pkg.created_by.name : '-'}
