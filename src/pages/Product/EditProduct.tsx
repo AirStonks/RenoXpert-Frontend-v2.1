@@ -62,7 +62,7 @@ const EditProduct: React.FC = () => {
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;        
+        const { name, value } = e.target;
 
         if (name.startsWith('provisioning.supply')) {
             const property = name.split('.')[2];
@@ -241,7 +241,7 @@ const EditProduct: React.FC = () => {
 
 
                                         {/* UOM */}
-                                        <InputFieldGroup
+                                        {/* <InputFieldGroup
                                             fieldTitle="UOM"
                                             description="Unit of Measurement of the product"
                                             placeholder="measurement"
@@ -250,7 +250,30 @@ const EditProduct: React.FC = () => {
                                             value={formData?.uom}
                                             onChange={handleChange}
                                             error={errors.uom}
-                                        />
+                                        /> */}
+                                        <div className="flex flex-col mb-8">
+                                            <label className='mb-2 text-sm font-medium text-gray-900'>
+                                                UOM
+                                            </label>
+
+                                            <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                                Unit of Measurement of the product.
+                                            </span>
+
+                                            <Dropdown
+                                                options={[
+                                                    { value: "set", label: "Set" },
+                                                    { value: "lumpsum", label: "Lumpsum" },
+                                                    { value: "unit", label: "Unit" },
+                                                    { value: "pc", label: "Pc" },
+                                                    { value: "ft", label: "Ft" },
+                                                ]}
+                                                name="uom"
+                                                value={formData?.uom}
+                                                onChange={handleChange}
+                                                error={errors.uom}
+                                            />
+                                        </div>
 
                                         {/* Product Type */}
                                         <div className="flex flex-col mb-8">

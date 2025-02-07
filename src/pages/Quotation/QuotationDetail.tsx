@@ -8,6 +8,16 @@ import { KTAccordion, KTModal } from "../../metronic/core";
 import { archiveQuotation, restoreQuotation } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 
+const categoryOptions = [
+    { value: "renovation", label: "Renovation" },
+    { value: "partition", label: "Partition" },
+    { value: "smart_iot", label: "Smart IoT" },
+    { value: "project_management", label: "Project Management" },
+    { value: "electrical_appliances", label: "Electrical Appliances" },
+    { value: "air_conditioning", label: "Air Conditioning" },
+    { value: "others", label: "Others" },
+];
+
 function QuotationDetail() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -266,6 +276,11 @@ function QuotationDetail() {
                                                     <span className='text-base text-gray-700'>
                                                         RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </span>
+                                                    {prodPackage.category &&
+                                                        <div className="badge text-sm">
+                                                            {categoryOptions.find(option => option.value === prodPackage.category)?.label}
+                                                        </div>
+                                                    }
                                                     <span className='flex items-center gap-2 text-sm text-slate-400'>
                                                         {prodPackage.description_internal && <>
                                                             <i className="ki-filled ki-information-2 text-warning text-xl"></i>

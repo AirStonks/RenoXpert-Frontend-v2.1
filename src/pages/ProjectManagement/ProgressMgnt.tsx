@@ -1089,7 +1089,7 @@ function ProgressMgnt() {
                                                     </div>
                                                 </button>
                                                 <div className="accordion-content hidden border-t" id={"package_content_" + job.id}>
-                                                    <table className="table align-middle text-gray-700 font-medium text-sm">
+                                                    <table className="table align-middle text-gray-700 font-medium text-sm border-collapse">
                                                         <thead>
                                                             <tr>
                                                                 <th className='w-[220px]'>Product</th>

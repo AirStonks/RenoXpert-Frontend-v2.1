@@ -14,6 +14,14 @@ const AWS_S3_URL =
             ? import.meta.env.VITE_STAGING_AWS_S3_URL
             : null
 
+const uoms = [
+    { value: "set", label: "Set" },
+    { value: "lumpsum", label: "Lumpsum" },
+    { value: "unit", label: "Unit" },
+    { value: "pc", label: "Pc" },
+    { value: "ft", label: "Ft" },
+];
+
 function ProductDetail() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -349,7 +357,7 @@ function ProductDetail() {
                                             UOM:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3 flex gap-2 items-center">
-                                            <span>{product.uom}</span>
+                                            <span>{uoms.find(uom => uom.value === product.uom)?.label}</span>
                                             <i className="ki-filled ki-information-2 text-success"></i>
                                         </td>
                                     </tr>

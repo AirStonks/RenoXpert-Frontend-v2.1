@@ -150,6 +150,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
             const packagePrice = parseFloat(selectBtn.dataset.price);
             const packageDescription = selectBtn.dataset.desc;
             const packageInternalDescription = selectBtn.dataset.int_desc;
+            const packageCategory = selectBtn.dataset.cat;
 
             // Retrieve the current selected prodPackages from localStorage
             const storedPackages = localStorage.getItem('include_packages');
@@ -175,7 +176,9 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                     name: packageName,
                     description: packageDescription,
                     description_internal: packageInternalDescription,
+                    category: packageCategory,
                     total_price: packagePrice,
+                    quantity: 1,
                     products: selectedPackage.products
                 });
 
@@ -301,6 +304,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                                                                 data-price={pkg.total_price}
                                                                 data-desc={pkg.description}
                                                                 data-int_desc={pkg.description_internal}
+                                                                data-cat={pkg.category}
                                                                 onClick={(e) => handleSelectPackage(e.target)}
                                                             >
                                                                 {buttonText}

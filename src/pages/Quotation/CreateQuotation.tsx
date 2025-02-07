@@ -11,6 +11,19 @@ import { createQuotation, fetchProperties } from '../../services/api';
 import IncludeQuotationProductModal from '../../components/Modals/IncludeQuotationProductModal';
 import { KTDropdown } from '../../metronic/core';
 
+const categoryOptions = [
+    { value: "renovation", label: "Renovation" },
+    { value: "partition", label: "Partition" },
+    { value: "carpentry", label: "Carpentry" },
+    { value: "furniture", label: "Furniture" },
+    { value: "electrical_appliances", label: "Electrical Appliances" },
+    { value: "air_conditioning", label: "Air Conditioning" },
+    { value: "smart_iot", label: "Smart IoT" },
+    { value: "project_management", label: "Project Management" },
+    { value: "loose_items", label: "Loose Items" },
+    { value: "others", label: "Others" },
+];
+
 function CreateQuotation() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -30,6 +43,8 @@ function CreateQuotation() {
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [selectedPackages, setSelectedPackages] = useState<Package[]>([]);
     const [totalAmount, setTotalAmount] = useState<number>(0);
+
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleBackClick = () => {
         localStorage.removeItem('include_packages');
@@ -136,21 +151,36 @@ function CreateQuotation() {
     // PENDING
     const handleSubmit = async () => {
 
+        setIsLoading(true);
+
         if (selectedProperty === null) {
             notify('error', "Please select a property");
+            setIsLoading(false);
             return;
         }
 
         if (formData.quotationName === '') {
             notify('error', "Please enter a quotation name");
+            setIsLoading(false);
             return;
         }
 
         const storedPackages = localStorage.getItem('include_packages');
         const parsedPackages = JSON.parse(storedPackages);
 
-        if (parsedPackages === null || parsedPackages.length === 0) {
+        const packagesData = parsedPackages.map(pkg => ({
+            package_id: pkg.id,
+            quantity: pkg.quantity,
+            products: pkg.products.map(product => ({
+                product_id: product.id,
+                quantity: product.pivot.quantity,
+                visibility: product.pivot.visibility
+            }))
+        }));
+
+        if (packagesData === null || packagesData.length === 0) {
             notify('error', "Please select at least one package");
+            setIsLoading(false);
             return;
         }
 
@@ -160,7 +190,9 @@ function CreateQuotation() {
             name: pkg.name,
             description: pkg.description,
             description_internal: pkg.description_internal,
+            category: pkg.category,
             total_price: pkg.total_price,
+            quantity: pkg.quantity,
             products: pkg.products.map((product: Product) => (product))
         }));
 
@@ -172,8 +204,6 @@ function CreateQuotation() {
             return updatedState;
         });
 
-        const selectedPackageIds = parsedPackages.map((pkg: Package) => pkg.id);
-
         const quotationData: Quotation = {
             name: formData.quotationName,
             property_id: selectedProperty.id,
@@ -182,15 +212,18 @@ function CreateQuotation() {
             total_amount: formData.quotationPrice,
         }
 
-        const response = await createQuotation(quotationData, selectedPackageIds);
+        const response = await createQuotation(quotationData, packagesData);
 
         if (response?.success) {
             notify('success', "Quotation Created Successfully!");
             localStorage.removeItem('include_packages');
+            setIsLoading(false);
             navigate('/quotations');
         } else {
             console.log(response);
         }
+
+        setIsLoading(false);
     };
 
     const openAddPackageModal = () => {
@@ -297,6 +330,30 @@ function CreateQuotation() {
         localStorage.setItem('include_packages', JSON.stringify(packages));
     };
 
+    const adjustPackageQuantity = (packId: number, action: 'increase' | 'decrease') => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage) => {
+                if (prodPackage.id === packId) {
+                    const newTotalPrice = prodPackage.products.reduce((sum, product) => {
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
+                    }, 0);
+
+                    return {
+                        ...prodPackage,
+                        total_price: newTotalPrice * (action === 'increase' ? prodPackage.quantity + 1 : Math.max(1, prodPackage.quantity - 1)), // Update total price
+                        quantity: action === 'increase' ? prodPackage.quantity + 1 : Math.max(1, prodPackage.quantity - 1)
+                    };
+                }
+                return prodPackage; // Return the original package if not matched
+            });
+
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+            updateLocalStorage(updatedPackages);
+            return updatedPackages;
+        });
+    };
+
     const adjustQuantity = (prodId: number, packId: number, action: 'increase' | 'decrease') => {
         setSelectedPackages((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage) => {
@@ -325,7 +382,7 @@ function CreateQuotation() {
                     return {
                         ...prodPackage,
                         products: updatedProducts,
-                        total_price: newTotalPrice // Update total price
+                        total_price: newTotalPrice * prodPackage.quantity // Update total price
                     };
                 }
                 return prodPackage; // Return the original package if not matched
@@ -576,6 +633,11 @@ function CreateQuotation() {
                                                     <span className='text-base text-gray-700'>
                                                         RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </span>
+                                                    {prodPackage.category &&
+                                                        <div className="badge text-sm">
+                                                            {categoryOptions.find(option => option.value === prodPackage.category)?.label}
+                                                        </div>
+                                                    }
                                                     <span className='flex items-center gap-2 text-sm text-slate-400'>
                                                         {prodPackage.description_internal && <>
                                                             <i className="ki-filled ki-information-2 text-warning text-xl"></i>
@@ -583,11 +645,34 @@ function CreateQuotation() {
                                                         </>}
                                                     </span>
                                                 </div>
-                                                <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="badge text-sm">Quantity: {prodPackage.quantity}</div>
+                                                    <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                    <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                </div>
                                             </button>
                                             <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
-                                                <div className="flex justify-end my-2 mr-3">
+                                                <div className="flex justify-between my-2 mx-3">
+                                                    <div className="flex items-center text-gray-700 gap-2 p-2 rounded-md bg-blue-50 dark:bg-sky-950">
+                                                        <span>Package Quantity: </span>
+                                                        <div className="flex text-center">
+                                                            <button
+                                                                data-action='decrease'
+                                                                onClick={() => adjustPackageQuantity(prodPackage.id, 'decrease')}
+                                                            >
+                                                                <i className="ki-solid ki-minus-squared"></i>
+                                                            </button>
+                                                            <span className="mx-2 text-base">
+                                                                {prodPackage.quantity}
+                                                            </span>
+                                                            <button
+                                                                data-action='increase'
+                                                                onClick={() => adjustPackageQuantity(prodPackage.id, 'increase')}
+                                                            >
+                                                                <i className="ki-solid ki-plus-squared"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                     <button
                                                         className="btn btn-primary"
                                                         data-id={prodPackage.id}

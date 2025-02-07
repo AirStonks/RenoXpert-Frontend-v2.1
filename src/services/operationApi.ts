@@ -244,7 +244,7 @@ export const uploadTaskDocuments = async (renoProgressId: number, taskId: number
             formData,
             {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${localStorage.getItem('p_token')}`,
                     'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
                 }
             }
@@ -273,7 +273,7 @@ export const liveUploadTaskAttachment = async (renoProgressId: number, taskId: n
             formData,
             {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${localStorage.getItem('p_token')}`,
                     'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
                 }
             }
@@ -283,8 +283,8 @@ export const liveUploadTaskAttachment = async (renoProgressId: number, taskId: n
 
     } catch (error) {
         // Handle errors like 401 or other server-side errors
-        // handleOperation401Error(error as AxiosError);
-        // throw error; // Rethrow the error for further handling
+        handleOperation401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
     }
 }
 

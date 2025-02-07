@@ -353,15 +353,13 @@ function EditPackage() {
 
                                 <Dropdown
                                     options={[
+                                        { value: "", label: "-- Select Category --" },
                                         { value: "renovation", label: "Renovation" },
                                         { value: "partition", label: "Partition" },
-                                        { value: "carpentry", label: "Carpentry" },
-                                        { value: "furniture", label: "Furniture" },
-                                        { value: "electrical_appliances", label: "Electrical Appliances" },
-                                        { value: "air_conditioning", label: "Air Conditioning" },
                                         { value: "smart_iot", label: "Smart IoT" },
                                         { value: "project_management", label: "Project Management" },
-                                        { value: "loose_items", label: "Loose Items" },
+                                        { value: "electrical_appliances", label: "Electrical Appliances" },
+                                        { value: "air_conditioning", label: "Air Conditioning" },
                                         { value: "others", label: "Others" },
                                     ]}
                                     name="category"

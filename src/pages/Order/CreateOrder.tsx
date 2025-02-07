@@ -12,6 +12,17 @@ import Loading from '../../components/Loading';
 import React from 'react';
 import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
 
+
+const categoryOptions = [
+    { value: "renovation", label: "Renovation" },
+    { value: "partition", label: "Partition" },
+    { value: "smart_iot", label: "Smart IoT" },
+    { value: "project_management", label: "Project Management" },
+    { value: "electrical_appliances", label: "Electrical Appliances" },
+    { value: "air_conditioning", label: "Air Conditioning" },
+    { value: "others", label: "Others" },
+];
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -946,6 +957,11 @@ function CreateOrder() {
                                                                 <span className='text-base text-gray-700'>
                                                                     RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </span>
+                                                                {prodPackage.category &&
+                                                                    <div className="badge text-sm">
+                                                                        {categoryOptions.find(option => option.value === prodPackage.category)?.label}
+                                                                    </div>
+                                                                }
                                                                 <span className='text-sm text-slate-400'>
                                                                     {prodPackage.description}
                                                                 </span>
