@@ -12,161 +12,164 @@ import { Link } from 'react-router-dom';
 type SortOrder = 'asc' | 'desc' | null;
 
 function QuotationMain() {
-    const navigate = useNavigate();
-    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+    // const navigate = useNavigate();
+    // const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const [quotations, setQuotations] = useState<Quotation[]>([]); // Initialize as an empty array
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState<number>(1);
-    const [size, setSize] = useState<number>(10);
-    const [totalItems, setTotalItems] = useState<number>(0);
-    const [searchTerm, setSearchTerm] = useState<string>('');
-    const [sortField, setSortField] = useState<string>('');
-    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+    // const [quotations, setQuotations] = useState<Quotation[]>([]); // Initialize as an empty array
+    // const [isLoading, setIsLoading] = useState<boolean>(true);
+    // const [error, setError] = useState<string | null>(null);
+    // const [page, setPage] = useState<number>(1);
+    // const [size, setSize] = useState<number>(10);
+    // const [totalItems, setTotalItems] = useState<number>(0);
+    // const [searchTerm, setSearchTerm] = useState<string>('');
+    // const [sortField, setSortField] = useState<string>('');
+    // const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
-    const [selectedQuotation, setSelectedQuotation] = useState<{ id: number | string, name: string } | null>(null);
-    const [selectedQuotationReadyStatus, setSelectedQuotationReadyStatus] = useState<string | null>(null);
+    // const [selectedQuotation, setSelectedQuotation] = useState<{ id: number | string, name: string } | null>(null);
+    // const [selectedQuotationReadyStatus, setSelectedQuotationReadyStatus] = useState<string | null>(null);
 
     useEffect(() => {
         document.title = "Quotations | RenoXpert";
-        initQuotationTable(1, 10, '', null, '');
+        // initQuotationTable(1, 10, '', null, '');
 
-        // Cleanup function to clear localStorage on unmount
-        return () => {
-            localStorage.removeItem('include_packages');
-        };
+        // // Cleanup function to clear localStorage on unmount
+        // return () => {
+        //     localStorage.removeItem('include_packages');
+        // };
     }, []);
 
-    const toggleStatus = (status: string) => {
-        setSelectedQuotationReadyStatus(prevStatus => (prevStatus === status ? null : status));
-    };
+    // const toggleStatus = (status: string) => {
+    //     setSelectedQuotationReadyStatus(prevStatus => (prevStatus === status ? null : status));
+    // };
 
-    const initQuotationTable = async (
-        page: number,
-        size: number,
-        searchTerm?: string,
-        order?: string,
-        field?: string
-    ) => {
-        try {
-            setIsLoading(true);
-            const response = await quotationIndex(size, page, searchTerm, order, field, true);
+    // const initQuotationTable = async (
+    //     page: number,
+    //     size: number,
+    //     searchTerm?: string,
+    //     order?: string,
+    //     field?: string
+    // ) => {
+    //     try {
+    //         setIsLoading(true);
+    //         const response = await quotationIndex(size, page, searchTerm, order, field, true);
 
-            const data = response?.data || [];
-            setQuotations(data);
+    //         const data = response?.data || [];
+    //         setQuotations(data);
 
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error fetching quotations:', error);
-            setError('Failed to load quotations');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    //         setTotalItems(response?.totalCount || 0);
+    //     } catch (error) {
+    //         console.error('Error fetching quotations:', error);
+    //         setError('Failed to load quotations');
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
 
-    const handleRefreshTable = async () => {
-        initQuotationTable(page, size, searchTerm, sortOrder, sortField);
-    };
+    // const handleRefreshTable = async () => {
+    //     initQuotationTable(page, size, searchTerm, sortOrder, sortField);
+    // };
 
-    const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value;
-        setSearchTerm(value);
+    // const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     const value = event.target.value;
+    //     setSearchTerm(value);
 
-        // Debounce logic remains the same
-        if (debounceTimeout.current) {
-            clearTimeout(debounceTimeout.current);
-        }
+    //     // Debounce logic remains the same
+    //     if (debounceTimeout.current) {
+    //         clearTimeout(debounceTimeout.current);
+    //     }
 
-        debounceTimeout.current = setTimeout(async () => {
-            setPage(1);
+    //     debounceTimeout.current = setTimeout(async () => {
+    //         setPage(1);
 
-            try {
-                setIsLoading(true);
-                const response = await quotationIndex(size, 1, value, sortOrder, sortField, true);
+    //         try {
+    //             setIsLoading(true);
+    //             const response = await quotationIndex(size, 1, value, sortOrder, sortField, true);
 
-                const data = response?.data || [];
-                setQuotations(data);
-                setTotalItems(response?.totalCount || 0);
-            } catch (error) {
-                console.error('Error searching products:', error);
-                setError('Failed to search products');
-            } finally {
-                setIsLoading(false);
-            }
+    //             const data = response?.data || [];
+    //             setQuotations(data);
+    //             setTotalItems(response?.totalCount || 0);
+    //         } catch (error) {
+    //             console.error('Error searching products:', error);
+    //             setError('Failed to search products');
+    //         } finally {
+    //             setIsLoading(false);
+    //         }
 
-        }, 500);
-    };
+    //     }, 500);
+    // };
 
-    const handlePageChange = (newPage: number) => {
-        if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
-        setPage(newPage);
-        initQuotationTable(newPage, size, searchTerm, sortOrder, sortField);
-    };
+    // const handlePageChange = (newPage: number) => {
+    //     if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
+    //     setPage(newPage);
+    //     initQuotationTable(newPage, size, searchTerm, sortOrder, sortField);
+    // };
 
-    const handleSizeChange = (newSize: number) => {
-        setSize(newSize);
-        setPage(1); // Reset to the first page when changing the page size
-        initQuotationTable(1, newSize, searchTerm, sortOrder, sortField);
-    };
+    // const handleSizeChange = (newSize: number) => {
+    //     setSize(newSize);
+    //     setPage(1); // Reset to the first page when changing the page size
+    //     initQuotationTable(1, newSize, searchTerm, sortOrder, sortField);
+    // };
 
-    const handleSort = (field: string) => {
-        if (sortField === field) {
-            // Cycle through states: null -> asc -> desc -> null
-            if (sortOrder === null) {
-                setSortOrder('asc');
-                initQuotationTable(page, size, searchTerm, 'asc', field);
-            } else if (sortOrder === 'asc') {
-                setSortOrder('desc');
-                initQuotationTable(page, size, searchTerm, 'desc', field);
-            } else {
-                setSortOrder(null);
-                setSortField('');
-                initQuotationTable(page, size, searchTerm, null, '');
-            }
-        } else {
-            // New field, start with ascending
-            setSortField(field);
-            setSortOrder('asc');
-            initQuotationTable(page, size, searchTerm, 'asc', field);
-        }
-    };
+    // const handleSort = (field: string) => {
+    //     if (sortField === field) {
+    //         // Cycle through states: null -> asc -> desc -> null
+    //         if (sortOrder === null) {
+    //             setSortOrder('asc');
+    //             initQuotationTable(page, size, searchTerm, 'asc', field);
+    //         } else if (sortOrder === 'asc') {
+    //             setSortOrder('desc');
+    //             initQuotationTable(page, size, searchTerm, 'desc', field);
+    //         } else {
+    //             setSortOrder(null);
+    //             setSortField('');
+    //             initQuotationTable(page, size, searchTerm, null, '');
+    //         }
+    //     } else {
+    //         // New field, start with ascending
+    //         setSortField(field);
+    //         setSortOrder('asc');
+    //         initQuotationTable(page, size, searchTerm, 'asc', field);
+    //     }
+    // };
 
-    const getSortIcon = (field: string) => {
-        if (sortField !== field) {
-            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
-        }
-        switch (sortOrder) {
-            case 'asc':
-                return <i className="ki-outline ki-arrow-up text-primary" />;
-            case 'desc':
-                return <i className="ki-outline ki-arrow-down text-primary" />;
-            default:
-                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
-        }
-    };
+    // const getSortIcon = (field: string) => {
+    //     if (sortField !== field) {
+    //         return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+    //     }
+    //     switch (sortOrder) {
+    //         case 'asc':
+    //             return <i className="ki-outline ki-arrow-up text-primary" />;
+    //         case 'desc':
+    //             return <i className="ki-outline ki-arrow-down text-primary" />;
+    //         default:
+    //             return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+    //     }
+    // };
 
-    const totalPages = Math.ceil(totalItems / size);
+    // const totalPages = Math.ceil(totalItems / size);
 
-    const handleViewQuotation = (quotationId: string | number) => {
-        navigate(`/quotations/${quotationId}`);
-    }
-
-    const handleRemoveQuotation = async (quotationId: number) => {
-        try {
-            const response = await removeQuotation(quotationId);
-
-            if (response?.success) {
-                initQuotationTable(page, size);
-                return { success: true };
-            }
-            return { success: false };
-
-        } catch (error) {
-            console.log(error);
-            return { success: false, message: 'Quotation removal failed' };
-        }
-    }
+    return (
+        <div className="flex flex-col h-full justify-center items-center">
+            <div className="flex flex-col items-center justify-center h-[95%]">
+                <div className="mb-10">
+                    <img alt="image" className="dark:hidden max-h-[160px]" src="/public/media/illustrations/6.svg" />
+                    <img alt="image" className="light:hidden max-h-[160px]" src="/public/media/illustrations/6.svg" />
+                </div>
+                <span className="badge badge-primary badge-outline mb-3">
+                    404 Not Found
+                </span>
+                <h3 className="text-2.5xl font-semibold text-gray-900 text-center mb-2">
+                    Page Not Found
+                </h3>
+                <div className="text-md text-center text-gray-700 mb-3">
+                    This page might be missing or disabled by developer.
+                </div>
+                <div className="text-sm font-medium text-center text-gray-700 mb-10">
+                    {/* Invoice No: {errorData.invoiceNo} */}
+                </div>
+            </div>
+        </div>
+    )
 
     return (
         <>
