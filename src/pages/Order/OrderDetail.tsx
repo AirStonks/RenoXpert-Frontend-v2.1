@@ -241,7 +241,7 @@ function OrderDetail() {
             <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
                 <span>THIS AGREEMENT is made this day of <strong>{orderDetail.status === 'confirmed' ? formatDate(orderDetail.updated_at) : getCurrentDate()}</strong></span>
                 <span>BETWEEN</span>
-                <span><strong>BELIVE VENTURES SDN. BHD. [Registration No.202101035366 (1435666-K)]</strong> of <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 47500 Subang Jaya, Selangor</strong> (“the Contractor”) of the one part;</span>
+                <span><strong>RENOXPERT SDN. BHD. [Registration No.202401032588 (1578437-W)]</strong> of <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 46500 Subang Jaya, Selangor</strong> (“the Contractor”) of the one part;</span>
                 <span>AND</span>
                 <span><strong>{orderDetail.user.name} (NRIC No. {orderDetail.user.ic})</strong> of <strong>{address}</strong> ("the Owner") of the other part</span>
             </div>
