@@ -417,6 +417,19 @@ function OrderMain() {
                                                                     </button>
                                                                 </div>
                                                             }
+                                                            <div className="menu-item">
+                                                                <Link
+                                                                    to={`/orders/create?dp=${order.id}`}
+                                                                    className="menu-link"
+                                                                >
+                                                                    <span className="menu-title">
+                                                                        <div className="flex gap-2 items-center">
+                                                                            <i className="ki-outline ki-save-2"></i>
+                                                                            <span>Duplicate Order</span>
+                                                                        </div>
+                                                                    </span>
+                                                                </Link>
+                                                            </div>
                                                             {order.status !== 'confirmed' &&
                                                                 <>
                                                                     <div className="menu-item">

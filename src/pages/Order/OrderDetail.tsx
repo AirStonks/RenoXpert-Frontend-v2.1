@@ -152,9 +152,15 @@ function OrderDetail() {
                 total_price
             }))
         );
+
+        if (orderDetail.latest_quotation.packages.length > 0) {
+            KTAccordion.createInstances();
+        }
+
     }, [orderDetail?.latest_quotation?.packages]);
 
     if (!orderId) return null; // Early return for null orderId
+
 
     const handleBackClick = () => {
         if (state) {
@@ -459,6 +465,21 @@ function OrderDetail() {
                                         </div>
                                     </span>
                                 </button>
+                            </div>
+                            <div className="menu-item">
+                                <Link
+                                    to={`/orders/create?dp=${orderId}`}
+                                    className="menu-link"
+                                >
+                                    <span className="menu-title">
+                                        <div className="flex gap-2 items-center">
+                                            <i className="ki-outline ki-save-2 text-lg"></i>
+                                            <span className="text-gray-900">
+                                                Duplicate Order
+                                            </span>
+                                        </div>
+                                    </span>
+                                </Link>
                             </div>
                             <div className="menu-item">
                                 <button
@@ -767,7 +788,7 @@ function OrderDetail() {
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
-                                Category Pricing
+                                Summary Pricing
                             </h3>
                         </div>
                         <div className="card-body pt-3.5 pb-3.5">
@@ -1089,31 +1110,33 @@ function OrderDetail() {
                                                 <>
 
                                                     {/* Summary */}
-                                                    <div className="card-body p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg shadow-sm mb-4">
-                                                        <div className="flex flex-col gap-5">
-                                                            {/* Header */}
-                                                            <div className="flex items-center gap-2">
-                                                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                                                </svg>
-                                                                <span className="text-xl text-purple-600 font-bold">Summary</span>
-                                                            </div>
+                                                    {packageCategories.some(category => category.category !== "undefined") &&
+                                                        <div className="card-body p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg shadow-sm mb-4">
+                                                            <div className="flex flex-col gap-5">
+                                                                {/* Header */}
+                                                                <div className="flex items-center gap-2">
+                                                                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                                                    </svg>
+                                                                    <span className="text-xl text-purple-600 font-bold">Summary</span>
+                                                                </div>
 
-                                                            {/* Category Summary */}
-                                                            <div className="grid grid-cols-1 gap-4">
-                                                                {packageCategories.map((category, index) => (
-                                                                    <div key={index} className="flex justify-between items-center p-4 bg-white rounded-lg shadow-xs hover:shadow-md transition-shadow">
-                                                                        <div className="flex items-center gap-3">
-                                                                            <span className="text-sm text-gray-600 font-medium">Total {category.category} Cost</span>
+                                                                {/* Category Summary */}
+                                                                <div className="grid grid-cols-1 gap-4">
+                                                                    {packageCategories.map((category, index) => (
+                                                                        <div key={index} className="flex justify-between items-center p-4 bg-white rounded-lg shadow-xs hover:shadow-md transition-shadow">
+                                                                            <div className="flex items-center gap-3">
+                                                                                <span className="text-sm text-gray-600 font-medium">Total {category.category} Cost</span>
+                                                                            </div>
+                                                                            <span className="text-sm text-gray-700 font-semibold">
+                                                                                RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                            </span>
                                                                         </div>
-                                                                        <span className="text-sm text-gray-700 font-semibold">
-                                                                            RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                        </span>
-                                                                    </div>
-                                                                ))}
+                                                                    ))}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    }
 
                                                     {
                                                         selectedQuotation.bonus && (
@@ -1351,31 +1374,33 @@ function OrderDetail() {
                                         </table>
 
                                         {/* Summary */}
-                                        <div className="card-body p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg shadow-sm mb-4">
-                                            <div className="flex flex-col gap-5">
-                                                {/* Header */}
-                                                <div className="flex items-center gap-2">
-                                                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                                    </svg>
-                                                    <span className="text-xl text-purple-600 font-bold">Summary</span>
-                                                </div>
+                                        {packageCategories.some(category => category.category !== "undefined") &&
+                                            <div className="card-body p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg shadow-sm mb-4">
+                                                <div className="flex flex-col gap-5">
+                                                    {/* Header */}
+                                                    <div className="flex items-center gap-2">
+                                                        <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                                        </svg>
+                                                        <span className="text-xl text-purple-600 font-bold">Summary</span>
+                                                    </div>
 
-                                                {/* Category Summary */}
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    {packageCategories.map((category, index) => (
-                                                        <div key={index} className="flex justify-between items-center p-4 bg-white rounded-lg shadow-xs hover:shadow-md transition-shadow">
-                                                            <div className="flex items-center gap-3">
-                                                                <span className="text-sm text-gray-600 font-medium">Total {category.category} Cost</span>
+                                                    {/* Category Summary */}
+                                                    <div className="grid grid-cols-1 gap-4">
+                                                        {packageCategories.map((category, index) => (
+                                                            <div key={index} className="flex justify-between items-center p-4 bg-white rounded-lg shadow-xs hover:shadow-md transition-shadow">
+                                                                <div className="flex items-center gap-3">
+                                                                    <span className="text-sm text-gray-600 font-medium">Total {category.category} Cost</span>
+                                                                </div>
+                                                                <span className="text-sm text-gray-700 font-semibold">
+                                                                    RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                </span>
                                                             </div>
-                                                            <span className="text-sm text-gray-700 font-semibold">
-                                                                RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </span>
-                                                        </div>
-                                                    ))}
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        }
 
                                         {
                                             selectedQuotation.bonus && (

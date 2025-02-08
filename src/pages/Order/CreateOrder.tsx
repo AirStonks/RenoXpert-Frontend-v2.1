@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { createOrder, fetchProperties, fetchProperty, fetchQuotation, fetchQuotations, fetchRegistrationForm, fetchUser, fetchUsers } from '../../services/api';
+import { createOrder, fetchOrder, fetchProperties, fetchProperty, fetchQuotation, fetchQuotations, fetchRegistrationForm, fetchUser, fetchUsers } from '../../services/api';
 import { Order, OwnerRegistrationForm, Property, User } from '../../types';
 import { KTAccordion, KTDropdown, KTTooltip } from '../../metronic/core';
 import { Package, Quotation } from '../../types/index';
@@ -36,6 +36,7 @@ function CreateOrder() {
 
     const queryParams = new URLSearchParams(location.search);
     const formId = queryParams.get('formId');
+    const duplicateOrderId = queryParams.get('dp');
 
     const [searchUserTerm, setSearchUserTerm] = useState('');
     const [searchPropertyTerm, setSearchPropertyTerm] = useState('');
@@ -96,6 +97,11 @@ function CreateOrder() {
 
         if (formId) {
             handleSearchForm(formId);
+        }
+
+        if (duplicateOrderId) {
+            // Find order by Id
+            handleDuplicateOrder(duplicateOrderId);
         }
 
         if (sessionData) {
@@ -227,6 +233,56 @@ function CreateOrder() {
         }
     };
 
+    const handleDuplicateOrder = async (orderId: string) => {
+
+        setLoading(true);
+
+        try {
+            const response = await fetchOrder(Number(orderId)); // This returns AxiosResponse
+
+            if (response?.success) {
+                setFormData((prev) => ({
+                    ...prev,
+                    propertyId: response.data.property_id || '',
+                    quotationId: '0',
+                    totalAmount: response.data.latest_quotation.total_amount || 0,
+                    finalAmount: response.data.final_amount || 0,
+                    isFinalAmountEnable: response.data.latest_quotation.final_amount ? true : false,
+                    completion_day: response.data.completion_day || 1,
+                    bonus: {
+                        description: response.data.latest_quotation.bonus?.description,
+                        value: response.data.latest_quotation.bonus?.value.toString(),
+                    }
+                }));
+                if (response.data.property_id) {
+                    setSelectedProperty(response.data.property);
+                }
+                setSelectedQuotation({
+                    id: '0',
+                    name: 'Custom Quotation',
+                    total_amount: response.data.latest_quotation.total_amount,
+                    metadata: null
+                });
+                setQuotations([{
+                    id: '0',
+                    name: 'Custom Quotation',
+                    total_amount: response.data.latest_quotation.total_amount,
+                    metadata: null
+                }]);
+                setSearchQuotationTerm('');
+                setSelectedPackages(response.data.latest_quotation.packages);
+                localStorage.setItem('include_packages', JSON.stringify(response.data.latest_quotation.packages));
+            } else {
+                console.log('error');
+            }
+
+        } catch (error) {
+            notify('error', 'Failed to fetch order');
+        }
+
+        setLoading(false);
+    }
+
     const handleBackClick = () => {
         localStorage.removeItem('create_order_data');
         localStorage.removeItem('include_packages');
@@ -341,7 +397,6 @@ function CreateOrder() {
             metadata: null
         });
         setSearchQuotationTerm('');
-        setQuotations([]);
         setSelectedPackages([]);
         localStorage.setItem('include_packages', JSON.stringify([]));
 
@@ -767,7 +822,7 @@ function CreateOrder() {
                                         <span className="text-base font-semibold text-gray-900">
                                             3. Select a Quotation
                                         </span>
-                                        <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
+                                        {/* <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
                                             <button
                                                 className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
                                                 onClick={handleOpenQuotationDropdown}
@@ -808,13 +863,13 @@ function CreateOrder() {
                                                     ))}
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> */}
                                         <span className='text-md font-semibold text-gray-900'>
-                                            Or <button
+                                            <button
                                                 className='link'
                                                 onClick={handleCustomQuotation}
                                             >
-                                                create a custom quotation
+                                                Create a custom quotation
                                             </button>
                                         </span>
                                     </div>

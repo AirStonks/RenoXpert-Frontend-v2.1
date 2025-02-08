@@ -10,6 +10,7 @@ import { Package, Product, Property, Quotation } from '../../types';
 import { createQuotation, fetchProperties } from '../../services/api';
 import IncludeQuotationProductModal from '../../components/Modals/IncludeQuotationProductModal';
 import { KTDropdown } from '../../metronic/core';
+import Loading from '../../components/Loading';
 
 const categoryOptions = [
     { value: "renovation", label: "Renovation" },
@@ -212,15 +213,19 @@ function CreateQuotation() {
             total_amount: formData.quotationPrice,
         }
 
-        const response = await createQuotation(quotationData, packagesData);
+        try {
+            const response = await createQuotation(quotationData, packagesData);
 
-        if (response?.success) {
-            notify('success', "Quotation Created Successfully!");
-            localStorage.removeItem('include_packages');
-            setIsLoading(false);
-            navigate('/quotations');
-        } else {
-            console.log(response);
+            if (response?.success) {
+                notify('success', "Quotation Created Successfully!");
+                localStorage.removeItem('include_packages');
+                setIsLoading(false);
+                navigate('/quotations');
+            } else {
+                console.log(response);
+            }
+        } catch (error) {
+            console.log(error);
         }
 
         setIsLoading(false);
@@ -443,6 +448,8 @@ function CreateQuotation() {
 
     return (
         <>
+            {isLoading && <Loading />}
+
             <div className="flex justify-between items-center flex-wrap mb-6">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>

@@ -177,6 +177,13 @@ function QuotationDetail() {
                 </div>
             </div>
 
+            {quotationDetail.metadata &&
+                <div className="flex gap-2 items-center text-center badge badge-lg badge-pill badge-warning badge-outline">
+                    <i className="ki-filled ki-information-4"></i>
+                    <span className="font-semibold">Please update or create a new quotation template, this quotation template is outdated.</span>
+                </div>
+            }
+
             <div className="flex flex-wrap gap-8 mb-8">
                 <div className="left-column flex flex-col flex-[3] gap-8">
                     <div className="card">

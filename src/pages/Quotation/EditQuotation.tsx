@@ -18,6 +18,7 @@ function EditQuotation() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const quotationId = id ? parseInt(id, 10) : null;
+    const [isLoading, setIsLoading] = useState(false);
 
     const { quotationDetail, loading, error } = useFetchQuotation(quotationId);
 
@@ -141,22 +142,41 @@ function EditQuotation() {
 
     // PENDING
     const handleSubmit = async () => {
+        setIsLoading(true);
+
         try {
             if (selectedProperty === null) {
                 notify('error', "Please select a property");
+                setIsLoading(false);
                 return;
             }
 
             if (formData.quotationName === '') {
                 notify('error', "Please enter a quotation name");
+                setIsLoading(false);
                 return;
             }
 
             const storedPackages = localStorage.getItem('include_packages');
             const parsedPackages = JSON.parse(storedPackages);
 
+            const packagesData = parsedPackages.map(pkg => ({
+                quotation_package_id: pkg.quotation_package_id,
+                quantity: pkg.quantity,
+                products: pkg.products.map(product => ({
+                    quo_pkg_prod_id: product.quo_pkg_prod_id,
+                    quantity: product.pivot.quantity,
+                    visibility: product.pivot.visibility
+                }))
+            }));
+
+            setIsLoading(false);
+            console.log(packagesData);
+            return;
+
             if (parsedPackages === null || parsedPackages.length === 0) {
                 notify('error', "Please select at least one package");
+                setIsLoading(false);
                 return;
             }
 
@@ -211,6 +231,7 @@ function EditQuotation() {
                 console.error('Quotation edit failed:', error);
             }
         }
+        setIsLoading(false);
     };
 
     const openAddPackageModal = () => {
@@ -318,6 +339,30 @@ function EditQuotation() {
         localStorage.setItem('include_packages', JSON.stringify(packages));
     };
 
+    const adjustPackageQuantity = (packId: number, action: 'increase' | 'decrease') => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage) => {
+                if (prodPackage.id === packId) {
+                    const newTotalPrice = prodPackage.products.reduce((sum, product) => {
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
+                    }, 0);
+
+                    return {
+                        ...prodPackage,
+                        total_price: newTotalPrice * (action === 'increase' ? prodPackage.quantity + 1 : Math.max(1, prodPackage.quantity - 1)), // Update total price
+                        quantity: action === 'increase' ? prodPackage.quantity + 1 : Math.max(1, prodPackage.quantity - 1)
+                    };
+                }
+                return prodPackage; // Return the original package if not matched
+            });
+
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
+            updateLocalStorage(updatedPackages);
+            return updatedPackages;
+        });
+    };
+
     const adjustQuantity = (prodId: number, packId: number, action: 'increase' | 'decrease') => {
         setSelectedPackages((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage) => {
@@ -339,8 +384,13 @@ function EditQuotation() {
                         return product; // Return the original product if not matched
                     });
 
+                    // Correct the calculation by grouping the addition before multiplying by prodPackage.quantity
                     const newTotalPrice = updatedProducts.reduce((sum, product) => {
-                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
+                        return sum + (
+                            ((product.provisioning.supply.retail_price * product.pivot.quantity) +
+                                (product.provisioning.install.retail_price * product.pivot.quantity))
+                            * prodPackage.quantity
+                        );
                     }, 0);
 
                     return {
@@ -358,6 +408,7 @@ function EditQuotation() {
             return updatedPackages;
         });
     };
+
 
     const handleRemoveProduct = (prodId: number, packId: number) => {
 
@@ -386,7 +437,6 @@ function EditQuotation() {
         });
     };
 
-
     const handleRemovePackage = (packId: number) => {
         setSelectedPackages((prevPackages: Package[]) => {
             // Filter out the package with the matching packId
@@ -411,6 +461,8 @@ function EditQuotation() {
 
     return (
         <>
+            {isLoading && <Loading />}
+
             <div className="flex justify-between items-center flex-wrap mb-6">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
@@ -607,11 +659,34 @@ function EditQuotation() {
                                                         </>}
                                                     </span>
                                                 </div>
-                                                <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="badge text-sm">Quantity: {prodPackage.quantity}</div>
+                                                    <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                    <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                </div>
                                             </button>
                                             <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
-                                                <div className="flex justify-end my-2 mr-3">
+                                                <div className="flex justify-between my-2 mx-3">
+                                                    <div className="flex items-center text-gray-700 gap-2 p-2 rounded-md bg-blue-50 dark:bg-sky-950">
+                                                        <span>Package Quantity: </span>
+                                                        <div className="flex text-center">
+                                                            <button
+                                                                data-action='decrease'
+                                                                onClick={() => adjustPackageQuantity(prodPackage.id, 'decrease')}
+                                                            >
+                                                                <i className="ki-solid ki-minus-squared"></i>
+                                                            </button>
+                                                            <span className="mx-2 text-base">
+                                                                {prodPackage.quantity}
+                                                            </span>
+                                                            <button
+                                                                data-action='increase'
+                                                                onClick={() => adjustPackageQuantity(prodPackage.id, 'increase')}
+                                                            >
+                                                                <i className="ki-solid ki-plus-squared"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                     <button
                                                         className="btn btn-primary"
                                                         data-id={prodPackage.id}
