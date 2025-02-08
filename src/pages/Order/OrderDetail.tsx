@@ -751,6 +751,28 @@ function OrderDetail() {
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
+                                Reno Agreement Detail
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Completion Day(s):
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {orderDetail.completion_day} Working Days
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
                                 Revision History
                             </h3>
                         </div>
