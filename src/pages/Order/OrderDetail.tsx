@@ -738,6 +738,14 @@ function OrderDetail() {
                                             </tr>
                                             <tr>
                                                 <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Unit Type:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.unit_type ? orderDetail.unit_type : "-"}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                                     Address:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">

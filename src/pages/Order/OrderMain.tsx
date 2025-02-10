@@ -286,6 +286,7 @@ function OrderMain() {
                                     <th className='w-[60px] text-center'>Unit</th>
                                     <th className='w-[60px] text-center'>Property</th>
                                     <th className='w-[20px] text-center'>Partition</th>
+                                    <th className='w-[100px] text-center'>Price</th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('created_at')}
@@ -365,6 +366,11 @@ function OrderMain() {
                                             <td className='text-center'>
                                                 <div className="flex flex-col gap-1">
                                                     <span>{order.include_partition ? 'Yes' : 'No'}</span>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col gap-1">
+                                                    <span>RM {order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                 </div>
                                             </td>
                                             <td className='text-center'>
