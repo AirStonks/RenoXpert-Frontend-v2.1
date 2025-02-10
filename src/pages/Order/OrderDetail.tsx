@@ -435,16 +435,18 @@ function OrderDetail() {
                             Confirm Order
                         </button>
                     }
-                    <Link
-                        to={`/orders/edit/${orderId}`}
-                        className="btn btn-sm btn-info"
-                        data-tooltip="#edit_tooltip"
-                        data-action="edit"
-                        data-id={orderId}
-                    >
-                        <i className="ki-outline ki-notepad-edit"></i>
-                        Edit Order Quotation
-                    </Link>
+                    {orderDetail?.status !== 'confirmed' &&
+                        <Link
+                            to={`/orders/edit/${orderId}`}
+                            className="btn btn-sm btn-info"
+                            data-tooltip="#edit_tooltip"
+                            data-action="edit"
+                            data-id={orderId}
+                        >
+                            <i className="ki-outline ki-notepad-edit"></i>
+                            Edit Order Quotation
+                        </Link>
+                    }
 
                     <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
                         <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
@@ -559,14 +561,14 @@ function OrderDetail() {
                                             Status:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            <span className={`badge badge-sm p-2 cursor-default
+                                            <span className={`badge badge-sm p-2 cursor-default capitalize
                                                 ${orderDetail.status === 'released' ? 'badge-primary' : ''} 
                                                 ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
                                                 ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
                                                 ${orderDetail.user == null ? 'badge-warning' : ''} 
                                                 badge-outline`}
                                             >
-                                                {orderDetail.user ? orderDetail.status : 'Draft'}
+                                                {orderDetail.user ? (orderDetail.status === 'confirmed' ? 'sale' : orderDetail.status) : 'Draft'}
                                             </span>
                                         </td>
                                     </tr>
@@ -1158,12 +1160,12 @@ function OrderDetail() {
                                             <h2 className="card-title">
                                                 Quotation Order Detail
                                             </h2>
-                                            <span className={`badge badge-sm p-2 cursor-default
+                                            <span className={`badge badge-sm p-2 cursor-default capitalize
                                                 ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
                                                 ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
                                                 badge-outline`}
                                             >
-                                                {orderDetail.status}
+                                                {(orderDetail.status === 'confirmed' ? 'sale' : orderDetail.status)}
                                             </span>
                                         </div>
                                         <div className="card-body">

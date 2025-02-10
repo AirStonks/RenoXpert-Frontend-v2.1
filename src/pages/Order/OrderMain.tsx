@@ -324,14 +324,14 @@ function OrderMain() {
                                                 </div>
                                             </td>
                                             <td className='text-center'>
-                                                <span className={`badge badge-pill p-2 cursor-default
+                                                <span className={`badge badge-pill p-2 cursor-default capitalize
                                                     ${order.status === 'released' ? 'badge-primary' : ''} 
                                                     ${order.status === 'confirmed' ? 'badge-success' : ''} 
                                                     ${order.status === 'revoked' ? 'badge-danger' : ''} 
                                                     ${order.user == null ? 'badge-warning' : ''} 
                                                     badge-outline`}
                                                 >
-                                                    {order.user ? order.status : 'Draft'}
+                                                    {order.user ? (order.status === 'confirmed' ? 'sale' : order.status) : 'Draft'}
                                                 </span>
                                             </td>
                                             <td className=''>

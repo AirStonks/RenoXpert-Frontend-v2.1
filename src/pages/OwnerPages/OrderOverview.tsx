@@ -467,12 +467,12 @@ function OrderOverview() {
                                             <h2 className="card-title">
                                                 Quotation Order Detail
                                             </h2>
-                                            <span className={`badge badge-sm p-2 cursor-default
+                                            <span className={`badge badge-sm p-2 cursor-default capitalize
                                                         ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
                                                         ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
                                                         badge-outline`}
                                             >
-                                                {orderDetail.status}
+                                                {orderDetail.status === 'confirmed' ? 'sale' : orderDetail.status}
                                             </span>
                                         </div>
                                         <div className="card-body">
