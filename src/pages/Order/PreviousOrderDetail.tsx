@@ -151,9 +151,10 @@ function PreviousOrderDetail() {
                                             <span className={`badge badge-sm p-2 cursor-default
                                                 ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
                                                 ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
+                                                ${orderDetail.user == null ? 'badge-warning' : ''} 
                                                 badge-outline`}
                                             >
-                                                {orderDetail.status}
+                                                {orderDetail.user ? orderDetail.status : 'Draft'}
                                             </span>
                                         </td>
                                     </tr>
@@ -189,6 +190,16 @@ function PreviousOrderDetail() {
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Internal Remark
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <span className="text-gray-900">{orderDetail.internal_remark ? orderDetail.internal_remark : "N/A"}</span>
                         </div>
                     </div>
                     <div className="card">
@@ -246,30 +257,38 @@ function PreviousOrderDetail() {
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
-                                    <tr>
+                                    {orderDetail.user ?
+                                        <>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Name:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.user.name}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Email:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.user.email}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Phone No.:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    +60 {orderDetail.user.phone_no}
+                                                </td>
+                                            </tr>
+                                        </>
+                                        :
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Name:
+                                            N/A
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.user.name}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Email:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.user.email}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Phone No.:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            +60 {orderDetail.user.phone_no}
-                                        </td>
-                                    </tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>
@@ -283,55 +302,72 @@ function PreviousOrderDetail() {
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
-                                    <tr>
+                                    {orderDetail.property ?
+                                        <>
+
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Property Name:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.property.name}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Unit:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Address:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {[
+                                                        orderDetail.property.address,
+                                                        orderDetail.property.street,
+                                                        orderDetail.property.postcode,
+                                                        orderDetail.property.city,
+                                                        orderDetail.property.state,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(', ')
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Total Bedroom:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.bedroom_count}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Total Bathroom:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.bathroom_count}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Partition:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.include_partition ? 'Yes' : 'No'}
+                                                </td>
+                                            </tr>
+                                        </>
+                                        :
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Property Name:
+                                            N/A
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.property.name}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Unit:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Address:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {[
-                                                orderDetail.property.address,
-                                                orderDetail.property.street,
-                                                orderDetail.property.postcode,
-                                                orderDetail.property.city,
-                                                orderDetail.property.state,
-                                            ]
-                                                .filter(Boolean)
-                                                .join(', ')
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Total Bedroom:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.bedroom_count}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Total Bathroom:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.bathroom_count}
-                                        </td>
-                                    </tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>

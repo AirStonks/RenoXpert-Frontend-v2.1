@@ -194,7 +194,7 @@ function OrderDetail() {
     const selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation)) as OrderQuotation;
     const selectedPackages = JSON.parse(JSON.stringify(orderDetail.latest_quotation.packages)) as Package[];
 
-    const address = [
+    const address = orderDetail.user ? [
         orderDetail.user.address.address_1,
         orderDetail.user.address.street,
         orderDetail.user.address.postcode,
@@ -202,7 +202,9 @@ function OrderDetail() {
         orderDetail.user.address.state,
     ]
         .filter(Boolean)
-        .join(', ');
+        .join(', ')
+        :
+        null;
 
     const propertyAddress = [
         orderDetail.property.address,
@@ -245,15 +247,15 @@ function OrderDetail() {
     const renoAgreement = (
         <div className='flex flex-col w-full text-sm text-justify'>
             <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
-                <span>THIS AGREEMENT is made this day of <strong>{orderDetail.status === 'confirmed' ? formatDate(orderDetail.updated_at) : getCurrentDate()}</strong></span>
+                <span>THIS AGREEMENT is made this day of <strong>{orderDetail.status ? formatDate(orderDetail.updated_at) : getCurrentDate()}</strong></span>
                 <span>BETWEEN</span>
                 <span><strong>RENOXPERT SDN. BHD. [Registration No.202401032588 (1578437-W)]</strong> of <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 46500 Subang Jaya, Selangor</strong> (“the Contractor”) of the one part;</span>
                 <span>AND</span>
-                <span><strong>{orderDetail.user.name} (NRIC No. {orderDetail.user.ic})</strong> of <strong>{address}</strong> ("the Owner") of the other part</span>
+                <span><strong>{orderDetail.user ? orderDetail.user.name : '[Owner Name]'} (NRIC No. {orderDetail.user ? orderDetail.user.ic : "[Owner IC]"})</strong> of <strong>{address ? address : "[Owner Address]"}</strong> ("the Owner") of the other part</span>
             </div>
             <div className="flex flex-col gap-6 mb-6">
                 <span className='font-bold'>WHEREAS:</span>
-                <span>The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the services of the Contractor for the renovation of the Owner’s property described as <strong>A (1) unit of Service Residence known as {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}, {orderDetail.property.name}, {propertyAddress}</strong> (the “Property”) subject to the terms and conditions hereinafter appearing.</span>
+                <span>The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the services of the Contractor for the renovation of the Owner’s property described as <strong>A (1) unit of Service Residence known as {orderDetail.block ? orderDetail.block : '[Block]'}-{orderDetail.floor ? orderDetail.floor : '[Floor]'}-{orderDetail.unit_no ? orderDetail.unit_no : '[Unit No]'}, {orderDetail.property.name}, {propertyAddress}</strong> (the “Property”) subject to the terms and conditions hereinafter appearing.</span>
                 <span><strong>NOW THIS AGREEMENT WITNESSETH</strong> as follows:-</span>
                 <div className="flex flex-col gap-3">
                     <span><strong>1. CONTRACT SUM</strong></span>
@@ -382,7 +384,6 @@ function OrderDetail() {
                 <span>In the event of a default by the Owner of the payment hereunder when due, the Owner shall be liable to pay interest at the rate of eight per centum (8%) per annum on the outstanding sum from the date due for payment until the date of actual payment.</span>
             </div>
         </div>
-
     );
 
     function getProductDescription(product) {
@@ -451,21 +452,23 @@ function OrderDetail() {
                         </button>
 
                         <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
-                            <div className="menu-item">
-                                <button
-                                    className="menu-link copy-link"
-                                    data-clipboard-text={`${APP_URL}owner/order/overview/id/${orderId}`}
-                                >
-                                    <span className="menu-title">
-                                        <div className="flex gap-2 items-center">
-                                            <i className="ki-outline ki-copy text-lg"></i>
-                                            <span className="text-gray-900">
-                                                Copy Quotation Order Link
-                                            </span>
-                                        </div>
-                                    </span>
-                                </button>
-                            </div>
+                            {orderDetail.user &&
+                                <div className="menu-item">
+                                    <button
+                                        className="menu-link copy-link"
+                                        data-clipboard-text={`${APP_URL}owner/order/overview/id/${orderId}`}
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <i className="ki-outline ki-copy text-lg"></i>
+                                                <span className="text-gray-900">
+                                                    Copy Quotation Order Link
+                                                </span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            }
                             <div className="menu-item">
                                 <Link
                                     to={`/orders/create?dp=${orderId}`}
@@ -560,9 +563,10 @@ function OrderDetail() {
                                                 ${orderDetail.status === 'released' ? 'badge-primary' : ''} 
                                                 ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
                                                 ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
+                                                ${orderDetail.user == null ? 'badge-warning' : ''} 
                                                 badge-outline`}
                                             >
-                                                {orderDetail.status}
+                                                {orderDetail.user ? orderDetail.status : 'Draft'}
                                             </span>
                                         </td>
                                     </tr>
@@ -599,6 +603,16 @@ function OrderDetail() {
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Internal Remark
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <span className="text-gray-900">{orderDetail.internal_remark ? orderDetail.internal_remark : "N/A"}</span>
                         </div>
                     </div>
                     <div className="card bg-info-light">
@@ -658,30 +672,38 @@ function OrderDetail() {
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
-                                    <tr>
+                                    {orderDetail.user ?
+                                        <>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Name:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.user.name}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Email:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.user.email}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Phone No.:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    +60 {orderDetail.user.phone_no}
+                                                </td>
+                                            </tr>
+                                        </>
+                                        :
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Name:
+                                            N/A
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.user.name}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Email:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.user.email}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Phone No.:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            +60 {orderDetail.user.phone_no}
-                                        </td>
-                                    </tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>
@@ -695,55 +717,72 @@ function OrderDetail() {
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
-                                    <tr>
+                                    {orderDetail.property ?
+                                        <>
+
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Property Name:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.property.name}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Unit:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Address:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {[
+                                                        orderDetail.property.address,
+                                                        orderDetail.property.street,
+                                                        orderDetail.property.postcode,
+                                                        orderDetail.property.city,
+                                                        orderDetail.property.state,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(', ')
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Total Bedroom:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.bedroom_count}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Total Bathroom:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.bathroom_count}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Partition:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.include_partition ? 'Yes' : 'No'}
+                                                </td>
+                                            </tr>
+                                        </>
+                                        :
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Property Name:
+                                            N/A
                                         </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.property.name}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Unit:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Address:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {[
-                                                orderDetail.property.address,
-                                                orderDetail.property.street,
-                                                orderDetail.property.postcode,
-                                                orderDetail.property.city,
-                                                orderDetail.property.state,
-                                            ]
-                                                .filter(Boolean)
-                                                .join(', ')
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Total Bedroom:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.bedroom_count}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Total Bathroom:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.bathroom_count}
-                                        </td>
-                                    </tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>
@@ -1012,6 +1051,11 @@ function OrderDetail() {
                         </button>
                     </div>
                     <div className="modal-body overflow-y-auto scrollable-y flex flex-col ">
+                        {!orderDetail.user &&
+                            <div className="badge text-md w-full text-center mb-4 badge-warning badge-outline">
+                                This is a Draft Quotation Order, not viewable to public
+                            </div>
+                        }
                         <div className="tabs mb-3">
                             <button
                                 className={`tab ${activeTab === 'tab_1_1' ? 'active' : ''}`}
@@ -1224,14 +1268,24 @@ function OrderDetail() {
                                                     <span className='text-sm text-gray-600'>Name:</span>
                                                     <span className='text-sm text-gray-900 font-semibold'>{orderDetail.property.name}</span>
                                                 </div>
+                                                <div className=""></div>
+                                            </div>
+
+                                            <div className="flex justify-between flex-wrap">
                                                 <div className="flex flex-col mb-4">
                                                     <span className='text-sm text-gray-600'>Unit:</span>
                                                     <span className='text-sm text-gray-900 font-semibold'>{orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}</span>
                                                 </div>
-                                                <div className="">
-
+                                                <div className="flex flex-col mb-4 mr-8">
+                                                    <span className='text-sm text-gray-600'>Unit Type:</span>
+                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.unit_type ? orderDetail.unit_type : '-'}</span>
+                                                </div>
+                                                <div className="flex flex-col mb-4">
+                                                    <span className='text-sm text-gray-600'>Partition:</span>
+                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.include_partition ? 'Yes' : 'No'}</span>
                                                 </div>
                                             </div>
+
                                             <div className="flex flex-col">
                                                 <span className='text-sm text-gray-600'>Address:</span>
                                                 <span className='text-sm text-gray-900'>

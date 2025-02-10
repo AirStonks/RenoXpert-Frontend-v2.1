@@ -59,13 +59,17 @@ function CreateOrder() {
         totalAmount: 0,
         finalAmount: 0,
         completion_day: 0,
+        unit_type: '',
         block: '',
         floor: '',
         unitNo: '',
         status: '',
         isFinalAmountEnable: false,
+        isDraftMode: false,
         bedroom_count: 1,
         bathroom_count: 1,
+        include_partition: false,
+        internal_remark: '',
         bonus: {
             description: '',
             value: '',
@@ -244,11 +248,17 @@ function CreateOrder() {
                 setFormData((prev) => ({
                     ...prev,
                     propertyId: response.data.property_id || '',
+                    unit_type: response.data.unit_type || '',
                     quotationId: '0',
                     totalAmount: response.data.latest_quotation.total_amount || 0,
                     finalAmount: response.data.final_amount || 0,
                     isFinalAmountEnable: response.data.latest_quotation.final_amount ? true : false,
+                    isDraftMode: response.data.user ? false : true,
                     completion_day: response.data.completion_day || 1,
+                    include_partition: response.data.include_partition ? true : false,
+                    internal_remark: response.data.internal_remark || '',
+                    bedroom_count: response.data.bedroom_count,
+                    bathroom_count: response.data.bathroom_count,
                     bonus: {
                         description: response.data.latest_quotation.bonus?.description,
                         value: response.data.latest_quotation.bonus?.value.toString(),
@@ -536,62 +546,87 @@ function CreateOrder() {
     }
 
     const handleSubmit = async () => {
-        if (!selectedUser) {
-            notify('error', 'Please select a user.');
-            return;
-        }
 
-        if (!selectedProperty) {
-            notify('error', 'Please select a property.');
-            return;
-        }
+        setLoading(true);
 
-        if (!formData.block || !formData.floor || !formData.unitNo) {
-            notify('error', 'Please enter block, floor and unit no.');
-            return;
+        if (!formData.isDraftMode) {
+            if (!selectedUser) {
+                notify('error', 'Please select a user.');
+                setLoading(false);
+                return;
+            }
+
+            if (!selectedProperty) {
+                notify('error', 'Please select a property.');
+                setLoading(false);
+                return;
+            }
+
+            if (!formData.block || !formData.floor || !formData.unitNo) {
+                notify('error', 'Please enter block, floor and unit no.');
+                setLoading(false);
+                return;
+            }
         }
 
         if (!selectedQuotation) {
             notify('error', 'Please select a quotation.');
+            setLoading(false);
+            return;
+        }
+
+        if (JSON.parse(localStorage.getItem('include_packages')).length === 0) {
+            notify('error', 'Please select at least one package.');
+            setLoading(false);
             return;
         }
 
         const newOrder: Order = {
-            user_id: selectedUser.id,
+            user_id: selectedUser?.id || '',
             form_id: formId,
-            property_id: selectedProperty.id,
+            property_id: selectedProperty?.id || '',
             quotation_id: selectedQuotation.id,
             total_amount: formData.totalAmount ? (formData.totalAmount - (Number(formData.bonus?.value) || 0)) : (selectedQuotation.total_amount - (Number(formData.bonus?.value) || 0)),
             final_amount: formData.isFinalAmountEnable ? formData.finalAmount : null,
+            unit_type: formData.unit_type,
             block: formData.block,
             floor: formData.floor,
             unit_no: formData.unitNo,
             bedroom_count: formData.bedroom_count,
             bathroom_count: formData.bathroom_count,
             description: '',
+            internal_remark: formData.internal_remark,
             completion_day: formData.completion_day,
             bonus: formData.bonus,
             metadata: JSON.parse(localStorage.getItem('include_packages')),
         }
 
-        const response = await createOrder(newOrder);
+        try {
+            const response = await createOrder(newOrder);
 
-        if (response?.success) {
-            notify('success', "Order Created Successfully!");
-            localStorage.removeItem('create_order_data');
-            localStorage.removeItem('include_packages');
-            localStorage.removeItem('selected_quotation_packages');
-            navigate('/orders');
-        } else {
-            console.log(response);
+            if (response?.success) {
+                notify('success', "Order Created Successfully!");
+                localStorage.removeItem('create_order_data');
+                localStorage.removeItem('include_packages');
+                localStorage.removeItem('selected_quotation_packages');
+                setLoading(false);
+                navigate('/orders');
+            } else {
+                setLoading(false);
+                console.log(response);
+            }
+        } catch (error) {
+            notify('error', error.response.data.data);
         }
-    }
 
-    if (loading) return <Loading />;
+        setLoading(false);
+    }
 
     return (
         <>
-            <div className="flex justify-between items-center flex-wrap mb-6">
+            {loading && <Loading />}
+
+            <div className="flex justify-between items-center flex-wrap mb-6 lg:mr-[400px] lg:pr-6">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
                         <i className="ki-solid ki-arrow-left"></i>
@@ -600,71 +635,105 @@ function CreateOrder() {
                         New Order
                     </span>
                 </div>
+                <div className="flex items-center">
+                    <label className="switch switch-lg">
+                        <input
+                            className="checkbox"
+                            name="isDraftMode"
+                            type="checkbox"
+                            checked={!!formData.isDraftMode}
+                            onChange={() => setFormData((prev) => ({
+                                ...prev,
+                                isDraftMode: !prev.isDraftMode
+                            }))}
+                        />
+                        <span className="switch-label">
+                            Draft Mode
+                        </span>
+                    </label>
+                </div>
             </div>
 
-            <div className="flex grow flex-col gap-3 lg:gap-6 lg:mr-[400px] lg:px-6">
-                <div className="flex flex-col gap-8 mb-8">
+            <div className="flex grow flex-col gap-3 lg:gap-6 lg:mr-[400px] lg:pr-6">
+                <div className="flex flex-col gap-8 mb-8" data-accordion="true" data-accordion-expand-all="true">
                     <div className="card ">
                         <div className="card-body">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Order</h2>
                             <div className="flex gap-8">
-                                {/* Owner */}
-                                <div className="flex flex-col flex-1 gap-2">
-                                    <span className="text-base font-semibold text-gray-900">
-                                        1. Select an Owner
-                                    </span>
-                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="owner_dropdown">
-                                        <button
-                                            className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
-                                            onClick={handleOpenOwnerDropdown}
-                                        >
-                                            <span>Owner</span>
-                                            <i className="ki-filled ki-down"></i>
-                                        </button>
-                                        <div className="dropdown-content w-full max-w-80">
-                                            <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                                <label className="input input-sm">
-                                                    <i className="ki-filled ki-magnifier"></i>
-                                                    <input
-                                                        ref={inputUserRef}
-                                                        placeholder="Search Owner"
-                                                        type="text"
-                                                        value={searchUserTerm}
-                                                        onChange={handleSearchUser}
-                                                    />
-                                                </label>
-                                            </div>
-                                            <div className="menu menu-default flex flex-col w-full">
-                                                {users.map((user, index) => (
-                                                    <div className="menu-item" key={index} data-id={user.id}>
-                                                        <button
-                                                            className="menu-link"
-                                                            onClick={() => handleSelectUser(user)}
-                                                        >
-                                                            <span className="menu-title">{user.name}</span>
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {selectedUser && (
-                                        <div className="card mb-4">
-                                            <div className="card-body">
-                                                <div className="flex flex-col gap-1 text-gray-900">
-                                                    <span className='text-sm font-semibold'>{selectedUser.name}</span>
-                                                    <span className='text-sm font-normal text-slate-400'>{selectedUser.email}</span>
-                                                    <span className='text-sm font-normal'>+60 {selectedUser.phone_no}</span>
+                                <div className="flex flex-col flex-1 gap-8">
+                                    {/* Owner */}
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-base font-semibold text-gray-900">
+                                            Select an Owner
+                                        </span>
+                                        <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="owner_dropdown">
+                                            <button
+                                                className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
+                                                onClick={handleOpenOwnerDropdown}
+                                            >
+                                                <span>Owner</span>
+                                                <i className="ki-filled ki-down"></i>
+                                            </button>
+                                            <div className="dropdown-content w-full max-w-80">
+                                                <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                                    <label className="input input-sm">
+                                                        <i className="ki-filled ki-magnifier"></i>
+                                                        <input
+                                                            ref={inputUserRef}
+                                                            placeholder="Search Owner"
+                                                            type="text"
+                                                            value={searchUserTerm}
+                                                            onChange={handleSearchUser}
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <div className="menu menu-default flex flex-col w-full">
+                                                    {users.map((user, index) => (
+                                                        <div className="menu-item" key={index} data-id={user.id}>
+                                                            <button
+                                                                className="menu-link"
+                                                                onClick={() => handleSelectUser(user)}
+                                                            >
+                                                                <span className="menu-title">{user.name}</span>
+                                                            </button>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
+                                        {selectedUser && (
+                                            <div className="card mb-4">
+                                                <div className="card-body">
+                                                    <div className="flex flex-col gap-1 text-gray-900">
+                                                        <span className='text-sm font-semibold'>{selectedUser.name}</span>
+                                                        <span className='text-sm font-normal text-slate-400'>{selectedUser.email}</span>
+                                                        <span className='text-sm font-normal'>+60 {selectedUser.phone_no}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Internal Remark */}
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-base font-semibold text-gray-900">
+                                            Internal Remark
+                                        </span>
+                                        <textarea
+                                            className="textarea"
+                                            name="internal_remark"
+                                            id="internal_remark"
+                                            rows={4}
+                                            value={formData.internal_remark}
+                                            onChange={handleChange}
+                                        ></textarea>
+                                    </div>
                                 </div>
 
                                 {/* Property */}
                                 <div className="flex flex-col flex-1 gap-2">
                                     <span className="text-base font-semibold text-gray-900">
-                                        2. Select a Property
+                                        Select a Property
                                     </span>
                                     <div className="dropdow" data-dropdown="true" data-dropdown-trigger="click" id='property_dropdown'>
                                         <button
@@ -721,6 +790,22 @@ function CreateOrder() {
                                             </div>
 
                                             <div className="flex flex-col gap-4">
+                                                <div className="flex gap-4">
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm font-semibold text-gray-900'>
+                                                            Unit Type
+                                                        </span>
+
+                                                        <input
+                                                            className='input mb-2'
+                                                            type='text'
+                                                            name='unit_type'
+                                                            value={formData.unit_type}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </div>
+                                                </div>
+
                                                 <div className="flex gap-4">
                                                     <div className="flex flex-col">
                                                         <span className='text-sm font-semibold text-gray-900'>
@@ -803,6 +888,28 @@ function CreateOrder() {
                                                             <option value="3">3</option>
                                                         </select>
                                                     </div>
+
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm font-semibold text-gray-900 mb-2'>
+                                                            Partition
+                                                        </span>
+
+                                                        <label className="switch switch-lg">
+                                                            <input
+                                                                className="checkbox"
+                                                                name="isDraftMode"
+                                                                type="checkbox"
+                                                                checked={!!formData.include_partition}
+                                                                onChange={() => setFormData((prev) => ({
+                                                                    ...prev,
+                                                                    include_partition: !prev.include_partition
+                                                                }))}
+                                                            />
+                                                            <span className="switch-label">
+                                                                {formData.include_partition ? "Yes" : "No"}
+                                                            </span>
+                                                        </label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </>
@@ -820,7 +927,7 @@ function CreateOrder() {
                                 <div className="flex flex-col flex-1">
                                     <div className="flex flex-col gap-2 mb-8">
                                         <span className="text-base font-semibold text-gray-900">
-                                            3. Select a Quotation
+                                            Select a Quotation
                                         </span>
                                         {/* <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
                                             <button
@@ -924,12 +1031,12 @@ function CreateOrder() {
                                 {/* Bonus */}
                                 <div className="flex flex-col flex-1 gap-2">
                                     <span className="text-base font-semibold text-gray-900">
-                                        4. Apply Bonus (Optional)
+                                        Apply Bonus (Optional)
                                     </span>
 
                                     <div className="flex flex-col mb-4">
                                         <label className='mb-2 text-sm font-medium text-gray-900'>
-                                            4.1 Description
+                                            Bonus Description
                                         </label>
                                         <span className="text-xs text-gray-600 tracking-wide mb-2">
                                             Set a description of the bonus
@@ -946,7 +1053,7 @@ function CreateOrder() {
                                     </div>
 
                                     <InputFieldGroup
-                                        fieldTitle="4.2 Value"
+                                        fieldTitle="Bonus Value"
                                         description="Set a total value of the bonus"
                                         type="number"
                                         placeholder=''
@@ -999,7 +1106,7 @@ function CreateOrder() {
                                     <div className="text-base font-semibold text-gray-900 mb-2">
                                         Packages:
                                     </div>
-                                    <div className="flex flex-col gap-5" data-accordion="true" data-accordion-expand-all="true">
+                                    <div className="flex flex-col gap-5">
                                         {selectedPackages &&
                                             selectedPackages.map((prodPackage: Package) => (
                                                 <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>

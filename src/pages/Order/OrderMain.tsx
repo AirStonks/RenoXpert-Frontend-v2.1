@@ -279,11 +279,13 @@ function OrderMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[140px]'>Order No.</th>
+                                    <th className='w-[120px]'>Order No.</th>
                                     <th className='w-[100px] text-center'>Status</th>
+                                    <th className='w-[220px] text-center'>Internal Remark</th>
                                     <th className='w-[120px] text-center'>Owner</th>
-                                    <th className='w-[80px] text-center'>Unit</th>
-                                    <th className='w-[150px] text-center'>Property</th>
+                                    <th className='w-[60px] text-center'>Unit</th>
+                                    <th className='w-[60px] text-center'>Property</th>
+                                    <th className='w-[20px] text-center'>Partition</th>
                                     <th
                                         className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('created_at')}
@@ -325,16 +327,26 @@ function OrderMain() {
                                                     ${order.status === 'released' ? 'badge-primary' : ''} 
                                                     ${order.status === 'confirmed' ? 'badge-success' : ''} 
                                                     ${order.status === 'revoked' ? 'badge-danger' : ''} 
+                                                    ${order.user == null ? 'badge-warning' : ''} 
                                                     badge-outline`}
                                                 >
-                                                    {order.status}
+                                                    {order.user ? order.status : 'Draft'}
                                                 </span>
+                                            </td>
+                                            <td className=''>
+                                                {order.internal_remark ? order.internal_remark : '-'}
                                             </td>
                                             <td>
                                                 <div className="flex flex-col gap-1">
-                                                    <span>{order.user.name}</span>
-                                                    <span className="text-xs text-slate-400">{order.user.email}</span>
-                                                    <span className="text-xs text-slate-700">+60 {order.user.phone_no}</span>
+                                                    {order.user ?
+                                                        <>
+                                                            <span>{order.user.name}</span>
+                                                            <span className="text-xs text-slate-400">{order.user.email}</span>
+                                                            <span className="text-xs text-slate-700">+60 {order.user.phone_no}</span>
+                                                        </>
+                                                        :
+                                                        '-'
+                                                    }
                                                 </div>
                                             </td>
                                             <td className='text-center'>
@@ -344,7 +356,15 @@ function OrderMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex flex-col gap-1">
-                                                    <span>{order.property.name}</span>
+                                                    <span>{order.property ? order.property.name : '-'}</span>
+                                                    <div className="badge">
+                                                        <span className="text-xs text-gray-900">{order.unit_type}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col gap-1">
+                                                    <span>{order.include_partition ? 'Yes' : 'No'}</span>
                                                 </div>
                                             </td>
                                             <td className='text-center'>
@@ -371,22 +391,25 @@ function OrderMain() {
                                                         </button>
 
                                                         <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
-                                                            <div className="menu-item">
-                                                                <button
-                                                                    className="menu-link copy-link"
-                                                                    data-clipboard-text={`${APP_URL}owner/order/overview/id/${order.id}`}
-                                                                >
-                                                                    <span className="menu-title">
-                                                                        <div className="flex gap-2 items-center">
-                                                                            <i className="ki-outline ki-copy"></i>
-                                                                            <span className="text-gray-900">
-                                                                                Copy Quotation Order Link
-                                                                            </span>
-                                                                        </div>
-                                                                    </span>
-                                                                </button>
-                                                            </div>
-                                                            {order.status === 'unreleased' &&
+                                                            {order.user &&
+                                                                <div className="menu-item">
+                                                                    <button
+                                                                        className="menu-link copy-link"
+                                                                        data-clipboard-text={`${APP_URL}owner/order/overview/id/${order.id}`}
+                                                                    >
+                                                                        <span className="menu-title">
+                                                                            <div className="flex gap-2 items-center">
+                                                                                <i className="ki-outline ki-copy"></i>
+                                                                                <span className="text-gray-900">
+                                                                                    Copy Quotation Order Link
+                                                                                </span>
+                                                                            </div>
+                                                                        </span>
+                                                                    </button>
+                                                                </div>
+                                                            }
+
+                                                            {order.status === 'unreleased' && order.user &&
                                                                 <div className="menu-item">
                                                                     <button
                                                                         className="menu-link"

@@ -32,6 +32,7 @@ function CreateQuotation() {
         quotationPrice: 0,
         is_ready: false,
         description: '',
+        internal_remark: '',
     });
 
     const qtyBtnRef = useRef(null);

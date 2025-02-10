@@ -48,6 +48,21 @@ function EditOrderQuotation() {
 
     const handleBackClick = () => {
         localStorage.removeItem('selected_quotation_packages');
+        const orderData = localStorage.getItem('edit_order_data');
+
+        if (orderData) {
+            // Parse the JSON string into an object
+            const orderObject = JSON.parse(orderData);
+
+            // Update the totalAmount value
+            orderObject.totalAmount = totalAmount;
+
+            // Convert the object back to a JSON string
+            const updatedOrderData = JSON.stringify(orderObject);
+
+            // Save the updated data back to localStorage
+            localStorage.setItem('e:edit_order_data', updatedOrderData);
+        }
         navigate('/orders/edit/' + orderId);
     };
 
