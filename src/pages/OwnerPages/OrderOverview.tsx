@@ -184,13 +184,15 @@ function OrderOverview() {
         </ul>
     );
 
-    const address = [
+    const address = orderDetail.user ? [
         orderDetail.user.address.address_1,
         orderDetail.user.address.street,
         orderDetail.user.address.postcode,
         orderDetail.user.address.city,
         orderDetail.user.address.state,
-    ].filter(Boolean).join(', ');
+    ].filter(Boolean).join(', ') :
+        null
+        ;
 
     const propertyAddress = [
         orderDetail.property.address,
@@ -210,7 +212,7 @@ function OrderOverview() {
                 <span>BETWEEN</span>
                 <span><strong>RENOXPERT SDN. BHD. [Registration No.202401032588 (1578437-W)]</strong> of <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 46500 Subang Jaya, Selangor</strong> (“the Contractor”) of the one part;</span>
                 <span>AND</span>
-                <span><strong>{orderDetail.user.name} (NRIC No. {orderDetail.user.ic})</strong> of <strong>{address}</strong> ("the Owner") of the other part</span>
+                <span><strong>{orderDetail.user ? orderDetail.user.name : '[Owner Name]'} (NRIC No. {orderDetail.user ? orderDetail.user.ic : "[Owner IC]"})</strong> of <strong>{address ? address : "[Owner Address]"}</strong> ("the Owner") of the other part</span>
             </div>
             <div className="flex flex-col gap-6 mb-6">
                 <span className='font-bold'>WHEREAS:</span>
@@ -581,14 +583,26 @@ function OrderOverview() {
                                                     <span className='text-sm text-gray-600'>Name:</span>
                                                     <span className='text-sm text-gray-900 font-semibold'>{orderDetail.property.name}</span>
                                                 </div>
-                                                <div className="flex flex-col mb-4">
-                                                    <span className='text-sm text-gray-600'>Unit:</span>
-                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}</span>
-                                                </div>
                                                 <div className="">
 
                                                 </div>
                                             </div>
+
+                                            <div className="flex justify-between flex-wrap">
+                                                <div className="flex flex-col mb-4">
+                                                    <span className='text-sm text-gray-600'>Unit:</span>
+                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}</span>
+                                                </div>
+                                                <div className="flex flex-col mb-4 mr-8">
+                                                    <span className='text-sm text-gray-600'>Unit Type:</span>
+                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.unit_type ? orderDetail.unit_type : '-'}</span>
+                                                </div>
+                                                <div className="flex flex-col mb-4">
+                                                    <span className='text-sm text-gray-600'>Partition:</span>
+                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.include_partition ? 'Yes' : 'No'}</span>
+                                                </div>
+                                            </div>
+                                            
                                             <div className="flex flex-col">
                                                 <span className='text-sm text-gray-600'>Address:</span>
                                                 <span className='text-sm text-gray-900'>

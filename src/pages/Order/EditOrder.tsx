@@ -46,6 +46,7 @@ function EditOrder() {
     const inputPropertyRef = useRef(null);
     const inputQuotationRef = useRef(null);
 
+    const [isLoading, setIsLoading] = useState(false);
 
     const { orderDetail, loading, error } = useFetchOrder(orderId);
 
@@ -56,13 +57,17 @@ function EditOrder() {
         totalAmount: 0,
         finalAmount: 0,
         completion_day: 0,
+        unit_type: '',
         block: '',
         floor: '',
         unitNo: '',
         status: '',
         isFinalAmountEnable: false,
+        isDraftMode: false,
         bedroom_count: 1,
         bathroom_count: 1,
+        include_partition: false,
+        internal_remark: '',
         bonus: {
             description: '',
             value: '',
@@ -103,14 +108,18 @@ function EditOrder() {
                     quotationId: orderDetail.latest_quotation.quotation_id || '',
                     totalAmount: orderDetail.latest_quotation.total_amount || 0,
                     finalAmount: orderDetail.final_amount || 0,
+                    unit_type: orderDetail.unit_type || '',
                     block: orderDetail.block || '',
                     floor: orderDetail.floor || '',
                     unitNo: orderDetail.unit_no || '',
                     status: orderDetail.status || '',
                     isFinalAmountEnable: orderDetail.final_amount ? true : false,
+                    isDraftMode: orderDetail.user ? false : true,
                     bedroom_count: orderDetail.bedroom_count || 1,
                     bathroom_count: orderDetail.bathroom_count || 1,
                     completion_day: orderDetail.completion_day || 1,
+                    internal_remark: orderDetail.internal_remark || '',
+                    include_partition: orderDetail.include_partition ? true : false,
                     bonus: {
                         description: orderDetail.latest_quotation.bonus?.description,
                         value: orderDetail.latest_quotation.bonus?.value.toString(),
@@ -123,14 +132,18 @@ function EditOrder() {
                     quotationId: orderDetail.latest_quotation.quotation_id || '',
                     totalAmount: orderDetail.latest_quotation.total_amount || 0,
                     finalAmount: orderDetail.final_amount || 0,
+                    unit_type: orderDetail.unit_type || '',
                     block: orderDetail.block || '',
                     floor: orderDetail.floor || '',
                     unitNo: orderDetail.unit_no || '',
                     status: orderDetail.status || '',
                     isFinalAmountEnable: orderDetail.final_amount ? true : false,
+                    isDraftMode: orderDetail.user ? false : true,
                     bedroom_count: orderDetail.bedroom_count || 1,
                     bathroom_count: orderDetail.bathroom_count || 1,
                     completion_day: orderDetail.completion_day || 1,
+                    internal_remark: orderDetail.internal_remark || '',
+                    include_partition: orderDetail.include_partition ? true : false,
                     bonus: {
                         description: orderDetail.latest_quotation.bonus?.description,
                         value: orderDetail.latest_quotation.bonus?.value.toString(),
@@ -138,10 +151,30 @@ function EditOrder() {
                 }
 
                 if (localStorage.getItem('e:edit_order_data')) {
+                    const editedOrderData = JSON.parse(localStorage.getItem('e:edit_order_data'));
+
                     setFormData((prevData) => ({
                         ...prevData,
-                        totalAmount: JSON.parse(localStorage.getItem('e:edit_order_data')).totalAmount,
+                        userId: editedOrderData.userId || '',
+                        propertyId: editedOrderData.propertyId || '',
+                        quotationId: editedOrderData.quotationId || '',
+                        totalAmount: editedOrderData.totalAmount || 0,
+                        finalAmount: editedOrderData.finalAmount || 0,
+                        unit_type: editedOrderData.unit_type || '',
+                        block: editedOrderData.block || '',
+                        floor: editedOrderData.floor || '',
+                        unitNo: editedOrderData.unitNo || '',
+                        status: editedOrderData.status || '',
+                        isFinalAmountEnable: editedOrderData.isFinalAmountEnable,
+                        isDraftMode: editedOrderData.isDraftMode,
+                        bedroom_count: editedOrderData.bedroom_count || 1,
+                        bathroom_count: editedOrderData.bathroom_count || 1,
+                        completion_day: editedOrderData.completion_day || 1,
+                        internal_remark: editedOrderData.internal_remark || '',
+                        include_partition: editedOrderData.include_partition,
+                        bonus: editedOrderData.bonus
                     }));
+
                     localStorage.setItem('edit_order_data', localStorage.getItem('e:edit_order_data'));
                 } else {
                     localStorage.setItem('edit_order_data', JSON.stringify(tmpEditOrder));
@@ -456,20 +489,59 @@ function EditOrder() {
     }
 
     const handleSubmit = async () => {
+
+        setIsLoading(true);
+
+        if (!formData.isDraftMode) {
+            if (!selectedUser) {
+                notify('error', 'Please select a user.');
+                setIsLoading(false);
+                return;
+            }
+
+            if (!selectedProperty) {
+                notify('error', 'Please select a property.');
+                setIsLoading(false);
+                return;
+            }
+
+            if (!formData.block || !formData.floor || !formData.unitNo) {
+                notify('error', 'Please enter block, floor and unit no.');
+                setIsLoading(false);
+                return;
+            }
+        }
+
+        if (!selectedQuotation) {
+            notify('error', 'Please select a quotation.');
+            setIsLoading(false);
+            return;
+        }
+
+        if (JSON.parse(localStorage.getItem('include_packages')).length === 0) {
+            notify('error', 'Please select at least one package.');
+            setIsLoading(false);
+            return;
+        }
+
+
         try {
             const newOrder: Order = {
                 id: orderDetail.id,
-                user_id: selectedUser.id,
-                property_id: selectedProperty.id,
+                user_id: selectedUser?.id || '',
+                property_id: selectedProperty?.id || '',
                 quotation_id: selectedQuotation.id,
                 total_amount: formData.totalAmount,
                 final_amount: formData.isFinalAmountEnable ? formData.finalAmount : null,
+                unit_type: formData.unit_type,
                 block: formData.block,
                 floor: formData.floor,
                 unit_no: formData.unitNo,
                 bedroom_count: formData.bedroom_count,
                 bathroom_count: formData.bathroom_count,
+                include_partition: formData.include_partition,
                 description: '',
+                internal_remark: formData.internal_remark,
                 completion_day: formData.completion_day,
                 bonus: formData.bonus,
                 metadata: JSON.parse(localStorage.getItem('include_packages')),
@@ -485,12 +557,16 @@ function EditOrder() {
                 localStorage.removeItem('e:edit_order_data');
                 navigate('/orders/' + orderId);
             } else {
+                setIsLoading(false);
                 console.log(response);
+                notify('error', response);
             }
 
         } catch (error) {
-            console.log(error);
+            notify('error', error.response.data.data);
         }
+
+        setIsLoading(false);
     }
 
     if (loading) return <Loading />;
@@ -499,7 +575,9 @@ function EditOrder() {
 
     return (
         <>
-            <div className="flex justify-between items-center flex-wrap mb-6">
+            {isLoading && <Loading />}
+
+            <div className="flex justify-between items-center flex-wrap mb-6 lg:mr-[400px] lg:pr-6">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
                         <i className="ki-solid ki-arrow-left"></i>
@@ -508,70 +586,104 @@ function EditOrder() {
                         Revise Order
                     </span>
                 </div>
+                <div className="flex items-center">
+                    <label className="switch switch-lg">
+                        <input
+                            className="checkbox"
+                            name="isDraftMode"
+                            type="checkbox"
+                            checked={!!formData.isDraftMode}
+                            onChange={() => setFormData((prev) => ({
+                                ...prev,
+                                isDraftMode: !prev.isDraftMode
+                            }))}
+                        />
+                        <span className="switch-label">
+                            Draft Mode
+                        </span>
+                    </label>
+                </div>
             </div>
 
-            <div className="flex grow flex-col gap-3 lg:gap-6 lg:mr-[400px] lg:px-6">
-                <div className="flex flex-col gap-8 mb-8">
+            <div className="flex grow flex-col gap-3 lg:gap-6 lg:mr-[400px] lg:pr-6">
+                <div className="flex flex-col gap-8 mb-8" data-accordion="true" data-accordion-expand-all="true">
                     <div className="card">
                         <div className="card-body">
                             <h2 className='text-xl mb-4 font-semibold text-gray-900'>Order</h2>
                             <div className="flex gap-8">
-                                {/* User */}
-                                <div className="flex flex-col flex-1 gap-2">
-                                    <span className="text-base font-semibold text-gray-900">
-                                        1. Select an Owner
-                                    </span>
-                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="contract_dropdown">
-                                        <button
-                                            className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
-                                            onClick={handleOpenOwnerDropdown}
-                                        >
-                                            <span>Owner</span>
-                                            <i className="ki-filled ki-down"></i>
-                                        </button>
-                                        <div className="dropdown-content w-full max-w-80">
-                                            <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                                <label className="input input-sm">
-                                                    <i className="ki-filled ki-magnifier"></i>
-                                                    <input
-                                                        ref={inputUserRef}
-                                                        placeholder="Search user"
-                                                        type="text"
-                                                        value={searchUserTerm}
-                                                        onChange={handleSearchUser}
-                                                    />
-                                                </label>
-                                            </div>
-                                            <div className="menu menu-default flex flex-col w-full">
-                                                {users.map((user, index) => (
-                                                    <div className="menu-item" key={index} data-id={user.id}>
-                                                        <button
-                                                            className="menu-link"
-                                                            onClick={() => handleSelectUser(user)}
-                                                        >
-                                                            <span className="menu-title">{user.name}</span>
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {selectedUser && (
-                                        <div className="card mb-4">
-                                            <div className="card-body">
-                                                <div className="flex flex-col gap-1 text-gray-900">
-                                                    <span className='text-sm font-semibold'>{selectedUser.name}</span>
-                                                    <span className='text-sm font-normal text-slate-400'>{selectedUser.email}</span>
-                                                    <span className='text-sm font-normal'>{selectedUser.phone_no}</span>
+                                <div className="flex flex-col flex-1 gap-8">
+                                    <div className="flex flex-col gap-2">
+                                        {/* Owner */}
+                                        <span className="text-base font-semibold text-gray-900">
+                                            Select an Owner
+                                        </span>
+                                        <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="contract_dropdown">
+                                            <button
+                                                className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
+                                                onClick={handleOpenOwnerDropdown}
+                                            >
+                                                <span>Owner</span>
+                                                <i className="ki-filled ki-down"></i>
+                                            </button>
+                                            <div className="dropdown-content w-full max-w-80">
+                                                <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                                    <label className="input input-sm">
+                                                        <i className="ki-filled ki-magnifier"></i>
+                                                        <input
+                                                            ref={inputUserRef}
+                                                            placeholder="Search user"
+                                                            type="text"
+                                                            value={searchUserTerm}
+                                                            onChange={handleSearchUser}
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <div className="menu menu-default flex flex-col w-full">
+                                                    {users.map((user, index) => (
+                                                        <div className="menu-item" key={index} data-id={user.id}>
+                                                            <button
+                                                                className="menu-link"
+                                                                onClick={() => handleSelectUser(user)}
+                                                            >
+                                                                <span className="menu-title">{user.name}</span>
+                                                            </button>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
+                                        {selectedUser && (
+                                            <div className="card mb-4">
+                                                <div className="card-body">
+                                                    <div className="flex flex-col gap-1 text-gray-900">
+                                                        <span className='text-sm font-semibold'>{selectedUser.name}</span>
+                                                        <span className='text-sm font-normal text-slate-400'>{selectedUser.email}</span>
+                                                        <span className='text-sm font-normal'>{selectedUser.phone_no}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Internal Remark */}
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-base font-semibold text-gray-900">
+                                            Internal Remark
+                                        </span>
+                                        <textarea
+                                            className="textarea"
+                                            name="internal_remark"
+                                            id="internal_remark"
+                                            rows={4}
+                                            value={formData.internal_remark}
+                                            onChange={handleChange}
+                                        ></textarea>
+                                    </div>
                                 </div>
 
                                 <div className="flex flex-col flex-1 gap-2">
                                     <span className="text-base font-semibold text-gray-900">
-                                        2. Select a Property
+                                        Select a Property
                                     </span>
                                     <div className="dropdow" data-dropdown="true" data-dropdown-trigger="click" id='property_dropdown'>
                                         <button
@@ -627,7 +739,23 @@ function EditOrder() {
                                                 </div>
                                             </div>
 
-                                            <div className="flex flex-col">
+                                            <div className="flex flex-col gap-2">
+                                                <div className="flex gap-4">
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm font-semibold text-gray-900'>
+                                                            Unit Type
+                                                        </span>
+
+                                                        <input
+                                                            className='input mb-2'
+                                                            type='text'
+                                                            name='unit_type'
+                                                            value={formData.unit_type}
+                                                            onChange={handleChange}
+                                                        />
+                                                    </div>
+                                                </div>
+
                                                 <div className="flex gap-4">
                                                     <div className="flex flex-col">
                                                         <span className='text-sm font-semibold text-gray-900'>
@@ -710,6 +838,28 @@ function EditOrder() {
                                                             <option value="3">3</option>
                                                         </select>
                                                     </div>
+
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm font-semibold text-gray-900 mb-2'>
+                                                            Partition
+                                                        </span>
+
+                                                        <label className="switch switch-lg">
+                                                            <input
+                                                                className="checkbox"
+                                                                name="isDraftMode"
+                                                                type="checkbox"
+                                                                checked={!!formData.include_partition}
+                                                                onChange={() => setFormData((prev) => ({
+                                                                    ...prev,
+                                                                    include_partition: !prev.include_partition
+                                                                }))}
+                                                            />
+                                                            <span className="switch-label">
+                                                                {formData.include_partition ? "Yes" : "No"}
+                                                            </span>
+                                                        </label>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -728,9 +878,9 @@ function EditOrder() {
                                 <div className="flex flex-col flex-1 gap-8">
                                     <div className="flex flex-col gap-2">
                                         <span className="text-base font-semibold text-gray-900">
-                                            3. Select a Quotation
+                                            Select a Quotation
                                         </span>
-                                        <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
+                                        {/* <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
                                             <button
                                                 className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
                                                 onClick={handleOpenQuotationDropdown}
@@ -771,13 +921,13 @@ function EditOrder() {
                                                     ))}
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> */}
                                         <span className='text-md font-semibold text-gray-900'>
-                                            Or <button
+                                            <button
                                                 className='link'
                                                 onClick={handleCustomQuotation}
                                             >
-                                                create a custom quotation
+                                                Create a custom quotation
                                             </button>
                                         </span>
                                     </div>
@@ -832,12 +982,12 @@ function EditOrder() {
                                 {/* Bonus */}
                                 <div className="flex flex-col flex-1 gap-2">
                                     <span className="text-base font-semibold text-gray-900">
-                                        4. Apply Bonus (Optional)
+                                        Apply Bonus (Optional)
                                     </span>
 
                                     <div className="flex flex-col mb-4">
                                         <label className='mb-2 text-sm font-medium text-gray-900'>
-                                            4.1 Description
+                                            Bonus Description
                                         </label>
                                         <span className="text-xs text-gray-600 tracking-wide mb-2">
                                             Set a description of the bonus
@@ -854,7 +1004,7 @@ function EditOrder() {
                                     </div>
 
                                     <InputFieldGroup
-                                        fieldTitle="4.2 Value"
+                                        fieldTitle="Bonus Value"
                                         description="Set a total value of the bonus"
                                         type="number"
                                         placeholder=''
@@ -907,7 +1057,7 @@ function EditOrder() {
                                     <div className="text-base font-semibold text-gray-900 mb-2">
                                         Packages:
                                     </div>
-                                    <div className="flex flex-col gap-5" data-accordion="true" data-accordion-expand-all="true">
+                                    <div className="flex flex-col gap-5">
                                         {selectedPackages.map((prodPackage: Package) => (
                                             <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
                                                 <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
