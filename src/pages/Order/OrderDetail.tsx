@@ -565,10 +565,10 @@ function OrderDetail() {
                                                 ${orderDetail.status === 'released' ? 'badge-primary' : ''} 
                                                 ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
                                                 ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
-                                                ${orderDetail.user == null ? 'badge-warning' : ''} 
+                                                ${orderDetail.status === 'draft' ? 'badge-warning' : ''} 
                                                 badge-outline`}
                                             >
-                                                {orderDetail.user ? (orderDetail.status === 'confirmed' ? 'sale' : orderDetail.status) : 'Draft'}
+                                                {orderDetail.status === 'confirmed' ? 'sale' : orderDetail.status}
                                             </span>
                                         </td>
                                     </tr>
@@ -931,7 +931,7 @@ function OrderDetail() {
                                                                 {categoryOptions.find(option => option.value === prodPackage.category)?.label}
                                                             </div>
                                                         }
-                                                        <span className='text-sm text-gray-400'>
+                                                        <span className='text-sm text-gray-600'>
                                                             {prodPackage.description}
                                                         </span>
                                                     </div>
@@ -984,7 +984,7 @@ function OrderDetail() {
                                                                         <td>
                                                                             <div className="flex flex-col">
                                                                                 <span>{product.name}</span>
-                                                                                <span className="text-xs text-gray-400">
+                                                                                <span className="text-xs text-gray-500">
                                                                                     {(!product.description || product.description === "")
                                                                                         ? ""
                                                                                         : [

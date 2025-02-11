@@ -293,6 +293,17 @@ function CreateOrder() {
         setLoading(false);
     }
 
+    const handleToggleDraftMode = () => {
+        setFormData((prev) => ({
+            ...prev,
+            userId: '',
+            isDraftMode: !prev.isDraftMode
+        }));
+        setSelectedUser(null);
+        setSearchUserTerm('');
+        setUsers([]);
+    }
+
     const handleBackClick = () => {
         localStorage.removeItem('create_order_data');
         localStorage.removeItem('include_packages');
@@ -344,6 +355,7 @@ function CreateOrder() {
         setFormData((prev) => ({
             ...prev,
             userId: user.id,
+            isDraftMode: false
         }));
         setSelectedUser(user);
         setSearchUserTerm('');
@@ -642,10 +654,7 @@ function CreateOrder() {
                             name="isDraftMode"
                             type="checkbox"
                             checked={!!formData.isDraftMode}
-                            onChange={() => setFormData((prev) => ({
-                                ...prev,
-                                isDraftMode: !prev.isDraftMode
-                            }))}
+                            onChange={handleToggleDraftMode}
                         />
                         <span className="switch-label">
                             Draft Mode
@@ -665,6 +674,9 @@ function CreateOrder() {
                                     <div className="flex flex-col gap-2">
                                         <span className="text-base font-semibold text-gray-900">
                                             Select an Owner
+                                        </span>
+                                        <span className='text-xs text-info'>
+                                            Selecting an owner will disable Draft Mode
                                         </span>
                                         <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="owner_dropdown">
                                             <button

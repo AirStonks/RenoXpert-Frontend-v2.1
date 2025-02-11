@@ -272,6 +272,17 @@ function EditOrder() {
         }
     };
 
+    const handleToggleDraftMode = () => {
+        setFormData((prev) => ({
+            ...prev,
+            userId: '',
+            isDraftMode: !prev.isDraftMode
+        }));
+        setSelectedUser(null);
+        setSearchUserTerm('');
+        setUsers([]);
+    }
+
     const handleBackClick = () => {
         localStorage.removeItem('edit_order_data');
         localStorage.removeItem('include_packages');
@@ -324,6 +335,7 @@ function EditOrder() {
         setFormData((prev) => ({
             ...prev,
             userId: user.id,
+            isDraftMode: false,
         }));
         setSelectedUser(user);
         setSearchUserTerm('');
@@ -366,6 +378,7 @@ function EditOrder() {
             setFormData((prev) => ({
                 ...prev,
                 userId: data.data.id,
+                isDraftMode: false,
             }));
 
             setSelectedUser(data.data);
@@ -593,10 +606,7 @@ function EditOrder() {
                             name="isDraftMode"
                             type="checkbox"
                             checked={!!formData.isDraftMode}
-                            onChange={() => setFormData((prev) => ({
-                                ...prev,
-                                isDraftMode: !prev.isDraftMode
-                            }))}
+                            onChange={handleToggleDraftMode}
                         />
                         <span className="switch-label">
                             Draft Mode

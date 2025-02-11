@@ -770,7 +770,7 @@ export const removeProperty = async (propertyId: number) => {
     }
 }
 
-export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, filter?: string) => {
     try {
         const response = await axios.get(API_URL + 'orders', {
             headers: getAuthHeaders(),
@@ -779,7 +779,8 @@ export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?
                 page: page,
                 search: searchTerm,
                 sortOrder: order,
-                sortField: field
+                sortField: field,
+                filter: filter
             }
         });
         return response.data;

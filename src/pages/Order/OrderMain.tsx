@@ -32,6 +32,7 @@ function OrderMain() {
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [filter, setFilter] = useState<string>('');
     const [sortField, setSortField] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
@@ -73,11 +74,12 @@ function OrderMain() {
         size: number,
         searchTerm?: string,
         order?: string,
-        field?: string
+        field?: string,
+        filter?: string
     ) => {
         try {
             setIsLoading(true);
-            const response = await orderIndex(size, page, searchTerm, order, field);
+            const response = await orderIndex(size, page, searchTerm, order, field, filter);
 
             const data = response?.data || [];
             setOrders(data);
@@ -93,6 +95,13 @@ function OrderMain() {
 
     const handleRefreshTable = async () => {
         initOrderTable(page, size, searchTerm, sortOrder, sortField);
+    };
+
+    const handleFilterTable = async (selectedFilter: string) => {
+        const newFilter = selectedFilter === filter ? '' : selectedFilter;
+        setFilter(prevStatus => (prevStatus === selectedFilter ? '' : selectedFilter));
+        setPage(1);
+        initOrderTable(1, size, searchTerm, sortOrder, sortField, newFilter);
     };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,6 +237,53 @@ function OrderMain() {
                     </div>
                 </div>
 
+                <div className="flex items-center">
+                    <span className='font-semibold mr-4'>Quick Filter: </span>
+
+                    <div className="flex gap-2">
+                        <button
+                            className={`btn btn-sm rounded-full btn-light ${filter === 'confirmed' ? 'btn-success btn-outline' : 'btn-light'}`}
+                            onClick={() => handleFilterTable('confirmed')}
+                        >
+                            Sales
+                            {
+                                filter === 'confirmed' &&
+                                <i className="ki-filled ki-cross"></i>
+                            }
+                        </button>
+                        <button
+                            className={`btn btn-sm rounded-full btn-light ${filter === 'released' ? 'btn-success btn-outline' : 'btn-light'}`}
+                            onClick={() => handleFilterTable('released')}
+                        >
+                            Released
+                            {
+                                filter === 'released' &&
+                                <i className="ki-filled ki-cross"></i>
+                            }
+                        </button>
+                        <button
+                            className={`btn btn-sm rounded-full btn-light ${filter === 'unreleased' ? 'btn-success btn-outline' : 'btn-light'}`}
+                            onClick={() => handleFilterTable('unreleased')}
+                        >
+                            Unreleased
+                            {
+                                filter === 'unreleased' &&
+                                <i className="ki-filled ki-cross"></i>
+                            }
+                        </button>
+                        <button
+                            className={`btn btn-sm rounded-full btn-light ${filter === 'draft' ? 'btn-success btn-outline' : 'btn-light'}`}
+                            onClick={() => handleFilterTable('draft')}
+                        >
+                            Draft
+                            {
+                                filter === 'draft' &&
+                                <i className="ki-filled ki-cross"></i>
+                            }
+                        </button>
+                    </div>
+                </div>
+
                 <div className="card">
                     <div className="card-header flex-wrap gap-2">
                         <div className="card-title">
@@ -283,8 +339,8 @@ function OrderMain() {
                                     <th className='w-[100px] text-center'>Status</th>
                                     <th className='w-[220px] text-center'>Internal Remark</th>
                                     <th className='w-[120px] text-center'>Owner</th>
+                                    <th className='w-[80px] text-center'>Property</th>
                                     <th className='w-[60px] text-center'>Unit</th>
-                                    <th className='w-[60px] text-center'>Property</th>
                                     <th className='w-[20px] text-center'>Partition</th>
                                     <th className='w-[100px] text-center'>Price</th>
                                     <th
@@ -328,10 +384,10 @@ function OrderMain() {
                                                     ${order.status === 'released' ? 'badge-primary' : ''} 
                                                     ${order.status === 'confirmed' ? 'badge-success' : ''} 
                                                     ${order.status === 'revoked' ? 'badge-danger' : ''} 
-                                                    ${order.user == null ? 'badge-warning' : ''} 
+                                                    ${order.status === 'draft' ? 'badge-warning' : ''} 
                                                     badge-outline`}
                                                 >
-                                                    {order.user ? (order.status === 'confirmed' ? 'sale' : order.status) : 'Draft'}
+                                                    {order.status === 'confirmed' ? 'sale' : order.status}
                                                 </span>
                                             </td>
                                             <td className={!order.internal_remark && 'text-center'}>
@@ -352,15 +408,15 @@ function OrderMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex flex-col gap-1">
-                                                    <span>{order.block}-{order.floor}-{order.unit_no}</span>
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                <div className="flex flex-col gap-1">
                                                     <span>{order.property ? order.property.name : '-'}</span>
                                                     <div className="badge">
                                                         <span className="text-xs text-gray-900">{order.unit_type}</span>
                                                     </div>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col gap-1">
+                                                    <span>{order.block}-{order.floor}-{order.unit_no}</span>
                                                 </div>
                                             </td>
                                             <td className='text-center'>
