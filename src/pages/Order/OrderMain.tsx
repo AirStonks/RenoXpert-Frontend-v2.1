@@ -303,7 +303,7 @@ function OrderMain() {
                                             Updated Date {getSortIcon('updated_at')}
                                         </div>
                                     </th>
-                                    <th className='w-[100px] text-center'>Action</th>
+                                    <th className='w-[50px] text-center'>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -334,7 +334,7 @@ function OrderMain() {
                                                     {order.user ? (order.status === 'confirmed' ? 'sale' : order.status) : 'Draft'}
                                                 </span>
                                             </td>
-                                            <td className=''>
+                                            <td className={!order.internal_remark && 'text-center'}>
                                                 {order.internal_remark ? order.internal_remark : '-'}
                                             </td>
                                             <td>
@@ -498,7 +498,7 @@ function OrderMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={9} className="text-center text-gray-500">
+                                        <td colSpan={11} className="text-center text-gray-500">
                                             No orders available
                                         </td>
                                     </tr>

@@ -206,12 +206,15 @@ function SalesMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[100px] text-center'>Sale No.</th>
+                                    <th className='w-[100px]'>Sale No.</th>
+                                    <th className='w-[100px]'>Order No.</th>
                                     <th className='w-[100px] text-center'>Status</th>
+                                    <th className='w-[60px] text-center'>Unit</th>
+                                    <th className='w-[60px] text-center'>Property</th>
                                     <th className='w-[120px] text-center'>Total Amount</th>
                                     <th className='w-[80px] text-center'>Paid Amount</th>
                                     <th className='w-[150px] text-center'>Balance</th>
-                                    <th className='w-[120px] text-center'>Action</th>
+                                    <th className='w-[50px] text-center'>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -232,15 +235,39 @@ function SalesMain() {
                                                     </Link>
                                                 </div>
                                             </td>
+                                            <td className=''>
+                                                <div className="flex flex-col gap-1">
+                                                    <Link
+                                                        to={'/orders/' + sale.order_id}
+                                                        className="cursor-pointer text-orange-500"
+                                                        data-action="view"
+                                                    >
+                                                        {sale.order.order_no}
+                                                    </Link>
+                                                </div>
+                                            </td>
                                             <td className='text-center'>
-                                                <span className={`badge badge-pill p-2 cursor-default
+                                                <span className={`badge badge-pill p-2 cursor-default capitalize
                                                     ${sale.status === 'issued' ? 'badge-primary' : ''} 
                                                     ${sale.status === 'partial-paid' ? 'badge-info' : ''} 
                                                     ${sale.status === 'fully-paid' ? 'badge-success' : ''} 
                                                     badge-outline`}
                                                 >
-                                                    {sale.status}
+                                                    {sale.status.replace(/-/g, ' ')}
                                                 </span>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col gap-1">
+                                                    <span>{sale.order.block}-{sale.order.floor}-{sale.order.unit_no}</span>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col gap-1">
+                                                    <span>{sale.order.property ? sale.order.property.name : '-'}</span>
+                                                    <div className="badge">
+                                                        <span className="text-xs text-gray-900">{sale.order.unit_type}</span>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex flex-col gap-1">
@@ -269,31 +296,25 @@ function SalesMain() {
                                                 </div>
                                             </td>
                                             <td className='text-center'>
-                                                {/* <div className="flex justify-around gap-2">
-                                                    <button
-                                                        className="btn btn-sm btn-secondary"
-                                                        onClick={() => handleViewQuotation(sale.id)}
-                                                    >
-                                                        View
-                                                    </button>
-                                                    <button
-                                                        className="btn-delete btn btn-sm btn-icon btn-danger"
-                                                        data-tooltip="#remove_tooltip"
-                                                        data-action="delete"
-                                                        data-id={sale.id}
-                                                        data-name={sale.name}
-                                                        data-modal-toggle="#delete_item_modal"
-                                                        onClick={() => setSelectedQuotation({ id: sale.id, name: sale.name })}
-                                                    >
-                                                        <i className="ki-outline ki-trash"></i>
-                                                    </button>
-                                                </div> */}
+                                                <div className="flex justify-around gap-2">
+                                                    <div className="dropdown" data-dropdown="true"
+                                                        data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                                                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                                                            <i className="ki-filled ki-dots-vertical"></i>
+                                                        </button>
+                                                        <div className="dropdown-content menu menu-default w-full max-w-64 py-2"
+                                                            data-dropdown-dismiss="true">
+                                                            <div className="menu-item">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="text-center text-gray-500">
+                                        <td colSpan={10} className="text-center text-gray-500">
                                             No sales available
                                         </td>
                                     </tr>

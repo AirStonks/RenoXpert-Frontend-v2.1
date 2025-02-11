@@ -112,13 +112,13 @@ function SaleDetail() {
                                                 Status:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
-                                                <span className={`badge badge-pill cursor-default
+                                                <span className={`badge badge-pill cursor-default capitalize
                                                 ${sale.status === 'issued' ? 'badge-primary' : ''} 
                                                 ${sale.status === 'partial-paid' ? 'badge-info' : ''} 
                                                 ${sale.status === 'fully-paid' ? 'badge-success' : ''} 
                                                 badge-outline`}
                                                 >
-                                                    {sale.status}
+                                                    {sale.status.replace(/-/g, ' ')}
                                                 </span>
                                             </td>
                                         </tr>
