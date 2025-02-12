@@ -1525,7 +1525,12 @@ function OrderDetail() {
                                                 <div className="flex flex-col">
                                                     <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
                                                     <span className='text-xl text-gray-900 font-semibold'>
-                                                        {orderDetail.final_amount > 0 ? `RM ${(orderDetail.final_amount - Number(selectedQuotation.bonus?.value)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                        {orderDetail.final_amount > 0
+                                                            ? `RM ${(
+                                                                orderDetail.final_amount -
+                                                                (Number(selectedQuotation.bonus?.value) || 0)
+                                                            ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                            : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                     </span>
                                                     {selectedQuotation.bonus && (
                                                         <span className='text-gray-900 text-sm'>
