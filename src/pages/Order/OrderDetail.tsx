@@ -1461,6 +1461,8 @@ function OrderDetail() {
 
                                         {/* Summary */}
                                         {packageCategories.some(category => category.category !== "undefined") &&
+                                            orderDetail.final_amount !== null &&
+                                            orderDetail.final_amount !== 0 && 
                                             <div className="card-body p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg shadow-sm mb-4">
                                                 <div className="flex flex-col gap-5">
                                                     {/* Header */}
