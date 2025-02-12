@@ -162,6 +162,7 @@ export interface Order {
     unit_no?: string,
     total_amount?: number,
     final_amount?: number,
+    f_1?: boolean,
     description?: string,
     internal_remark?: string,
     completion_day?: number,
