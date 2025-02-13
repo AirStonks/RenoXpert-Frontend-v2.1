@@ -734,8 +734,8 @@ function OrderOverview() {
                                                             <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
                                                             <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
                                                             <td className="p-2 text-center hidden md:table-cell"></td>
-                                                            <td className="p-2 text-center"></td>
                                                             <td className="p-2 text-center font-semibold">{quotationPackage.quantity ? quotationPackage.quantity : 1}</td>
+                                                            <td className="p-2 text-center"></td>
                                                         </tr>
                                                         {quotationPackage.products.map((product: Product, prodIndex: number) => (
                                                             // Check if product.pivot.visibility is true
@@ -911,8 +911,8 @@ function OrderOverview() {
                                                         <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
                                                         <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
                                                         <td className="p-2 text-center hidden md:table-cell"></td>
-                                                        <td className="p-2 text-center"></td>
                                                         <td className="p-2 text-center font-semibold">{quotationPackage.quantity ? quotationPackage.quantity : 1}</td>
+                                                        <td className="p-2 text-center"></td>
                                                     </tr>
                                                     {quotationPackage.products.map((product: Product, prodIndex: number) => (
                                                         // Check if product.pivot.visibility is true
