@@ -208,7 +208,7 @@ function OrderOverview() {
     const renoAgreement = (
         <div className='flex flex-col w-full text-sm text-justify'>
             <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
-                <span>THIS AGREEMENT is made this day of <strong>{orderDetail.status ? formatDate(orderDetail.updated_at) : getCurrentDate()}</strong></span>
+                <span>THIS AGREEMENT is made this day of <strong>{orderDetail.status === 'confirmed' ? formatDate(orderDetail.updated_at) : getCurrentDate()}</strong></span>
                 <span>BETWEEN</span>
                 <span><strong>RENOXPERT SDN. BHD. [Registration No.202401032588 (1578437-W)]</strong> of <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 46500 Subang Jaya, Selangor</strong> (“the Contractor”) of the one part;</span>
                 <span>AND</span>
