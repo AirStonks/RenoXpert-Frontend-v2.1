@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    allowedHosts: ['renoxpert.my'],
+    allowedHosts: ['renoxpert.my', 'staging.renoxpert.my'],
     proxy: {
       '/invoice': {
         target: 'http://localhost:5173',
