@@ -133,7 +133,7 @@ function OrderDetail() {
                 }
 
                 return total + supplyPrice + installPrice;
-            }, 0) * quotationPackage.quantity;
+            }, 0) * (quotationPackage.quantity || 1);
 
             // Initialize the category if it doesn't exist
             if (!acc[category]) {
@@ -870,7 +870,7 @@ function OrderDetail() {
                                     {packageCategories.map((category, index: number) => (
                                         <tr key={index}>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                {category.category}:
+                                                {category.category}: 
                                             </td>
                                             <td className="text-sm text-gray-700 font-medium pb-3">
                                                 RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
