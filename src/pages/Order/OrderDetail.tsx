@@ -69,7 +69,7 @@ function OrderDetail() {
     const orderId = id ? parseInt(id, 10) : null;
 
     const { orderDetail, loading, error, refetch } = useFetchOrder(orderId);
-    const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number }[]>([]);
+    const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; quantity: number }[]>([]);
 
     const [activeTab, setActiveTab] = useState('tab_1_1');
     const [isLoading, setIsLoading] = useState(false);
@@ -133,7 +133,7 @@ function OrderDetail() {
                 }
 
                 return total + supplyPrice + installPrice;
-            }, 0);
+            }, 0) * quotationPackage.quantity;
 
             // Initialize the category if it doesn't exist
             if (!acc[category]) {
@@ -206,13 +206,13 @@ function OrderDetail() {
         :
         null;
 
-    const propertyAddress = [
+    const propertyAddress = orderDetail.property ? [
         orderDetail.property.address,
         orderDetail.property.street,
         orderDetail.property.postcode,
         orderDetail.property.city,
         orderDetail.property.state
-    ].filter(part => part !== null && part !== '')
+    ].filter(part => part !== null && part !== '') : null
 
     const tnc = (
         <ul className="list-disc list-inside space-y-4 text-sm">
@@ -255,7 +255,7 @@ function OrderDetail() {
             </div>
             <div className="flex flex-col gap-6 mb-6">
                 <span className='font-bold'>WHEREAS:</span>
-                <span>The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the services of the Contractor for the renovation of the Owner’s property described as <strong>A (1) unit of Service Residence known as {orderDetail.block ? orderDetail.block : '[Block]'}-{orderDetail.floor ? orderDetail.floor : '[Floor]'}-{orderDetail.unit_no ? orderDetail.unit_no : '[Unit No]'}, {orderDetail.property.name}, {propertyAddress}</strong> (the “Property”) subject to the terms and conditions hereinafter appearing.</span>
+                <span>The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the services of the Contractor for the renovation of the Owner’s property described as <strong>A (1) unit of Service Residence known as {orderDetail.block ? orderDetail.block : '[Block]'}-{orderDetail.floor ? orderDetail.floor : '[Floor]'}-{orderDetail.unit_no ? orderDetail.unit_no : '[Unit No]'}, {orderDetail.property ? orderDetail.property.name : '[Property Name]'}, {propertyAddress ? propertyAddress : '[Property Address]'}</strong> (the “Property”) subject to the terms and conditions hereinafter appearing.</span>
                 <span><strong>NOW THIS AGREEMENT WITNESSETH</strong> as follows:-</span>
                 <div className="flex flex-col gap-3">
                     <span><strong>1. CONTRACT SUM</strong></span>
@@ -924,7 +924,7 @@ function OrderDetail() {
                                                             {prodPackage.name}
                                                         </span>
                                                         <span className='text-base text-gray-700'>
-                                                            RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            RM {(prodPackage.total_price * (prodPackage.quantity ? prodPackage.quantity : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </span>
                                                         {prodPackage.category &&
                                                             <div className="badge text-sm">
@@ -935,8 +935,11 @@ function OrderDetail() {
                                                             {prodPackage.description}
                                                         </span>
                                                     </div>
-                                                    <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                    <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                    <div className="flex items-center gap-8">
+                                                        <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md">Quantity: {(prodPackage.quantity ? prodPackage.quantity : 1)}</span>
+                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                    </div>
                                                 </button>
                                                 <div className="accordion-content active border-t" id={"package_content_" + prodPackage.id.toString()}>
                                                     <div className="product-list flex flex-col">
@@ -1274,44 +1277,48 @@ function OrderDetail() {
                                             </h2>
                                         </div>
                                         <div className="card-body">
-                                            <div className="flex justify-between flex-wrap">
-                                                <div className="flex flex-col mb-4 mr-8">
-                                                    <span className='text-sm text-gray-600'>Name:</span>
-                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.property.name}</span>
-                                                </div>
-                                                <div className=""></div>
-                                            </div>
+                                            {orderDetail.property &&
+                                                <>
+                                                    <div className="flex justify-between flex-wrap">
+                                                        <div className="flex flex-col mb-4 mr-8">
+                                                            <span className='text-sm text-gray-600'>Name:</span>
+                                                            <span className='text-sm text-gray-900 font-semibold'>{orderDetail.property.name}</span>
+                                                        </div>
+                                                        <div className=""></div>
+                                                    </div>
 
-                                            <div className="flex justify-between flex-wrap">
-                                                <div className="flex flex-col mb-4">
-                                                    <span className='text-sm text-gray-600'>Unit:</span>
-                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}</span>
-                                                </div>
-                                                <div className="flex flex-col mb-4 mr-8">
-                                                    <span className='text-sm text-gray-600'>Unit Type:</span>
-                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.unit_type ? orderDetail.unit_type : '-'}</span>
-                                                </div>
-                                                <div className="flex flex-col mb-4">
-                                                    <span className='text-sm text-gray-600'>Partition:</span>
-                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.include_partition ? 'Yes' : 'No'}</span>
-                                                </div>
-                                            </div>
+                                                    <div className="flex justify-between flex-wrap">
+                                                        <div className="flex flex-col mb-4">
+                                                            <span className='text-sm text-gray-600'>Unit:</span>
+                                                            <span className='text-sm text-gray-900 font-semibold'>{orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}</span>
+                                                        </div>
+                                                        <div className="flex flex-col mb-4 mr-8">
+                                                            <span className='text-sm text-gray-600'>Unit Type:</span>
+                                                            <span className='text-sm text-gray-900 font-semibold'>{orderDetail.unit_type ? orderDetail.unit_type : '-'}</span>
+                                                        </div>
+                                                        <div className="flex flex-col mb-4">
+                                                            <span className='text-sm text-gray-600'>Partition:</span>
+                                                            <span className='text-sm text-gray-900 font-semibold'>{orderDetail.include_partition ? 'Yes' : 'No'}</span>
+                                                        </div>
+                                                    </div>
 
-                                            <div className="flex flex-col">
-                                                <span className='text-sm text-gray-600'>Address:</span>
-                                                <span className='text-sm text-gray-900'>
-                                                    {[
-                                                        orderDetail.property.address,
-                                                        orderDetail.property.street,
-                                                        orderDetail.property.postcode,
-                                                        orderDetail.property.city,
-                                                        orderDetail.property.state,
-                                                    ]
-                                                        .filter(Boolean)
-                                                        .join(', ')
-                                                    }
-                                                </span>
-                                            </div>
+                                                    <div className="flex flex-col">
+                                                        <span className='text-sm text-gray-600'>Address:</span>
+                                                        <span className='text-sm text-gray-900'>
+                                                            {[
+                                                                orderDetail.property.address,
+                                                                orderDetail.property.street,
+                                                                orderDetail.property.postcode,
+                                                                orderDetail.property.city,
+                                                                orderDetail.property.state,
+                                                            ]
+                                                                .filter(Boolean)
+                                                                .join(', ')
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            }
                                         </div>
                                     </div>
                                 </div>
@@ -1421,12 +1428,12 @@ function OrderDetail() {
                                             <tbody>
                                                 {orderDetail.latest_quotation.packages.map((quotationPackage: Package, index: number) => (
                                                     <React.Fragment key={index}>
-                                                        <tr className="bg-slate-50 border-b">
-                                                            <td className="p-2 text-center hidden text-xs md:table-cell">{index + 1}</td>
-                                                            <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
-                                                            <td className="p-2 text-center hidden text-xs md:table-cell"></td>
-                                                            <td className="p-2 text-center text-xs"></td>
-                                                            <td className="p-2 text-center text-xs"></td>
+                                                        <tr className="bg-slate-50 border-b text-xs font-semibold">
+                                                            <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
+                                                            <td className="p-2 ">{quotationPackage.name}</td>
+                                                            <td className="p-2 text-center hidden md:table-cell"></td>
+                                                            <td className="p-2 text-center">{(quotationPackage.quantity ? quotationPackage.quantity : 1)}</td>
+                                                            <td className="p-2 text-center"></td>
                                                         </tr>
                                                         {quotationPackage.products.map((product: Product, prodIndex: number) => (
                                                             // Check if product.pivot.visibility is true
@@ -1530,7 +1537,7 @@ function OrderDetail() {
                                                         {orderDetail.final_amount > 0
                                                             ? `RM ${(
                                                                 orderDetail.final_amount -
-                                                                (Number(selectedQuotation.bonus?.value) || 0)
+                                                                (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                             ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                             : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                     </span>
@@ -1593,7 +1600,7 @@ function OrderDetail() {
                                                         <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
                                                         <td className="p-2 font-semibold">{quotationPackage.name}</td>
                                                         <td className="p-2 text-center hidden md:table-cell"></td>
-                                                        <td className="p-2 text-center"></td>
+                                                        <td className="p-2 text-center font-semibold">{quotationPackage.quantity ? quotationPackage.quantity : 1}</td>
                                                         <td className="p-2 text-center"></td>
                                                     </tr>
                                                     {quotationPackage.products.map((product: Product, prodIndex: number) => (

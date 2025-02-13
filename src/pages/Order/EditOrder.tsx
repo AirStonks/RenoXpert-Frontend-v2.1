@@ -1076,20 +1076,23 @@ function EditOrder() {
                                                             <span className="text-base text-gray-900 font-medium">
                                                                 {prodPackage.name}
                                                             </span>
+                                                            <span className='text-base text-gray-700'>
+                                                                RM {(prodPackage.total_price * (prodPackage.quantity ? prodPackage.quantity : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </span>
                                                             {prodPackage.category &&
                                                                 <div className="badge text-sm">
                                                                     {categoryOptions.find(option => option.value === prodPackage.category)?.label}
                                                                 </div>
                                                             }
-                                                            <span className='text-base text-gray-700'>
-                                                                RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </span>
                                                             <span className='text-sm text-slate-400'>
                                                                 {prodPackage.description}
                                                             </span>
                                                         </div>
-                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                        <div className="flex items-center gap-8">
+                                                            <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md">Quantity: {(prodPackage.quantity ? prodPackage.quantity : 1)}</span>
+                                                            <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                            <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                        </div>
                                                     </button>
                                                     <div className="accordion-content border-t hidden" id={"package_content_" + prodPackage.id.toString()}>
                                                         <div className="product-list flex flex-col">

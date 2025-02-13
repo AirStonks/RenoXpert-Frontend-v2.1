@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/css": "^11.13.5",
     "@popperjs/core": "^2.11.8",
+    "@react-pdf/renderer": "^4.2.1",
     "@types/quill": "^2.0.14",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.7.7",

@@ -136,13 +136,13 @@ function OrderMain() {
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
-        initOrderTable(newPage, size, searchTerm, sortOrder, sortField);
+        initOrderTable(newPage, size, searchTerm, sortOrder, sortField, filter);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
-        initOrderTable(1, newSize, searchTerm, sortOrder, sortField);
+        initOrderTable(1, newSize, searchTerm, sortOrder, sortField, filter);
     };
 
     const handleSort = (field: string) => {
@@ -426,7 +426,7 @@ function OrderMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex flex-col gap-1">
-                                                    <span>RM {order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                    <span>RM {(order.f_1 ? (order.latest_quotation.bonus ? (order.final_amount - Number(order.latest_quotation.bonus.value)) : order.final_amount) : order.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                 </div>
                                             </td>
                                             <td className='text-center'>

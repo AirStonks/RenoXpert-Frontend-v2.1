@@ -622,7 +622,7 @@ function CreateOrder() {
                 localStorage.removeItem('include_packages');
                 localStorage.removeItem('selected_quotation_packages');
                 setLoading(false);
-                navigate('/orders');
+                navigate('/orders/' + response.data.id);
             } else {
                 setLoading(false);
                 console.log(response);
@@ -1129,7 +1129,7 @@ function CreateOrder() {
                                                                     {prodPackage.name}
                                                                 </span>
                                                                 <span className='text-base text-gray-700'>
-                                                                    RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    RM {(prodPackage.total_price * (prodPackage.quantity ? prodPackage.quantity : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </span>
                                                                 {prodPackage.category &&
                                                                     <div className="badge text-sm">
@@ -1140,8 +1140,11 @@ function CreateOrder() {
                                                                     {prodPackage.description}
                                                                 </span>
                                                             </div>
-                                                            <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                            <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                            <div className="flex items-center gap-8">
+                                                                <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md">Quantity: {(prodPackage.quantity ? prodPackage.quantity : 1)}</span>
+                                                                <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                                <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                            </div>
                                                         </button>
                                                         <div className="accordion-content border-t" id={"package_content_" + prodPackage.id.toString()}>
                                                             <div className="product-list flex flex-col">
@@ -1162,6 +1165,7 @@ function CreateOrder() {
                                                                         {prodPackage.products.map((product) => (
                                                                             <tr
                                                                                 key={product.id}
+                                                                                className={`${!product.pivot.includeSupply && !product.pivot.includeInstall ? 'light:bg-orange-50 dark:bg-orange-950' : ''}`}
                                                                             >
                                                                                 <td>
                                                                                     <span></span>
@@ -1194,7 +1198,7 @@ function CreateOrder() {
                                                                                 </td>
                                                                                 <td className='text-center text-lg'>
                                                                                     <span className="mx-2 text-base">
-                                                                                        {product.pivot.included ? product.pivot.quantity : '0'}
+                                                                                        {product.pivot.included ? ((!product.pivot.includeSupply && !product.pivot.includeInstall ? 0 : product.pivot.quantity)) : '0'}
                                                                                     </span>
                                                                                 </td>
                                                                                 <td className="text-center">

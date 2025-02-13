@@ -175,6 +175,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                     id: Number(id),
                     name: packageName,
                     description: packageDescription,
+                    quantity: 1,
                     total_price: packagePrice,
                     category: packageCategory,
                     products: selectedPackage.products

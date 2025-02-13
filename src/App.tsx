@@ -87,6 +87,7 @@ import QuotationArchive from './pages/Quotation/QuotationArchive';
 import KeyManagementForm from './pages/OwnerPages/KeyManagementForm';
 import KeyManagementOverview from './pages/ProjectManagement/KeyManagementOverview';
 import UpdateKeyManagement from './pages/ProjectManagement/UpdateKeyManagement';
+import Test2 from './pages/Test2/Test2';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -148,6 +149,7 @@ const routes = [
 
   /*--- TEST ---*/
   { path: '/test', element: <Test />, layout: null },
+  { path: '/test2', element: <Test2 />, layout: null },
 
 
 

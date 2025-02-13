@@ -242,7 +242,7 @@ function EditNewOrderQuotation() {
                 return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
             }, 0);
 
-            let newTotalPrice = packageTotalPrice
+            let newTotalPrice = packageTotalPrice;
 
             prodPackage.products.map((product) => {
                 if (!product.pivot.includeSupply) {
@@ -327,6 +327,9 @@ function EditNewOrderQuotation() {
                 return prodPackage; // Return the original package if not matched
             });
 
+            console.log(updatedPackages);
+
+
             const newTotalAmount = calculateTotalAmount(updatedPackages);
             setTotalAmount(newTotalAmount); // Update totalAmount
             updateLocalStorage(updatedPackages);
@@ -394,6 +397,7 @@ function EditNewOrderQuotation() {
                     }, 0);
 
                     let newTotalPrice = packageTotalPrice;
+
                     updatedProducts.forEach((product) => {
                         if (!product.pivot.includeSupply) {
                             newTotalPrice -= (product.provisioning.supply.excluded_price * product.pivot.quantity);
@@ -414,6 +418,42 @@ function EditNewOrderQuotation() {
 
             const newTotalAmount = calculateTotalAmount(updatedPackages);
             setTotalAmount(newTotalAmount);
+            updateLocalStorage(updatedPackages);
+            return updatedPackages;
+        });
+    };
+
+    const adjustPackageQuantity = (packId: number, action: 'increase' | 'decrease') => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage) => {
+                if (prodPackage.id === packId) {
+                    const newQuantity = action === 'increase' ? prodPackage.quantity + 1 : Math.max(1, prodPackage.quantity - 1);
+
+                    let packageTotalPrice = prodPackage.products.reduce((sum, product) => {
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) +
+                            (product.provisioning.install.retail_price * product.pivot.quantity);
+                    }, 0);
+
+                    prodPackage.products.forEach((product) => {
+                        if (!product.pivot.includeSupply) {
+                            packageTotalPrice -= (product.provisioning.supply.excluded_price * product.pivot.quantity);
+                        }
+                        if (!product.pivot.includeInstall) {
+                            packageTotalPrice -= (product.provisioning.install.excluded_price * product.pivot.quantity);
+                        }
+                    });
+
+                    return {
+                        ...prodPackage,
+                        total_price: packageTotalPrice, // Adjust total price considering exclusions
+                        quantity: newQuantity
+                    };
+                }
+                return prodPackage;
+            });
+
+            const newTotalAmount = calculateTotalAmount(updatedPackages);
+            setTotalAmount(newTotalAmount); // Update totalAmount
             updateLocalStorage(updatedPackages);
             return updatedPackages;
         });
@@ -475,7 +515,8 @@ function EditNewOrderQuotation() {
                 }
 
                 return prodSum;
-            }, 0)
+            }, 0) * pkg.quantity;
+
 
             return sum;
         }, 0);
@@ -537,7 +578,7 @@ function EditNewOrderQuotation() {
                                                         {prodPackage.name}
                                                     </span>
                                                     <span className='text-base text-gray-700'>
-                                                        RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        RM {(prodPackage.total_price * (prodPackage.quantity ? prodPackage.quantity : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </span>
                                                     {prodPackage.category &&
                                                         <div className="badge text-sm">
@@ -550,6 +591,7 @@ function EditNewOrderQuotation() {
                                                 </div>
 
                                                 <div className="flex items-center gap-8">
+                                                    <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md">Quantity: {prodPackage.quantity}</span>
                                                     <button
                                                         className="btn btn-sm btn-danger"
                                                         onClick={() => handleRemovePackage(prodPackage.id)}
@@ -562,7 +604,27 @@ function EditNewOrderQuotation() {
                                                 </div>
                                             </button>
                                             <div className="accordion-content hidden border-t" id={"package_content_" + prodPackage.id.toString()}>
-                                                <div className="flex justify-end my-2 mr-3">
+                                                <div className="flex justify-between my-2 mx-3">
+                                                    <div className="flex items-center text-gray-700 gap-2 p-2 rounded-md bg-blue-50 dark:bg-sky-950">
+                                                        <span>Package Quantity: </span>
+                                                        <div className="flex text-center">
+                                                            <button
+                                                                data-action='decrease'
+                                                                onClick={() => adjustPackageQuantity(prodPackage.id, 'decrease')}
+                                                            >
+                                                                <i className="ki-solid ki-minus-squared"></i>
+                                                            </button>
+                                                            <span className="mx-2 text-base">
+                                                                {prodPackage.quantity ? prodPackage.quantity : 1}
+                                                            </span>
+                                                            <button
+                                                                data-action='increase'
+                                                                onClick={() => adjustPackageQuantity(prodPackage.id, 'increase')}
+                                                            >
+                                                                <i className="ki-solid ki-plus-squared"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                     <button
                                                         className="btn btn-primary"
                                                         data-id={prodPackage.id}
