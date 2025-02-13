@@ -730,12 +730,12 @@ function OrderOverview() {
                                             <tbody>
                                                 {JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage: Package, index: number) => (
                                                     <React.Fragment key={index}>
-                                                        <tr className="bg-slate-50 border-b">
-                                                            <td className="p-2 text-center hidden text-xs md:table-cell">{index + 1}</td>
+                                                        <tr className="bg-slate-50 border-b text-xs">
+                                                            <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
                                                             <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
-                                                            <td className="p-2 text-center hidden text-xs md:table-cell"></td>
-                                                            <td className="p-2 text-center text-xs"></td>
-                                                            <td className="p-2 text-center text-xs"></td>
+                                                            <td className="p-2 text-center hidden md:table-cell"></td>
+                                                            <td className="p-2 text-center"></td>
+                                                            <td className="p-2 text-center font-semibold">{quotationPackage.quantity ? quotationPackage.quantity : 1}</td>
                                                         </tr>
                                                         {quotationPackage.products.map((product: Product, prodIndex: number) => (
                                                             // Check if product.pivot.visibility is true
@@ -907,12 +907,12 @@ function OrderOverview() {
                                         <tbody>
                                             {JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage: Package, index: number) => (
                                                 <React.Fragment key={index}>
-                                                    <tr className="bg-slate-50 border-b text-2xs">
+                                                    <tr className="bg-slate-50 border-b text-xs">
                                                         <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
-                                                        <td className="p-2 font-semibold">{quotationPackage.name}</td>
+                                                        <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
                                                         <td className="p-2 text-center hidden md:table-cell"></td>
                                                         <td className="p-2 text-center"></td>
-                                                        <td className="p-2 text-center"></td>
+                                                        <td className="p-2 text-center font-semibold">{quotationPackage.quantity ? quotationPackage.quantity : 1}</td>
                                                     </tr>
                                                     {quotationPackage.products.map((product: Product, prodIndex: number) => (
                                                         // Check if product.pivot.visibility is true

@@ -137,19 +137,21 @@ function OrderDetail() {
 
             // Initialize the category if it doesn't exist
             if (!acc[category]) {
-                acc[category] = 0;
+                acc[category] = { total_price: 0, quantity: 0 };
             }
 
             // Add to the category total
-            acc[category] += categoryTotal;
+            acc[category].total_price += categoryTotal;
+            acc[category].quantity += quotationPackage.quantity;
 
             return acc;
-        }, {} as Record<string, number>);
+        }, {} as Record<string, { total_price: number, quantity: number }>);
 
         setPackageCategories(
-            Object.entries(categoryTotals).map(([category, total_price]) => ({
+            Object.entries(categoryTotals).map(([category, { total_price, quantity }]) => ({
                 category: categoryOptions.find(option => option.value === category)?.label || category,
-                total_price
+                total_price,
+                quantity
             }))
         );
 
@@ -1255,7 +1257,12 @@ function OrderDetail() {
                                                             <div className="flex flex-col">
                                                                 <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
                                                                 <span className='text-xl text-gray-900 font-semibold'>
-                                                                    {orderDetail.final_amount > 0 ? `RM ${(orderDetail.final_amount - Number(selectedQuotation.bonus?.value)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    {orderDetail.final_amount > 0
+                                                                        ? `RM ${(
+                                                                            orderDetail.final_amount -
+                                                                            (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
+                                                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                        : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </span>
                                                                 {selectedQuotation.bonus && (
                                                                     <span className='text-gray-900 text-sm'>
