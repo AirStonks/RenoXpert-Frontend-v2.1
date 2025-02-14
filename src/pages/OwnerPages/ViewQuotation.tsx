@@ -7,6 +7,7 @@ import Loading from "../../components/Loading";
 import useFetchPublicInvoice from "../../hook/useFetchPublicInvoice";
 import { makePaymentIntent } from "../../services/api";
 import { Link } from "react-router-dom";
+import { Slide, toast } from "react-toastify";
 
 function ViewQuotation() {
     // const navigate = useNavigate();
@@ -15,12 +16,29 @@ function ViewQuotation() {
 
     const { invoiceDetail, loading, error } = useFetchPublicInvoice(invoiceId);
 
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
+
     useEffect(() => {
         document.title = "Invoice | RenoXpert";
         KTComponent.init();
     });
 
     const handlePaymentIntent = async () => {
+
+        notify('error', 'Sorry, payment is currently under maintenance. Contact sale team to proceed payment.');
+        return;
+
         const response = await makePaymentIntent(Number(invoiceDetail.id));
 
         // Check if the response is successful
@@ -160,7 +178,7 @@ function ViewQuotation() {
             <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2">
                 {invoiceDetail.status !== 'paid' && (
                     <button
-                        className="btn btn-lg btn-primary rounded-3xl shadow-lg"
+                        className="btn btn-lg btn-primary rounded-3xl shadow-lg opacity-50"
                         onClick={handlePaymentIntent}
                     >
                         Make Payment

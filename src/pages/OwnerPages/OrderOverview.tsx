@@ -842,7 +842,7 @@ function OrderOverview() {
                                         }
 
                                         {/* Total Amount section */}
-                                        <div className="card-body p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg shadow-md mb-4">
+                                        <div className="card-body p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg shadow-md mb-8">
                                             <div className="flex flex-col gap-4">
                                                 <div className="flex flex-col">
                                                     <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
@@ -858,6 +858,41 @@ function OrderOverview() {
                                             </div>
                                         </div>
 
+                                        <div className="flex flex-col mb-8 justify-center items-center">
+                                            <span className='font-bold'>PROGRESSIVE PAYMENT OF THE CONTRACT SUM</span>
+                                            <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
+                                                <thead>
+                                                    <tr>
+                                                        <th>
+                                                            Description
+                                                        </th>
+                                                        <th className='text-center'>
+                                                            %
+                                                        </th>
+                                                        <th className='text-center'>
+                                                            Amount (RM)
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Upon Confirmation and before Commencement of Phase 1</td>
+                                                        <td className='text-center'>50</td>
+                                                        <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
+                                                        <td className='text-center'>50</td>
+                                                        <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    </tr>
+                                                    <tr className='font-bold'>
+                                                        <td>Total:</td>
+                                                        <td className='text-center'>100</td>
+                                                        <td className='text-center'>{orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
 
                                         <div className="flex flex-col items-start gap-4">
                                             <label className="form-label flex items-center gap-2 flex-wrap">
@@ -894,7 +929,7 @@ function OrderOverview() {
                         <div className={activeTab === 'tab_1_4' ? '' : 'hidden'} id="tab_1_4">
                             {orderDetail.status === 'confirmed' ?
                                 <>
-                                    <table className="w-full border-collapse">
+                                    <table className="w-full border-collapse mb-8">
                                         <thead className="bg-gray-100">
                                             <tr>
                                                 <th className="p-2 text-sm text-center hidden md:table-cell">No.</th>
@@ -957,6 +992,42 @@ function OrderOverview() {
                                             ))}
                                         </tbody>
                                     </table>
+
+                                    <div className="flex flex-col mb-8 justify-center items-center">
+                                        <span className='font-bold'>PROGRESSIVE PAYMENT OF THE CONTRACT SUM</span>
+                                        <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
+                                            <thead>
+                                                <tr>
+                                                    <th>
+                                                        Description
+                                                    </th>
+                                                    <th className='text-center'>
+                                                        %
+                                                    </th>
+                                                    <th className='text-center'>
+                                                        Amount (RM)
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Upon Confirmation and before Commencement of Phase 1</td>
+                                                    <td className='text-center'>50</td>
+                                                    <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
+                                                    <td className='text-center'>50</td>
+                                                    <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                </tr>
+                                                <tr className='font-bold'>
+                                                    <td>Total:</td>
+                                                    <td className='text-center'>100</td>
+                                                    <td className='text-center'>{orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </>
                                 :
                                 ''
