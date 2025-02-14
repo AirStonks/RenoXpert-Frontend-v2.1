@@ -108,7 +108,7 @@ function ViewQuotation() {
                                         Weightage:
                                     </td>
                                     <td className="text-sm text-gray-900 pb-3 font-medium">
-                                        {invoiceDetail.percentage * 100}%
+                                        {(invoiceDetail.percentage * 100).toFixed(2)}%
                                     </td>
                                 </tr>
                                 <tr>

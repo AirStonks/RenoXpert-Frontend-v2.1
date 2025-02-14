@@ -160,10 +160,10 @@ function SaleDetail() {
                             <div className="card-body">
                                 <div className="flex flex-col">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (sale.remaining_percentage * 100)}% Invoice Issued</span>
+                                        <span className="text-lg text-gray-900 mb-1 font-semibold">{(100 - (sale.remaining_percentage * 100)).toFixed(2)}% Invoice Issued</span>
                                         <div className="flex">
                                             <div className="badge badge-success badge-outline text-md mb-2">
-                                                {sale.paid_percentage * 100}% Paid
+                                                {(sale.paid_percentage * 100).toFixed(2)}% Paid
                                             </div>
                                         </div>
                                     </div>
