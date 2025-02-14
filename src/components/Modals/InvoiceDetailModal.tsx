@@ -93,6 +93,8 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
     };
 
     const handleMarkAsPaid = async (invoiceId: number) => {
+        setLinkStatusLoading(true);
+        
         try {
             const response = await markInvoiceAsPaid(invoiceId);
 
@@ -104,6 +106,8 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
         } catch (error) {
             console.error('Error changing invoice link status:', error);
         }
+
+        setLinkStatusLoading(false);
     };
 
     let content;
@@ -121,7 +125,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
 
         content = (
             <div className="flex flex-wrap gap-4">
-                <div className="flex flex-col flex-[2] gap-4">
+                <div className="flex flex-col flex-[1] gap-4">
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">General Info</h3>
@@ -357,7 +361,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
 
     return (
         <div className="modal p-14" data-modal="true" id="payment_invoice_modal">
-            <div className="modal-content modal-center-y max-w-[1024px] h-[580px] max-h-[580px]">
+            <div className="modal-content modal-center-y max-w-[1180px] h-[580px] max-h-[580px]">
                 <div className="modal-header py-4 px-5">
                     <span className="text-lg text-gray-900 font-bold">Payment Invoice Detail</span>
                     <button

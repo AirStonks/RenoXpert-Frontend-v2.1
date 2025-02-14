@@ -200,6 +200,7 @@ function OrderMain() {
     };
 
     const handleRemoveOrder = async (orderId: number) => {
+        setIsLoading(true);
         try {
             const response = await removeOrder(orderId);
 
@@ -213,6 +214,7 @@ function OrderMain() {
             console.log(error);
             return { success: false, message: 'Quotation removal failed' };
         }
+        setIsLoading(false);
     }
 
     return (
