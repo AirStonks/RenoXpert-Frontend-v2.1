@@ -1110,7 +1110,7 @@ function OrderDetail() {
                                 {orderDetail.status === 'confirmed' &&
                                     <div className="flex flex-col flex-1 mb-4">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-lg text-gray-900 mb-1 font-semibold">{100 - (orderDetail.sale.remaining_percentage * 100)}% Invoice Issued</span>
+                                            <span className="text-lg text-gray-900 mb-1 font-semibold">{(100 - (orderDetail.sale.remaining_percentage * 100)).toFixed(2)}% Invoice Issued</span>
                                             <div className="flex">
                                                 <div className="badge badge-success badge-outline text-md mb-2">
                                                     {orderDetail.sale.invoices.reduce((sum, invoice) => {
@@ -1438,7 +1438,7 @@ function OrderDetail() {
                                                         <tr className="bg-slate-50 border-b text-xs font-semibold">
                                                             <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
                                                             <td className="p-2 ">{quotationPackage.name}</td>
-                                                            <td className="p-2 text-center hidden md:table-cell"></td>
+                                                            <td className="p-2 text-center"></td>
                                                             <td className="p-2 text-center">{(quotationPackage.quantity ? quotationPackage.quantity : 1)}</td>
                                                             <td className="p-2 text-center"></td>
                                                         </tr>
@@ -1550,7 +1550,7 @@ function OrderDetail() {
                                                     </span>
                                                     {selectedQuotation.bonus && (
                                                         <span className='text-gray-900 text-sm'>
-                                                            Original Price: RM {orderDetail.final_amount > 0 ? orderDetail.final_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            Original Price: RM {(orderDetail.final_amount > 0 ? orderDetail.final_amount : orderDetail.latest_quotation.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </span>
                                                     )}
                                                 </div>
@@ -1577,17 +1577,38 @@ function OrderDetail() {
                                                     <tr>
                                                         <td>Upon Confirmation and before Commencement of Phase 1</td>
                                                         <td className='text-center'>50</td>
-                                                        <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                        <td className='text-center'>
+                                                            {orderDetail.final_amount > 0
+                                                                ? `RM ${(
+                                                                    (orderDetail.final_amount -
+                                                                    (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
+                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                        </td>
                                                     </tr>
                                                     <tr>
                                                         <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
                                                         <td className='text-center'>50</td>
-                                                        <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                        <td className='text-center'>
+                                                            {orderDetail.final_amount > 0
+                                                                ? `RM ${(
+                                                                    (orderDetail.final_amount -
+                                                                    (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
+                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                        </td>
                                                     </tr>
                                                     <tr className='font-bold'>
                                                         <td>Total:</td>
                                                         <td className='text-center'>100</td>
-                                                        <td className='text-center'>{orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                        <td className='text-center'>
+                                                            {orderDetail.final_amount > 0
+                                                                ? `RM ${(
+                                                                    orderDetail.final_amount -
+                                                                    (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
+                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                        </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -1642,7 +1663,7 @@ function OrderDetail() {
                                                     <tr className="bg-slate-50 border-b text-2xs">
                                                         <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
                                                         <td className="p-2 font-semibold">{quotationPackage.name}</td>
-                                                        <td className="p-2 text-center hidden md:table-cell"></td>
+                                                        <td className="p-2 text-center"></td>
                                                         <td className="p-2 text-center font-semibold">{quotationPackage.quantity ? quotationPackage.quantity : 1}</td>
                                                         <td className="p-2 text-center"></td>
                                                     </tr>
@@ -1699,17 +1720,38 @@ function OrderDetail() {
                                                 <tr>
                                                     <td>Upon Confirmation and before Commencement of Phase 1</td>
                                                     <td className='text-center'>50</td>
-                                                    <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    <td className='text-center'>
+                                                        {orderDetail.final_amount > 0
+                                                            ? `RM ${(
+                                                                (orderDetail.final_amount -
+                                                                (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
+                                                            ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                            : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
                                                     <td className='text-center'>50</td>
-                                                    <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    <td className='text-center'>
+                                                        {orderDetail.final_amount > 0
+                                                            ? `RM ${(
+                                                                (orderDetail.final_amount -
+                                                                (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
+                                                            ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                            : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    </td>
                                                 </tr>
                                                 <tr className='font-bold'>
                                                     <td>Total:</td>
                                                     <td className='text-center'>100</td>
-                                                    <td className='text-center'>{orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    <td className='text-center'>
+                                                        {orderDetail.final_amount > 0
+                                                            ? `RM ${(
+                                                                orderDetail.final_amount -
+                                                                (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
+                                                            ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                            : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>
