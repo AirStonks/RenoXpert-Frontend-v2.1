@@ -21,9 +21,14 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
     const [selectedType, setSelectedType] = useState('fee');
     const inputDiscountFeeRef = useRef(null);
 
+    const [isOtherPercentage, setIsOtherPercentage] = useState(false);
+    const [customeAmountType, setCustomAmountType] = useState<'percentage' | 'amount'>('percentage');
+    const [isCustomeValueExceed, setIsCustomeValueExceed] = useState(false);
+
     const [formData, setFormData] = useState({
         saleId: '',
         percentage: null,
+        amount: null,
         invoiceDiscounts: [],
         invoiceFees: [],
     });
@@ -69,6 +74,8 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
     const handlePercentageSelect = useCallback(async (event: React.MouseEvent<HTMLButtonElement>) => {
         const target = event.currentTarget as HTMLElement;
 
+        setIsOtherPercentage(false);
+
         const percentButton = target.closest('[data-action="percentage"]') as HTMLElement;
 
         if (percentButton) {
@@ -82,7 +89,9 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
     }, []);
 
     const handleOtherPercentage = () => {
-        // otherPercentage = 
+        setIsOtherPercentage(true);
+        setCustomAmountType('percentage');
+
     }
 
     const handleSearchDiscountFee = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,7 +153,48 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
         setDiscounts(newDiscounts);
     };
 
+    const handleCustomPercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const percentage = Number(e.target.value);
+
+        if (percentage > (saleDetail.remaining_percentage * 100)) {
+            console.log('exceed percentage');
+            setIsCustomeValueExceed(true);
+        } else {
+            setIsCustomeValueExceed(false);
+        }
+
+        setFormData({
+            ...formData,
+            percentage: (percentage / 100)
+        })
+    }
+
+    const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const amount = Number(e.target.value);
+        const percentage = calculatePercentageByAmount(amount);
+
+        if ((percentage * 100) > (saleDetail.remaining_percentage * 100)) {
+            console.log('exceed amount');
+            setIsCustomeValueExceed(true);
+        } else {
+            setIsCustomeValueExceed(false);
+        }
+
+
+        setFormData({
+            ...formData,
+            amount: amount,
+            percentage: percentage
+        })
+    }
+
     const handleSubmit = async () => {
+
+        if (isCustomeValueExceed) {
+            notify('error', 'The amount you entered exceeds balance of the sale.');
+            return;
+        }
+
         setFormData((prev) => ({
             ...prev,
             invoiceDiscounts: discounts,
@@ -187,8 +237,14 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
             console.log(response);
 
         }
+    }
 
-        console.log(response);
+    const calculatePercentageByAmount = (amount: number) => {
+
+        const totalAmount = saleDetail.total_amount;
+        const calculatedPercentage = (amount / totalAmount);
+
+        return calculatedPercentage;
     }
 
     // Calculate total fees and discounts
@@ -247,7 +303,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Balance (%):
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {saleDetail.remaining_percentage * 100}%
+                                                    {(saleDetail.remaining_percentage * 100).toFixed(2)}%
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -257,7 +313,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                             <div className="card flex-auto">
                                 <div className="card-body">
                                     <div className="flex flex-col">
-                                        <span className="text-base text-gray-900 mb-1 font-semibold">{100 - (saleDetail.remaining_percentage * 100)}% Complete</span>
+                                        <span className="text-base text-gray-900 mb-1 font-semibold">{(100 - (saleDetail.remaining_percentage * 100)).toFixed(2)}% Complete</span>
                                         <div className="progress progress-success mb-4">
                                             <div className="progress-bar" style={{
                                                 width: `${100 - (saleDetail.remaining_percentage * 100)}%`,
@@ -284,10 +340,67 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                 ...
                                             </button>
                                         </div>
-                                        {formData.percentage &&
+                                        {formData.percentage && !isOtherPercentage &&
                                             <span className="text-lg text-gray-900 font-medium mt-4">
-                                                Selected Percentage: {formData.percentage * 100}%
+                                                Selected Percentage: {(formData.percentage * 100).toFixed(2)}%
                                             </span>
+                                        }
+                                        {isOtherPercentage &&
+                                            <div className="flex flex-col gap-2">
+                                                <span className="text-lg text-gray-900 font-medium mt-4">
+                                                    Other Amount
+                                                </span>
+                                                <div className="flex">
+                                                    <div className="flex gap-12">
+                                                        <label className="form-label flex items-center gap-2.5 text-nowrap">
+                                                            <input
+                                                                className="radio"
+                                                                name="custom_amount_type"
+                                                                type="radio"
+                                                                value="percentage"
+                                                                checked={customeAmountType === 'percentage'}
+                                                                onChange={() => setCustomAmountType('percentage')}
+                                                            />
+                                                            By percentage
+                                                        </label>
+                                                        <label className="form-label flex items-center gap-2.5 text-nowrap">
+                                                            <input
+                                                                className="radio"
+                                                                name="custom_amount_type"
+                                                                type="radio"
+                                                                value="amount"
+                                                                checked={customeAmountType === 'amount'}
+                                                                onChange={() => setCustomAmountType('amount')}
+                                                            />
+                                                            By amount
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                {customeAmountType === 'percentage' &&
+                                                    <div className="flex flex-col gap-4">
+                                                        <input
+                                                            className="input appearance-none focus:outline-none"
+                                                            type="number"
+                                                            placeholder="Enter percentage"
+                                                            value={(formData.percentage * 100) || ''}
+                                                            onChange={(e) => handleCustomPercentageChange(e)}
+                                                            onWheel={(e) => (e.target as HTMLInputElement).blur()} // Fix: Type assertion
+                                                        />
+                                                    </div>
+                                                }
+                                                {customeAmountType === 'amount' &&
+                                                    <div className="flex flex-col gap-4">
+                                                        <input
+                                                            className="input appearance-none focus:outline-none"
+                                                            type="number"
+                                                            placeholder="Enter amount"
+                                                            value={formData.amount || ''}
+                                                            onChange={(e) => handleCustomAmountChange(e)}
+                                                            onWheel={(e) => (e.target as HTMLInputElement).blur()} // Fix: Type assertion
+                                                        />
+                                                    </div>
+                                                }
+                                            </div>
                                         }
                                     </div>
 
@@ -474,7 +587,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Current % Rate:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {formData.percentage * 100}%
+                                                    {(formData.percentage * 100).toFixed(2)}%
                                                 </td>
                                             </tr>
                                             <tr>
@@ -494,7 +607,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Balance (%) after generated:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {(saleDetail.remaining_percentage * 100) - (formData.percentage * 100)}%
+                                                    {((saleDetail.remaining_percentage * 100) - (formData.percentage * 100)).toFixed(2)}%
                                                 </td>
                                             </tr>
                                             <tr>

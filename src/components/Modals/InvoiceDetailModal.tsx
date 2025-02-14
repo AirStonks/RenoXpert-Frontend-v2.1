@@ -167,7 +167,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Weightage:</td>
-                                        <td className="text-sm text-gray-900 font-medium pb-3">{(invoice.percentage * 100)}%</td>
+                                        <td className="text-sm text-gray-900 font-medium pb-3">{(invoice.percentage * 100).toFixed(2)}%</td>
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Bill Amount:</td>

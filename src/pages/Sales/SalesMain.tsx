@@ -287,7 +287,7 @@ function SalesMain() {
                                                 <div className="flex flex-col gap-1">
                                                     <div className="flex justify-center">
                                                         <span className='badge badge-pill'>
-                                                            {sale.remaining_percentage * 100}%
+                                                            {(sale.remaining_percentage * 100).toFixed(2)}%
                                                         </span>
                                                     </div>
                                                     <span>

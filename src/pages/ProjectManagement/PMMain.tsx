@@ -329,8 +329,8 @@ function PMMain() {
                                                 />
                                             </div>
                                             <div className="flex gap-2 justify-center">
-                                                <span className="text-xs badge badge-sm badge-pill badge-outline border-blue-200 bg-blue-50 text-blue-400">{100 - (progress.remaining_percentage * 100)}%</span>
-                                                <span className="text-xs badge badge-sm badge-pill badge-outline badge-success">{progress.paid_percentage * 100}%</span>
+                                                <span className="text-xs badge badge-sm badge-pill badge-outline border-blue-200 bg-blue-50 text-blue-400">{(100 - (progress.remaining_percentage * 100)).toFixed(2)}%</span>
+                                                <span className="text-xs badge badge-sm badge-pill badge-outline badge-success">{(progress.paid_percentage * 100).toFixed(2)}%</span>
                                             </div>
                                         </td>
                                         <td className="text-center">

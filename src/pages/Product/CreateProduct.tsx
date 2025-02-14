@@ -27,7 +27,7 @@ const initProductData: Product = {
     SKU: '',
     type: 'renovation',
     description: '',
-    pm_category_id: 0,
+    pm_category_id: 2,
     uom: 'set',
     provisioning: {
         supply: {
@@ -278,7 +278,6 @@ function CreateProduct() {
 
     // Convert pmCategory to the format needed for Dropdown options
     const dropdownOptions = [
-        { value: "", label: "Select a category" }, // Add an empty value as the first option
         ...pmCategory.map((cat: ProductCategory) => ({
             value: cat.id.toString(),
             label: cat.name
