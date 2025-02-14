@@ -1720,17 +1720,38 @@ function OrderDetail() {
                                                 <tr>
                                                     <td>Upon Confirmation and before Commencement of Phase 1</td>
                                                     <td className='text-center'>50</td>
-                                                    <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    <td className='text-center'>
+                                                        {orderDetail.final_amount > 0
+                                                            ? `RM ${(
+                                                                orderDetail.final_amount -
+                                                                (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0) / 2
+                                                            ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                            : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
                                                     <td className='text-center'>50</td>
-                                                    <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    <td className='text-center'>
+                                                        {orderDetail.final_amount > 0
+                                                            ? `RM ${(
+                                                                orderDetail.final_amount -
+                                                                (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0) / 2
+                                                            ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                            : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    </td>
                                                 </tr>
                                                 <tr className='font-bold'>
                                                     <td>Total:</td>
                                                     <td className='text-center'>100</td>
-                                                    <td className='text-center'>{orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    <td className='text-center'>
+                                                        {orderDetail.final_amount > 0
+                                                            ? `RM ${(
+                                                                orderDetail.final_amount -
+                                                                (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
+                                                            ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                            : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>
