@@ -733,7 +733,7 @@ function OrderOverview() {
                                                         <tr className="bg-slate-50 border-b text-xs">
                                                             <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
                                                             <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
-                                                            <td className="p-2 text-center hidden md:table-cell"></td>
+                                                            <td className="p-2 text-center"></td>
                                                             <td className="p-2 text-center font-semibold">{quotationPackage.quantity ? quotationPackage.quantity : 1}</td>
                                                             <td className="p-2 text-center"></td>
                                                         </tr>
@@ -945,7 +945,7 @@ function OrderOverview() {
                                                     <tr className="bg-slate-50 border-b text-xs">
                                                         <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
                                                         <td className="p-2 text-xs font-semibold">{quotationPackage.name}</td>
-                                                        <td className="p-2 text-center hidden md:table-cell"></td>
+                                                        <td className="p-2 text-center"></td>
                                                         <td className="p-2 text-center font-semibold">{quotationPackage.quantity ? quotationPackage.quantity : 1}</td>
                                                         <td className="p-2 text-center"></td>
                                                     </tr>
