@@ -3,6 +3,7 @@ import InputFieldGroup from "../../../components/Forms/TextFields/InputFieldGrou
 import Dropdown from "../../../components/Forms/Dropdown/Dropdown";
 import { Slide, toast } from "react-toastify";
 import { saveInvoiceDetail } from "../../../services/api";
+import { KTModal } from "../../../metronic/core";
 
 interface NewPaymentDetailModalProps {
     invoiceId: number | null;
@@ -40,6 +41,7 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
     const [dragging, setDragging] = useState(false);
     const [documentItems, setDocumentItems] = useState<[]>([]);
     const [isInvalidDetail, setIsInvalidDetail] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -161,6 +163,7 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
     };
 
     const handleSubmit = async () => {
+        setIsLoading(true);
         checkFormValidation();
 
         if (isInvalidDetail) {
@@ -176,11 +179,18 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
         try {
             const response = await saveInvoiceDetail(invoiceId, updatedFormData);
             if (response?.success) {
+
+                // Close modal
+                const modalEl = document.querySelector('#new_payment_detail_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+                modal.hide();
+
                 notify('success', 'Successfully created payment detail.');
             }
         } catch (error) {
             notify('error', 'Failed to create payment detail.');
         }
+        setIsLoading(false);
     }
 
     return (
