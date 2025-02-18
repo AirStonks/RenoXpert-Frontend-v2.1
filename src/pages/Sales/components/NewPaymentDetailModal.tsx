@@ -7,6 +7,7 @@ import { KTModal } from "../../../metronic/core";
 
 interface NewPaymentDetailModalProps {
     invoiceId: number | null;
+    refetchInvoice: () => void;
 }
 
 const initFormData = {
@@ -35,7 +36,7 @@ const paymentOptions = {
 
 const maxFiles = 10;
 
-function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
+function NewPaymentDetailModal({ invoiceId, refetchInvoice }: NewPaymentDetailModalProps) {
     const [formData, setFormData] = useState(initFormData);
     const [pendingUploadItems, setPendingUploadItems] = useState<File[]>([]);
     const [dragging, setDragging] = useState(false);
@@ -184,6 +185,14 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                 const modalEl = document.querySelector('#new_payment_detail_modal') as HTMLElement;
                 const modal = KTModal.getInstance(modalEl);
                 modal.hide();
+
+                // Display back invoiceDetail modal
+                const invoiceModalEl = document.querySelector('#payment_invoice_modal') as HTMLElement;
+                const invoiceModal = KTModal.getInstance(invoiceModalEl);
+                invoiceModal.show();
+
+                // Refetch the invoice
+                refetchInvoice();
 
                 notify('success', 'Successfully created payment detail.');
             }

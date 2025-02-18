@@ -426,10 +426,6 @@ function SaleDetail() {
                 invoiceId={selectedInvoiceId}
             />
 
-            <NewPaymentDetailModal
-                invoiceId={selectedInvoiceId}
-            />
-
             <CreateAddonInvoiceModal />
         </>
     )

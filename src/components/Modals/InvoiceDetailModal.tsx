@@ -7,6 +7,7 @@ import { changeInvoiceLinkStatus, markInvoiceAsPaid } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import { Invoice } from "../../types";
 import PaymentDetailModal from "./PaymentDetailModal";
+import NewPaymentDetailModal from "../../pages/Sales/components/NewPaymentDetailModal";
 
 interface InvoiceDetailModalProps {
     invoiceId: number | null;
@@ -385,6 +386,10 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                 </div>
             </div>
 
+            <NewPaymentDetailModal
+                invoiceId={invoiceId}
+                refetchInvoice={() => refetch()}
+            />
 
             <PaymentDetailModal
                 invoiceId={invoiceId}
