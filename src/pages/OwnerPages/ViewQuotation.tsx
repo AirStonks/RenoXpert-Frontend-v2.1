@@ -36,8 +36,8 @@ function ViewQuotation() {
 
     const handlePaymentIntent = async () => {
 
-        notify('error', 'Sorry, payment is currently under maintenance. Contact sale team to proceed payment.');
-        return;
+        // notify('error', 'Sorry, payment is currently under maintenance. Contact sale team to proceed payment.');
+        // return;
 
         const response = await makePaymentIntent(Number(invoiceDetail.id));
 

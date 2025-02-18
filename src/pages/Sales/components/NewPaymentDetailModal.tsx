@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InputFieldGroup from "../../../components/Forms/TextFields/InputFieldGroup";
 import Dropdown from "../../../components/Forms/Dropdown/Dropdown";
 import { Slide, toast } from "react-toastify";
+import { saveInvoiceDetail } from "../../../services/api";
+import { KTModal } from "../../../metronic/core";
 
 interface NewPaymentDetailModalProps {
     invoiceId: number | null;
+    refetchInvoice: () => void;
 }
 
 const initFormData = {
     transaction_no: '',
     payment_method: '',
     payment_channel: '',
+    amount: 0,
     payment_date: '',
-    receive_account: '',
+    receiving_account: '',
     remark: '',
     bank: '',
 }
@@ -32,12 +36,13 @@ const paymentOptions = {
 
 const maxFiles = 10;
 
-function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
-
+function NewPaymentDetailModal({ invoiceId, refetchInvoice }: NewPaymentDetailModalProps) {
     const [formData, setFormData] = useState(initFormData);
     const [pendingUploadItems, setPendingUploadItems] = useState<File[]>([]);
     const [dragging, setDragging] = useState(false);
     const [documentItems, setDocumentItems] = useState<[]>([]);
+    const [isInvalidDetail, setIsInvalidDetail] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -75,62 +80,74 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
         }));
     };
 
+    useEffect(() => {
+        checkFormValidation();
+    }, [formData]);
+
+    const checkFormValidation = () => {
+        const requiredFields = [
+            'transaction_no',
+            'payment_channel',
+            'payment_method',
+            'amount',
+            'payment_date',
+            'receiving_account',
+            'bank'
+        ];
+
+        const hasEmptyFields = requiredFields.some(field => {
+            const value = formData[field];
+
+            // Handle different types of values
+            if (value === null || value === undefined) {
+                return true;
+            }
+
+            if (typeof value === 'string') {
+                return value.trim() === '';
+            }
+
+            if (typeof value === 'number') {
+                return value <= 0; // Assuming 0 is not a valid amount
+            }
+
+            return false;
+        });
+
+        setIsInvalidDetail(hasEmptyFields);
+    };
+
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(event.target.files ?? []);
-
-        // Filter for image files based on MIME types
-        const imageFiles = selectedFiles.filter(file =>
-            ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'].includes(file.type)
-        );
-
-        const newPendingUploadItems = [...pendingUploadItems, ...imageFiles];
+        const newPendingUploadItems = [...pendingUploadItems, ...selectedFiles];
 
         if (newPendingUploadItems.length + documentItems.length > maxFiles) {
             notify('error', `You can only upload up to ${maxFiles} files.`);
             return;
         }
 
-        if (imageFiles.length < selectedFiles.length) {
-            notify('error', 'Only image files are allowed.');
-        }
-
         setPendingUploadItems(newPendingUploadItems);
     };
 
-    // Handle drag over event
     const handleDragOver = (event) => {
         event.preventDefault();
-        setDragging(true); // Set dragging state to true when dragging over
+        setDragging(true);
     };
 
-    // Handle drag leave event
     const handleDragLeave = () => {
-        setDragging(false); // Set dragging state to false when dragging leaves
+        setDragging(false);
     };
 
-    // Handle drop event
     const handleDrop = (event) => {
         event.preventDefault();
-        const droppedFiles = event.dataTransfer.files;
-
-        // Filter for image files based on MIME types
-        // const imageFiles = Array.from(droppedFiles).filter(file =>
-        //     ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'].includes(file.type)
-        // );
+        const droppedFiles = Array.from(event.dataTransfer.files);
 
         if (pendingUploadItems.length + droppedFiles.length + documentItems.length <= maxFiles) {
-            if (droppedFiles.length > 0) {
-                setPendingUploadItems((prevItems) => [
-                    ...prevItems,
-                    ...droppedFiles,
-                ]);
-            } else {
-                notify('error', 'Only image files are allowed.');
-            }
+            setPendingUploadItems((prevItems) => [...prevItems, ...droppedFiles]);
         } else {
             notify('error', `You can only upload up to ${maxFiles} files.`);
         }
-        setDragging(false); // Reset dragging state when drop occurs
+        setDragging(false);
     };
 
     const removeFile = (index) => {
@@ -146,12 +163,43 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
         return `${(size / KB).toFixed(2)} KB`;
     };
 
-    const formValidation = () => {
-        //
-    }
-
     const handleSubmit = async () => {
-        //
+        setIsLoading(true);
+        checkFormValidation();
+
+        if (isInvalidDetail) {
+            notify('error', 'Please fill in all required fields.');
+            return;
+        }
+
+        const updatedFormData = {
+            ...formData,
+            attachments: pendingUploadItems,
+        }
+
+        try {
+            const response = await saveInvoiceDetail(invoiceId, updatedFormData);
+            if (response?.success) {
+
+                // Close modal
+                const modalEl = document.querySelector('#new_payment_detail_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+                modal.hide();
+
+                // Display back invoiceDetail modal
+                const invoiceModalEl = document.querySelector('#payment_invoice_modal') as HTMLElement;
+                const invoiceModal = KTModal.getInstance(invoiceModalEl);
+                invoiceModal.show();
+
+                // Refetch the invoice
+                refetchInvoice();
+
+                notify('success', 'Successfully created payment detail.');
+            }
+        } catch (error) {
+            notify('error', 'Failed to create payment detail.');
+        }
+        setIsLoading(false);
     }
 
     return (
@@ -235,6 +283,17 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                                     />
                                 </div>
 
+                                {/* Amount */}
+                                <InputFieldGroup
+                                    fieldTitle="Amount (RM)"
+                                    description="The payment amount of this invoice"
+                                    placeholder=""
+                                    type="number"
+                                    name="amount"
+                                    value={formData.amount}
+                                    onChange={handleChange}
+                                />
+
                                 {/* Payment Date */}
                                 <div className="flex flex-col mb-8">
                                     <label className='mb-2 text-sm font-medium text-gray-900'>
@@ -291,8 +350,8 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                                             { value: "Standard Chartered Bank Malaysia Berhad", label: "Standard Chartered Bank Malaysia Berhad" },
                                             { value: "United Overseas Bank (Malaysia) Berhad", label: "United Overseas Bank (Malaysia) Berhad" },
                                         ]}
-                                        name="payment_method"
-                                        value={formData.payment_method}
+                                        name="bank"
+                                        value={formData.bank}
                                         onChange={handleChange}
                                     />
                                 </div>
@@ -313,8 +372,8 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                                             { value: "BeLive", label: "BeLive" },
                                             { value: "Smart Living", label: "Smart Living" },
                                         ]}
-                                        name="receive_account"
-                                        value={formData.receive_account}
+                                        name="receiving_account"
+                                        value={formData.receiving_account}
                                         onChange={handleChange}
                                     />
                                 </div>
@@ -350,7 +409,7 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
 
                                     <label
                                         className={`flex bg-center w-full p-1 lg:p-2 bg-no-repeat bg-[length:550px] border border-gray-300 rounded-xl border-dashed branding-bg mb-4 
-                                    ${dragging ? 'border-primary border-1 bg-gray-100' : ''}`} // Add custom styles when dragging
+                                    ${dragging ? 'border-primary border-1 bg-gray-100' : ''}`}
                                         onDragOver={handleDragOver}
                                         onDragLeave={handleDragLeave}
                                         onDrop={handleDrop}
@@ -360,7 +419,7 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                                             <div className="flex items-center mb-2.5">
                                                 <div className="relative size-11 shrink-0">
                                                     <svg
-                                                        className="w-full h-full stroke-brand-clarity fill-light"
+                                                        className="w-full h-full stroke-gray-300 fill-gray-100"
                                                         fill="none"
                                                         height="48"
                                                         viewBox="0 0 44 48"
@@ -368,15 +427,14 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                                                         xmlns="http://www.w3.org/2000/svg"
                                                     >
                                                         <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill=""></path>
-                                                        <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke="" strokeOpacity="0.2"></path>
+                                                        <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke=""></path>
                                                     </svg>
                                                     <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
-                                                        <i className="ki-filled ki-picture text-xl ps-px text-brand"></i>
+                                                        <i className="ki-filled ki-file text-xl ps-px text-brand"></i>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Input for file selection */}
                                             <input
                                                 type="file"
                                                 id="file-upload"
@@ -401,7 +459,7 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                                             {pendingUploadItems.map((file, index) => (
                                                 <div
                                                     key={index}
-                                                    className="flex items-center justify-between flex-wrap grow border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5 relative" // Add 'relative' for positioning the button
+                                                    className="flex items-center justify-between flex-wrap grow border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5 relative"
                                                 >
                                                     <div className="flex items-center flex-wrap gap-3.5">
                                                         <div className="relative size-[50px] shrink-0">
@@ -417,7 +475,7 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                                                                 <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke=""></path>
                                                             </svg>
                                                             <div className="absolute leading-none start-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4 rtl:translate-x-2/4">
-                                                                <i className="ki-filled ki-sms text-xl text-gray-500"></i>
+                                                                <i className="ki-filled ki-file text-xl text-gray-500"></i>
                                                             </div>
                                                         </div>
                                                         <div className="flex flex-col">
@@ -435,7 +493,6 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                                                         </div>
                                                     </div>
 
-                                                    {/* 'X' Button */}
                                                     <button
                                                         className="absolute top-2 right-2 text-md text-red-600 hover:text-red-800"
                                                         onClick={() => removeFile(index)}
@@ -444,12 +501,28 @@ function NewPaymentDetailModal({ invoiceId }: NewPaymentDetailModalProps) {
                                                     </button>
                                                 </div>
                                             ))}
-
                                         </div>
                                     )}
                                 </div>
                             </>
                         )}
+                    </div>
+                    <div className="modal-footer flex justify-end">
+                        <button
+                            type="button"
+                            className="btn btn-light btn-active-light-primary me-2"
+                            data-bs-dismiss="modal"
+                        >
+                            Close
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={isInvalidDetail}
+                            onClick={handleSubmit}
+                        >
+                            Save Payment and Mark as Paid
+                        </button>
                     </div>
                 </div>
             </div>

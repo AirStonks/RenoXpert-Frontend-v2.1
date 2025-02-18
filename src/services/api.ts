@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { DiscountFee, Invoice, KeyManagement, Order, OwnerRegistrationForm, Package, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
+import { DiscountFee, Invoice, KeyManagement, Order, OwnerRegistrationForm, Package, Payment, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -1089,6 +1089,20 @@ export const markInvoiceAsPaid = async (invoiceId: number) => {
     }
 }
 
+export const saveInvoiceDetail = async (invoiceId: number, paymentDetail: Payment) => {
+    try {
+        const response = await axios.post(API_URL + `invoices/${invoiceId}/payment/save`, paymentDetail, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
 export const changeInvoiceLinkStatus = async (invoiceId: number, status: string) => {
     try {
         const response = await axios.put(API_URL + `invoices/${invoiceId}/link/status/${status}`, {}, {
@@ -1102,6 +1116,17 @@ export const changeInvoiceLinkStatus = async (invoiceId: number, status: string)
 
 };
 
+export const fetchInvoicePayment = async (invoiceId: number, paymentId: number) => {
+    try {
+        const response = await axios.get(API_URL + `invoices/${invoiceId}/payments/${paymentId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
 
 export const makePaymentIntent = async (invoiceId: number) => {
     try {
