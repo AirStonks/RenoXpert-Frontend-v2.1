@@ -6,6 +6,7 @@ import Loading from "../Loading";
 import { changeInvoiceLinkStatus, markInvoiceAsPaid } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import { Invoice } from "../../types";
+import PaymentDetailModal from "./PaymentDetailModal";
 
 interface InvoiceDetailModalProps {
     invoiceId: number | null;
@@ -24,6 +25,8 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
     const { invoiceDetail, loading, error, refetch } = useFetchInvoice(invoiceId);
     const [invoice, setInvoice] = useState<Invoice | null>(null);
     const [linkStatusLoading, setLinkStatusLoading] = useState(false);
+
+    const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -94,7 +97,7 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
 
     const handleMarkAsPaid = async (invoiceId: number) => {
         setLinkStatusLoading(true);
-        
+
         try {
             const response = await markInvoiceAsPaid(invoiceId);
 
@@ -139,8 +142,8 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                         <div className="menu-item">
                                             <button
                                                 className="menu-link copy-link"
-                                                // data-modal-toggle="#new_payment_detail_modal"
-                                                onClick={() => handleMarkAsPaid(Number(invoice.id))}
+                                                data-modal-toggle="#new_payment_detail_modal"
+                                            // onClick={() => handleMarkAsPaid(Number(invoice.id))}
                                             >
                                                 <span className="menu-title">
                                                     <div className="flex gap-2 items-center">
@@ -322,15 +325,19 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                         </div>
                         <div className="card-body flex flex-col gap-2">
                             <div className="grid gap-5">
-                                {invoice.payments.map((payment) => (
-                                    <div className="flex justify-between gap-3">
+                                {invoice.payments.map((payment, index) => (
+                                    <div className="flex justify-between gap-3" key={index}>
                                         <div className="flex items-center gap-2.5">
                                             <div className="flex items-center justify-center size-7.5 shrink-0 bg-gray-100 rounded-lg border border-gray-300">
                                                 <i className="ki-filled ki-cheque text-base text-gray-600">
                                                 </i>
                                             </div>
                                             <div className="flex flex-col gap-0.5">
-                                                <span className="text-2sm font-medium text-gray-900 cursor-pointer hover:text-primary mb-px">
+                                                <span
+                                                    className="text-2sm font-medium text-gray-900 cursor-pointer hover:text-primary mb-px"
+                                                    data-modal-toggle="#payment_detail_modal"
+                                                    onClick={() => setSelectedPaymentId(Number(payment.id))}
+                                                >
                                                     {payment.transaction_no}
                                                 </span>
                                                 <span className="text-2xs text-gray-700">
@@ -360,22 +367,30 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
     }
 
     return (
-        <div className="modal p-14" data-modal="true" id="payment_invoice_modal">
-            <div className="modal-content modal-center-y max-w-[1180px] h-[580px] max-h-[580px]">
-                <div className="modal-header py-4 px-5">
-                    <span className="text-lg text-gray-900 font-bold">Payment Invoice Detail</span>
-                    <button
-                        className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
-                        data-modal-dismiss="true"
-                    >
-                        <i className="ki-filled ki-cross"></i>
-                    </button>
-                </div>
-                <div className="modal-body">
-                    {content}
+        <>
+            <div className="modal p-14" data-modal="true" id="payment_invoice_modal">
+                <div className="modal-content modal-center-y max-w-[1180px] h-[580px] max-h-[580px]">
+                    <div className="modal-header py-4 px-5">
+                        <span className="text-lg text-gray-900 font-bold">Payment Invoice Detail</span>
+                        <button
+                            className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
+                            data-modal-dismiss="true"
+                        >
+                            <i className="ki-filled ki-cross"></i>
+                        </button>
+                    </div>
+                    <div className="modal-body">
+                        {content}
+                    </div>
                 </div>
             </div>
-        </div>
+
+
+            <PaymentDetailModal
+                invoiceId={invoiceId}
+                paymentId={selectedPaymentId}
+            />
+        </>
     );
 }
 
