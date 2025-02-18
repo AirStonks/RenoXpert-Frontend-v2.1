@@ -220,7 +220,7 @@ function RegistrationFormMain() {
                 <div className="card">
                     <div className="card-header flex-wrap gap-2">
                         <div className="card-title">
-                            Owner Registration Form Overview
+                            Reno Registration Form Overview
                         </div>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button
@@ -268,41 +268,19 @@ function RegistrationFormMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    {/* <th
-                                        className='w-[150px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('name')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Owner Name {getSortIcon('name')}
-                                        </div>
-                                    </th> */}
-                                    <th className='w-[150px] text-center'>Owner Name</th>
                                     <th
-                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
+                                        className='w-[80px] cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('form_no')}
                                     >
-                                        <div className="flex items-center justify-center gap-2">
+                                        <div className="flex gap-2">
                                             Form No {getSortIcon('form_no')}
                                         </div>
                                     </th>
+                                    <th className='w-[120px]'>Owner</th>
+                                    <th className='w-[60px] text-center'>Unit</th>
+                                    <th className='w-[60px] text-center'>Property</th>
                                     <th
-                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('phone_no')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Phone No. {getSortIcon('phone_no')}
-                                        </div>
-                                    </th>
-                                    <th
-                                        className='w-[150px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('email')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Email {getSortIcon('email')}
-                                        </div>
-                                    </th>
-                                    <th
-                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        className='w-[100px] cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('status')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
@@ -310,14 +288,14 @@ function RegistrationFormMain() {
                                         </div>
                                     </th>
                                     <th
-                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        className='w-[100px] cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('created_at')}
                                     >
-                                        <div className="flex items-center justify-center gap-2">
+                                        <div className="flex gap-2">
                                             Submitted At {getSortIcon('created_at')}
                                         </div>
                                     </th>
-                                    <th className='w-[80px] text-center'>Action</th>
+                                    <th className='w-[50px] text-center'>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -328,16 +306,51 @@ function RegistrationFormMain() {
                                             className={`${regFormIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
                                         >
                                             <td>
-                                                {regForm.user.name_first} {regForm.user.name_last}
+                                                <Link
+                                                    to={'/registration-forms/' + regForm.id}
+                                                    className="cursor-pointer text-orange-500"
+                                                >
+                                                    {regForm.form_no}
+                                                </Link>
                                             </td>
-                                            <td>
-                                                {regForm.form_no}
+                                            <td className="">
+                                                <div className="flex flex-col">
+                                                    {regForm.user ?
+                                                        <>
+                                                            <span>{regForm.user.name_first} {regForm.user.name_last}</span>
+                                                            <span className="text-xs text-slate-400">{regForm.user.email}</span>
+                                                            <span className="text-xs text-slate-700">{regForm.user.country_code} {regForm.user.phone_no}</span>
+                                                        </>
+                                                        :
+                                                        '-'
+                                                    }
+                                                </div>
                                             </td>
                                             <td className='text-center'>
-                                                {regForm.user.country_code} {regForm.user.phone_no}
+                                                <div className="flex flex-col gap-1">
+                                                    <span>
+                                                        {regForm.property ?
+                                                            `${regForm.property.block}-${regForm.property.level}-${regForm.property.unit}` :
+                                                            `${regForm.other_property.block}-${regForm.other_property.level}-${regForm.other_property.unit}`
+                                                        }
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className='text-center'>
-                                                {regForm.user.email}
+                                                <div className="flex flex-col gap-1">
+                                                    <span>
+                                                        {regForm.property ?
+                                                            regForm.property.property_name : "(Other) " + regForm.other_property.property_name}
+                                                    </span>
+                                                    <div className="badge">
+                                                        <span className="text-xs text-gray-900">
+                                                            {regForm.property ?
+                                                                `${regForm.property.layout_type}` :
+                                                                `${regForm.other_property.layout_type}`
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className='text-center'>
                                                 <span className={`badge badge-pill p-2 cursor-default
@@ -348,7 +361,7 @@ function RegistrationFormMain() {
                                                     {regForm.status.charAt(0).toUpperCase() + regForm.status.slice(1)}
                                                 </span>
                                             </td>
-                                            <td className='text-center'>
+                                            <td className=''>
                                                 {regForm.created_at
                                                     ? new Date(regForm.created_at).toLocaleDateString('en-GB', {
                                                         day: 'numeric',
@@ -359,45 +372,83 @@ function RegistrationFormMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
-                                                    <Link
-                                                        to={'/registration-forms/' + regForm.id}
-                                                        className="btn-edit btn btn-sm btn-light"
-                                                    >
-                                                        View
-                                                    </Link>
-
-                                                    {regForm.status !== 'approved' && regForm.status !== 'rejected' ?
-                                                        <>
-                                                            {regForm.other_property === null &&
-                                                                <button
-                                                                    className="btn-delete btn btn-sm btn-success ${!regForm.property ? 'disabled' : ''}"
-                                                                    data-action="approve"
-                                                                    data-id="${data.id}"
-                                                                    data-modal-toggle="#confirm_item_modal"
-                                                                    onClick={() => handleApproveRegForm(Number(regForm.id))}
+                                                    <div className="dropdown" data-dropdown="true"
+                                                        data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                                                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                                                            <i className="ki-filled ki-dots-vertical"></i>
+                                                        </button>
+                                                        <div className="dropdown-content menu menu-default w-full max-w-64 py-2"
+                                                            data-dropdown-dismiss="true">
+                                                            <div className="menu-item">
+                                                                <Link
+                                                                    to={'/registration-forms/' + regForm.id}
+                                                                    className="menu-link"
                                                                 >
-                                                                    Approve
-                                                                </button>
+                                                                    <span className="menu-title">
+                                                                        <div className="flex gap-2 items-center">
+                                                                            <i className="ki-outline ki-magnifier"></i>
+                                                                            <span>View</span>
+                                                                        </div>
+                                                                    </span>
+                                                                </Link>
+                                                            </div>
+
+
+                                                            {regForm.status !== 'approved' && regForm.status !== 'rejected' ?
+                                                                <>
+                                                                    {regForm.other_property === null &&
+                                                                        <div className="menu-item">
+                                                                            <button
+                                                                                className="menu-link"
+                                                                                data-action="approve"
+                                                                                data-id="${data.id}"
+                                                                                data-modal-toggle="#confirm_item_modal"
+                                                                                onClick={() => handleApproveRegForm(Number(regForm.id))}
+                                                                            >
+                                                                                <span className="menu-title">
+                                                                                    <div className="flex gap-2 items-center text-success">
+                                                                                        <i className="ki-outline ki-double-check"></i>
+                                                                                        <span>Approve</span>
+                                                                                    </div>
+                                                                                </span>
+                                                                            </button>
+                                                                        </div>
+                                                                    }
+                                                                    <div className="menu-item">
+                                                                        <button
+                                                                            className="menu-link"
+                                                                            onClick={() => handleRejectRegForm(Number(regForm.id))}
+                                                                        >
+                                                                            <span className="menu-title">
+                                                                                <div className="flex gap-2 items-center text-danger">
+                                                                                    <i className="ki-outline ki-cross-circle"></i>
+                                                                                    <span>Reject</span>
+                                                                                </div>
+                                                                            </span>
+                                                                        </button>
+                                                                    </div>
+                                                                </>
+                                                                :
+                                                                (regForm.status === 'approved' ?
+                                                                    <div className="menu-item">
+                                                                        <Link
+                                                                            to={`/orders/create?formId=${regForm.id}`}
+                                                                            className="menu-link"
+                                                                        >
+                                                                            <span className="menu-title">
+                                                                                <div className="flex gap-2 items-center">
+                                                                                    <i className="ki-outline ki-save-2"></i>
+                                                                                    <span>Create Quotation</span>
+                                                                                </div>
+                                                                            </span>
+                                                                        </Link>
+                                                                    </div>
+                                                                    :
+                                                                    ''
+                                                                )
                                                             }
-                                                            <button
-                                                                className="btn-delete btn btn-sm btn-danger"
-                                                                onClick={() => handleRejectRegForm(Number(regForm.id))}
-                                                            >
-                                                                Reject
-                                                            </button>
-                                                        </>
-                                                        :
-                                                        (regForm.status === 'approved' ?
-                                                            <Link
-                                                                to={`/orders/create?formId=${regForm.id}`}
-                                                                className="btn-create-quotation btn btn-sm btn-info"
-                                                            >
-                                                                Create Quotation
-                                                            </Link>
-                                                            :
-                                                            ''
-                                                        )
-                                                    }
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
