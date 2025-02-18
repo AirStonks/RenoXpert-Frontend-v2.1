@@ -209,6 +209,7 @@ function SalesMain() {
                                     <th className='w-[100px]'>Sale No.</th>
                                     <th className='w-[100px]'>Order No.</th>
                                     <th className='w-[100px] text-center'>Status</th>
+                                    <th className='w-[100px] text-center'>Owner</th>
                                     <th className='w-[60px] text-center'>Unit</th>
                                     <th className='w-[60px] text-center'>Property</th>
                                     <th className='w-[120px] text-center'>Total Amount</th>
@@ -255,6 +256,19 @@ function SalesMain() {
                                                 >
                                                     {sale.status.replace(/-/g, ' ')}
                                                 </span>
+                                            </td>
+                                            <td>
+                                                <div className="flex flex-col gap-1">
+                                                    {sale.order.user ?
+                                                        <>
+                                                            <span>{sale.order.user.name}</span>
+                                                            <span className="text-xs text-slate-400">{sale.order.user.email}</span>
+                                                            <span className="text-xs text-slate-700">+60 {sale.order.user.phone_no}</span>
+                                                        </>
+                                                        :
+                                                        '-'
+                                                    }
+                                                </div>
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex flex-col gap-1">
