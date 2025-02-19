@@ -952,14 +952,14 @@ function DefectInspectionFormPage() {
                 maxWidthOrHeight: 1920, // Max image width/height
                 useWebWorker: true, // Use a web worker to compress the image in the background
             };
-            
-            
+
+
             // Compress the image using browser-image-compression
             const compressedFile = await imageCompression(event.target.files[0], options);
 
             const compressedImage = new File(
-                [compressedFile], 
-                event.target.files[0].name, 
+                [compressedFile],
+                event.target.files[0].name,
                 { type: event.target.files[0].type }
             );
 
@@ -1446,6 +1446,7 @@ function DefectInspectionFormPage() {
                                         className="file-input file-input-sm badge mb-2"
                                         type="file"
                                         accept="image/*"
+                                        multiple
                                         name="area.foyer.q1.attachments"
                                         onChange={(e) => handleFileUpload(e, 'foyer', 'q1')}
                                     />

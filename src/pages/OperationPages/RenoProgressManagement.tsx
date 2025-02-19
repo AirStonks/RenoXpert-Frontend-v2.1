@@ -756,7 +756,7 @@ function RenoProgressManagement() {
                                 <input
                                     type="file"
                                     id="file-upload"
-                                    accept="image/*"
+                                    multiple
                                     onChange={e => handleFileUpload(e, selectedDocumentTaskId)}
                                     className="hidden"
                                 />
