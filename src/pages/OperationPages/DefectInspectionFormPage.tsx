@@ -1445,7 +1445,6 @@ function DefectInspectionFormPage() {
                                     <input
                                         className="file-input file-input-sm badge mb-2"
                                         type="file"
-                                        accept="image/*"
                                         multiple
                                         name="area.foyer.q1.attachments"
                                         onChange={(e) => handleFileUpload(e, 'foyer', 'q1')}
