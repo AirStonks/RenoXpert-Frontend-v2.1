@@ -969,7 +969,8 @@ function ProgressMgnt() {
                                                                 <th className='w-[80px] text-center'>Owner Visibility</th>
                                                                 <th className='w-[60px] text-center'>Quantity</th>
                                                                 <th className='w-[100px] text-center'>Status</th>
-                                                                <th className='w-[100px] text-center'>Last Update Date</th>
+                                                                <th className='w-[100px] text-center'>Updated Date</th>
+                                                                <th className='w-[100px] text-center'>Updated By</th>
                                                                 <th className='w-[100px] text-center'>Documents</th>
                                                                 <th className='w-[150px] text-center'>Comment to Owner</th>
                                                                 <th className='w-[150px] text-center'>Internal Comment</th>
@@ -1025,6 +1026,9 @@ function ProgressMgnt() {
                                                                                 year: 'numeric'
                                                                             })
                                                                             : ''}
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        {task.updated_by ? task.updated_by.name : ''}
                                                                     </td>
                                                                     <td className="text-center">
                                                                         <button
