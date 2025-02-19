@@ -279,6 +279,7 @@ function RegistrationFormMain() {
                                     <th className='w-[120px]'>Owner</th>
                                     <th className='w-[60px] text-center'>Unit</th>
                                     <th className='w-[60px] text-center'>Property</th>
+                                    <th className='w-[60px] text-center'>Partition</th>
                                     <th
                                         className='w-[100px] cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('status')}
@@ -352,6 +353,17 @@ function RegistrationFormMain() {
                                                     </div>
                                                 </div>
                                             </td>
+                                            <td className="text-center">
+                                                <div className="flex flex-col items-center">
+                                                    <input
+                                                        className="checkbox"
+                                                        name="supply"
+                                                        type="checkbox"
+                                                        checked={regForm.questions.quest_8 === 'yes' ? true : false}
+                                                        readOnly
+                                                    />
+                                                </div>
+                                            </td>
                                             <td className='text-center'>
                                                 <span className={`badge badge-pill p-2 cursor-default
                                                     ${regForm.status === 'rejected' ? 'badge-danger' : ''} 
@@ -392,6 +404,22 @@ function RegistrationFormMain() {
                                                                     </span>
                                                                 </Link>
                                                             </div>
+
+                                                            {regForm.status === 'pending' &&
+                                                                <div className="menu-item">
+                                                                    <Link
+                                                                        to={`/registration-forms/edit/${regForm.id}`}
+                                                                        className="menu-link"
+                                                                    >
+                                                                        <span className="menu-title">
+                                                                            <div className="flex gap-2 items-center">
+                                                                                <i className="ki-outline ki-notepad-edit"></i>
+                                                                                <span>Edit RRF</span>
+                                                                            </div>
+                                                                        </span>
+                                                                    </Link>
+                                                                </div>
+                                                            }
 
 
                                                             {regForm.status !== 'approved' && regForm.status !== 'rejected' ?

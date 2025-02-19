@@ -537,6 +537,11 @@ function EditOrder() {
             return;
         }
 
+        // parse bonus value to number
+        if (formData.bonus?.value) {
+            formData.bonus.value = Number(formData.bonus.value);
+        }
+
 
         try {
             const newOrder: Order = {

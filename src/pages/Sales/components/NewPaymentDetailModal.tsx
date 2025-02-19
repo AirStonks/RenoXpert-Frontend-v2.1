@@ -4,6 +4,7 @@ import Dropdown from "../../../components/Forms/Dropdown/Dropdown";
 import { Slide, toast } from "react-toastify";
 import { saveInvoiceDetail } from "../../../services/api";
 import { KTModal } from "../../../metronic/core";
+import Loading from "../../../components/Loading";
 
 interface NewPaymentDetailModalProps {
     invoiceId: number | null;
@@ -204,6 +205,8 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice }: NewPaymentDetailMo
 
     return (
         <>
+            {isLoading && <Loading />}
+
             <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" data-modal-keyboard="false" id="new_payment_detail_modal">
                 <div className="modal-content modal-center-y max-w-xl max-h-[95%]">
                     <div className="modal-header py-4 px-5">
