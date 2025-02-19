@@ -593,6 +593,11 @@ function CreateOrder() {
             return;
         }
 
+        // parse bonus value to number
+        if (formData.bonus?.value) {
+            formData.bonus.value = Number(formData.bonus.value);
+        }
+
         const newOrder: Order = {
             user_id: selectedUser?.id || '',
             form_id: formId,
