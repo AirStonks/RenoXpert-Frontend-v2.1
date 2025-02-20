@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { DefectInspectionForm, Property, RenoProgress, Sale } from '../../types';
-import KTComponents, { KTStepper } from '../../metronic/core';
+import KTComponents, { KTStepper, KTSticky } from '../../metronic/core';
 import { Slide, toast } from 'react-toastify';
 import { fetchProperties, fetchRenoProgressDetail, liveUpdateDIForm, removeDIFormAttachment, submitDIForm } from '../../services/operationApi';
 import Loading from '../../components/Loading';
@@ -286,7 +286,8 @@ const initInspectionForm: DefectInspectionForm = {
                 },
             }
         }
-    }
+    },
+    status: 'not_submitted'
 };
 
 function DefectInspectionFormPage() {
@@ -320,6 +321,12 @@ function DefectInspectionFormPage() {
         initFunctions();
 
     }, [renoProgressId]);
+
+    useEffect(() => {
+        if (formData.status === 'submitted') {
+            KTSticky.init();
+        }
+    }, [formData.status]);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -380,7 +387,8 @@ function DefectInspectionFormPage() {
                     },
                     bedroom_count: progress.sale?.order?.bedroom_count?.toString(),
                     bathroom_count: progress.sale?.order?.bathroom_count?.toString(),
-                    area: progress.defect_inspection_form?.area
+                    area: progress.defect_inspection_form?.area,
+                    status: progress.defect_inspection_form?.status
                 }));
             }
 
@@ -952,14 +960,14 @@ function DefectInspectionFormPage() {
                 maxWidthOrHeight: 1920, // Max image width/height
                 useWebWorker: true, // Use a web worker to compress the image in the background
             };
-            
-            
+
+
             // Compress the image using browser-image-compression
             const compressedFile = await imageCompression(event.target.files[0], options);
 
             const compressedImage = new File(
-                [compressedFile], 
-                event.target.files[0].name, 
+                [compressedFile],
+                event.target.files[0].name,
                 { type: event.target.files[0].type }
             );
 
@@ -1178,6 +1186,17 @@ function DefectInspectionFormPage() {
             <div className="card-header py-2">
                 <h2 className="text-slate-900 text-lg font-semibold">Defect Inspection Form</h2>
             </div>
+            { formData.status === 'submitted' &&
+                <div className="card-group">
+                    <div data-sticky-wrapper="true">
+                        <div className="badge badge-warning badge-outline text-md text-center flex flex-wrap justify-center gap-2.5 border rounded-lg py-2" data-sticky="true" data-sticky-activate="#release" data-sticky-class="fixed z-10 shadow-lg" data-sticky-name="basic" data-sticky-offset="20" data-sticky-release="#variants" data-sticky-start="auto" data-sticky-top="20" data-sticky-width="auto">
+                            <span>
+                                You are about to edit the submitted DI Form, edit will update the status to "not_submitted"
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
             <div className="card-group">
                 <div className="flex flex-wrap justify-center items-center gap-4">
                     <div className="badge badge-xs active flex gap-2.5 items-center cursor-pointer" data-stepper-item="#stepper_1">
@@ -1445,7 +1464,7 @@ function DefectInspectionFormPage() {
                                     <input
                                         className="file-input file-input-sm badge mb-2"
                                         type="file"
-                                        accept="image/*"
+                                        multiple
                                         name="area.foyer.q1.attachments"
                                         onChange={(e) => handleFileUpload(e, 'foyer', 'q1')}
                                     />

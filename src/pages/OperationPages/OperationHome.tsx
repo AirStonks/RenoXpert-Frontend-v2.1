@@ -182,7 +182,7 @@ function OperationHome() {
         setPage(1); // Reset to the first page when changing the page size
         initRenoProgress(1, newSize, searchTerm, sortOrder, sortField);
     };
-    
+
     const totalPages = Math.ceil(totalItems / size);
 
     return (
@@ -467,7 +467,49 @@ function OperationHome() {
                             </div>
                         </div>
                         <div className={activeTab === 'tab_1_2' ? '' : 'hidden'} id="tab_1_2">
-                            <span>DI Form</span>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex">
+                                    <label className="input border-none">
+                                        <i className="ki-filled ki-magnifier"></i>
+                                        <input
+                                            placeholder="Search units"
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={handleSearch}
+                                        />
+                                    </label>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        className="btn btn-sm btn-light rounded-full"
+                                        data-drawer-toggle="#drawer_2_4"
+                                    >
+                                        <i className="ki-filled ki-sort"></i>
+                                        Sort
+                                    </button>
+                                    <button
+                                        className={`btn btn-sm rounded-full ${selectedProgressStatus === 'in_progress' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                        onClick={() => toggleStatus('in_progress')}
+                                    >
+                                        Not Submitted
+                                        {
+                                            selectedProgressStatus === 'in_progress' &&
+                                            <i className="ki-filled ki-cross"></i>
+                                        }
+                                    </button>
+                                    <button
+                                        className={`btn btn-sm rounded-full ${selectedProgressStatus === 'done' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                        onClick={() => toggleStatus('done')}
+                                    >
+                                        Completed
+                                        {
+                                            selectedProgressStatus === 'done' &&
+                                            <i className="ki-filled ki-cross"></i>
+                                        }
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div className={activeTab === 'tab_1_3' ? '' : 'hidden'} id="tab_1_3">
                             <span>QC Form</span>
