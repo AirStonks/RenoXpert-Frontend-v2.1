@@ -84,23 +84,25 @@ function OrderOverview() {
                 }
 
                 return total + supplyPrice + installPrice;
-            }, 0);
+            }, 0) * (quotationPackage.quantity || 1);
 
             // Initialize the category if it doesn't exist
             if (!acc[category]) {
-                acc[category] = 0;
+                acc[category] = { total_price: 0, quantity: 0 };
             }
 
             // Add to the category total
-            acc[category] += categoryTotal;
+            acc[category].total_price += categoryTotal;
+            acc[category].quantity += quotationPackage.quantity;
 
             return acc;
-        }, {} as Record<string, number>);
+        }, {} as Record<string, { total_price: number, quantity: number }>);
 
         setPackageCategories(
-            Object.entries(categoryTotals).map(([category, total_price]) => ({
+            Object.entries(categoryTotals).map(([category, { total_price, quantity }]) => ({
                 category: categoryOptions.find(option => option.value === category)?.label || category,
-                total_price
+                total_price,
+                quantity
             }))
         );
 
