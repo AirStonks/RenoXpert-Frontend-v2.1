@@ -674,7 +674,7 @@ function ProgressMgnt() {
                     </div>
                     <div className="card-body">
                         <div className="flex flex-col mb-4 gap-2">
-                            <span className="text-gray-900 font-semibold">Contractual Date:</span>
+                            <span className="text-gray-900 font-semibold">Owner Scheduld:</span>
                             <div className="flex gap-4">
                                 <span className="badge badge-lg">
                                     {renoProgress.contractual_start_date
@@ -698,7 +698,7 @@ function ProgressMgnt() {
                             </div>
                         </div>
                         <div className="flex flex-col gap-2">
-                            <span className="text-gray-900 font-semibold">Contractor Date:</span>
+                            <span className="text-gray-900 font-semibold">Sub Contractor Schedule:</span>
                             <div className="flex gap-4">
                                 <span className="badge badge-lg">
                                     {renoProgress.contractor_start_date
@@ -833,39 +833,37 @@ function ProgressMgnt() {
                                                                     </td>
                                                                     <td>
                                                                         <div className="flex flex-col items-center">
-                                                                            {task.is_defect_form ? (
-                                                                                renoProgress.defect_inspection_form ? (
-                                                                                    <span>{renoProgress.defect_inspection_form.status.charAt(0).toUpperCase() + renoProgress.defect_inspection_form.status.slice(1)}</span>
+                                                                            {task.is_defect_form ?
+                                                                                <span>
+                                                                                    {renoProgress.defect_inspection_form.status === 'not_submitted' ? 'Not Submitted' : 'Completed'}
+                                                                                </span>
+                                                                                : task.is_key_form ? (
+                                                                                    <select
+                                                                                        className="w-full max-w-xs appearance-none"
+                                                                                        name="status"
+                                                                                        value={task.status}
+                                                                                        disabled
+                                                                                    >
+                                                                                        <option value="not_started">Not Started</option>
+                                                                                        <option value="started">Started</option>
+                                                                                        <option value="in_progress">In Progress</option>
+                                                                                        <option value="completed">Completed</option>
+                                                                                        <option value="not_available">Not Available</option>
+                                                                                    </select>
                                                                                 ) : (
-                                                                                    'Not Submitted'
-                                                                                )
-                                                                            ) : task.is_key_form ? (
-                                                                                <select
-                                                                                    className="w-full max-w-xs appearance-none"
-                                                                                    name="status"
-                                                                                    value={task.status}
-                                                                                    disabled
-                                                                                >
-                                                                                    <option value="not_started">Not Started</option>
-                                                                                    <option value="started">Started</option>
-                                                                                    <option value="in_progress">In Progress</option>
-                                                                                    <option value="completed">Completed</option>
-                                                                                    <option value="not_available">Not Available</option>
-                                                                                </select>
-                                                                            ) : (
-                                                                                <select
-                                                                                    className="select select-bordered w-full max-w-xs"
-                                                                                    name="status"
-                                                                                    value={task.status}
-                                                                                    onChange={(e) => handleChangeStatus(e, Number(task.id))}
-                                                                                >
-                                                                                    <option value="not_started">Not Started</option>
-                                                                                    <option value="started">Started</option>
-                                                                                    <option value="in_progress">In Progress</option>
-                                                                                    <option value="completed">Completed</option>
-                                                                                    <option value="not_available">Not Available</option>
-                                                                                </select>
-                                                                            )}
+                                                                                    <select
+                                                                                        className="select select-bordered w-full max-w-xs"
+                                                                                        name="status"
+                                                                                        value={task.status}
+                                                                                        onChange={(e) => handleChangeStatus(e, Number(task.id))}
+                                                                                    >
+                                                                                        <option value="not_started">Not Started</option>
+                                                                                        <option value="started">Started</option>
+                                                                                        <option value="in_progress">In Progress</option>
+                                                                                        <option value="completed">Completed</option>
+                                                                                        <option value="not_available">Not Available</option>
+                                                                                    </select>
+                                                                                )}
                                                                         </div>
 
                                                                     </td>
@@ -1827,7 +1825,7 @@ function ProgressMgnt() {
                         <div className="card flex-1 h-full">
                             <div className="card-header">
                                 <div className="card-title">
-                                    Contractual
+                                    Owner Scheduld
                                 </div>
                             </div>
                             <div className="card-group">
@@ -1849,7 +1847,7 @@ function ProgressMgnt() {
                                         </tr>
                                         <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                End Date:
+                                                Permit Approved Date:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <input
@@ -1971,7 +1969,7 @@ function ProgressMgnt() {
                                     <tbody>
                                         <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Post Cleaning Start Date:
+                                                Cleaning Start Date:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <input
@@ -1985,7 +1983,7 @@ function ProgressMgnt() {
                                         </tr>
                                         <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Post Cleaning End Date:
+                                                Cleaning End Date:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <input
@@ -2005,7 +2003,7 @@ function ProgressMgnt() {
                                     <tbody>
                                         <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Hand Over Date:
+                                                Handover Date:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <input
@@ -2025,7 +2023,7 @@ function ProgressMgnt() {
                         <div className="card flex-1 h-auto">
                             <div className="card-header">
                                 <div className="card-title">
-                                    Contractor
+                                    Sub Contractor Schedule
                                 </div>
                             </div>
                             <div className="card-group">
@@ -2047,7 +2045,7 @@ function ProgressMgnt() {
                                         </tr>
                                         <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                End Date:
+                                                Permit Approved Date:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <input
@@ -2169,7 +2167,7 @@ function ProgressMgnt() {
                                     <tbody>
                                         <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Post Cleaning Start Date:
+                                                Cleaning Start Date:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <input
@@ -2183,7 +2181,7 @@ function ProgressMgnt() {
                                         </tr>
                                         <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Post Cleaning End Date:
+                                                Cleaning End Date:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <input
@@ -2203,7 +2201,7 @@ function ProgressMgnt() {
                                     <tbody>
                                         <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Hand Over Date:
+                                                Handover Date:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <input

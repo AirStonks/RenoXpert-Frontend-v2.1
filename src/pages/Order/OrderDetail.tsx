@@ -1134,12 +1134,12 @@ function OrderDetail() {
                                             <span className="text-lg text-gray-900 mb-1 font-semibold">{(100 - (orderDetail.sale.remaining_percentage * 100)).toFixed(2)}% Invoice Issued</span>
                                             <div className="flex">
                                                 <div className="badge badge-success badge-outline text-md mb-2">
-                                                    {orderDetail.sale.invoices.reduce((sum, invoice) => {
+                                                    {(orderDetail.sale.invoices.reduce((sum, invoice) => {
                                                         if (invoice.status === 'paid') {
                                                             return sum + invoice.percentage;
                                                         }
                                                         return sum;
-                                                    }, 0) * 100}% Paid
+                                                    }, 0) * 100).toFixed(2)}% Paid
                                                 </div>
                                             </div>
                                         </div>

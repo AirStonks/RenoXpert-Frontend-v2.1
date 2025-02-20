@@ -143,7 +143,7 @@ function DefectInspectionReport() {
                                                 ${diForm?.status === 'submitted' ? 'badge-info' : ''} 
                                                 badge-outline`}
                                             >
-                                                {diForm?.status ? diForm?.status : 'Not Submitted'}
+                                                {diForm?.status === 'not_submitted' ? 'Not Submitted' : 'Completed'}
                                             </span>
                                             {/* <span className="badge badge-sm p-2 cursor-default">
                                                 Not Submitted
