@@ -29,11 +29,11 @@ function OperationHome() {
     const [sortBy, setSortBy] = useState('');
 
     const toggleStatus = (status: string, tab: string) => {
-        const newFilter = filterStatus === status ? '' : filterStatus;
+        const newFilter = status === filterStatus ? '' : status;
         setPage(1);
         setSearchTerm('');
 
-        setFilterStatus(prevStatus => (prevStatus === status ? null : newFilter));
+        setFilterStatus(prevStatus => (prevStatus === status ? null : status));
 
         if (tab === 'tab_1_1') {
             initRenoProgress(1, size, searchTerm, sortOrder, sortField, newFilter);
