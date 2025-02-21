@@ -25,11 +25,11 @@ function OperationHome() {
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
     const [loading, setLoading] = useState(false);
-    const [selectedProgressStatus, setSelectedProgressStatus] = useState<string | null>(null);
+    const [filterStatus, setFilterStatus] = useState<string | null>(null);
     const [sortBy, setSortBy] = useState('');
 
     const toggleStatus = (status: string) => {
-        setSelectedProgressStatus(prevStatus => (prevStatus === status ? null : status));
+        setFilterStatus(prevStatus => (prevStatus === status ? null : status));
     };
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -52,8 +52,8 @@ function OperationHome() {
         const initFunction = async () => {
             await getUserDetail();
             await getRenoProgress();
-            await getDIForms();
-            await getQCForms();
+            // await getDIForms();
+            // await getQCForms();
         }
 
         initFunction();
@@ -103,6 +103,27 @@ function OperationHome() {
         }
     }
 
+    const initDiForms = async (
+        page: number,
+        size: number,
+        searchTerm?: string,
+        order?: string,
+        field?: string
+    ) => {
+        try {
+            setLoading(true);
+            const response = await fetchDIForms(size, page, searchTerm, order, field, true);
+            const data = response?.data || [];
+            setDIForms(data);
+            setTotalItems(response?.totalCount || 0);
+        } catch (error) {
+            console.error('Error fetching renoProgress:', error);
+            notify('error', 'Failed to load renoProgress');
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const getUserDetail = async () => {
         setLoading(true);
         try {
@@ -133,7 +154,7 @@ function OperationHome() {
     const getDIForms = async () => {
         setLoading(true);
         try {
-            const response = await fetchDIForms();
+            const response = await fetchDIForms(5, 1, '', 'asc', '', true);
 
             if (response.success) {
                 setDIForms(response.data);
@@ -171,17 +192,47 @@ function OperationHome() {
         }
     };
 
-    const handlePageChange = (newPage: number) => {
+    const handlePageChange = (newPage: number, tab: string) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
-        initRenoProgress(newPage, size, searchTerm, sortOrder, sortField);
+
+        if (tab === 'tab_1_1') {
+            initRenoProgress(newPage, size, searchTerm, sortOrder, sortField);
+        } else if (tab === 'tab_1_2') {
+            initDiForms(newPage, size, searchTerm, sortOrder, sortField);
+        } else if (tab === 'tab_1_3') {
+            //
+        }
     };
 
-    const handleSizeChange = (newSize: number) => {
+    const handleSizeChange = (newSize: number, tab: string) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
-        initRenoProgress(1, newSize, searchTerm, sortOrder, sortField);
+        
+        if (tab === 'tab_1_1') {
+            initRenoProgress(1, newSize, searchTerm, sortOrder, sortField);
+        } else if (tab === 'tab_1_2') {
+            initDiForms(1, newSize, searchTerm, sortOrder, sortField);
+        } else if (tab === 'tab_1_3') {
+            //
+        }
     };
+
+    const handleChangeTab = (tab: string) => {
+        setPage(1);
+        setSize(5);
+        setSearchTerm('');
+
+        setActiveTab(tab);
+
+        if (tab === 'tab_1_1') {
+            initRenoProgress(1, 5, '', 'asc', '');
+        } else if (tab === 'tab_1_2') {
+            initDiForms(1, 5, '', 'asc', '');
+        } else if (tab === 'tab_1_3') {
+            //
+        }
+    }
 
     const totalPages = Math.ceil(totalItems / size);
 
@@ -227,19 +278,19 @@ function OperationHome() {
                         <div className="tabs gap-8 mb-4" data-tabs="true">
                             <button
                                 className={`tab py-1 pb-4 ${activeTab === 'tab_1_1' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('tab_1_1')}
+                                onClick={() => handleChangeTab('tab_1_1')}
                             >
                                 <span>Reno</span>
                             </button>
                             <button
                                 className={`tab py-1 pb-4 ${activeTab === 'tab_1_2' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('tab_1_2')}
+                                onClick={() => handleChangeTab('tab_1_2')}
                             >
                                 <span>DI Form</span>
                             </button>
                             <button
                                 className={`tab py-1 pb-4 ${activeTab === 'tab_1_3' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('tab_1_3')}
+                                onClick={() => handleChangeTab('tab_1_3')}
                             >
                                 <span>QC Form</span>
                             </button>
@@ -262,29 +313,29 @@ function OperationHome() {
 
                                 <div className="flex gap-3">
                                     <button
-                                        className="btn btn-sm btn-light rounded-full"
+                                        className="btn btn-sm btn-light rounded-full disabled"
                                         data-drawer-toggle="#drawer_2_4"
                                     >
                                         <i className="ki-filled ki-sort"></i>
                                         Sort
                                     </button>
                                     <button
-                                        className={`btn btn-sm rounded-full ${selectedProgressStatus === 'in_progress' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                        className={`btn btn-sm rounded-full ${filterStatus === 'in_progress' ? 'btn-success btn-outline' : 'btn-light'}`}
                                         onClick={() => toggleStatus('in_progress')}
                                     >
                                         WIP
                                         {
-                                            selectedProgressStatus === 'in_progress' &&
+                                            filterStatus === 'in_progress' &&
                                             <i className="ki-filled ki-cross"></i>
                                         }
                                     </button>
                                     <button
-                                        className={`btn btn-sm rounded-full ${selectedProgressStatus === 'done' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                        className={`btn btn-sm rounded-full ${filterStatus === 'done' ? 'btn-success btn-outline' : 'btn-light'}`}
                                         onClick={() => toggleStatus('done')}
                                     >
                                         Done
                                         {
-                                            selectedProgressStatus === 'done' &&
+                                            filterStatus === 'done' &&
                                             <i className="ki-filled ki-cross"></i>
                                         }
                                     </button>
@@ -320,11 +371,11 @@ function OperationHome() {
                                         ) : (
                                             renoProgresses &&
                                                 renoProgresses.filter((progress) =>
-                                                    !selectedProgressStatus || progress.status === selectedProgressStatus
+                                                    !filterStatus || progress.status === filterStatus
                                                 ).length > 0 ? (
                                                 renoProgresses
                                                     .filter((progress) =>
-                                                        !selectedProgressStatus || progress.status === selectedProgressStatus
+                                                        !filterStatus || progress.status === filterStatus
                                                     )
                                                     .map((progress, index) => (
                                                         <Link
@@ -381,7 +432,7 @@ function OperationHome() {
                                             className="select select-sm w-16"
                                             name="perpage"
                                             value={size}
-                                            onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                                            onChange={(e) => handleSizeChange(parseInt(e.target.value), 'tab_1_1')}
                                         >
                                             <option value="5">5</option>
                                             <option value="10">10</option>
@@ -397,7 +448,7 @@ function OperationHome() {
                                             {/* Previous Page Button */}
                                             <button
                                                 className={`btn ${page === 1 ? 'disabled' : ''}`}
-                                                onClick={() => handlePageChange(page - 1)}
+                                                onClick={() => handlePageChange((page - 1), 'tab_1_1')}
                                             >
                                                 <i className="ki-outline ki-black-left"></i>
                                             </button>
@@ -409,7 +460,7 @@ function OperationHome() {
                                                         <>
                                                             <button
                                                                 className="btn"
-                                                                onClick={() => handlePageChange(1)}
+                                                                onClick={() => handlePageChange(1, 'tab_1_1')}
                                                             >
                                                                 1
                                                             </button>
@@ -433,7 +484,7 @@ function OperationHome() {
                                                             <button
                                                                 key={currentPage}
                                                                 className={`btn ${page === currentPage ? 'active' : ''}`}
-                                                                onClick={() => handlePageChange(currentPage)}
+                                                                onClick={() => handlePageChange(currentPage, 'tab_1_1')}
                                                             >
                                                                 {currentPage}
                                                             </button>
@@ -445,7 +496,7 @@ function OperationHome() {
                                                             <span className="btn btn-disabled">...</span>
                                                             <button
                                                                 className="btn"
-                                                                onClick={() => handlePageChange(totalPages)}
+                                                                onClick={() => handlePageChange(totalPages, 'tab_1_1')}
                                                             >
                                                                 {totalPages}
                                                             </button>
@@ -457,7 +508,7 @@ function OperationHome() {
                                             {/* Next Page Button */}
                                             <button
                                                 className={`btn ${page === totalPages ? 'disabled' : ''}`}
-                                                onClick={() => handlePageChange(page + 1)}
+                                                onClick={() => handlePageChange((page + 1), 'tab_1_1')}
                                             >
                                                 <i className="ki-outline ki-black-right"></i>
                                             </button>
@@ -482,32 +533,207 @@ function OperationHome() {
 
                                 <div className="flex gap-3">
                                     <button
-                                        className="btn btn-sm btn-light rounded-full"
+                                        className="btn btn-sm btn-light rounded-full disabled"
                                         data-drawer-toggle="#drawer_2_4"
                                     >
                                         <i className="ki-filled ki-sort"></i>
                                         Sort
                                     </button>
                                     <button
-                                        className={`btn btn-sm rounded-full ${selectedProgressStatus === 'in_progress' ? 'btn-success btn-outline' : 'btn-light'}`}
-                                        onClick={() => toggleStatus('in_progress')}
+                                        className={`btn btn-sm rounded-full ${filterStatus === 'not_submitted' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                        onClick={() => toggleStatus('not_submitted')}
                                     >
                                         Not Submitted
                                         {
-                                            selectedProgressStatus === 'in_progress' &&
+                                            filterStatus === 'not_submitted' &&
                                             <i className="ki-filled ki-cross"></i>
                                         }
                                     </button>
                                     <button
-                                        className={`btn btn-sm rounded-full ${selectedProgressStatus === 'done' ? 'btn-success btn-outline' : 'btn-light'}`}
-                                        onClick={() => toggleStatus('done')}
+                                        className={`btn btn-sm rounded-full ${filterStatus === 'submitted' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                        onClick={() => toggleStatus('submitted')}
                                     >
                                         Completed
                                         {
-                                            selectedProgressStatus === 'done' &&
+                                            filterStatus === 'submitted' &&
                                             <i className="ki-filled ki-cross"></i>
                                         }
                                     </button>
+                                </div>
+
+                                <div className="flex flex-col gap-4">
+                                    {
+                                        loading ? (
+                                            <div className="animate-pulse bg-white rounded-lg shadow-sm border border-gray-200">
+                                                <div className="card-body flex justify-between items-center p-4">
+                                                    <div className="flex items-center gap-4">
+                                                        {/* Icon placeholder */}
+                                                        <div className="relative size-[36px] shrink-0">
+                                                            <div className="w-full h-full rounded-lg bg-slate-200"></div>
+                                                        </div>
+                                                        {/* Text content placeholders */}
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="h-4 w-24 bg-slate-200 rounded"></div>
+                                                            <div className="h-4 w-32 bg-slate-200 rounded"></div>
+                                                        </div>
+                                                    </div>
+                                                    {/* Right side content placeholders */}
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex justify-end">
+                                                            <div className="h-5 w-12 bg-slate-200 rounded-full"></div>
+                                                        </div>
+                                                        <div className="h-4 w-20 bg-slate-200 rounded"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            diForms &&
+                                                diForms.filter((diForm) =>
+                                                    !filterStatus || diForm.status === filterStatus
+                                                ).length > 0 ? (
+                                                diForms
+                                                    .filter((diForm) =>
+                                                        !filterStatus || diForm.status === filterStatus
+                                                    )
+                                                    .map((diForm: DefectInspectionForm, index: number) => (
+                                                        <Link
+                                                            to={`/reno/defect-inspection-form?progressId=${diForm.id}`}
+                                                            className="card shadow-none rounded-lg" key={index}
+                                                        >
+                                                            <div className="card-body flex justify-between items-center p-4">
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className="relative size-[36px] shrink-0">
+                                                                        <svg className={`w-full h-full stroke-${diForm.status === 'submitted' ? 'success' : 'warning'}-clarity fill-${diForm.status === 'submitted' ? 'success' : 'warning'}-light`} fill="none" height="48" viewBox="0 0 44 48" width="44" xmlns="http://www.w3.org/2000/svg">
+                                                                            <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill={`#${diForm.status === 'submitted' ? 'e6fce3' : 'fcf9e3'}`}>
+                                                                            </path>
+                                                                            <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke="#1B84FF" strokeOpacity="0.2">
+                                                                            </path>
+                                                                        </svg>
+                                                                        <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
+                                                                            <i className={`ki-outline ki-tab-tablet ps-px text-${diForm.status === 'submitted' ? 'success' : 'warning'}`}></i>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex flex-col gap-1">
+                                                                        <h3 className="text-gray-900 text-xs font-medium">
+                                                                            {diForm.property.block}-{diForm.property.level}-{diForm.property.unit}
+                                                                        </h3>
+                                                                        <div className="flex">
+                                                                            <span className="text-gray-900 text-xs">{diForm.property.property_name}</span>
+                                                                            <span></span>
+                                                                        </div>
+                                                                        {diForm.status === 'submitted' && (
+                                                                            <div className="flex">
+                                                                                <span className="text-gray-600 text-xs italic">Submitted by: {diForm.contractor_name}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col gap-1">
+                                                                    <div className="flex justify-end">
+                                                                        <div className={`badge badge-pill badge-sm badge-outline badge-${diForm.status === 'submitted' ? 'success' : 'warning'}`}>
+                                                                            {diForm.status === 'submitted' ? 'Submitted' : 'Not Submitted'}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </Link>
+                                                    ))
+                                            ) : (
+                                                <span className="text-center text-gray-700 text-sm font-semibold">No progress found</span>
+                                            )
+                                        )
+                                    }
+                                </div>
+
+                                <div className="flex flex-col gap-2 justify-center items-center">
+                                    <div className="flex items-center gap-2">
+                                        Show
+                                        <select
+                                            className="select select-sm w-16"
+                                            name="perpage"
+                                            value={size}
+                                            onChange={(e) => handleSizeChange(parseInt(e.target.value), 'tab_1_2')}
+                                        >
+                                            <option value="5">5</option>
+                                            <option value="10">10</option>
+                                            <option value="20">20</option>
+                                            <option value="30">30</option>
+                                            <option value="50">50</option>
+                                        </select>
+                                        per page
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        {/* <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span> */}
+                                        <div className="pagination">
+                                            {/* Previous Page Button */}
+                                            <button
+                                                className={`btn ${page === 1 ? 'disabled' : ''}`}
+                                                onClick={() => handlePageChange((page - 1), 'tab_1_2')}
+                                            >
+                                                <i className="ki-outline ki-black-left"></i>
+                                            </button>
+
+                                            {/* Page Number Buttons with Ellipses */}
+                                            {totalPages > 0 && (
+                                                <>
+                                                    {page > 3 && (
+                                                        <>
+                                                            <button
+                                                                className="btn"
+                                                                onClick={() => handlePageChange(1, 'tab_1_2')}
+                                                            >
+                                                                1
+                                                            </button>
+                                                            <span className="btn btn-disabled">...</span>
+                                                        </>
+                                                    )}
+
+                                                    {Array.from({
+                                                        length: Math.min(3, totalPages)
+                                                    }, (_, index) => {
+                                                        // Determine the start of the 3-page window
+                                                        const startPage = Math.max(1,
+                                                            Math.min(
+                                                                page - 1,
+                                                                totalPages - 2
+                                                            )
+                                                        );
+
+                                                        const currentPage = startPage + index;
+                                                        return (
+                                                            <button
+                                                                key={currentPage}
+                                                                className={`btn ${page === currentPage ? 'active' : ''}`}
+                                                                onClick={() => handlePageChange(currentPage, 'tab_1_2')}
+                                                            >
+                                                                {currentPage}
+                                                            </button>
+                                                        );
+                                                    })}
+
+                                                    {page < totalPages - 2 && (
+                                                        <>
+                                                            <span className="btn btn-disabled">...</span>
+                                                            <button
+                                                                className="btn"
+                                                                onClick={() => handlePageChange(totalPages, 'tab_1_2')}
+                                                            >
+                                                                {totalPages}
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {/* Next Page Button */}
+                                            <button
+                                                className={`btn ${page === totalPages ? 'disabled' : ''}`}
+                                                onClick={() => handlePageChange(page + 1, 'tab_1_2')}
+                                            >
+                                                <i className="ki-outline ki-black-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
