@@ -1397,7 +1397,7 @@ export const removeTaskDocument = async (renoProgressId: number, taskId: number,
 };
 
 
-export const renoProgressIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+export const renoProgressIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + 'reno-progress', {
             headers: getAuthHeaders(),
@@ -1406,7 +1406,8 @@ export const renoProgressIndex = async (size: number = 5, page: number = 1, sear
                 page: page,
                 search: searchTerm,
                 sortOrder: order,
-                sortField: field
+                sortField: field,
+                head: isHead,
             }
         });
         return response.data;
