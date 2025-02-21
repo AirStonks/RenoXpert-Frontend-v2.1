@@ -43,7 +43,7 @@ export const fetchProperties = async () => {
     }
 }
 
-export const retrieveRenoProgresses = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+export const retrieveRenoProgresses = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, status?: string) => {
     try {
         const response = await axios.get(API_URL + `op/reno/progresses`, {
             headers: getAuthHeaders(),
@@ -52,7 +52,8 @@ export const retrieveRenoProgresses = async (size: number = 5, page: number = 1,
                 page: page,
                 search: searchTerm,
                 sortOrder: order,
-                sortField: field
+                sortField: field,
+                status: status,
             }
         });
         return response.data; // Return product data
@@ -74,10 +75,19 @@ export const fetchRenoProgressDetail = async (renoProgressId: number) => {
     }
 }
 
-export const fetchDIForms = async () => {
+export const fetchDIForms = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, status?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + `op/reno/defect-inspection-forms`, {
             headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field,
+                status: status,
+                head: isHead
+            }
         });
         return response.data; // Return product data
     } catch (error) {

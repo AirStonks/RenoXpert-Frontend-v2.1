@@ -223,14 +223,14 @@ function PMMain() {
                                     className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
                                 >
                                     <div className="flex items-center justify-center gap-2">
-                                        Contractual Date
+                                        Owner Schedule
                                     </div>
                                 </th>
                                 <th
                                     className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
                                 >
                                     <div className="flex items-center justify-center gap-2">
-                                        Contractor Date
+                                        Sub Contractor Schedule
                                     </div>
                                 </th>
                                 <th
@@ -279,7 +279,7 @@ function PMMain() {
                                     className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
                                 >
                                     <div className="flex items-center justify-center gap-2">
-                                        Completion
+                                        Overall Completion
                                     </div>
                                 </th>
                             </tr>

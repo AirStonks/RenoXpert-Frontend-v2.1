@@ -510,6 +510,7 @@ export interface DefectInspectionForm {
     }
     status?: string,
     created_by?: User,
+    updated_by?: User,
     created_at?: string,
     updated_at?: string,
 }
