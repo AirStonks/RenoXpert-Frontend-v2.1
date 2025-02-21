@@ -35,6 +35,41 @@ const paymentOptions = {
     ],
 };
 
+const bankOptions = [
+    { value: "", label: "Select a bank" },
+    { value: "Affin Bank Berhad", label: "Affin Bank Berhad" },
+    { value: "Affin Islamic Bank Berhad", label: "Affin Islamic Bank Berhad" },
+    { value: "Alliance Bank Malaysia Berhad", label: "Alliance Bank Malaysia Berhad" },
+    { value: "Alliance Islamic Bank Malaysia Berhad", label: "Alliance Islamic Bank Malaysia Berhad" },
+    { value: "Al Rajhi Banking & Investment Corporation (Malaysia) Berhad", label: "Al Rajhi Banking & Investment Corporation (Malaysia) Berhad" },
+    { value: "AmBank (M) Berhad", label: "AmBank (M) Berhad" },
+    { value: "Bank Islam Malaysia Berhad", label: "Bank Islam Malaysia Berhad" },
+    { value: "Bank Muamalat Malaysia Berhad", label: "Bank Muamalat Malaysia Berhad" },
+    { value: "Bank of China (Malaysia) Berhad", label: "Bank of China (Malaysia) Berhad" },
+    { value: "Bank SimpananNasional", label: "Bank SimpananNasional" },
+    { value: "CIMB Bank Berhad", label: "CIMB Bank Berhad" },
+    { value: "CIMB Islamic Bank Berhad", label: "CIMB Islamic Bank Berhad" },
+    { value: "Citibank Berhad", label: "Citibank Berhad" },
+    { value: "Hong Leong Bank Berhad", label: "Hong Leong Bank Berhad" },
+    { value: "Hong Leong Islamic Bank Berhad", label: "Hong Leong Islamic Bank Berhad" },
+    { value: "HSBC Amanah Malaysia Berhad", label: "HSBC Amanah Malaysia Berhad" },
+    { value: "HSBC Bank Malaysia Berhad", label: "HSBC Bank Malaysia Berhad" },
+    { value: "Kuwait Finance House", label: "Kuwait Finance House" },
+    { value: "OCBC Bank (Malaysia) Berhad", label: "OCBC Bank (Malaysia) Berhad" },
+    { value: "Public Bank Berhad", label: "Public Bank Berhad" },
+    { value: "RHB Bank Berhad", label: "RHB Bank Berhad" },
+    { value: "RHB Islamic Berhad", label: "RHB Islamic Berhad" },
+    { value: "Standard Chartered Bank Malaysia Berhad", label: "Standard Chartered Bank Malaysia Berhad" },
+    { value: "United Overseas Bank (Malaysia) Berhad", label: "United Overseas Bank (Malaysia) Berhad" },
+];
+
+const receivingAccOptions = [
+    { value: "", label: "Select an account" },
+    { value: "BeLive", label: "BeLive" },
+    { value: "Smartlever", label: "Smartlever" },
+    { value: "RenoXpert", label: "RenoXpert" },
+];
+
 const maxFiles = 10;
 
 function NewPaymentDetailModal({ invoiceId, refetchInvoice }: NewPaymentDetailModalProps) {
@@ -326,33 +361,7 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice }: NewPaymentDetailMo
                                     </span>
 
                                     <Dropdown
-                                        options={[
-                                            { value: "", label: "Select a bank" },
-                                            { value: "Affin Bank Berhad", label: "Affin Bank Berhad" },
-                                            { value: "Affin Islamic Bank Berhad", label: "Affin Islamic Bank Berhad" },
-                                            { value: "Alliance Bank Malaysia Berhad", label: "Alliance Bank Malaysia Berhad" },
-                                            { value: "Alliance Islamic Bank Malaysia Berhad", label: "Alliance Islamic Bank Malaysia Berhad" },
-                                            { value: "Al Rajhi Banking & Investment Corporation (Malaysia) Berhad", label: "Al Rajhi Banking & Investment Corporation (Malaysia) Berhad" },
-                                            { value: "AmBank (M) Berhad", label: "AmBank (M) Berhad" },
-                                            { value: "Bank Islam Malaysia Berhad", label: "Bank Islam Malaysia Berhad" },
-                                            { value: "Bank Muamalat Malaysia Berhad", label: "Bank Muamalat Malaysia Berhad" },
-                                            { value: "Bank of China (Malaysia) Berhad", label: "Bank of China (Malaysia) Berhad" },
-                                            { value: "Bank SimpananNasional", label: "Bank SimpananNasional" },
-                                            { value: "CIMB Bank Berhad", label: "CIMB Bank Berhad" },
-                                            { value: "CIMB Islamic Bank Berhad", label: "CIMB Islamic Bank Berhad" },
-                                            { value: "Citibank Berhad", label: "Citibank Berhad" },
-                                            { value: "Hong Leong Bank Berhad", label: "Hong Leong Bank Berhad" },
-                                            { value: "Hong Leong Islamic Bank Berhad", label: "Hong Leong Islamic Bank Berhad" },
-                                            { value: "HSBC Amanah Malaysia Berhad", label: "HSBC Amanah Malaysia Berhad" },
-                                            { value: "HSBC Bank Malaysia Berhad", label: "HSBC Bank Malaysia Berhad" },
-                                            { value: "Kuwait Finance House", label: "Kuwait Finance House" },
-                                            { value: "OCBC Bank (Malaysia) Berhad", label: "OCBC Bank (Malaysia) Berhad" },
-                                            { value: "Public Bank Berhad", label: "Public Bank Berhad" },
-                                            { value: "RHB Bank Berhad", label: "RHB Bank Berhad" },
-                                            { value: "RHB Islamic Berhad", label: "RHB Islamic Berhad" },
-                                            { value: "Standard Chartered Bank Malaysia Berhad", label: "Standard Chartered Bank Malaysia Berhad" },
-                                            { value: "United Overseas Bank (Malaysia) Berhad", label: "United Overseas Bank (Malaysia) Berhad" },
-                                        ]}
+                                        options={bankOptions}
                                         name="bank"
                                         value={formData.bank}
                                         onChange={handleChange}
@@ -370,11 +379,7 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice }: NewPaymentDetailMo
                                     </span>
 
                                     <Dropdown
-                                        options={[
-                                            { value: "", label: "Select an account" },
-                                            { value: "BeLive", label: "BeLive" },
-                                            { value: "Smart Living", label: "Smart Living" },
-                                        ]}
+                                        options={receivingAccOptions}
                                         name="receiving_account"
                                         value={formData.receiving_account}
                                         onChange={handleChange}
