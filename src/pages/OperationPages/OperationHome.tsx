@@ -33,7 +33,7 @@ function OperationHome() {
         setPage(1);
         setSearchTerm('');
 
-        setFilterStatus(prevStatus => (prevStatus === status ? null : status));
+        setFilterStatus(prevStatus => (prevStatus === status ? null : newFilter));
 
         if (tab === 'tab_1_1') {
             initRenoProgress(1, size, searchTerm, sortOrder, sortField, newFilter);
