@@ -219,6 +219,11 @@ function PMMain() {
                                         Payment Progress
                                     </div>
                                 </th>
+                                <th className='w-[120px]'>
+                                    <div className="flex items-center justify-center gap-2">
+                                        Owner
+                                    </div>
+                                </th>
                                 <th
                                     className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
                                 >
@@ -331,6 +336,19 @@ function PMMain() {
                                             <div className="flex gap-2 justify-center">
                                                 <span className="text-xs badge badge-sm badge-pill badge-outline border-blue-200 bg-blue-50 text-blue-400">{(100 - (progress.remaining_percentage * 100)).toFixed(2)}%</span>
                                                 <span className="text-xs badge badge-sm badge-pill badge-outline badge-success">{(progress.paid_percentage * 100).toFixed(2)}%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="flex flex-col gap-1">
+                                                {progress.sale.order.user ?
+                                                    <>
+                                                        <span>{progress.sale.order.user.name}</span>
+                                                        <span className="text-xs text-slate-400">{progress.sale.order.user.email}</span>
+                                                        <span className="text-xs text-slate-700">+60 {progress.sale.order.user.phone_no}</span>
+                                                    </>
+                                                    :
+                                                    '-'
+                                                }
                                             </div>
                                         </td>
                                         <td className="text-center">
@@ -532,7 +550,7 @@ function PMMain() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={10} className="text-center text-gray-500">
+                                    <td colSpan={12} className="text-center text-gray-500">
                                         No Project available
                                     </td>
                                 </tr>
