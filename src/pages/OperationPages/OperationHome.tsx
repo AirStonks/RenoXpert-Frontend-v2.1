@@ -28,8 +28,20 @@ function OperationHome() {
     const [filterStatus, setFilterStatus] = useState<string | null>(null);
     const [sortBy, setSortBy] = useState('');
 
-    const toggleStatus = (status: string) => {
+    const toggleStatus = (status: string, tab: string) => {
+        setPage(1);
+        setSearchTerm('');
+
         setFilterStatus(prevStatus => (prevStatus === status ? null : status));
+
+        if (tab === 'tab_1_1') {
+            initRenoProgress(1, size, searchTerm, sortOrder, sortField, status);
+        } else if (tab === 'tab_1_2') {
+            initDiForms(1, size, searchTerm, sortOrder, sortField, status);
+        } else if (tab === 'tab_1_3') {
+            //
+        }
+
     };
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -87,11 +99,12 @@ function OperationHome() {
         size: number,
         searchTerm?: string,
         order?: string,
-        field?: string
+        field?: string,
+        status?: string
     ) => {
         try {
             setLoading(true);
-            const response = await retrieveRenoProgresses(size, page, searchTerm, order, field);
+            const response = await retrieveRenoProgresses(size, page, searchTerm, order, field, status);
             const data = response?.data || [];
             setRenoProgresses(data);
             setTotalItems(response?.totalCount || 0);
@@ -108,11 +121,12 @@ function OperationHome() {
         size: number,
         searchTerm?: string,
         order?: string,
-        field?: string
+        field?: string,
+        status?: string
     ) => {
         try {
             setLoading(true);
-            const response = await fetchDIForms(size, page, searchTerm, order, field, true);
+            const response = await fetchDIForms(size, page, searchTerm, order, field, status, true);
             const data = response?.data || [];
             setDIForms(data);
             setTotalItems(response?.totalCount || 0);
@@ -197,9 +211,9 @@ function OperationHome() {
         setPage(newPage);
 
         if (tab === 'tab_1_1') {
-            initRenoProgress(newPage, size, searchTerm, sortOrder, sortField);
+            initRenoProgress(newPage, size, searchTerm, sortOrder, sortField, filterStatus);
         } else if (tab === 'tab_1_2') {
-            initDiForms(newPage, size, searchTerm, sortOrder, sortField);
+            initDiForms(newPage, size, searchTerm, sortOrder, sortField, filterStatus);
         } else if (tab === 'tab_1_3') {
             //
         }
@@ -210,9 +224,9 @@ function OperationHome() {
         setPage(1); // Reset to the first page when changing the page size
         
         if (tab === 'tab_1_1') {
-            initRenoProgress(1, newSize, searchTerm, sortOrder, sortField);
+            initRenoProgress(1, newSize, searchTerm, sortOrder, sortField, filterStatus);
         } else if (tab === 'tab_1_2') {
-            initDiForms(1, newSize, searchTerm, sortOrder, sortField);
+            initDiForms(1, newSize, searchTerm, sortOrder, sortField, filterStatus);
         } else if (tab === 'tab_1_3') {
             //
         }
@@ -224,11 +238,12 @@ function OperationHome() {
         setSearchTerm('');
 
         setActiveTab(tab);
+        setFilterStatus('');
 
         if (tab === 'tab_1_1') {
-            initRenoProgress(1, 5, '', 'asc', '');
+            initRenoProgress(1, 5, '', 'asc', '', '');
         } else if (tab === 'tab_1_2') {
-            initDiForms(1, 5, '', 'asc', '');
+            initDiForms(1, 5, '', 'asc', '', '');
         } else if (tab === 'tab_1_3') {
             //
         }
@@ -321,7 +336,7 @@ function OperationHome() {
                                     </button>
                                     <button
                                         className={`btn btn-sm rounded-full ${filterStatus === 'in_progress' ? 'btn-success btn-outline' : 'btn-light'}`}
-                                        onClick={() => toggleStatus('in_progress')}
+                                        onClick={() => toggleStatus('in_progress', 'tab_1_1')}
                                     >
                                         WIP
                                         {
@@ -331,7 +346,7 @@ function OperationHome() {
                                     </button>
                                     <button
                                         className={`btn btn-sm rounded-full ${filterStatus === 'done' ? 'btn-success btn-outline' : 'btn-light'}`}
-                                        onClick={() => toggleStatus('done')}
+                                        onClick={() => toggleStatus('done', 'tab_1_1')}
                                     >
                                         Done
                                         {
@@ -541,7 +556,7 @@ function OperationHome() {
                                     </button>
                                     <button
                                         className={`btn btn-sm rounded-full ${filterStatus === 'not_submitted' ? 'btn-success btn-outline' : 'btn-light'}`}
-                                        onClick={() => toggleStatus('not_submitted')}
+                                        onClick={() => toggleStatus('not_submitted', 'tab_1_2')}
                                     >
                                         Not Submitted
                                         {
@@ -551,7 +566,7 @@ function OperationHome() {
                                     </button>
                                     <button
                                         className={`btn btn-sm rounded-full ${filterStatus === 'submitted' ? 'btn-success btn-outline' : 'btn-light'}`}
-                                        onClick={() => toggleStatus('submitted')}
+                                        onClick={() => toggleStatus('submitted', 'tab_1_2')}
                                     >
                                         Completed
                                         {
