@@ -29,15 +29,16 @@ function OperationHome() {
     const [sortBy, setSortBy] = useState('');
 
     const toggleStatus = (status: string, tab: string) => {
+        const newFilter = filterStatus === status ? '' : filterStatus;
         setPage(1);
         setSearchTerm('');
 
         setFilterStatus(prevStatus => (prevStatus === status ? null : status));
 
         if (tab === 'tab_1_1') {
-            initRenoProgress(1, size, searchTerm, sortOrder, sortField, status);
+            initRenoProgress(1, size, searchTerm, sortOrder, sortField, newFilter);
         } else if (tab === 'tab_1_2') {
-            initDiForms(1, size, searchTerm, sortOrder, sortField, status);
+            initDiForms(1, size, searchTerm, sortOrder, sortField, newFilter);
         } else if (tab === 'tab_1_3') {
             //
         }
