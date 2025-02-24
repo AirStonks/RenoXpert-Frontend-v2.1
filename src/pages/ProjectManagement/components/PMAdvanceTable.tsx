@@ -32,8 +32,13 @@ const PMAdvanceTable = () => {
     const columns: TableColumn[] = [
         { field: 'property.unit_no', header: 'Unit', sortable: true },
         { field: 'progress.pre_reno_1', header: 'VP', sortable: true },
-        { field: 'progress.pre_reno_2', header: 'Defect', sortable: true },
-        { field: 'progress.pre_reno_3', header: 'Reno Permit', sortable: true },
+        { field: 'progress.pre_reno_2_1', header: 'Defect Inspection', sortable: true },
+        { field: 'progress.pre_reno_2_2', header: 'Defect to Developer', sortable: true },
+        { field: 'progress.pre_reno_2_3', header: 'Defect Retification', sortable: true },
+        { field: 'progress.pre_reno_3_1', header: 'Reno Application', sortable: true },
+        { field: 'progress.pre_reno_3_2', header: 'Reno Deposit', sortable: true },
+        { field: 'progress.pre_reno_3_3', header: 'Permit Approval', sortable: true },
+        { field: 'progress.pre_reno_3_5', header: 'Permit Issued', sortable: true },
         { field: 'progress.p1_1', header: 'Electric Wiring', sortable: true },
         { field: 'progress.p1_2', header: 'Painting', sortable: true },
         { field: 'progress.p1_3', header: 'Partition', sortable: true },
@@ -142,19 +147,10 @@ const PMAdvanceTable = () => {
     // Add this header row right after opening the group content div
     const renderGroupContent = (group) => (
         <div className="p-4 space-y-2">
-            {/* Column Headers */}
-            <div className="grid grid-cols-6 gap-4 px-4 py-2 bg-gray-50 rounded-lg mb-2">
-                {columns.map((column, index) => (
-                    <div key={index} className="text-xs font-medium text-gray-200 uppercase tracking-wider">
-                        {column.header}
-                    </div>
-                ))}
-            </div>
-
-            {/* Group Items */}
-            {group.items.map(renderTableRow)}
+            {group.items.map(item => renderTableRow(item, group.key))}
         </div>
     );
+
 
     const getBadgeColorClass = (status: string) => {
         switch (status?.toLowerCase()) {
@@ -174,75 +170,209 @@ const PMAdvanceTable = () => {
         }
     };
 
-    const renderTableRow = (item: RenoProgress) => (
-        <div
-            key={item.id}
-            className="bg-white dark:bg-coal-100 rounded-lg p-4 shadow-sm hover:shadow-md dark:hover:bg-slate-900 transition-shadow duration-200 mb-4 cursor-pointer"
-            onClick={() => toProgressDetail(Number(item.id))}
-        >
-            <div className="grid grid-cols-7 gap-4">
-                <div>
-                    <div className="text-sm font-medium text-gray-900">
-                        {item.property?.block}-{item.property?.floor}-{item.property?.unit_no}
-                    </div>
-                </div>
-                {/* VP Progress */}
-                <div>
-                    <div className="space-y-1">
-                        <ProgressBar progress={+(item.progress?.pre_reno_1 || 0) * 100} />
-                        <div className="text-xs text-gray-500 text-right">
-                            {((item.progress?.pre_reno_1 || 0) * 100).toFixed(2)}%
+    // const renderTableRow = (item: RenoProgress) => (
+    //     <div
+    //         key={item.id}
+    //         className="bg-white dark:bg-coal-100 rounded-lg p-4 shadow-sm hover:shadow-md dark:hover:bg-slate-900 transition-shadow duration-200 mb-4 cursor-pointer"
+    //         onClick={() => toProgressDetail(Number(item.id))}
+    //     >
+    //         <div className="grid grid-cols-7 gap-4">
+    //             <div>
+    //                 <div className="text-sm font-medium text-gray-900">
+    //                     {item.property?.block}-{item.property?.floor}-{item.property?.unit_no}
+    //                 </div>
+    //             </div>
+    //             {/* VP Progress */}
+    //             <div>
+    //                 <div className="space-y-1">
+    //                     <ProgressBar progress={+(item.progress?.pre_reno_1 || 0) * 100} />
+    //                     <div className="text-xs text-gray-500 text-right">
+    //                         {((item.progress?.pre_reno_1 || 0) * 100).toFixed(2)}%
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //             {/* Defect Progress */}
+    //             <div>
+    //                 <div className="space-y-1">
+    //                     <ProgressBar progress={+(item.progress?.pre_reno_2 || 0) * 100} />
+    //                     <div className="text-xs text-gray-500 text-right">
+    //                         {((item.progress?.pre_reno_2 || 0) * 100).toFixed(2)}%
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //             {/* Reno Permit Progress */}
+    //             <div>
+    //                 <div className="space-y-1">
+    //                     <ProgressBar progress={+(item.progress?.pre_reno_3 || 0) * 100} />
+    //                     <div className="text-xs text-gray-500 text-right">
+    //                         {((item.progress?.pre_reno_3 || 0) * 100).toFixed(2)}%
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //             {/* Electric Wiring Progress */}
+    //             <div>
+    //                 <div className="space-y-1">
+    //                     <ProgressBar progress={+(item.progress?.p1_1 || 0) * 100} />
+    //                     <div className="text-xs text-gray-500 text-right">
+    //                         {((item.progress?.p1_1 || 0) * 100).toFixed(2)}%
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //             {/* Painting Progress */}
+    //             <div>
+    //                 <div className="space-y-1">
+    //                     <ProgressBar progress={+(item.progress?.p1_2 || 0) * 100} />
+    //                     <div className="text-xs text-gray-500 text-right">
+    //                         {((item.progress?.p1_2 || 0) * 100).toFixed(2)}%
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //             {/* Partition Progress */}
+    //             <div>
+    //                 <div className="space-y-1">
+    //                     <ProgressBar progress={+(item.progress?.p1_3 || 0) * 100} />
+    //                     <div className="text-xs text-gray-500 text-right">
+    //                         {((item.progress?.p1_3 || 0) * 100).toFixed(2)}%
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     </div>
+    // );
+
+    const renderTableRow = (item: RenoProgress, groupKey?: string) => {
+        const isGroupExpanded = !groupKey || expandedGroups.has(groupKey);
+
+        const handleRowClick = (e: React.MouseEvent) => {
+            if (!isGroupExpanded) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+            toProgressDetail(Number(item.id));
+        };
+
+        return (
+            <div
+                key={item.id}
+                className={`bg-white dark:bg-coal-100 rounded-lg p-4 shadow-sm transition-shadow duration-200 mb-4 
+                    ${isGroupExpanded
+                        ? 'hover:shadow-md dark:hover:bg-slate-900 cursor-pointer'
+                        : 'opacity-50 cursor-default'}`}
+                onClick={handleRowClick}
+            >
+                <div className="grid grid-cols-[repeat(13,minmax(0,1fr))] gap-4">
+                    <div className='col-span-2'>
+                        <div className="flex flex-col text-sm font-medium text-gray-900">
+                            <span className='py-2 px-4 rounded-md bg-slate-200 dark:bg-slate-800 w-fit mb-1'>{item.property?.block}-{item.property?.floor}-{item.property?.unit_no}</span>
+                            <span>{item.sale.order.user.name}</span>
+                            <span className="text-xs text-slate-700">+60 {item.sale.order.user.phone_no}</span>
                         </div>
                     </div>
-                </div>
-                {/* Defect Progress */}
-                <div>
-                    <div className="space-y-1">
-                        <ProgressBar progress={+(item.progress?.pre_reno_2 || 0) * 100} />
-                        <div className="text-xs text-gray-500 text-right">
-                            {((item.progress?.pre_reno_2 || 0) * 100).toFixed(2)}%
+                    {/* VP Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.pre_reno_1 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.pre_reno_1 || 0) * 100).toFixed(2)}%
+                            </div>
                         </div>
                     </div>
-                </div>
-                {/* Reno Permit Progress */}
-                <div>
-                    <div className="space-y-1">
-                        <ProgressBar progress={+(item.progress?.pre_reno_3 || 0) * 100} />
-                        <div className="text-xs text-gray-500 text-right">
-                            {((item.progress?.pre_reno_3 || 0) * 100).toFixed(2)}%
+                    {/* Defect Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.pre_reno_2?.pre_reno_2_1 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.pre_reno_2?.pre_reno_2_1 || 0) * 100).toFixed(2)}%
+                            </div>
                         </div>
                     </div>
-                </div>
-                {/* Electric Wiring Progress */}
-                <div>
-                    <div className="space-y-1">
-                        <ProgressBar progress={+(item.progress?.p1_1 || 0) * 100} />
-                        <div className="text-xs text-gray-500 text-right">
-                            {((item.progress?.p1_1 || 0) * 100).toFixed(2)}%
+                    {/* Defect Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.pre_reno_2?.pre_reno_2_2 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.pre_reno_2?.pre_reno_2_2 || 0) * 100).toFixed(2)}%
+                            </div>
                         </div>
                     </div>
-                </div>
-                {/* Painting Progress */}
-                <div>
-                    <div className="space-y-1">
-                        <ProgressBar progress={+(item.progress?.p1_2 || 0) * 100} />
-                        <div className="text-xs text-gray-500 text-right">
-                            {((item.progress?.p1_2 || 0) * 100).toFixed(2)}%
+                    {/* Defect Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.pre_reno_2?.pre_reno_2_3 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.pre_reno_2?.pre_reno_2_3 || 0) * 100).toFixed(2)}%
+                            </div>
                         </div>
                     </div>
-                </div>
-                {/* Partition Progress */}
-                <div>
-                    <div className="space-y-1">
-                        <ProgressBar progress={+(item.progress?.p1_3 || 0) * 100} />
-                        <div className="text-xs text-gray-500 text-right">
-                            {((item.progress?.p1_3 || 0) * 100).toFixed(2)}%
+                    {/* Reno Permit Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.pre_reno_3?.pre_reno_3_1 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.pre_reno_3?.pre_reno_3_1 || 0) * 100).toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                    {/* Reno Permit Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.pre_reno_3?.pre_reno_3_2 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.pre_reno_3?.pre_reno_3_2 || 0) * 100).toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                    {/* Reno Permit Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.pre_reno_3?.pre_reno_3_3 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.pre_reno_3?.pre_reno_3_3 || 0) * 100).toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                    {/* Reno Permit Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.pre_reno_3?.pre_reno_3_4 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.pre_reno_3?.pre_reno_3_4 || 0) * 100).toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                    {/* Electric Wiring Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.p1_1 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.p1_1 || 0) * 100).toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                    {/* Painting Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.p1_2 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.p1_2 || 0) * 100).toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                    {/* Partition Progress */}
+                    <div>
+                        <div className="space-y-1">
+                            <ProgressBar progress={+(item.progress?.p1_3 || 0) * 100} />
+                            <div className="text-xs text-gray-500 text-right">
+                                {((item.progress?.p1_3 || 0) * 100).toFixed(2)}%
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
+
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-coal-500 p-6 w-full rounded-md">
@@ -281,12 +411,12 @@ const PMAdvanceTable = () => {
                 {/* Main content container with relative positioning */}
                 <div className="relative">
                     {/* Sticky Header */}
-                    <div className="sticky top-0 z-5 mb-4 bg-white dark:bg-coal-100 rounded-xl shadow-sm">
-                        <div className="grid grid-cols-7 gap-4 px-6 py-4">
-                            {columns.map(column => (
+                    <div className="sticky top-0 z-10 mb-4 bg-white dark:bg-coal-100 rounded-xl shadow-sm">
+                        <div className="grid grid-cols-[repeat(13,minmax(0,1fr))] gap-4 px-6 py-4">
+                            {columns.map((column, index) => (
                                 <div
                                     key={column.field}
-                                    className="text-sm font-medium text-gray-700"
+                                    className={`text-sm font-medium text-gray-700 ${index === 0 ? "col-span-2" : "col-span-1"}`}
                                 >
                                     {column.header}
                                 </div>
@@ -300,7 +430,7 @@ const PMAdvanceTable = () => {
                             groupedData.map((group, index) => (
                                 <div key={group.key} className="relative mb-4">
                                     {/* Sticky group header */}
-                                    <div className="sticky top-14 z-6">
+                                    <div className="sticky top-[calc(4rem+0.5rem)] z-6">
                                         <button
                                             className="w-full px-6 py-4 flex items-center justify-between bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900 dark:hover:bg-indigo-700 transition-colors duration-200 rounded-xl shadow-sm"
                                             onClick={() => toggleGroup(group.key)}
@@ -317,16 +447,14 @@ const PMAdvanceTable = () => {
 
                                     {/* Group content */}
                                     <div className={`transition-all duration-200 ease-in-out bg-white dark:bg-coal-100 rounded-xl shadow-sm mt-1
-                                        ${expandedGroups.has(group.key) ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                                        <div className="p-4 space-y-2">
-                                            {group.items.map(renderTableRow)}
-                                        </div>
+                        ${expandedGroups.has(group.key) ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                        {renderGroupContent(group)}
                                     </div>
                                 </div>
                             ))
                         ) : (
                             <div className="space-y-2">
-                                {renoProgress.map(renderTableRow)}
+                                {renoProgress.map(item => renderTableRow(item))}
                             </div>
                         )}
                     </div>

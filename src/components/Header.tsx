@@ -11,7 +11,7 @@ function Header() {
   if (error) return <div>Error: {error}</div>;
 
   return <header
-    className="header fixed top-0 z-10 left-0 right-0 flex items-stretch shrink-0 bg-[#fefefe] dark:bg-coal-500"
+    className="header fixed top-0 z-15 left-0 right-0 flex items-stretch shrink-0 bg-[#fefefe] dark:bg-coal-500 border-b"
     data-sticky="true"
     data-sticky-class="shadow-sm dark:border-b dark:border-b-coal-100"
     data-sticky-name="header"

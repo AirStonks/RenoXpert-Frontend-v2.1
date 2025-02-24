@@ -951,8 +951,17 @@ export interface RenoProgress {
     contractor_handover_date?: string,
     progress?: {
         pre_reno_1?: number,
-        pre_reno_2?: number,
-        pre_reno_3?: number,
+        pre_reno_2?: {
+            pre_reno_2_1?: number,
+            pre_reno_2_2?: number,
+            pre_reno_2_3?: number,
+        },
+        pre_reno_3?: {
+            pre_reno_3_1?: number,
+            pre_reno_3_2?: number,
+            pre_reno_3_3?: number,
+            pre_reno_3_4?: number,
+        },
         p1_1?: number,
         p1_2?: number,
         p1_3?: number,

@@ -1,15 +1,7 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { changeRenoProgressEndDate, changeRenoProgressStartDate, renoProgressIndex } from "../../services/api";
-import { RenoProgress } from "../../types";
-import { Slide, toast } from "react-toastify";
-import Loading from "../../components/Loading";
-import PMAdvanceTable from "./components/PMAdvanceTable";
-import PMTable from "./components/PMTable";
+import React, { useEffect } from 'react'
+import PMAdvanceTable from './components/PMAdvanceTable'
 
-function PMMain() {
-
-    // const [selectedProduct, setSelectedProduct] = useState<{ id: number | string, name: s
+function PMProgressTrack() {
 
     useEffect(() => {
         document.title = "Project Overview | RenoXpert";
@@ -20,7 +12,7 @@ function PMMain() {
             <div className="flex justify-between items-center flex-wrap mb-6">
                 <div className="flex gap-4 items-center">
                     <span className="text-2xl font-bold text-gray-900">
-                        Project Management
+                        Project Progress Tracker
                     </span>
                 </div>
                 {/* <div className="flex">
@@ -38,9 +30,9 @@ function PMMain() {
                 </div> */}
             </div>
 
-            <PMTable />
+            <PMAdvanceTable />
         </>
     )
 }
 
-export default PMMain;
+export default PMProgressTrack
