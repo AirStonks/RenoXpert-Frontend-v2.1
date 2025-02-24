@@ -281,7 +281,7 @@ const PMAdvanceTable = () => {
                 {/* Main content container with relative positioning */}
                 <div className="relative">
                     {/* Sticky Header */}
-                    <div className="sticky top-0 z-6 mb-4 bg-white dark:bg-coal-100 rounded-xl shadow-sm">
+                    <div className="sticky top-0 z-5 mb-4 bg-white dark:bg-coal-100 rounded-xl shadow-sm">
                         <div className="grid grid-cols-7 gap-4 px-6 py-4">
                             {columns.map(column => (
                                 <div
