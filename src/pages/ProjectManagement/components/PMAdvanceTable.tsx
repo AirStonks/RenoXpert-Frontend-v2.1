@@ -42,7 +42,6 @@ const PMAdvanceTable = () => {
     const groupableColumns = columns.filter(col => col.groupable);
 
     useEffect(() => {
-        document.title = "TEST";
         initRenoProgressTable(1, 10, '', null, '');
     }, []);
 
