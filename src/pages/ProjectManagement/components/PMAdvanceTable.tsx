@@ -282,7 +282,7 @@ const PMAdvanceTable = () => {
                 {/* Main content container with relative positioning */}
                 <div className="relative">
                     {/* Sticky Header */}
-                    <div className="sticky top-0 z-20 mb-4 bg-white dark:bg-coal-100 rounded-xl shadow-sm">
+                    <div className="sticky top-0 z-6 mb-4 bg-white dark:bg-coal-100 rounded-xl shadow-sm">
                         <div className="grid grid-cols-7 gap-4 px-6 py-4">
                             {columns.map(column => (
                                 <div
@@ -301,7 +301,7 @@ const PMAdvanceTable = () => {
                             groupedData.map((group, index) => (
                                 <div key={group.key} className="relative mb-4">
                                     {/* Sticky group header */}
-                                    <div className="sticky top-16 z-10">
+                                    <div className="sticky top-16 z-6">
                                         <button
                                             className="w-full px-6 py-4 flex items-center justify-between bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900 dark:hover:bg-indigo-700 transition-colors duration-200 rounded-xl shadow-sm"
                                             onClick={() => toggleGroup(group.key)}
