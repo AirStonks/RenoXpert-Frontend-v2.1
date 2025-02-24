@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Quotation from './Quotation';
-import { renoProgressIndex } from '../../services/api';
+import { renoProgressAdvanceTable, renoProgressIndex } from '../../services/api';
 import { RenoProgress } from '../../types';
+import ProgressBar from '../ProjectManagement/components/ProgressBar';
 
 // function Test2() {
 //     // Create styles
@@ -164,11 +165,12 @@ function Test2() {
 
     const columns: TableColumn[] = [
         { field: 'property.unit_no', header: 'Unit', sortable: true },
-        { field: 'phase[0].jobs[0].status', header: 'VP', sortable: true },
-        { field: 'phase[0].jobs[1].status', header: 'Key Handover', sortable: true },
-        { field: 'phase[0].jobs[2].status', header: 'Key Mgnt', sortable: true },
-        { field: 'phase[0].jobs[3].status', header: 'TNB', sortable: true },
-        { field: 'phase[0].jobs[4].status', header: 'Water Sply', sortable: true },
+        { field: 'progress.pre_reno_1', header: 'VP', sortable: true },
+        { field: 'progress.pre_reno_2', header: 'Defect', sortable: true },
+        { field: 'progress.pre_reno_3', header: 'Reno Permit', sortable: true },
+        { field: 'progress.p1_1', header: 'Electric Wiring', sortable: true },
+        { field: 'progress.p1_2', header: 'Painting', sortable: true },
+        { field: 'progress.p1_3', header: 'Partition', sortable: true },
     ];
 
     const groupableColumns = columns.filter(col => col.groupable);
@@ -187,7 +189,7 @@ function Test2() {
     ) => {
         setIsLoading(true);
         try {
-            const response = await renoProgressIndex(size, page, searchTerm, order, field, false);
+            const response = await renoProgressAdvanceTable('property');
             const data = response?.data || [];
             setRenoProgress(data);
             setTotalItems(response?.totalCount || 0);
@@ -298,32 +300,76 @@ function Test2() {
     };
 
     const renderTableRow = (item: RenoProgress) => (
-        <div className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 mb-2">
-            <div className="grid grid-cols-6 gap-4">
+        <div key={item.id} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 mb-4">
+            <div className="grid grid-cols-7 gap-4">
                 <div>
                     <div className="text-sm font-medium text-gray-900">
-                        {item.property?.block}-{item.property?.floor}-{item.property?.unit_no}
+                        {item.property?.block}-{item.property?.unit_no}
                     </div>
                 </div>
-                {[0, 1, 2, 3, 4].map((taskIndex) => {
-                    const status = item.phases?.[0]?.jobs?.[0]?.tasks?.[taskIndex].status || '-';
-                    return (
-                        <div key={taskIndex}>
-                            <div className={`badge badge-xs ${getBadgeColorClass(status)} px-2 py-1 rounded-full text-xs font-bold`}>
-                                {status.replace('_', ' ').toUpperCase()}
-                            </div>
+                {/* VP Progress */}
+                <div>
+                    <div className="space-y-1">
+                        <ProgressBar progress={+(item.progress?.pre_reno_1 || 0) * 100} />
+                        <div className="text-xs text-gray-500 text-right">
+                            {((item.progress?.pre_reno_1 || 0) * 100).toFixed(2)}%
                         </div>
-                    );
-                })}
+                    </div>
+                </div>
+                {/* Defect Progress */}
+                <div>
+                    <div className="space-y-1">
+                        <ProgressBar progress={+(item.progress?.pre_reno_2 || 0) * 100} />
+                        <div className="text-xs text-gray-500 text-right">
+                            {((item.progress?.pre_reno_2 || 0) * 100).toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
+                {/* Reno Permit Progress */}
+                <div>
+                    <div className="space-y-1">
+                        <ProgressBar progress={+(item.progress?.pre_reno_3 || 0) * 100} />
+                        <div className="text-xs text-gray-500 text-right">
+                            {((item.progress?.pre_reno_3 || 0) * 100).toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
+                {/* Electric Wiring Progress */}
+                <div>
+                    <div className="space-y-1">
+                        <ProgressBar progress={+(item.progress?.p1_1 || 0) * 100} />
+                        <div className="text-xs text-gray-500 text-right">
+                            {((item.progress?.p1_1 || 0) * 100).toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
+                {/* Painting Progress */}
+                <div>
+                    <div className="space-y-1">
+                        <ProgressBar progress={+(item.progress?.p1_2 || 0) * 100} />
+                        <div className="text-xs text-gray-500 text-right">
+                            {((item.progress?.p1_2 || 0) * 100).toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
+                {/* Partition Progress */}
+                <div>
+                    <div className="space-y-1">
+                        <ProgressBar progress={+(item.progress?.p1_3 || 0) * 100} />
+                        <div className="text-xs text-gray-500 text-right">
+                            {((item.progress?.p1_3 || 0) * 100).toFixed(2)}%
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    );  
+    );
 
     return (
-        <div className="min-h-screen bg-gray-200 p-6 w-full">
+        <div className="min-h-screen bg-gray-100 p-6 w-full">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div className="bg-white rounded-xl shadow-sm p-6 mb-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                             <h2 className="text-2xl font-bold text-gray-800">Renovation Projects</h2>
@@ -352,22 +398,18 @@ function Test2() {
                             />
                         </div>
                     </div>
+                    {/* Column Headers */}
+                    <div className="grid grid-cols-7 gap-4 mt-6 px-6">
+                        {columns.map(column => (
+                            <div key={column.field} className="text-sm font-medium text-gray-700">
+                                {column.header}
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Content */}
-                <div className="space-y-6">
-                    {/* Add table header here - before all groups */}
-                    <div className="bg-white rounded-xl shadow-sm">
-                        <div className="grid grid-cols-6 gap-4 px-6 py-3 bg-gray-100 rounded-xl">
-                            {columns.map((column, index) => (
-                                <div key={index} className="text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                    {column.header}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Groups content */}
+                <div className="space-y-4">
                     {groupedData ? (
                         groupedData.map(group => (
                             <div key={group.key} className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -384,7 +426,7 @@ function Test2() {
                                     </div>
                                 </button>
                                 <div className={`transition-all duration-200 ease-in-out
-          ${expandedGroups.has(group.key) ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                      ${expandedGroups.has(group.key) ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                     <div className="p-4 space-y-2">
                                         {group.items.map(renderTableRow)}
                                     </div>
@@ -399,12 +441,13 @@ function Test2() {
                 </div>
 
                 {/* Pagination */}
-                <div className="mt-6 bg-white rounded-xl shadow-sm p-4">
+                <div className="mt-4 bg-white rounded-xl shadow-sm p-4">
                     <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-500">
-                            Showing {((page - 1) * size) + 1} to {Math.min(page * size, totalItems)} of {totalItems} results
+                            {/* Showing {((page - 1) * size) + 1} to {Math.min(page * size, totalItems)} of {totalItems} results */}
+                            Showing {totalItems} results
                         </div>
-                        <div className="flex space-x-2">
+                        {/* <div className="flex space-x-2">
                             <button
                                 onClick={() => setPage(page - 1)}
                                 disabled={page === 1}
@@ -419,7 +462,7 @@ function Test2() {
                             >
                                 Next
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

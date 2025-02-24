@@ -3,6 +3,7 @@
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
 import { DiscountFee, Invoice, KeyManagement, Order, OwnerRegistrationForm, Package, Payment, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
+import exp from 'constants';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -1415,6 +1416,25 @@ export const renoProgressIndex = async (size: number = 5, page: number = 1, sear
         handle401Error(error as AxiosError);
     }
 };
+
+export const renoProgressAdvanceTable = async (groubBy?: string, groupOp?: string, groupValue?: string, filterBy?: string, filterOp?: string, filterValue?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'reno-progress/table/advance', {
+            headers: getAuthHeaders(),
+            params: {
+                groubBy: groubBy,
+                groupOp: groupOp,
+                groupValue: groupValue,
+                filterBy: filterBy,
+                filterOp: filterOp,
+                filterValue: filterValue
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
 
 export const changeRenoProgressContractualDate = async (renoProgressId: number, dateType: string, startDate?: string, endDate?: string) => {
     try {
