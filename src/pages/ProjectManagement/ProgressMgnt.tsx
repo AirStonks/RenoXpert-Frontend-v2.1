@@ -88,7 +88,7 @@ function ProgressMgnt() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/reno-progress');
+            navigate('/reno-progress/overview');
         }
     };
 

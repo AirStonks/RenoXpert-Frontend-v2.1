@@ -198,7 +198,7 @@ function Sidebar() {
                 </Link>
               </div>
               <div className="menu-item">
-                <Link to="/reno-progress/jobs-tracker"
+                <Link to="/reno-progress/progress-tracker"
                   className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
                   tabIndex={0}
                 >

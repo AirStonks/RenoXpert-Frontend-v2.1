@@ -295,7 +295,7 @@ function PMTable() {
                                             <td className="text-center">
                                                 <Link
                                                     to={'/sales/' + progress.sale_id}
-                                                    state={{ fromUrl: '/reno-progress' }}
+                                                    state={{ fromUrl: '/reno-progress/overview' }}
                                                     onClick={(e) => e.stopPropagation()} // Prevent tr onClick
                                                     className="link text-orange-500"
                                                 >

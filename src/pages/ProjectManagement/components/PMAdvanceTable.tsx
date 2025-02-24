@@ -104,8 +104,11 @@ const PMAdvanceTable = () => {
     };
 
     const toProgressDetail = (id: number) => {
-        navigate(`/reno-progress/${id}`);
-    }
+        navigate(`/reno-progress/${id}`, {
+            state: { fromUrl: '/reno-progress/progress-tracker' }
+        });
+    };
+
 
     const groupedData = useMemo(() => {
         if (!groupBy) return null;

@@ -230,7 +230,7 @@ const routes = [
 
   /*--- PROGRESS MANAGEMENT ---*/
   { path: '/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
-  { path: '/reno-progress/jobs-tracker', element: <PMProgressTrack />, layout: ProtectedLayout },
+  { path: '/reno-progress/progress-tracker', element: <PMProgressTrack />, layout: ProtectedLayout },
   { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
   { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
   { path: '/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
