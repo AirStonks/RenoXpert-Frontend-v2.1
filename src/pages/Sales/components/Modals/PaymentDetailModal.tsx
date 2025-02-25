@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Slide, toast } from "react-toastify";
-import { fetchInvoicePayment } from "../../services/api";
-import { Attachment, Payment } from "../../types";
-import { KTModal } from "../../metronic/core";
-import Loading from "../Loading";
+import { fetchInvoicePayment } from "../../../../services/api";
+import { Attachment, Payment } from "../../../../types";
+import { KTModal } from "../../../../metronic/core";
+import Loading from "../../../../components/Loading";
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"

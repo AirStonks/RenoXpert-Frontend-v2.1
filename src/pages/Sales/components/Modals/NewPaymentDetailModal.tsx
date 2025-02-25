@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import InputFieldGroup from "../../../components/Forms/TextFields/InputFieldGroup";
-import Dropdown from "../../../components/Forms/Dropdown/Dropdown";
+import InputFieldGroup from "../../../../components/Forms/TextFields/InputFieldGroup";
+import Dropdown from "../../../../components/Forms/Dropdown/Dropdown";
 import { Slide, toast } from "react-toastify";
-import { saveInvoiceDetail } from "../../../services/api";
-import { KTModal } from "../../../metronic/core";
-import Loading from "../../../components/Loading";
+import { saveInvoiceDetail } from "../../../../services/api";
+import { KTModal } from "../../../../metronic/core";
+import Loading from "../../../../components/Loading";
 
 interface NewPaymentDetailModalProps {
     invoiceId: number | null;
     refetchInvoice: () => void;
+    refetchSale: () => void;
 }
 
 const initFormData = {
@@ -55,6 +56,8 @@ const bankOptions = [
     { value: "HSBC Amanah Malaysia Berhad", label: "HSBC Amanah Malaysia Berhad" },
     { value: "HSBC Bank Malaysia Berhad", label: "HSBC Bank Malaysia Berhad" },
     { value: "Kuwait Finance House", label: "Kuwait Finance House" },
+    { value: "Kuwait Finance House", label: "Kuwait Finance House" },
+    { value: "Malayan Banking (Maybank) Berhad", label: "Malayan Banking (Maybank) Berhad" },
     { value: "OCBC Bank (Malaysia) Berhad", label: "OCBC Bank (Malaysia) Berhad" },
     { value: "Public Bank Berhad", label: "Public Bank Berhad" },
     { value: "RHB Bank Berhad", label: "RHB Bank Berhad" },
@@ -72,7 +75,7 @@ const receivingAccOptions = [
 
 const maxFiles = 10;
 
-function NewPaymentDetailModal({ invoiceId, refetchInvoice }: NewPaymentDetailModalProps) {
+function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPaymentDetailModalProps) {
     const [formData, setFormData] = useState(initFormData);
     const [pendingUploadItems, setPendingUploadItems] = useState<File[]>([]);
     const [dragging, setDragging] = useState(false);
@@ -229,6 +232,9 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice }: NewPaymentDetailMo
 
                 // Refetch the invoice
                 refetchInvoice();
+
+                // Refetch sale
+                refetchSale();
 
                 notify('success', 'Successfully created payment detail.');
             }

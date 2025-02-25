@@ -1104,6 +1104,21 @@ export const saveInvoiceDetail = async (invoiceId: number, paymentDetail: Paymen
     }
 }
 
+export const removeInvoice = async (invoiceId: number) => {
+    try {
+        const response = await axios.delete(API_URL + `invoices/${invoiceId}`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const changeInvoiceLinkStatus = async (invoiceId: number, status: string) => {
     try {
         const response = await axios.put(API_URL + `invoices/${invoiceId}/link/status/${status}`, {}, {

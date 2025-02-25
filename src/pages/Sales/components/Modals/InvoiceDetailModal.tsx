@@ -1,16 +1,18 @@
 // src\components\Modals\InvoiceDetailModal.tsx
 import { useEffect, useState } from "react";
 import ClipboardJS from "clipboard";
-import useFetchInvoice from "../../hook/useFetchInvoice";
-import Loading from "../Loading";
-import { changeInvoiceLinkStatus, markInvoiceAsPaid } from "../../services/api";
+import useFetchInvoice from "../../../../hook/useFetchInvoice";
+import Loading from "../../../../components/Loading";
+import { changeInvoiceLinkStatus, markInvoiceAsPaid } from "../../../../services/api";
 import { Slide, toast } from "react-toastify";
-import { Invoice } from "../../types";
+import { Invoice } from "../../../../types";
 import PaymentDetailModal from "./PaymentDetailModal";
-import NewPaymentDetailModal from "../../pages/Sales/components/NewPaymentDetailModal";
+import NewPaymentDetailModal from "./NewPaymentDetailModal";
+import DeleteInvoiceModal from "./DeleteInvoiceModal";
 
 interface InvoiceDetailModalProps {
     invoiceId: number | null;
+    refetchSale: () => void;
 }
 
 const APP_URL =
@@ -22,7 +24,7 @@ const APP_URL =
                 ? import.meta.env.VITE_LOCAL_APP_URL
                 : null;
 
-function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
+function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps) {
     const { invoiceDetail, loading, error, refetch } = useFetchInvoice(invoiceId);
     const [invoice, setInvoice] = useState<Invoice | null>(null);
     const [linkStatusLoading, setLinkStatusLoading] = useState(false);
@@ -78,41 +80,41 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
         }
     }, [loading, invoice]);
 
-    const handleChangeLinkStatus = async (newStatus: string) => {
-        if (!invoice) return;
+    // const handleChangeLinkStatus = async (newStatus: string) => {
+    //     if (!invoice) return;
 
-        setLinkStatusLoading(true); // Set loading state
+    //     setLinkStatusLoading(true); // Set loading state
 
-        const response = await changeInvoiceLinkStatus(Number(invoice.id), newStatus);
+    //     const response = await changeInvoiceLinkStatus(Number(invoice.id), newStatus);
 
-        setLinkStatusLoading(false); // Reset loading state
+    //     setLinkStatusLoading(false); // Reset loading state
 
-        if (response?.success) {
-            const updatedInvoice = { ...invoice, link_status: newStatus };
-            setInvoice(updatedInvoice);
-            notify('success', "Link Status Changed.");
-        } else {
-            notify('error', "Failed to change link status.");
-        }
-    };
+    //     if (response?.success) {
+    //         const updatedInvoice = { ...invoice, link_status: newStatus };
+    //         setInvoice(updatedInvoice);
+    //         notify('success', "Link Status Changed.");
+    //     } else {
+    //         notify('error', "Failed to change link status.");
+    //     }
+    // };
 
-    const handleMarkAsPaid = async (invoiceId: number) => {
-        setLinkStatusLoading(true);
+    // const handleMarkAsPaid = async (invoiceId: number) => {
+    //     setLinkStatusLoading(true);
 
-        try {
-            const response = await markInvoiceAsPaid(invoiceId);
+    //     try {
+    //         const response = await markInvoiceAsPaid(invoiceId);
 
-            if (response?.success) {
-                notify('success', "Invoice marked as paid.");
-                refetch();
-            }
+    //         if (response?.success) {
+    //             notify('success', "Invoice marked as paid.");
+    //             refetch();
+    //         }
 
-        } catch (error) {
-            console.error('Error changing invoice link status:', error);
-        }
+    //     } catch (error) {
+    //         console.error('Error changing invoice link status:', error);
+    //     }
 
-        setLinkStatusLoading(false);
-    };
+    //     setLinkStatusLoading(false);
+    // };
 
     let content;
 
@@ -157,6 +159,22 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
                                             </button>
                                         </div>
                                     )}
+                                    <div className="menu-item">
+                                        <button
+                                            className="menu-link copy-link"
+                                            data-modal-toggle="#delete_invoice_modal"
+                                        // onClick={() => handleMarkAsPaid(Number(invoice.id))}
+                                        >
+                                            <span className="menu-title">
+                                                <div className="flex gap-2 items-center text-danger">
+                                                    <i className="ki-outline ki-trash"></i>
+                                                    <span className="">
+                                                        Delete Invoice
+                                                    </span>
+                                                </div>
+                                            </span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -389,11 +407,17 @@ function InvoiceDetailModal({ invoiceId }: InvoiceDetailModalProps) {
             <NewPaymentDetailModal
                 invoiceId={invoiceId}
                 refetchInvoice={() => refetch()}
+                refetchSale={refetchSale}
             />
 
             <PaymentDetailModal
                 invoiceId={invoiceId}
                 paymentId={selectedPaymentId}
+            />
+
+            <DeleteInvoiceModal
+                invoice={invoice}
+                refetchSale={refetchSale}
             />
         </>
     );

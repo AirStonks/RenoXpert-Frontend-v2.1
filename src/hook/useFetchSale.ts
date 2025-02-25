@@ -1,6 +1,6 @@
 // src/hooks/useFetchProduct.ts
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchSale } from '../services/api';
 import { Sale } from '../types';
 
@@ -9,7 +9,7 @@ const useFetchSale = (saleId: number | null) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
+    const fetchSaleData = useCallback(() => {
         if (saleId === null) {
             setLoading(false); // No need to load if saleId is null
             setSale(null);
@@ -29,7 +29,11 @@ const useFetchSale = (saleId: number | null) => {
             });
     }, [saleId]);
 
-    return { saleDetail, loading, error };
+    useEffect(() => {
+        fetchSaleData();
+    }, [saleId, fetchSaleData]);
+
+    return { saleDetail, loading, error, refetch: fetchSaleData };
 };
 
 export default useFetchSale;

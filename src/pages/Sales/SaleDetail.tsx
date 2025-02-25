@@ -3,14 +3,14 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchSale from "../../hook/useFetchSale";
 import Loading from "../../components/Loading";
-import GenerateInvoiceModal from "../../components/Modals/GenerateInvoiceModal";
+import GenerateInvoiceModal from "./components/Modals/GenerateInvoiceModal";
 import { Sale } from "../../types";
 import { useEffect, useState } from "react";
-import InvoiceDetailModal from "../../components/Modals/InvoiceDetailModal";
+import InvoiceDetailModal from "./components/Modals/InvoiceDetailModal";
 import CreateAddonInvoiceModal from "../../components/Modals/CreateAddonInvoiceModal";
 import { Link } from "react-router-dom";
 import { testGenerateProgress } from "../../services/api";
-import NewPaymentDetailModal from "./components/NewPaymentDetailModal";
+import NewPaymentDetailModal from "./components/Modals/NewPaymentDetailModal";
 
 function SaleDetail() {
     const navigate = useNavigate();
@@ -18,7 +18,7 @@ function SaleDetail() {
     const { id } = useParams<{ id: string }>();
     const saleId = id ? parseInt(id, 10) : null;
 
-    const { saleDetail, loading, error } = useFetchSale(saleId);
+    const { saleDetail, loading, error, refetch } = useFetchSale(saleId);
 
     const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(null);
     const [sale, setSale] = useState<Sale | null>(null);
@@ -424,6 +424,7 @@ function SaleDetail() {
 
             <InvoiceDetailModal
                 invoiceId={selectedInvoiceId}
+                refetchSale={refetch}
             />
 
             <CreateAddonInvoiceModal />

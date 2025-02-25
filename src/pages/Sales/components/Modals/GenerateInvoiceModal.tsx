@@ -1,11 +1,12 @@
 // src\components\Modals\GenerateInvoiceModal.tsx
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DiscountFee, Invoice, Sale } from "../../types";
-import { createInvoice, fetchDiscountFees } from "../../services/api";
+import { DiscountFee, Invoice, Sale } from "../../../../types";
+import { createInvoice, fetchDiscountFees } from "../../../../services/api";
 import { Slide, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { KTDropdown, KTModal } from "../../metronic/core";
+import { KTDropdown, KTModal } from "../../../../metronic/core";
+import Loading from "../../../../components/Loading";
 
 interface GenerateInvoiceModalProps {
     saleDetail: Sale;
@@ -20,6 +21,8 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
     const [searchDiscountFeeTerm, setSearchDiscountFeeTerm] = useState('');
     const [selectedType, setSelectedType] = useState('fee');
     const inputDiscountFeeRef = useRef(null);
+
+    const [isLoading, setIsLoading] = useState(false);
 
     const [isOtherPercentage, setIsOtherPercentage] = useState(false);
     const [customeAmountType, setCustomAmountType] = useState<'percentage' | 'amount'>('percentage');
@@ -189,9 +192,11 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
     }
 
     const handleSubmit = async () => {
+        setIsLoading(true);
 
         if (isCustomeValueExceed) {
             notify('error', 'The amount you entered exceeds balance of the sale.');
+            setIsLoading(false);
             return;
         }
 
@@ -235,8 +240,10 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
             navigate('/sales/' + saleDetail.id);
         } else {
             console.log(response);
-
+            notify('error', response.message);
         }
+
+        setIsLoading(false);
     }
 
     const calculatePercentageByAmount = (amount: number) => {
@@ -257,6 +264,8 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
 
     return (
         <>
+            {isLoading && <Loading />}
+
             <div className="modal p-14" data-modal="true" id="generate_invoice_modal">
                 <div className="modal-content modal-center-y max-w-4xl max-h-[95%]">
                     <div className="modal-header py-4 px-5">

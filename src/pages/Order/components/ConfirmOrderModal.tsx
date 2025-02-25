@@ -26,6 +26,7 @@ function ConfirmOrderModal({ order, onSubmit }: ConfirmOrderModalProps) {
     };
 
     const handleConfirmOrder = async () => {
+        setIsLoading(true);
         try {
             const response = await confirmOrder(Number(order.id));
 
@@ -42,7 +43,9 @@ function ConfirmOrderModal({ order, onSubmit }: ConfirmOrderModalProps) {
 
         } catch (error) {
             console.error(error);
+            notify('error', 'Failed to confirm order.');
         }
+        setIsLoading(false);
     }
 
     return (
