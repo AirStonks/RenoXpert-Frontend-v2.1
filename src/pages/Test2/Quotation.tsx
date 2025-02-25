@@ -81,7 +81,7 @@ export default function Quotation() {
     const COMPANY_ADDRESS = "No. 42-46, Ground Floor, Jalan SS 19/1D";
     const COMPANY_CITY_STATE = "Subang Jaya, Selangor, 46500";
     const COMPANY_MOBILE = "03-58789831";
-    const COMPANY_EMAIL = "sales@belive.my";
+    const COMPANY_EMAIL = "sales@renoxpert.my";
     const COMPANY_LOGO_URL = "public/app/RenoExpert_logo-01.jpg";
 
     // Define constants for quotationHeader
@@ -123,9 +123,9 @@ export default function Quotation() {
                         <Text style={styles.companyTitle}>{COMPANY_NAME}</Text>
                         <Text style={styles.companyDetails}>
                             {COMPANY_ADDRESS}{'\n'}
-                            Contact Number: {COMPANY_CITY_STATE}{'\n'}
-                            Email: {COMPANY_MOBILE}{'\n'}
-                            {COMPANY_EMAIL}
+                            {COMPANY_CITY_STATE}{'\n'}
+                            Contact Number: {COMPANY_MOBILE}{'\n'}
+                            Email: {COMPANY_EMAIL}
                         </Text>
                     </View>
                     <View>

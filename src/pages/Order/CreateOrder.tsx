@@ -611,6 +611,7 @@ function CreateOrder() {
             unit_no: formData.unitNo,
             bedroom_count: formData.bedroom_count,
             bathroom_count: formData.bathroom_count,
+            include_partition: formData.include_partition,
             description: '',
             internal_remark: formData.internal_remark,
             completion_day: formData.completion_day,
@@ -914,7 +915,7 @@ function CreateOrder() {
                                                         <label className="switch switch-lg">
                                                             <input
                                                                 className="checkbox"
-                                                                name="isDraftMode"
+                                                                name="include_partition"
                                                                 type="checkbox"
                                                                 checked={!!formData.include_partition}
                                                                 onChange={() => setFormData((prev) => ({
