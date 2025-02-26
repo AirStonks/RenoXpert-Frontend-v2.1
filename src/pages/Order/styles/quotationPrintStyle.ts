@@ -9,6 +9,14 @@ export const styles = StyleSheet.create({
         fontSize: 12,
         padding: '30px 50px'
     },
+    pageNumber: {
+        position: 'absolute',
+        bottom: 10,
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        fontSize: 10,
+    },
     companyHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',

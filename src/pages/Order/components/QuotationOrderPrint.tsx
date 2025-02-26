@@ -140,7 +140,7 @@ function QuotationOrderPrint() {
     // Define constants for quotationHeader
     const QUOTATION_TITLE = "Quotation";
     const QUOTATION_NUMBER = orderDetail.order_no;
-    const QUOTATION_DATE = orderDetail.status === 'confirmed' ? formatDate(orderDetail.updated_at) : getCurrentDate();
+    const QUOTATION_DATE = getCurrentDate();
 
 
     const ATTN_NAME = orderDetail.user.name;
@@ -165,8 +165,6 @@ function QuotationOrderPrint() {
 
     const totalPriceBeforeDiscount = Object.values(categoryTotals).reduce((sum, cat) => sum + cat.total_price, 0);
     const totalPrice = orderDetail.latest_quotation?.bonus ? (totalPriceBeforeDiscount - Number(orderDetail.latest_quotation?.bonus?.value)) : totalPriceBeforeDiscount;
-
-
 
     const QuotationPDF = () => (
         <Page size="A4" style={styles.page}>
@@ -297,6 +295,11 @@ function QuotationOrderPrint() {
                     </View>
                 </View>
             </View>
+            <Text
+                style={styles.pageNumber}
+                render={({ pageNumber, totalPages }) => `${pageNumber}`}
+                fixed
+            />
         </Page>
     );
 
@@ -457,6 +460,11 @@ function QuotationOrderPrint() {
                     </View>
                 </View>
             </View>
+            <Text
+                style={styles.pageNumber}
+                render={({ pageNumber, totalPages }) => `${pageNumber}`}
+                fixed
+            />
         </Page>
     );
 
@@ -691,6 +699,11 @@ function QuotationOrderPrint() {
                     </Text>
                 </View>
             </View>
+            <Text
+                style={styles.pageNumber}
+                render={({ pageNumber, totalPages }) => `${pageNumber}`}
+                fixed
+            />
         </Page>
     );
 
