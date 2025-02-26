@@ -24,6 +24,19 @@ export const userLogin = async (email: string, password: string) => {
   }
 };
 
+export const staffLoginToOwner = async (mobile: string, passphrase: string) => {
+  try {
+    const response = await axios.post(API_URL + 'owner/staff/login', { mobile, passphrase });
+    if (response.data.success) {
+      localStorage.setItem('o_token', response.data.data.token); // Store the token
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error('Login error', error);
+    throw error;
+  }
+}
+
 export const operationLogin = async (mobile: string, password: string) => {
   try {
     const response = await axios.post(API_URL + 'operation/login', { mobile, password });

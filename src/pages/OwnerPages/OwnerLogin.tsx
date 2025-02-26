@@ -7,6 +7,8 @@ import { fetchExistsUser } from '../../services/ownerApi';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import { staffLoginToOwner } from '../../services/auth';
+import { Slide, toast } from 'react-toastify';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -20,6 +22,20 @@ const API_URL =
 const OwnerLogin: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const staffToken = localStorage.getItem('token');
+
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
 
     useEffect(() => {
         document.title = "Login | RenoXpert";
@@ -38,6 +54,10 @@ const OwnerLogin: React.FC = () => {
     const [showOtpForm, setShowOtpForm] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const [isStaffLogin, setIsStaffLogin] = useState(false);
+    const [passphrase, setPassphrase] = useState('');
+
+    const [loading, setLoading] = useState(false);
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,6 +144,21 @@ const OwnerLogin: React.FC = () => {
         }
     };
 
+    const handleSubmitLoginAsStaff = async () => {
+        try {
+            const userData = await staffLoginToOwner(mobile, passphrase);
+            if (userData) {
+                navigate('/owner'); // Redirect to dashboard on successful userLogin
+            }
+        } catch (err) {
+            setError('Invalid user credentials. Please try again.');
+            notify('error', 'Invalid user credentials. Please try again.');
+
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <>
             {!showOtpForm ? (
@@ -133,7 +168,7 @@ const OwnerLogin: React.FC = () => {
                         <form className="card max-w-[370px] w-full gap-5">
                             <div className="flex justify-end mt-2 mr-2">
                                 <Link
-                                    to={ '/login'}
+                                    to={'/login'}
                                     className="btn btn-light btn-sm"
                                 >
                                     Staff Login
@@ -160,6 +195,22 @@ const OwnerLogin: React.FC = () => {
                             </div>
 
                             <div className="flex flex-col gap-1 px-10">
+                                {!!staffToken &&
+                                    <div className="flex mb-2">
+                                        <label className="switch">
+                                            <input
+                                                className="checkbox"
+                                                name="isDraftMode"
+                                                type="checkbox"
+                                                checked={!!isStaffLogin}
+                                                onChange={() => setIsStaffLogin(!isStaffLogin)}
+                                            />
+                                            <span className="switch-label">
+                                                Staff Login to Owner
+                                            </span>
+                                        </label>
+                                    </div>
+                                }
                                 <label className="form-label font-normal text-gray-900">Phone Number</label>
                                 <div className="flex">
                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
@@ -191,15 +242,28 @@ const OwnerLogin: React.FC = () => {
                                         required
                                     />
                                 </div>
+                                {isStaffLogin &&
+                                    <div className='flex flex-col mt-2'>
+                                        <label className="form-label font-normal text-gray-900">Passphrase</label>
+                                        <input
+                                            className="input"
+                                            type="password"
+                                            value={passphrase}
+                                            onChange={(e) => setPassphrase(e.target.value)}
+                                            tabIndex={1}
+                                            required
+                                        />
+                                    </div>
+                                }
 
                                 {error && <p className="text-sm text-red-500">{error}</p>}
                             </div>
                             <button
                                 className="btn btn-primary flex justify-center mx-10 mb-10 grow"
                                 type="button"
-                                onClick={handleToOtpVerify}
+                                onClick={isStaffLogin ? handleSubmitLoginAsStaff : handleToOtpVerify}
                             >
-                                Next
+                                {isStaffLogin ? 'Proceed' : 'Next'}
                             </button>
 
                         </form>
