@@ -1,4 +1,4 @@
-import { Document, Page, PDFViewer, Text, View, Image } from '@react-pdf/renderer';
+import { Document, Page, PDFViewer, Text, View, Image, pdf } from '@react-pdf/renderer';
 import React, { useEffect, useState } from 'react'
 import useFetchOrder from '../../../hook/useFetchOrder';
 import { styles } from '../styles/quotationPrintStyle';
@@ -95,7 +95,38 @@ function QuotationOrderPrint() {
 
     }, [orderDetail?.latest_quotation?.packages]);
 
-    if (loading) return <p>Loading...</p>;
+    // Function to generate and download PDF
+    const downloadPDF = async () => {
+        const doc = (
+            <Document>
+                <QuotationPDF />
+                <TncPDF />
+                <RenoAgreementPDF />
+            </Document>
+        );
+        const blob = await pdf(doc).toBlob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${QUOTATION_NUMBER}_${ATTN_NAME.toUpperCase().replace(/\s+/g, '_')}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    // Trigger download when orderDetail is loaded
+    useEffect(() => {
+        if (!loading && orderDetail && !error) {
+            downloadPDF();
+        }
+    }, [loading, orderDetail, error]);
+
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center w-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        </div>
+    );
     if (error) return <p>Error fetching order.</p>;
     if (!orderDetail) return <p>No order found.</p>;
 
@@ -428,7 +459,6 @@ function QuotationOrderPrint() {
             </View>
         </Page>
     );
-
 
     const RenoAgreementPDF = () => (
         <Page size="A4" style={styles.page}>
