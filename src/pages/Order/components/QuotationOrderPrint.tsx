@@ -232,19 +232,21 @@ function QuotationOrderPrint() {
 
                             {/* Product Rows */}
                             {pkg.products.map((product) => (
-                                <View style={styles.productRow} key={product.id}>
-                                    <Text style={[styles.td, styles.td1]}>{''}</Text>
-                                    <View style={styles.td2}>
-                                        <Text style={styles.productItem}>{product.name}</Text>
-                                        <Text style={styles.productDescription}>
-                                            {product.description}
+                                (product.pivot.visibility === true) && (
+                                    <View style={styles.productRow} key={product.id}>
+                                        <Text style={[styles.td, styles.td1]}>{''}</Text>
+                                        <View style={styles.td2}>
+                                            <Text style={styles.productItem}>{product.name}</Text>
+                                            <Text style={styles.productDescription}>
+                                                {product.description}
+                                            </Text>
+                                        </View>
+                                        <Text style={[styles.td, styles.td3]}>
+                                            {product.pivot.quantity}
                                         </Text>
+                                        <Text style={[styles.td, styles.td4]}>{product.uom}</Text>
                                     </View>
-                                    <Text style={[styles.td, styles.td3]}>
-                                        {product.pivot.quantity}
-                                    </Text>
-                                    <Text style={[styles.td, styles.td4]}>{product.uom}</Text>
-                                </View>
+                                )
                             ))}
                         </View>
                     ))}
