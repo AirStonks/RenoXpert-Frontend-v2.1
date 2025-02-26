@@ -285,7 +285,7 @@ function EditOrderQuotation() {
                 return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
             }, 0);
 
-            let newTotalPrice = packageTotalPrice * prodPackage.quantity;
+            let newTotalPrice = packageTotalPrice;
 
             prodPackage.products.map((product) => {
                 if (!product.pivot.includeSupply) {
