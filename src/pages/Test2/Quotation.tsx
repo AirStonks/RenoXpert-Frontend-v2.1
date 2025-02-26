@@ -90,7 +90,6 @@ export default function Quotation() {
     const QUOTATION_DATE = "12-02-2025";
 
     // Define constants for attnHeader
-    const ATTN_LABEL = "Attn:";
     const ATTN_NAME = "TEST USER";
     const ATTN_ADDRESS = "No. 42-46, Ground Floor, Jalan SS 19/1D, Subang Jaya, Selangor, 46500";
     const ATTN_MOBILE = "+6011-11476550";
@@ -145,9 +144,11 @@ export default function Quotation() {
 
                 {/* Redesigned Attn Header */}
                 <View style={styles.attnHeader}>
-                    <Text style={styles.attnLabel}>{ATTN_LABEL}</Text>
+                    <View style={styles.attnTitle}>
+                        <Text style={styles.attnLabel}>Attn:</Text>
+                        <Text style={styles.attnText}>{ATTN_NAME}</Text>
+                    </View>
                     <Text style={styles.attnText}>
-                        {ATTN_NAME}{'\n'}
                         {ATTN_ADDRESS}{'\n'}
                         {ATTN_MOBILE}{'\n'}
                         {ATTN_EMAIL}

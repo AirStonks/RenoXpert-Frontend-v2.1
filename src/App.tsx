@@ -89,6 +89,7 @@ import KeyManagementOverview from './pages/ProjectManagement/KeyManagementOvervi
 import UpdateKeyManagement from './pages/ProjectManagement/UpdateKeyManagement';
 import Test2 from './pages/Test2/Test2';
 import PMProgressTrack from './pages/ProjectManagement/PMProgressTrack';
+import QuotationOrderPrint from './pages/Order/components/QuotationOrderPrint';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -211,6 +212,7 @@ const routes = [
   { path: '/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },
   { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation />, layout: ProtectedLayout },
   { path: '/preview/owner/order/overview/id/:id', element: <OrderPreview />, layout: null },
+  { path: '/orders/print/:id', element: <QuotationOrderPrint />, layout: null },
 
   /*--- SALES ---*/
   { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },

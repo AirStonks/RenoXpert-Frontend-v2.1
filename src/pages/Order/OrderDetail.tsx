@@ -522,6 +522,19 @@ function OrderDetail() {
                                     </span>
                                 </button>
                             </div>
+                            <div className="menu-item">
+                                <Link
+                                    to={ `/orders/print/${orderId}` }
+                                    className="menu-link"
+                                >
+                                    <span className="menu-title">
+                                        <div className="flex gap-2 items-center">
+                                            <i className="ki-filled ki-file-down text-lg"></i>
+                                            <span>Print Quotation</span>
+                                        </div>
+                                    </span>
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>

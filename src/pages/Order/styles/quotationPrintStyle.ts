@@ -151,50 +151,52 @@ export const styles = StyleSheet.create({
         fontWeight: "medium",
         color: "#333",
     },
+
     tr: {
         flexDirection: "row",
-        borderBottom: 1,
+        borderTop: 1,
         borderColor: "#ececec",
         paddingBottom: 8,
     },
+    packageRow: {
+        marginBottom: 12,
+    },
     setRow: {
-        flexDirection: "row",
-        paddingBottom: 4,
+        flexDirection: 'row',
+        borderTopWidth: 1,
+        borderColor: '#ececec',
+        paddingVertical: 4,
     },
     td: {
         fontSize: 10,
-        color: "#555",
+        fontWeight: 'bold',
+        color: '#555',
+        paddingVertical: 2,
     },
+
     td1: {
-        width: "10%",
-        textAlign: "left",
+        width: '10%',
         paddingLeft: 8,
-        paddingTop: 8,
     },
     td2: {
-        width: "70%",
-        textAlign: "left",
+        width: '70%',
         paddingLeft: 12,
-        paddingTop: 8,
     },
     td3: {
-        width: "10%",
-        textAlign: "center",
-        paddingTop: 8,
+        width: '10%',
+        textAlign: 'center',
     },
     td4: {
-        width: "10%",
-        textAlign: "center",
-        paddingTop: 8,
+        width: '10%',
+        textAlign: 'center',
     },
     productRow: {
-        flexDirection: "row",
-        alignItems: "flex-start",
+        flexDirection: 'row',
+        paddingVertical: 4,
     },
     productItem: {
         fontSize: 9,
-        color: "#666",
-        marginBottom: 2,
+        color: '#666',
     },
     productName: {
         width: "70%",
@@ -202,12 +204,9 @@ export const styles = StyleSheet.create({
         paddingLeft: 12,
     },
     productDescription: {
-        width: "70%",
-        textAlign: "left",
-        paddingLeft: 20,
         fontSize: 8,
-        color: "#888",
-        marginBottom: 4,
+        color: '#888',
+        paddingLeft: 8,
     },
     productQty: {
         width: "10%",
@@ -331,5 +330,109 @@ export const styles = StyleSheet.create({
         fontSize: 10, // text-sm
         color: "#1f2937", // gray-900
         marginTop: 4,
+    },
+    // TNC
+    tncContainer: {
+        flexDirection: 'column',
+        padding: '30px 30px',
+    },
+    tncTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        textAlign: 'center',
+        color: '#2563eb', // Matches quotationTitle for consistency
+    },
+    tncList: {
+        flexDirection: 'column',
+    },
+    tncItem: {
+        flexDirection: 'row',
+        marginBottom: 10,
+        pageBreakInside: 'avoid', // Prevents splitting individual items across pages
+    },
+    tncBullet: {
+        fontSize: 10,
+        width: 10,
+        textAlign: 'center',
+        marginRight: 5,
+    },
+    tncText: {
+        fontSize: 10,
+        lineHeight: 1.5,
+        textAlign: 'justify',
+        flex: 1,
+    },
+    // Reno Agreement
+    agreementTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        textAlign: 'center',
+        color: '#2563eb', // Matches quotationTitle for consistency
+    },
+    agreementContainer: {
+        flexDirection: 'column',
+        padding: '30px 30px',
+    },
+    agreementHeader: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginBottom: 20,
+        textAlign: 'center',
+        gap: 12,
+    },
+    agreementSection: {
+        marginBottom: 20,
+    },
+    agreementSubSection: {
+        marginLeft: 20,
+        marginTop: 5,
+    },
+    agreementText: {
+        fontSize: 10,
+        lineHeight: 1.5,
+        textAlign: 'justify',
+        marginBottom: 5,
+    },
+    agreementBold: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    agreementClause: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        marginVertical: 5,
+        textDecoration: 'underline',
+    },
+    table: {
+        width: '100%',
+        marginTop: 10,
+        borderWidth: 1,
+        borderColor: '#ececec',
+    },
+    tableRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ececec',
+    },
+    tableHeader: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        padding: 5,
+        flex: 1,
+        borderRightWidth: 1,
+        borderRightColor: '#ececec',
+    },
+    tableCell: {
+        fontSize: 9,
+        padding: 5,
+        flex: 1,
+        borderRightWidth: 1,
+        borderRightColor: '#ececec',
+    },
+    bold: {
+        fontWeight: 'bold',
     },
 });
