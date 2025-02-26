@@ -117,7 +117,7 @@ function QuotationOrderPrint() {
 
     // Trigger download when orderDetail is loaded
     useEffect(() => {
-        if (!loading && orderDetail && !error) {
+        if (!loading && orderDetail && !error && packageCategories) {
             downloadPDF();
         }
     }, [loading, orderDetail, error]);

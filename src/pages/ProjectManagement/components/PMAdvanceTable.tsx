@@ -33,7 +33,7 @@ const PMAdvanceTable = () => {
         { field: 'property.unit_no', header: 'Unit', sortable: true },
         { field: 'progress.pre_reno_1', header: 'VP', sortable: true },
         { field: 'progress.pre_reno_2_1', header: 'Defect Inspection', sortable: true },
-        { field: 'progress.pre_reno_2_2', header: 'Defect to Developer', sortable: true },
+        { field: 'progress.pre_reno_2_2', header: 'Defect Submission', sortable: true },
         { field: 'progress.pre_reno_2_3', header: 'Defect Retification', sortable: true },
         { field: 'progress.pre_reno_3_1', header: 'Reno Application', sortable: true },
         { field: 'progress.pre_reno_3_2', header: 'Reno Deposit', sortable: true },
