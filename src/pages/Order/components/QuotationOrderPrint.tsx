@@ -232,7 +232,7 @@ function QuotationOrderPrint() {
 
                             {/* Product Rows */}
                             {pkg.products.map((product) => (
-                                (product.pivot.visibility === true) && (
+                                (product.pivot.visibility == true) && (
                                     <View style={styles.productRow} key={product.id}>
                                         <Text style={[styles.td, styles.td1]}>{''}</Text>
                                         <View style={styles.td2}>
