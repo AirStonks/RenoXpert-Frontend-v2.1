@@ -24,9 +24,9 @@ export const userLogin = async (email: string, password: string) => {
   }
 };
 
-export const staffLoginToOwner = async (mobile: string, passphrase: string) => {
+export const staffLoginToOwner = async (country_code: string, mobile: string, passphrase: string) => {
   try {
-    const response = await axios.post(API_URL + 'owner/staff/login', { mobile, passphrase });
+    const response = await axios.post(API_URL + 'owner/staff/login', { country_code, mobile, passphrase });
     if (response.data.success) {
       localStorage.setItem('o_token', response.data.data.token); // Store the token
       return response.data.data;

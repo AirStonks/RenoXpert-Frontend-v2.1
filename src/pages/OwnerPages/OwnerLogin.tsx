@@ -158,7 +158,7 @@ const OwnerLogin: React.FC = () => {
 
     const handleSubmitLoginAsStaff = async () => {
         try {
-            const userData = await staffLoginToOwner(mobile, passphrase);
+            const userData = await staffLoginToOwner(countryCode, mobile, passphrase);
             if (userData) {
                 navigate('/owner'); // Redirect to dashboard on successful userLogin
             }

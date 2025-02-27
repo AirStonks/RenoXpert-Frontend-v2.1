@@ -180,6 +180,7 @@ function AddUser() {
                     ic: formData.ic,
                     email: formData.email,
                     type: formData.type,
+                    country_code: formData.country_code,
                     phone_no: formData.phone,
                     address: {
                         address_1: formData.address.address_1,
