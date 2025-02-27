@@ -28,6 +28,7 @@ export interface User {
     salutations?: string;
     ic?: string;
     email?: string;
+    country_code?: string;
     phone_no?: string;
     type?: string;
     status?: string;

@@ -102,6 +102,7 @@ const OTPConfirmOrder: React.FC = () => {
 
         try {
             const requestBody = {
+                country_code: state.countryCode,
                 mobile: state.mobile,
                 otp_code: code
             };

@@ -68,7 +68,7 @@ function OwnerHome() {
                             className="absolute top-16 flex justify-center items-center size-20 rounded-full border-2 border-success shrink-0 bg-white"
                         />
                         <span className="text-gray-900 text-xl font-bold mt-6">{owner.name}</span>
-                        <span className="text-gray-900 text-base">+60 {owner.phone_no}</span>
+                        <span className="text-gray-900 text-base">+{owner.country_code} {owner.phone_no}</span>
                         <span className="text-gray-900 text-base mb-3">{owner.email ? owner.email : '-'}</span>
                         <div className="flex gap-4">
                             <button className="btn btn-sm btn-danger" onClick={handleLogout}>Logout</button>

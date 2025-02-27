@@ -10,6 +10,11 @@ interface FormErrors {
     [key: string]: string | FormErrors | undefined; // Use string or undefined for error messages
 }
 
+const countryOptions = [
+    { code: '60', name: 'Malaysia', flag: '/public/media/flags/malaysia.svg' },
+    { code: '65', name: 'Singapore', flag: '/public/media/flags/singapore.svg' },
+];
+
 const salutationOptions = [
     { value: 'mr', label: 'Mr' },
     { value: 'ms', label: 'Ms' },
@@ -75,7 +80,7 @@ const initialFormData: OwnerRegistrationForm = {
     name_last: '',
     name_preferred: '',
     email: '',
-    country_code: '+60',
+    country_code: '60',
     phone_no: '',
     address_1: '',
     address_2: '',
@@ -348,6 +353,13 @@ function EditRegistrationForm() {
         }
     };
 
+    const handleChangeCountryCode = (countryCode: string) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            country_code: countryCode
+        }))
+    }
+
     const handleOtherPropertyChange = (e) => {
         setFormData((prevData) => ({ ...prevData, other_property_name: e.target.value }));
     };
@@ -577,20 +589,26 @@ function EditRegistrationForm() {
                                         <div className="flex">
                                             <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
                                                 <button className="dropdown-toggle btn btn-light mr-1">
-                                                    +60
+                                                    +{formData.country_code}
                                                 </button>
-                                                <div className="dropdown-content w-full max-w-56 py-2">
+                                                <div className="dropdown-content w-full max-w-56 py-2" data-dropdown-dismiss="true">
                                                     <div className="menu menu-default flex flex-col w-full">
-                                                        <div className="menu-item">
-                                                            <button type='button' className="menu-link flex items-center text-center">
-                                                                <span className="menu-icon">
-                                                                    <img alt="" className="inline-block size-4 rounded-full" src="/public/media/flags/malaysia.svg" />
-                                                                </span>
-                                                                <span className="menu-title">
-                                                                    Malaysia +(60)
-                                                                </span>
-                                                            </button>
-                                                        </div>
+                                                        {countryOptions.map((country) => (
+                                                            <div className="menu-item">
+                                                                <button
+                                                                    type='button'
+                                                                    className="menu-link flex items-center text-center"
+                                                                    onClick={() => handleChangeCountryCode(country.code)}
+                                                                >
+                                                                    <span className="menu-icon">
+                                                                        <img alt="" className="inline-block size-4 rounded-full" src={country.flag} />
+                                                                    </span>
+                                                                    <span className="menu-title">
+                                                                        {country.name} (+{country.code})
+                                                                    </span>
+                                                                </button>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 </div>
                                             </div>

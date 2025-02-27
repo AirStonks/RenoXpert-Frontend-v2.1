@@ -576,7 +576,7 @@ function CreatePO() {
                                                 Phone No.:
                                             </td>
                                             <td className="text-xs text-gray-900 pb-3">
-                                                +60 {selectedVendor.phone_no}
+                                                +{selectedVendor.country_code} {selectedVendor.phone_no}
                                             </td>
                                         </tr>
                                     </tbody>

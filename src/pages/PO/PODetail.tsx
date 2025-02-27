@@ -196,7 +196,7 @@ function PODetail() {
                                                 Phone No.:
                                             </td>
                                             <td className="text-xs text-gray-900 pb-3">
-                                                +60 {po.vendor.phone_no}
+                                                +{po.vendor.country} {po.vendor.phone_no}
                                             </td>
                                         </tr>
                                     </tbody>

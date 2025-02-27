@@ -19,6 +19,12 @@ const API_URL =
                 ? import.meta.env.VITE_LOCAL_API_URL
                 : null;
 
+// Country code options
+const countryOptions = [
+    { code: '60', name: 'Malaysia', flag: '/public/media/flags/malaysia.svg' },
+    { code: '65', name: 'Singapore', flag: '/public/media/flags/singapore.svg' },
+];
+
 const OwnerLogin: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -40,7 +46,7 @@ const OwnerLogin: React.FC = () => {
     useEffect(() => {
         document.title = "Login | RenoXpert";
         KTComponent.init();
-        setCountryCode('+60');
+        setCountryCode('60');
 
         const searchParams = new URLSearchParams(location.search);
         const redirectUrl = location.state?.from || searchParams.get('redirect') || '/owner/home';
@@ -50,7 +56,7 @@ const OwnerLogin: React.FC = () => {
     }, [location.search, location.state]);
 
     const [mobile, setMobile] = useState<string>('');
-    const [countryCode, setCountryCode] = useState<string>('+60');
+    const [countryCode, setCountryCode] = useState<string>('60');
     const [showOtpForm, setShowOtpForm] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -65,6 +71,11 @@ const OwnerLogin: React.FC = () => {
         setMobile(value);
         setError(null); // Clear error when user starts typing
     };
+
+    const handleChangeCountryCode = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const { value } = e.target;
+        setCountryCode(value);
+    }
 
     const isValidPhoneNumber = (number: string) => {
         // Regex to match a 10-digit phone number starting with 0
@@ -95,7 +106,7 @@ const OwnerLogin: React.FC = () => {
         }
 
         try {
-            const response = await fetchExistsUser(mobile);
+            const response = await fetchExistsUser(countryCode, mobile);
 
             if (response.success) {
                 handleRequestOtp();
@@ -121,6 +132,7 @@ const OwnerLogin: React.FC = () => {
 
         try {
             const requestBody = {
+                country_code: countryCode,
                 mobile: mobile,
                 otp_code: code
             };
@@ -215,20 +227,26 @@ const OwnerLogin: React.FC = () => {
                                 <div className="flex">
                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
                                         <button className="dropdown-toggle btn btn-light mr-1">
-                                            +60
+                                            +{countryCode}
                                         </button>
-                                        <div className="dropdown-content w-full max-w-56 py-2">
+                                        <div className="dropdown-content w-full max-w-56 py-2" data-dropdown-dismiss="true">
                                             <div className="menu menu-default flex flex-col w-full">
-                                                <div className="menu-item">
-                                                    <button type='button' className="menu-link flex items-center text-center">
-                                                        <span className="menu-icon">
-                                                            <img alt="" className="inline-block size-4 rounded-full" src="/public/media/flags/malaysia.svg" />
-                                                        </span>
-                                                        <span className="menu-title">
-                                                            Malaysia +(60)
-                                                        </span>
-                                                    </button>
-                                                </div>
+                                                {countryOptions.map((country) => (
+                                                    <div className="menu-item">
+                                                        <button
+                                                            type='button'
+                                                            className="menu-link flex items-center text-center"
+                                                            onClick={() => setCountryCode(country.code)}
+                                                        >
+                                                            <span className="menu-icon">
+                                                                <img alt="" className="inline-block size-4 rounded-full" src={country.flag} />
+                                                            </span>
+                                                            <span className="menu-title">
+                                                                {country.name} (+{country.code})
+                                                            </span>
+                                                        </button>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>

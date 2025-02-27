@@ -88,7 +88,7 @@ const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmi
 
     const handleResend = async () => {
         try {
-            const response = await axios.post(`${API_URL}sms-otp/request/${mobile}`);
+            const response = await axios.post(`${API_URL}sms-otp/request/${countryCode}/${mobile}`);
 
             if (response.data.status === 'success') {
                 notify('success', 'OTP has been sent to the mobile no.');
@@ -137,7 +137,7 @@ const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmi
                             <div className="flex flex-col">
                                 <span className="text-2sm text-gray-700 mb-1.5">Enter the verification code we sent to</span>
                                 {/* <a href="#" className="text-sm font-medium text-gray-900">****** {state.mobileLast}</a> */}
-                                <span className="text-sm font-medium text-gray-900">{countryCode} {mobile}</span>
+                                <span className="text-sm font-medium text-gray-900">+{countryCode} {mobile}</span>
                             </div>
                         </div>
 

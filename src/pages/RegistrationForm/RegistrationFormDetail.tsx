@@ -146,7 +146,7 @@ function RegistrationFormDetail() {
 
                             <div className="flex flex-col">
                                 <span className="font-normal">Phone Number:</span>
-                                <span className="font-semibold">{formDetail.user.country_code}{formDetail.user.phone_no}</span>
+                                <span className="font-semibold">+{formDetail.user.country_code} {formDetail.user.phone_no}</span>
                             </div>
 
                             <div className="flex flex-col">

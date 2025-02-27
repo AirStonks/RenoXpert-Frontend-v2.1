@@ -86,7 +86,7 @@ function RenoRegistrationFormDetail() {
                         </div>
                         <div className="flex flex-col flex-auto">
                             <span className="text-slate-400 font-medium">Phone Number</span>
-                            <span className="font-semibold">+60 {form.user.phone_no}</span>
+                            <span className="font-semibold">+{form.user.country_code} {form.user.phone_no}</span>
                         </div>
                     </div>
                 </div>

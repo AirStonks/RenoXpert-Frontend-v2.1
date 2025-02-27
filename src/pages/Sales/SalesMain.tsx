@@ -263,7 +263,7 @@ function SalesMain() {
                                                         <>
                                                             <span>{sale.order.user.name}</span>
                                                             <span className="text-xs text-slate-400">{sale.order.user.email}</span>
-                                                            <span className="text-xs text-slate-700">+60 {sale.order.user.phone_no}</span>
+                                                            <span className="text-xs text-slate-700">+{sale.order.user.country_code} {sale.order.user.phone_no}</span>
                                                         </>
                                                         :
                                                         '-'

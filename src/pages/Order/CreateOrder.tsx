@@ -725,7 +725,7 @@ function CreateOrder() {
                                                     <div className="flex flex-col gap-1 text-gray-900">
                                                         <span className='text-sm font-semibold'>{selectedUser.name}</span>
                                                         <span className='text-sm font-normal text-slate-400'>{selectedUser.email}</span>
-                                                        <span className='text-sm font-normal'>+60 {selectedUser.phone_no}</span>
+                                                        <span className='text-sm font-normal'>+{selectedUser.country_code} {selectedUser.phone_no}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1327,7 +1327,7 @@ function CreateOrder() {
                                         </div>
                                         <div className="flex flex-col flex-auto">
                                             <span className="text-slate-400 font-medium">Phone Number</span>
-                                            <span className="font-semibold">+60 {formDetail.user.phone_no}</span>
+                                            <span className="font-semibold">+{formDetail.user.country_code} {formDetail.user.phone_no}</span>
                                         </div>
                                     </div>
                                 </div>

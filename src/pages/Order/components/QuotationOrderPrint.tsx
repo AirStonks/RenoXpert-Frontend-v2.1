@@ -145,7 +145,7 @@ function QuotationOrderPrint() {
 
     const ATTN_NAME = orderDetail.user.name;
     const ATTN_ADDRESS = `${orderDetail.user.address.address_1}, ${orderDetail.user.address.address_2}, ${orderDetail.user.address.city}, ${orderDetail.user.address.state}, ${orderDetail.user.address.postcode}`;
-    const ATTN_MOBILE = `+60 ${orderDetail.user.phone_no}`;
+    const ATTN_MOBILE = `+${orderDetail.user.country_code} ${orderDetail.user.phone_no}`;
     const ATTN_EMAIL = orderDetail.user.email;
 
     // Calculate totals based on package unitPrice and qty

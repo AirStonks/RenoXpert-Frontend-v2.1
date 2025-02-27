@@ -136,6 +136,7 @@ function OrderOverview() {
     const handleAgreeOrder = async () => {
         navigate('/confirm/order/otp/verify', {
             state: {
+                'conutry_code': orderDetail.user.country_code,
                 'mobile': orderDetail.user.phone_no,
                 'orderId': orderDetail.id
             }

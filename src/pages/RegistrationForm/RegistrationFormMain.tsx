@@ -320,7 +320,7 @@ function RegistrationFormMain() {
                                                         <>
                                                             <span>{regForm.user.name_first} {regForm.user.name_last}</span>
                                                             <span className="text-xs text-slate-400">{regForm.user.email}</span>
-                                                            <span className="text-xs text-slate-700">{regForm.user.country_code} {regForm.user.phone_no}</span>
+                                                            <span className="text-xs text-slate-700">+{regForm.user.country_code} {regForm.user.phone_no}</span>
                                                         </>
                                                         :
                                                         '-'

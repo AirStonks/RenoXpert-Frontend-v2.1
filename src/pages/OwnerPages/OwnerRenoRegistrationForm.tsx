@@ -30,6 +30,11 @@ interface UploadedFile {
     previewUrl: string;
 }
 
+const countryOptions = [
+    { code: '60', name: 'Malaysia', flag: '/public/media/flags/malaysia.svg' },
+    { code: '65', name: 'Singapore', flag: '/public/media/flags/singapore.svg' },
+];
+
 const salutationOptions = [
     { value: 'mr', label: 'Mr' },
     { value: 'ms', label: 'Ms' },
@@ -121,7 +126,7 @@ const initialFormData: OwnerRegistrationForm = {
     name_last: '',
     name_preferred: '',
     email: '',
-    country_code: '+60',
+    country_code: '60',
     phone_no: '',
     address_1: '',
     address_2: '',
@@ -425,6 +430,13 @@ function OwnerRenoRegistrationForm() {
         }
     };
 
+    const handleChangeCountryCode = (countryCode: string) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            country_code: countryCode
+        }))
+    }
+
     // Check if the file type is accepted
     const isAcceptedFileType = (type: string) => acceptedFileTypes.includes(type);
 
@@ -667,8 +679,7 @@ function OwnerRenoRegistrationForm() {
             }
         }
 
-        console.log(newErrors);
-
+        notify('error', 'Please check your form error.');
 
         return newErrors;
     };
@@ -804,6 +815,7 @@ function OwnerRenoRegistrationForm() {
 
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
+            notify('error', 'Please check your form error.');
             return;
         } else {
             window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -822,6 +834,7 @@ function OwnerRenoRegistrationForm() {
 
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
+            notify('error', 'Please check your form error.');
             return;
         }
 
@@ -946,7 +959,7 @@ function OwnerRenoRegistrationForm() {
 
                                         <div className="flex flex-col">
                                             <span className="font-normal">Phone Number:</span>
-                                            <span className="font-bold">{formData.country_code} {formData.phone_no}</span>
+                                            <span className="font-bold">+{formData.country_code} {formData.phone_no}</span>
                                         </div>
 
                                         <div className="flex flex-col">
@@ -1849,20 +1862,26 @@ function OwnerRenoRegistrationForm() {
                                                 <div className="flex">
                                                     <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
                                                         <button className="dropdown-toggle btn btn-light mr-1">
-                                                            +60
+                                                            +{formData.country_code}
                                                         </button>
-                                                        <div className="dropdown-content w-full max-w-56 py-2">
+                                                        <div className="dropdown-content w-full max-w-56 py-2" data-dropdown-dismiss="true">
                                                             <div className="menu menu-default flex flex-col w-full">
-                                                                <div className="menu-item">
-                                                                    <button type='button' className="menu-link flex items-center text-center">
-                                                                        <span className="menu-icon">
-                                                                            <img alt="" className="inline-block size-4 rounded-full" src="/public/media/flags/malaysia.svg" />
-                                                                        </span>
-                                                                        <span className="menu-title">
-                                                                            Malaysia +(60)
-                                                                        </span>
-                                                                    </button>
-                                                                </div>
+                                                                {countryOptions.map((country) => (
+                                                                    <div className="menu-item">
+                                                                        <button
+                                                                            type='button'
+                                                                            className="menu-link flex items-center text-center"
+                                                                            onClick={() => handleChangeCountryCode(country.code)}
+                                                                        >
+                                                                            <span className="menu-icon">
+                                                                                <img alt="" className="inline-block size-4 rounded-full" src={country.flag} />
+                                                                            </span>
+                                                                            <span className="menu-title">
+                                                                                {country.name} (+{country.code})
+                                                                            </span>
+                                                                        </button>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         </div>
                                                     </div>

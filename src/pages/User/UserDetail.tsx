@@ -150,7 +150,7 @@ function UserDetail() {
                                                 Phone No:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
-                                                +60 {userDetail.phone_no}
+                                                +{userDetail.country_code} {userDetail.phone_no}
                                             </td>
                                         </tr>
                                         <tr>

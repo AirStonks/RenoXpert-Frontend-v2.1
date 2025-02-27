@@ -291,7 +291,7 @@ function UsersMain() {
                                             <span>{user.name}</span>
                                         </td>
                                         <td>
-                                            +60 {user.phone_no}
+                                            +{user.country_code} {user.phone_no}
                                         </td>
                                         <td>
                                             {user.email}
@@ -455,7 +455,7 @@ function UsersMain() {
                             <div className="flex flex-col">
                                 <span>{selectedUser?.name_first} {selectedUser?.name_last}</span>
                                 <span className="font-semibold text-gray-500">{selectedUser?.email}</span>
-                                <span className="font-semibold text-gray-700">+60 {selectedUser?.phone_no}</span>
+                                <span className="font-semibold text-gray-700">+{selectedUser?.country_code} {selectedUser?.phone_no}</span>
                             </div>
                         </div>
 

@@ -269,7 +269,7 @@ const PMAdvanceTable = () => {
                         <div className="flex flex-col text-sm font-medium text-gray-900">
                             <span className='py-2 px-4 rounded-md bg-slate-200 dark:bg-slate-800 w-fit mb-1'>{item.property?.block}-{item.property?.floor}-{item.property?.unit_no}</span>
                             <span>{item.sale.order.user.name}</span>
-                            <span className="text-xs text-slate-700">+60 {item.sale.order.user.phone_no}</span>
+                            <span className="text-xs text-slate-700">+{item.sale.order.user.country_code} {item.sale.order.user.phone_no}</span>
                         </div>
                     </div>
                     {/* VP Progress */}

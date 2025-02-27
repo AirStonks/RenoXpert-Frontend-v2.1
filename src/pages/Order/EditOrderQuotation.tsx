@@ -872,7 +872,7 @@ function EditOrderQuotation() {
                                         </div>
                                         <div className="flex flex-col flex-auto">
                                             <span className="text-slate-400 font-medium">Phone Number</span>
-                                            <span className="font-semibold">+60 {formDetail.user.phone_no}</span>
+                                            <span className="font-semibold">+{formDetail.user.country_code} {formDetail.user.phone_no}</span>
                                         </div>
                                     </div>
                                 </div>

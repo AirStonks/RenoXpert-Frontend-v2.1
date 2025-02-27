@@ -52,9 +52,9 @@ export const userDetail = async () => {
     }
 };
 
-export const fetchExistsUser = async (phone_no: string) => {
+export const fetchExistsUser = async (country_code: string, phone_no: string) => {
     try {
-        const response = await axios.get(API_URL + `owner/check/list/user/${phone_no}`);
+        const response = await axios.get(API_URL + `owner/check/list/user/${country_code}/${phone_no}`);
         return response.data; // Return product data
     } catch (error) {
         handleOwner401Error(error as AxiosError);

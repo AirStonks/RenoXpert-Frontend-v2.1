@@ -331,7 +331,7 @@ function PMTable() {
                                                         <>
                                                             <span>{progress.sale.order.user.name}</span>
                                                             <span className="text-xs text-slate-400">{progress.sale.order.user.email}</span>
-                                                            <span className="text-xs text-slate-700">+60 {progress.sale.order.user.phone_no}</span>
+                                                            <span className="text-xs text-slate-700">+{progress.sale.order.user.country_code} {progress.sale.order.user.phone_no}</span>
                                                         </>
                                                         :
                                                         '-'

@@ -8,6 +8,11 @@ import { Slide, toast } from "react-toastify";
 import ClipboardJS from "clipboard";
 import { useUser } from "../../context/UserContext";
 
+const countryOptions = [
+    { code: '60', name: 'Malaysia', flag: '/public/media/flags/malaysia.svg' },
+    { code: '65', name: 'Singapore', flag: '/public/media/flags/singapore.svg' },
+];
+
 function AddOwner() {
     const navigate = useNavigate();
 
@@ -16,6 +21,7 @@ function AddOwner() {
         name_last: '',
         email: '',
         type: '',
+        country_code: '60',
         phone: ''
     });
 
@@ -63,6 +69,13 @@ function AddOwner() {
             [name]: value
         }));
     };
+
+    const handleChangeCountryCode = (countryCode: string) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            country_code: countryCode
+        }))
+    }
 
     const handleReset = () => {
         setFormData({ name: '', email: '', type: 'staff', phone: '' });
@@ -209,7 +222,31 @@ function AddOwner() {
                             <label className='mb-2 text-sm font-medium text-gray-900'>Phone Number</label>
 
                             <div className="flex items-center mb-2">
-                                <div className='badge badge-lg text-md rounded-md cursor-default mr-2'>+60</div>
+                                <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click">
+                                    <button className="dropdown-toggle btn btn-light mr-1">
+                                        +{formData.country_code}
+                                    </button>
+                                    <div className="dropdown-content w-full max-w-56 py-2" data-dropdown-dismiss="true">
+                                        <div className="menu menu-default flex flex-col w-full">
+                                            {countryOptions.map((country) => (
+                                                <div className="menu-item">
+                                                    <button
+                                                        type='button'
+                                                        className="menu-link flex items-center text-center"
+                                                        onClick={() => handleChangeCountryCode(country.code)}
+                                                    >
+                                                        <span className="menu-icon">
+                                                            <img alt="" className="inline-block size-4 rounded-full" src={country.flag} />
+                                                        </span>
+                                                        <span className="menu-title">
+                                                            {country.name} (+{country.code})
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                                 <input
                                     className='input'
                                     placeholder='123456789'

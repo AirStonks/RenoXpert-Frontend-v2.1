@@ -219,7 +219,7 @@ function RenoAcceptanceForm() {
                                     </div>
                                     <div className="flex gap-6 mb-2">
                                         <span>
-                                            +60 {formData.user.phone_no}
+                                            +{formData.user.country_code} {formData.user.phone_no}
                                         </span>
                                     </div>
                                 </div>

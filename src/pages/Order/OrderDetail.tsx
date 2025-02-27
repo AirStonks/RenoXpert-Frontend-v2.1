@@ -733,7 +733,7 @@ function OrderDetail() {
                                                     Phone No.:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    +60 {orderDetail.user.phone_no}
+                                                    +{orderDetail.user.country_code} {orderDetail.user.phone_no}
                                                 </td>
                                             </tr>
                                         </>

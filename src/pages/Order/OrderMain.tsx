@@ -401,7 +401,7 @@ function OrderMain() {
                                                         <>
                                                             <span>{order.user.name}</span>
                                                             <span className="text-xs text-slate-400">{order.user.email}</span>
-                                                            <span className="text-xs text-slate-700">+60 {order.user.phone_no}</span>
+                                                            <span className="text-xs text-slate-700">+{order.user.country_code} {order.user.phone_no}</span>
                                                         </>
                                                         :
                                                         '-'
