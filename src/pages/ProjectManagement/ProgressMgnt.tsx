@@ -686,6 +686,40 @@ function ProgressMgnt() {
                         </Link>
                     </div>
                 </div>
+                <div className="card flex-1">
+                    <div className="card-header">
+                        <div className="card-title">
+                            Permission
+                        </div>
+                    </div>
+                    <div className="card-body">
+                        <div className="flex flex-col gap-4">
+                            <h2>
+                                User/Roles
+                            </h2>
+                            <label className="input input-lg">
+                                <input
+                                    placeholder="Search for users, roles to assign permission"
+                                    type="text"
+                                // value={searchTerm}
+                                // onChange={handleSearch}
+                                />
+                            </label>
+                            <div className="flex items-center gap-4">
+                                <div className="relative size-[36px] shrink-0">
+                                    {/* ICON */}
+                                </div>
+                                <span>
+                                    Anyone
+                                </span>
+                                <div className="ml-auto">
+                                    {/* DROPDOWN */}
+                                    <button className="btn btn-primary">TEST</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className="flex flex-col">

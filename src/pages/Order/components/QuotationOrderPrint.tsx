@@ -313,13 +313,13 @@ function QuotationOrderPrint() {
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            This quotation is only valid for 7 days. If {COMPANY_NAME} receives the Client’s confirmation after 7 days, {COMPANY_NAME} reserves the right to make changes to the quotation.
+                            This quotation is only valid for 7 days. If BeLive receives the Client’s confirmation after 7 days, BeLive reserves the right to make changes to the quotation.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            {COMPANY_NAME} reserves the right to decide on the overall design and theme, the selection of furniture, fixtures, and fittings for the Client’s unit including the colour and material of products.
+                            BeLive reserves the right to decide on the overall design and theme, the selection of furniture, fixtures, and fittings for the Client’s unit including the colour and material of products.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
@@ -331,37 +331,37 @@ function QuotationOrderPrint() {
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            Any pictures or illustrations shown are for reference purposes only. {COMPANY_NAME} will attempt to create a similar concept; however, some items may be seasonal, and {COMPANY_NAME} reserves the right to substitute similar products of equivalent quality at our discretion.
+                            Any pictures or illustrations shown are for reference purposes only. BeLive will attempt to create a similar concept; however, some items may be seasonal, and BeLive reserves the right to substitute similar products of equivalent quality at our discretion.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            {COMPANY_NAME} is allowed to take photos of the renovation and the end product for marketing and promotional purposes.
+                            BeLive is allowed to take photos of the renovation and the end product for marketing and promotional purposes.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            {COMPANY_NAME} reserves the right to replace the items as quoted with products of equivalent or higher value, of similar functionality, and/or purpose.
+                            BeLive reserves the right to replace the items as quoted with products of equivalent or higher value, of similar functionality, and/or purpose.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            The commencement date for the renovation shall be determined at the sole discretion of {COMPANY_NAME}.
+                            The commencement date for the renovation shall be determined at the sole discretion of BeLive.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            {COMPANY_NAME} will make reasonable efforts to meet the specified completion dates. However, unforeseen circumstances may lead to adjustments in the timeline. The Client will be informed of any changes.
+                            BeLive will make reasonable efforts to meet the specified completion dates. However, unforeseen circumstances may lead to adjustments in the timeline. The Client will be informed of any changes.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            In the event of non-payment or breach of contract by the Client, {COMPANY_NAME} reserves the right to suspend work until the issue is resolved. Any additional costs incurred as a result of such suspension will be borne by the Client.
+                            In the event of non-payment or breach of contract by the Client, BeLive reserves the right to suspend work until the issue is resolved. Any additional costs incurred as a result of such suspension will be borne by the Client.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
@@ -373,13 +373,13 @@ function QuotationOrderPrint() {
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            For safety and security reasons, access/execution of all works by {COMPANY_NAME} staff, suppliers, contractors, and sub-contractors requires the unit to be vacated during the entire duration of renovation work.
+                            For safety and security reasons, access/execution of all works by BeLive staff, suppliers, contractors, and sub-contractors requires the unit to be vacated during the entire duration of renovation work.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            The Client consents to refrain from accessing the unit without prior notification to the {COMPANY_NAME} team. Entry should be coordinated with a designated team member if the Client wishes to enter the unit during the renovation period.
+                            The Client consents to refrain from accessing the unit without prior notification to the BeLive team. Entry should be coordinated with a designated team member if the Client wishes to enter the unit during the renovation period.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
@@ -415,19 +415,19 @@ function QuotationOrderPrint() {
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            It shall be the Client’s duty to ensure that all details ascribed in the email are correct and accurate. {COMPANY_NAME} shall not be held responsible for any discrepancies.
+                            It shall be the Client’s duty to ensure that all details ascribed in the email are correct and accurate. BeLive shall not be held responsible for any discrepancies.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            Renovations proceed in batches based on a first-come, first-served basis. {COMPANY_NAME} is not responsible for delays due to a lack of documents or payment delays.
+                            Renovations proceed in batches based on a first-come, first-served basis. BeLive is not responsible for delays due to a lack of documents or payment delays.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            The Client assumes all risk for installing a partition. {COMPANY_NAME} is not liable for penalties or removal costs requested by authorities.
+                            The Client assumes all risk for installing a partition. BeLive is not liable for penalties or removal costs requested by authorities.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
@@ -439,7 +439,7 @@ function QuotationOrderPrint() {
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            For all goods, products, and materials under the renovation work, {COMPANY_NAME} reserves the right to remove any furniture and/or fittings up to the value of the amount owing to {COMPANY_NAME}.
+                            For all goods, products, and materials under the renovation work, BeLive reserves the right to remove any furniture and/or fittings up to the value of the amount owing to BeLive.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
