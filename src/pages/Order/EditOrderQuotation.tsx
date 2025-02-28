@@ -212,7 +212,7 @@ function EditOrderQuotation() {
             const updatedPackages = JSON.parse(includePackages).map(pkg => ({
                 ...pkg,
                 quantity: pkg.quantity ?? 1,
-              }));
+            }));
 
             setSelectedPackages(updatedPackages);
             localStorage.setItem('selected_quotation_packages', JSON.stringify(updatedPackages));
@@ -770,19 +770,18 @@ function EditOrderQuotation() {
                                                                             .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </td>
                                                                 <td className='text-center'>
-                                                                    {product.pivot.isOriginal ?
-                                                                        !product.pivot.visibility && <i className="ki-solid ki-eye-slash text-2xl"></i>
-                                                                        :
-                                                                        <button
-                                                                            className="btn-revoke btn btn-sm btn-danger"
-                                                                            data-tooltip="#remove_tooltip"
-                                                                            data-action="remove"
-                                                                            data-id={product.id}
-                                                                            onClick={() => handleRemoveProduct(prodPackage.id, product.id)}
-                                                                        >
-                                                                            Remove
-                                                                        </button>
+                                                                    {!product.pivot.visibility &&
+                                                                        <i className="ki-solid ki-eye-slash text-2xl"></i>
                                                                     }
+                                                                    <button
+                                                                        className="btn-revoke btn btn-sm btn-danger"
+                                                                        data-tooltip="#remove_tooltip"
+                                                                        data-action="remove"
+                                                                        data-id={product.id}
+                                                                        onClick={() => handleRemoveProduct(prodPackage.id, product.id)}
+                                                                    >
+                                                                        Remove
+                                                                    </button>
                                                                 </td>
                                                             </tr>
                                                         ))}
