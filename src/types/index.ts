@@ -19,6 +19,27 @@ export interface Address {
     postcode?: string;
 }
 
+export interface Permission {
+    id?: string;
+    item_id?: string;
+    permission_id?: string;
+    permission_name?: string;
+    permission_description?: string;
+    users?: User[];
+    roles?: Role[];
+    userItems?: User[];
+    roleItems?: Role[];
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface Role {
+    id?: string;
+    role_name?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface User {
     id?: string;
     name?: string;
@@ -34,6 +55,29 @@ export interface User {
     status?: string;
     address?: Address;
     password?: string;
+    pivot?: Permission;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface Resource {
+    id?: string;
+    resource_name?: string;
+    resourceItems?: ResourceItem[];
+    orders?: Order[];
+    renoProgresses?: RenoProgress[];
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface ResourceItem {
+    id?: string;
+    resource_id?: string;
+    item_reference_id?: string;
+    item_reference_type?: string;
+    item_name?: string;
+    created_by?: User;
+    updated_by?: User;
     created_at?: string;
     updated_at?: string;
 }
@@ -975,6 +1019,11 @@ export interface RenoProgress {
     post_reno_completion?: number,
     remaining_percentage?: number,
     paid_percentage?: number,
+    resource_id?: string,
+    resource_item_id?: string,
+    resourceItem?: ResourceItem,
+    permission_id?: string;
+    permissions?: User[],
     completed_at?: string,
     created_at?: string,
     updated_at?: string,

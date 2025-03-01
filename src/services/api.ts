@@ -148,7 +148,80 @@ export const deactivateUser = async (userId: number) => {
     }
 };
 
+export const permissionIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'permissions', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
 
+export const addUserItemPermission = async (userId: number, permissionId: number = 1, itemId: number) => {
+    try {
+        const response = await axios.post(API_URL + `resource-items/add/user/permission`, {
+            user_id: userId,
+            permission_id: permissionId,
+            item_id: itemId
+        }, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+
+}
+
+export const changeRenoProgressGeneralPermission = async (renoProgressId: number, permissionId: number) => {
+    try {
+        const response = await axios.post(API_URL + `reno-progress/${renoProgressId}/general-permission`, {
+            permission_id: permissionId
+        }, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const changeUserItemPermission = async (userId: number, itemId: number, permissionId: number) => {
+    try {
+        const response = await axios.post(API_URL + `resource-items/${userId}/${itemId}/permission`, {
+            permission_id: permissionId
+        }, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const removeUserItemPermission = async (userId: number, itemId: number) => {
+    try {
+        const response = await axios.delete(API_URL + `resource-items/${userId}/${itemId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
 
 export const fetchData = async () => {
     try {
