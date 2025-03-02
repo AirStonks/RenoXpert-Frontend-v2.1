@@ -947,19 +947,24 @@ function ProgressMgnt() {
                                                     <div className="menu-item">
                                                         <span className="text-xs text-gray-600 pl-[19px] mb-2">Permission</span>
                                                     </div>
-                                                    {permissions.length > 0 ? permissions.map((permission, index) => (
-                                                        <div className="menu-item" key={index} data-id={permission.id}>
-                                                            <button
-                                                                className="menu-link"
-                                                                onClick={() => handleChangePermission(Number(perm.id), Number(perm.pivot.item_id), Number(permission.id))}
-                                                            >
-                                                                <span className="menu-title">{permission.permission_name}</span>
-                                                            </button>
-                                                        </div>
-                                                    ))
-                                                        :
+                                                    {permissions.length > 0 ? permissions
+                                                        .filter(permission => {
+                                                            // Check if the current user type is 'owner' and exclude permission.id === 2
+                                                            const isOwner = perm.type === 'owner';
+                                                            return !isOwner || (isOwner && permission.id !== 2);
+                                                        })
+                                                        .map((permission, index) => (
+                                                            <div className="menu-item" key={index} data-id={permission.id}>
+                                                                <button
+                                                                    className="menu-link"
+                                                                    onClick={() => handleChangePermission(Number(perm.id), Number(perm.pivot.item_id), Number(permission.id))}
+                                                                >
+                                                                    <span className="menu-title">{permission.permission_name}</span>
+                                                                </button>
+                                                            </div>
+                                                        )) : (
                                                         <span>Loading</span>
-                                                    }
+                                                    )}
                                                     <div className="menu-item">
                                                         <button
                                                             className="menu-link"
