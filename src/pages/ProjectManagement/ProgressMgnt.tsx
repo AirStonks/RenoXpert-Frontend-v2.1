@@ -845,19 +845,9 @@ function ProgressMgnt() {
                                         ))
                                             :
                                             <div className="menu-item">
-                                                <button
-                                                    className="menu-link gap-2"
-                                                // onClick={() => handleSelectProperty(property)}
-                                                ><img
-                                                        alt=""
-                                                        className="size-9 rounded-full border-1 border-secondary shrink-0"
-                                                        src="/media/avatars/default-user.png"
-                                                    />
-                                                    <div className="flex flex-col items-start">
-                                                        <span className="text-gray-900 text-base font-semibold">No User</span>
-                                                        <span className="text-gray-600 text-sm">TEST</span>
-                                                    </div>
-                                                </button>
+                                                <div className="flex justify-center items-center cursor-default py-4">
+                                                    <span className="text-gray-600 text-sm">No user found</span>
+                                                </div>
                                             </div>
                                         }
                                     </div>
