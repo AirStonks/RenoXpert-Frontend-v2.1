@@ -854,6 +854,12 @@ function ProgressMgnt() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
+                                <div className="flex flex-col items-start">
+                                    <span className="text-gray-900 text-base font-semibold">Owner access not supported yet.</span>
+                                    <span className="text-gray-600 text-sm"></span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4">
                                 <div className="relative size-[36px] shrink-0">
                                     <img
                                         alt=""
