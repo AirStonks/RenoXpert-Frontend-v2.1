@@ -151,6 +151,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
             const packagePrice = parseFloat(selectBtn.dataset.price);
             const packageDescription = selectBtn.dataset.desc;
             const packageCategory = selectBtn.dataset.cat;
+            const packageInternalDesc = selectBtn.dataset.intdesc;
 
             // Retrieve the current selected prodPackages from localStorage
             const storedPackages = localStorage.getItem('selected_quotation_packages');
@@ -171,6 +172,9 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                 // If it is not selected, add it
                 const selectedPackage = JSON.parse(packagesData).find(prodPackage => prodPackage.id === Number(id));
 
+                console.log(packageInternalDesc);
+                
+
                 selectedPackages.push({
                     id: Number(id),
                     name: packageName,
@@ -178,6 +182,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                     quantity: 1,
                     total_price: packagePrice,
                     category: packageCategory,
+                    description_internal: packageInternalDesc,
                     products: selectedPackage.products
                 });
 
@@ -303,6 +308,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                                                                 data-name={pkg.name}
                                                                 data-price={pkg.total_price}
                                                                 data-desc={pkg.description}
+                                                                data-intdesc={pkg.description_internal}
                                                                 data-cat={pkg.category}
                                                                 onClick={(e) => handleSelectPackage(e.target)}
                                                             >
