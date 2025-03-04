@@ -1081,6 +1081,14 @@ function EditOrder() {
                                                             <span className="text-base text-gray-900 font-medium">
                                                                 {prodPackage.name}
                                                             </span>
+                                                            {prodPackage.description_internal &&
+                                                                <div className="flex items-center gap-2">
+                                                                    <i className="ki-filled ki-information-2 text-warning text-xl"></i>
+                                                                    <span className="text-sm text-gray-700 font-medium">
+                                                                        {prodPackage.description_internal}
+                                                                    </span>
+                                                                </div>
+                                                            }
                                                             <span className='text-base text-gray-700'>
                                                                 RM {(prodPackage.total_price * (prodPackage.quantity ? prodPackage.quantity : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </span>

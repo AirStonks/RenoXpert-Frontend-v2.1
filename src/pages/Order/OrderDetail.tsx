@@ -524,7 +524,7 @@ function OrderDetail() {
                             </div>
                             <div className="menu-item">
                                 <Link
-                                    to={ `/orders/print/${orderId}` }
+                                    to={`/orders/print/${orderId}`}
                                     className="menu-link"
                                 >
                                     <span className="menu-title">
@@ -958,6 +958,14 @@ function OrderDetail() {
                                                     <div className="flex flex-col items-start">
                                                         <span className="text-base text-gray-900 font-medium">
                                                             {prodPackage.name}
+                                                        </span>
+                                                        <span className="text-sm text-gray-600 font-medium">
+                                                            {prodPackage.description_internal &&
+                                                                <div className="flex items-center gap-2">
+                                                                    <i className="ki-filled ki-information-2 text-warning text-xl"></i>
+                                                                    {prodPackage.description_internal}
+                                                                </div>
+                                                            }
                                                         </span>
                                                         <span className='text-base text-gray-700'>
                                                             RM {(prodPackage.total_price * (prodPackage.quantity ? prodPackage.quantity : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
