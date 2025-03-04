@@ -122,6 +122,17 @@ function PackageDetail() {
         return <div>Product Category not found</div>;
     }
 
+    // Calculate package retail price (sum of all items supply and install retail price)
+    const packageRetailPrice = packageDetail.products.reduce((total, item) => total + ((item.provisioning.supply.retail_price + item.provisioning.install.retail_price) * item.pivot.quantity), 0);
+
+    const packageCogs = packageDetail.products.reduce((total, item) => total + ((item.provisioning.supply.cogs + item.provisioning.install.cogs) * item.pivot.quantity), 0);
+
+    // Calculate package margin in amount
+    const packageMarginInAmount = packageRetailPrice - packageCogs;
+
+    // Calculate package margin in percentage (handle division by zero)
+    const packageMarginInPercentage = packageRetailPrice > 0 ? (packageMarginInAmount / packageRetailPrice) * 100 : 0;
+
     return (
         <>
             <div className="flex justify-between items-center flex-wrap mb-6">
@@ -227,10 +238,34 @@ function PackageDetail() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Price:
+                                            Total Retail Price:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {`RM ${packageDetail.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            {`RM ${packageRetailPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Total COGS:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {`RM ${packageCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Total Margin (Amount):
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {`RM ${packageMarginInAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Total Margin (%):
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {`${packageMarginInPercentage.toFixed(2)}%`}
                                         </td>
                                     </tr>
                                     <tr>
@@ -294,8 +329,12 @@ function PackageDetail() {
                                         <th className='w-[250px]'>Product</th>
                                         <th className='w-[50px] text-center'>Quantity</th>
                                         <th className='w-[100px] text-center'>Visibility</th>
-                                        <th className='w-[100px]'>Unit Price</th>
-                                        <th className='w-[100px]'>Total Price</th>
+                                        <th className='w-[100px]'>Supply Retail Price</th>
+                                        <th className='w-[100px]'>Install Retail Price</th>
+                                        <th className='w-[100px]'>Supply COGS</th>
+                                        <th className='w-[100px]'>Install COGS</th>
+                                        <th className='w-[100px]'>Total Retail Price</th>
+                                        <th className='w-[100px]'>Total COGS</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -326,10 +365,22 @@ function PackageDetail() {
                                                 </label>
                                             </td>
                                             <td>
-                                                RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                RM {product.provisioning.supply.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td>
+                                                RM {product.provisioning.install.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td>
+                                                RM {product.provisioning.supply.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td>
+                                                RM {product.provisioning.install.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                             <td>
                                                 RM {((product.provisioning.supply.retail_price + product.provisioning.install.retail_price) * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td>
+                                                RM {((product.provisioning.supply.cogs + product.provisioning.install.cogs) * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                         </tr>
                                     ))}
