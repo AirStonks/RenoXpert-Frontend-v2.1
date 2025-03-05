@@ -272,7 +272,7 @@ function POMain() {
                                                 </div>
                                             </td>
                                             <td>
-                                                <span>RM {po.total_amount.toFixed(2)}</span>
+                                                <span>RM {po.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                             </td>
                                             <td className='text-center'>
                                                 <span className={`badge badge-pill p-2 cursor-default

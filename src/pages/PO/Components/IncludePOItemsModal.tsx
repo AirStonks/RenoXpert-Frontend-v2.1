@@ -1,23 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import { productIndex } from "../../../services/api";
 import Loading from "../../../components/Loading";
-import { POItem, Product } from "../../../types";
+import { POItem, POPackage, Product } from "../../../types";
+import { KTModal } from "../../../metronic/core";
 
 interface IncludePOItemsModalProps {
-    selectedPOProducts: POItem[];
-    setSelectedPOProducts: React.Dispatch<React.SetStateAction<POItem[]>>;
-    totalAmount: number;
-    setTotalAmount: React.Dispatch<React.SetStateAction<number>>;
+    selectedPOPackageId: string;
+    setSelectedPOPackageId: React.Dispatch<React.SetStateAction<string>>;
+    selectedPOPackages: POPackage[];
+    setSelectedPOPackages: React.Dispatch<React.SetStateAction<POPackage[]>>;
+    isOpen: boolean;
+    setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    recalculateTotalAmount?: () => void
 }
-
 
 type SortOrder = 'asc' | 'desc' | null;
 
 const IncludePOItemsModal: React.FC<IncludePOItemsModalProps> = ({
-    selectedPOProducts,
-    setSelectedPOProducts,
-    totalAmount,
-    setTotalAmount
+    selectedPOPackageId,
+    setSelectedPOPackageId,
+    selectedPOPackages,
+    setSelectedPOPackages,
+    isOpen,
+    setIsOpen,
+    recalculateTotalAmount
 }) => {
     const [products, setProducts] = useState<Product[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -31,10 +37,25 @@ const IncludePOItemsModal: React.FC<IncludePOItemsModalProps> = ({
     // const buttonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
+        if (selectedPOPackageId && isOpen) {
+            initProductTable(page, size, searchTerm, sortOrder, sortField);
+        }
 
-        initProductTable(page, size, searchTerm, sortOrder, sortField);
+        const modalEl = document.querySelector('#add_item_modal') as HTMLElement;
+        const modal = KTModal.getInstance(modalEl);
 
-    }, [page, size, searchTerm, sortOrder, sortField]);
+        const eventId = modal.on('hide', () => {
+            setIsOpen(false);
+            setProducts([]);
+            setSelectedPOPackageId('');
+        })
+
+        // Cleanup function
+        return () => {
+            modal.off('hide', eventId);
+        };
+
+    }, [selectedPOPackageId, setSelectedPOPackageId, isOpen, setIsOpen, page, size, searchTerm, sortOrder, sortField]);
 
     const initProductTable = async (
         page: number,
@@ -46,11 +67,11 @@ const IncludePOItemsModal: React.FC<IncludePOItemsModalProps> = ({
         try {
             setIsLoading(true);
             const response = await productIndex(size, page, searchTerm, order, field);
-            const data = response?.data || [];
+            const data: Product[] = response?.data || [];
 
             // Exclude products where pm_category_id is 1
             const filteredData = data.filter(product => product.pm_category_id !== 1);
-            
+
             setProducts(filteredData);
             setTotalItems(response?.totalCount || 0);
         } catch (error) {
@@ -104,44 +125,66 @@ const IncludePOItemsModal: React.FC<IncludePOItemsModalProps> = ({
 
         if (selectBtn) {
             // Check if the product ID is already selected
-            const productIndex = selectedPOProducts.findIndex(product => Number(product.product_id) === Number(selectedProd.id));
+            const selectedPackage = selectedPOPackages.find((poPackage) => poPackage.package_id === selectedPOPackageId);
+            const productIndex = selectedPackage.po_items.findIndex(product => Number(product.product_id) === Number(selectedProd.id));
 
             if (productIndex > -1) {
                 // If it is selected, remove it
-                setSelectedPOProducts(prevSelectedPOProducts => (
-                    prevSelectedPOProducts.filter(product => Number(product.product_id) !== Number(selectedProd.id))
-                ));
+                const updatedProducts = selectedPackage.po_items.filter(product => Number(product.product_id) !== Number(selectedProd.id));
 
-                setTotalAmount(totalAmount - selectedProd.provisioning.supply.cogs - selectedProd.provisioning.install.cogs);
+                // update selectedPOPackages with updatedProducts
+                setSelectedPOPackages(prevSelectedPOPackages => {
+                    const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
+                        if (packageItem.package_id === selectedPOPackageId) {
+                            return { ...packageItem, po_items: updatedProducts };
+                        }
+                        return packageItem;
+                    });
+
+                    return updatedPackages;
+                });
+
                 selectBtn.className = 'btn btn-primary btn-sm';
                 selectBtn.innerText = 'Select';
+                recalculateTotalAmount();
 
             } else {
                 // If it is not selected, add it
-                console.log(selectedProd.description);
+                setSelectedPOPackages(prevSelectedPOPackages => {
+                    const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
+                        if (packageItem.package_id === selectedPOPackageId) {
+                            const updatedProducts = [
+                                ...packageItem.po_items,
+                                {
+                                    product_id: String(selectedProd.id),
+                                    product_name: selectedProd.name,
+                                    product_desc: selectedProd.description,
+                                    qty: 1,
+                                    uom: selectedProd.uom,
+                                    supply: true,
+                                    install: true,
+                                    unit_price: selectedProd.provisioning.supply.cogs + selectedProd.provisioning.install.cogs,
+                                    supply_price: selectedProd.provisioning.supply.cogs,
+                                    install_price: selectedProd.provisioning.install.cogs,
+                                    total_price: selectedProd.provisioning.supply.cogs + selectedProd.provisioning.install.cogs,
+                                }
+                            ];
 
-                setSelectedPOProducts(prevSelectedPOProducts => {
-                    const newSelectedPOProducts = [
-                        ...prevSelectedPOProducts,
-                        {
-                            product_id: String(selectedProd.id),
-                            product_name: selectedProd.name,
-                            product_desc: selectedProd.description,
-                            qty: 1,
-                            supply: true,
-                            install: true,
-                            unit_price: selectedProd.provisioning.supply.cogs + selectedProd.provisioning.install.cogs,
-                            supply_price: selectedProd.provisioning.supply.cogs,
-                            install_price: selectedProd.provisioning.install.cogs,
-                            total_price: selectedProd.provisioning.supply.cogs + selectedProd.provisioning.install.cogs,
+                            return { ...packageItem, po_items: updatedProducts };
                         }
-                    ];
-                    return newSelectedPOProducts;
+                        return packageItem;
+                    });
+
+                    console.log(updatedPackages);
+                    
+
+                    return updatedPackages;
                 });
 
-                setTotalAmount(totalAmount + selectedProd.provisioning.supply.cogs + selectedProd.provisioning.install.cogs);
+                // setTotalAmount(totalAmount + selectedProd.provisioning.supply.cogs + selectedProd.provisioning.install.cogs);
                 selectBtn.className = 'btn btn-danger btn-sm';
                 selectBtn.innerText = 'Remove';
+                recalculateTotalAmount();
             }
         }
     }
@@ -150,7 +193,7 @@ const IncludePOItemsModal: React.FC<IncludePOItemsModalProps> = ({
     return (
         <>
             {/* Loading Overlay */}
-            {isLoading && <Loading />}
+            {(isOpen === true && isLoading) && <Loading />}
 
             <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="add_item_modal">
                 <div className="modal-content modal-center-y max-w-[900px]">
@@ -176,69 +219,72 @@ const IncludePOItemsModal: React.FC<IncludePOItemsModalProps> = ({
                             </label>
                         </div>
                     </div>
-                    <div className="modal-table overflow-y-auto scrollable-y max-h-[400px]">
-                        <table className="table align-middle text-gray-700 font-medium text-sm">
-                            <thead className="sticky top-0 ">
-                                <tr>
-                                    <th className='text-center'>Item</th>
-                                    <th className='min-w-[120px] text-center'>Price per Qty</th>
-                                    <th className='min-w-[120px] text-center'>Supply Price</th>
-                                    <th className='min-w-[120px] text-center'>Install Price</th>
-                                    <th className='min-w-[120px] text-center'>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {products.length > 0 ? (
-                                    products.map((product, prodIndex) => {
-                                        const isSelected = selectedPOProducts.some(poProd => Number(poProd.product_id) === Number(product.id));
-
-                                        const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
-                                        const buttonText = isSelected ? 'Remove' : 'Select';
-
-                                        return (
-                                            <tr
-                                                key={prodIndex}
-                                                className={`${prodIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
-                                            >
-                                                <td>
-                                                    <div className="flex flex-col">
-                                                        <span>{product.name}</span>
-                                                        <span className="text-xs text-slate-400">{product.description || ''}</span>
-                                                    </div>
-                                                </td>
-                                                <td className='text-center'>
-                                                    RM {(product.provisioning.supply.cogs + product.provisioning.install.cogs).toFixed(2)}
-                                                </td>
-                                                <td className='text-center'>
-                                                    RM {product.provisioning.supply.cogs.toFixed(2)}
-                                                </td>
-                                                <td className='text-center'>
-                                                    RM {product.provisioning.install.cogs.toFixed(2)}
-                                                </td>
-                                                <td className='text-center'>
-                                                    <div className="flex justify-around gap-2">
-                                                        <button
-                                                            className={`btn ${buttonClass} btn-sm`}
-                                                            // Pass current button into handleSelectProduct
-                                                            onClick={(e) => handleSelectProduct(product, e)}
-                                                        >
-                                                            {buttonText}
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )
-                                    })
-                                ) : (
+                    {products.length > 0 &&
+                        <div className="modal-table overflow-y-auto scrollable-y max-h-[400px]">
+                            <table className="table align-middle text-gray-700 font-medium text-sm">
+                                <thead className="sticky top-0 ">
                                     <tr>
-                                        <td colSpan={5} className="text-center text-gray-500">
-                                            No products available
-                                        </td>
+                                        <th className='text-center'>Item</th>
+                                        <th className='min-w-[120px] text-center'>Price per Qty</th>
+                                        <th className='min-w-[120px] text-center'>Supply Price</th>
+                                        <th className='min-w-[120px] text-center'>Install Price</th>
+                                        <th className='min-w-[120px] text-center'>Action</th>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {products.length > 0 ? (
+                                        products.map((product, prodIndex) => {
+                                            const selectedPackage = selectedPOPackages.find((poPackage) => poPackage.package_id === selectedPOPackageId);
+                                            const isSelected = selectedPackage.po_items.some(poProd => Number(poProd.product_id) === Number(product.id));
+
+                                            const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
+                                            const buttonText = isSelected ? 'Remove' : 'Select';
+
+                                            return (
+                                                <tr
+                                                    key={prodIndex}
+                                                    className={`${prodIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
+                                                >
+                                                    <td>
+                                                        <div className="flex flex-col">
+                                                            <span>{product.name}</span>
+                                                            <span className="text-xs text-slate-400">{product.description || ''}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className='text-center'>
+                                                        RM {(product.provisioning.supply.cogs + product.provisioning.install.cogs).toFixed(2)}
+                                                    </td>
+                                                    <td className='text-center'>
+                                                        RM {product.provisioning.supply.cogs.toFixed(2)}
+                                                    </td>
+                                                    <td className='text-center'>
+                                                        RM {product.provisioning.install.cogs.toFixed(2)}
+                                                    </td>
+                                                    <td className='text-center'>
+                                                        <div className="flex justify-around gap-2">
+                                                            <button
+                                                                className={`btn ${buttonClass} btn-sm`}
+                                                                // Pass current button into handleSelectProduct
+                                                                onClick={(e) => handleSelectProduct(product, e)}
+                                                            >
+                                                                {buttonText}
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={5} className="text-center text-gray-500">
+                                                No products available
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    }
                     <div className="modal-footer justify-center md:justify-between flex-col md:flex-row gap-3 text-gray-600 text-2sm font-medium">
                         <div className="flex items-center gap-2">
                             Show

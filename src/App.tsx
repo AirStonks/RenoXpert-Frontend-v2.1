@@ -90,6 +90,7 @@ import UpdateKeyManagement from './pages/ProjectManagement/UpdateKeyManagement';
 import Test2 from './pages/Test2/Test2';
 import PMProgressTrack from './pages/ProjectManagement/PMProgressTrack';
 import QuotationOrderPrint from './pages/Order/components/QuotationOrderPrint';
+import POPrint from './pages/PO/Components/POPrint';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -225,6 +226,7 @@ const routes = [
   { path: '/purchase-orders/:id', element: <PODetail />, layout: ProtectedLayout },
   { path: '/purchase-orders/edit/:id', element: <PODetail />, layout: ProtectedLayout },
   { path: '/purchase-orders/fulfillment/:id', element: <POFulfillment />, layout: ProtectedLayout },
+  { path: '/purchase-orders/print/:id', element: <POPrint/>, layout: null },
 
   /*--- DISCOUNT AND FEE ---*/
   { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },

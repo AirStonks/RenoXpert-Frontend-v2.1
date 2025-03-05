@@ -1,9 +1,9 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchPO from "../../hook/useFetchPO";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
-import { POItem } from "../../types";
+import { POItem, POPackage } from "../../types";
 
 function PODetail() {
     const navigate = useNavigate();
@@ -11,6 +11,8 @@ function PODetail() {
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
     const { po, loading, error } = useFetchPO(poId);
+
+    const [openAccordions, setOpenAccordions] = useState({});
 
     const handleBackClick = () => {
         if (state) {
@@ -34,6 +36,17 @@ function PODetail() {
         return <div>Purchase Order not found</div>;
     }
 
+    const toggleAccordion = (packageId) => {
+
+        console.log(packageId);
+
+
+        setOpenAccordions(prev => ({
+            ...prev,
+            [packageId]: !prev[packageId]
+        }));
+    };
+
     return (
         <>
             <div className="flex justify-between items-center flex-wrap mb-4">
@@ -45,13 +58,34 @@ function PODetail() {
                         Purchase Order Detail
                     </span>
                 </div>
-                <div className="flex">
+                <div className="flex gap-3">
                     <Link
                         to={'/purchase-order/edit/' + poId}
                         className="btn btn-info btn-sm"
                     >
                         Update PO
                     </Link>
+                    <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                            <i className="ki-filled ki-dots-vertical"></i>
+                        </button>
+
+                        <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
+                            <div className="menu-item">
+                                <Link
+                                    to={`/purchase-orders/print/${poId}`}
+                                    className="menu-link"
+                                >
+                                    <span className="menu-title">
+                                        <div className="flex gap-2 items-center">
+                                            <i className="ki-filled ki-file-down text-lg"></i>
+                                            <span>Print PO</span>
+                                        </div>
+                                    </span>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -122,7 +156,7 @@ function PODetail() {
                                             Total Amount
                                         </td>
                                         <td className="text-xs text-gray-900 pb-3">
-                                            RM {po.total_amount.toFixed(2)}
+                                            RM {po.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -196,7 +230,7 @@ function PODetail() {
                                                 Phone No.:
                                             </td>
                                             <td className="text-xs text-gray-900 pb-3">
-                                                +{po.vendor.country} {po.vendor.phone_no}
+                                                {/* +{po.vendor.country} {po.vendor.phone_no} */}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -212,66 +246,118 @@ function PODetail() {
                                 <div className="flex">
                                     <h2 className="text-lg font-semibold mb-4">PO Items</h2>
                                 </div>
-                                <div className="overflow-y-auto max-h-[500px] scrollable-y">
-                                    <table className="table align-middle text-gray-700 font-medium text-2xs">
-                                        <thead className="sticky top-0 bg-white z-5 rounded">
-                                            <tr>
-                                                <th className='w-[10px]'></th>
-                                                <th className='w-[250px]'>Item</th>
-                                                <th className='w-[250px]'>Description</th>
-                                                <th className='w-[100px] text-center'>Price per Qty</th>
-                                                <th className='w-[70px] text-center'>Qty</th>
-                                                <th className='w-[100px] text-center'>Total Price</th>
-                                                <th className='w-[10px] text-center'>Supply</th>
-                                                <th className='w-[10px] text-center'>Install</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {po.items.map((poProd: POItem, index) => (
-                                                <tr
-                                                    key={index}
-                                                    className={`${index % 2 === 0 ? '' : 'bg-gray-100'}`}
+                                <div className="overflow-y-auto max-h-[540px] scrollable-y">
+                                    <div className="flex flex-col gap-4">
+                                        {po.po_packages.map((poPackage: POPackage, index) => (
+                                            <div
+                                                key={index}
+                                                className="accordion rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white"
+                                            >
+                                                {/* Accordion Header */}
+                                                <div
+                                                    className="accordion-header flex items-center justify-between w-full p-5 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                                                    onClick={() => toggleAccordion(index)}
                                                 >
-                                                    <td className="text-center">
-                                                        {index + 1}
-                                                    </td>
-                                                    <td>
-                                                        {poProd.product_name}
-                                                    </td>
-                                                    <td>
-                                                        {poProd.product_desc}
-                                                    </td>
-                                                    <td className="text-center">
-                                                        RM {poProd.unit_price}
-                                                    </td>
-                                                    <td className="text-center">
-                                                        {poProd.qty}
-                                                    </td>
-                                                    <td className="text-center">
-                                                        RM {poProd.unit_price * poProd.qty}
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <input
-                                                            className="checkbox"
-                                                            name="sel_prod"
-                                                            type="checkbox"
-                                                            checked={!!poProd.supply}
-                                                            readOnly
-                                                        />
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <input
-                                                            className="checkbox"
-                                                            name="sel_prod"
-                                                            type="checkbox"
-                                                            checked={!!poProd.install}
-                                                            readOnly
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-gray-800 font-semibold text-sm">{poPackage.name}</span>
+                                                        <span className="text-gray-600 font-semibold text-sm">RM {(poPackage.total_price * poPackage.quantity).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        {/* Package Quantity Input */}
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <input
+                                                                type="text"
+                                                                className="input input-sm text-center px-2 w-12 border-gray-200 focus:border-primary focus:ring focus:ring-primary/20 transition-all duration-200 disabled"
+                                                                value={poPackage.quantity || 1} // Assuming package has a qty 
+                                                                readOnly
+                                                            />
+                                                        </div>
+                                                        <i className={`ki-solid ki-down text-gray-600 transition-transform duration-300 ease-in-out ${openAccordions[index] ? 'rotate-180' : ''}`}></i>
+                                                    </div>
+                                                </div>
+
+                                                {/* Accordion Content */}
+                                                <div
+                                                    className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${openAccordions[index]
+                                                        ? 'max-h-[1000px] opacity-100'
+                                                        : 'max-h-0 opacity-0 p-0'
+                                                        }`}
+                                                >
+                                                    <table className="table align-middle text-gray-700 font-medium text-2xs w-full">
+                                                        <thead className="bg-gray-100 rounded-t">
+                                                            <tr className="text-gray-600">
+                                                                <th className="w-[180px] p-3">Item</th>
+                                                                <th className="w-[180px] p-3">Description</th>
+                                                                <th className="w-[100px] p-3 text-center">Supply Price</th>
+                                                                <th className="w-[100px] p-3 text-center">Install Price</th>
+                                                                <th className="w-[70px] p-3 text-center">Qty</th>
+                                                                <th className="w-[100px] p-3 text-center">Total Supply</th>
+                                                                <th className="w-[100px] p-3 text-center">Total Install</th>
+                                                                <th className="w-[100px] p-3 text-center">Total Price</th>
+                                                                <th className="w-[10px] p-3 text-center">Supply</th>
+                                                                <th className="w-[10px] p-3 text-center">Install</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {poPackage.po_items.map((poProd: POItem, index) => (
+                                                                <tr
+                                                                    key={index}
+                                                                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 ${!poProd.supply && !poProd.install ? 'bg-orange-50' : ''
+                                                                        }`}
+                                                                >
+                                                                    <td className="p-3">{poProd.product_name}</td>
+                                                                    <td className="p-3 text-gray-600">{poProd.product_desc}</td>
+                                                                    <td className="p-3 text-center">RM {poProd.supply_price}</td>
+                                                                    <td className="p-3 text-center">RM {poProd.install_price}</td>
+                                                                    <td className="p-3 text-center">
+                                                                        <div className="flex items-center justify-center gap-2">
+                                                                            <input
+                                                                                type="text"
+                                                                                className="input input-sm text-center px-2 w-12 border-gray-200 focus:border-primary focus:ring focus:ring-primary/20 transition-all duration-200 disabled"
+                                                                                value={poProd.qty}
+                                                                                readOnly
+                                                                            />
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="p-3 text-center">
+                                                                        {poProd.supply ?
+                                                                            <span className="text-green-600">RM {(poProd.supply_price * poProd.qty).toFixed(2)}</span>
+                                                                            : <span className="text-gray-400">-</span>
+                                                                        }
+                                                                    </td>
+                                                                    <td className="p-3 text-center">
+                                                                        {poProd.install ?
+                                                                            <span className="text-green-600">RM {(poProd.install_price * poProd.qty).toFixed(2)}</span>
+                                                                            : <span className="text-gray-400">-</span>
+                                                                        }
+                                                                    </td>
+                                                                    <td className="p-3 text-center font-semibold">
+                                                                        RM {(((poProd.supply ? poProd.supply_price : 0) + (poProd.install ? poProd.install_price : 0)) * poProd.qty).toFixed(2)}
+                                                                    </td>
+                                                                    <td className="p-3 text-center">
+                                                                        <input
+                                                                            className="checkbox checkbox-sm rounded checked:bg-primary"
+                                                                            type="checkbox"
+                                                                            checked={!!poProd.supply}
+                                                                            readOnly
+                                                                        />
+                                                                    </td>
+                                                                    <td className="p-3 text-center">
+                                                                        <input
+                                                                            className="checkbox checkbox-sm rounded checked:bg-primary"
+                                                                            type="checkbox"
+                                                                            checked={!!poProd.install}
+                                                                            readOnly
+                                                                        />
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>

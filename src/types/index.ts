@@ -1138,6 +1138,7 @@ export interface PurchaseOrder {
     vendor_id?: string,
     vendor?: User,
     items?: POItem[],
+    po_packages?: POPackage[],
     total_amount?: number,
     shipping_date?: string,
     shipped_date?: string,
@@ -1153,12 +1154,32 @@ export interface PurchaseOrder {
     updated_at?: string,
 }
 
+export interface POPackage {
+    id?: string,
+    po_id?: string,
+    package_id?: string,
+    name?: string,
+    description?: string,
+    description_internal?: string,
+    category?: string,
+    quantity?: number,
+    total_price?: number,
+    status?: string,
+    po_items?: POItem[],
+    created_by?: string,
+    updated_by?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
 export interface POItem {
     id?: string,
+    po_package_id?: string,
     product_id?: string,
     product_name?: string,
     product_desc?: string,
     qty?: number,
+    uom?: string,
     supply?: boolean,
     install?: boolean,
     unit_price?: number,
@@ -1173,7 +1194,6 @@ export interface POItem {
     created_by?: string,
     updated_by?: string,
 }
-
 
 export interface KeyManagement {
     id?: string,
