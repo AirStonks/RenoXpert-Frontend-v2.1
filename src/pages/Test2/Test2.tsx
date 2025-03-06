@@ -1,144 +1,117 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import Quotation from './Quotation';
-import { renoProgressAdvanceTable, renoProgressIndex } from '../../services/api';
-import { RenoProgress } from '../../types';
-import ProgressBar from '../ProjectManagement/components/ProgressBar';
+
+import { DndContext, DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
+import React, { useState } from 'react';
+import { DraggablePackage } from './components/DraggablePackage';
+import { Package } from '../../types';
 
 function Test2() {
-    // Create styles
+    const [packages, setPackages] = useState<Package[]>([
+        {
+            id: 'pkg-1',
+            name: 'Basic Package',
+            products: [{ id: 'prod-1', name: 'Product A', description: 'Basic item' }]
+        },
+        {
+            id: 'pkg-2',
+            name: 'Premium Package',
+            products: [{ id: 'prod-2', name: 'Product B', description: 'Premium item' }]
+        },
+        {
+            id: 'pkg-3',
+            name: 'Unassigned Products',
+            products: [
+                { id: 'prod-3', name: 'Product C', description: 'Extra item' },
+                { id: 'prod-4', name: 'Product D', description: 'Additional item' }
+            ]
+        }
+    ]);
 
-    // Sample data - replace with your actual data
-    const company = {
-        name: "Tech Solutions Inc.",
-        address: "123 Business Street\nNew York, NY 10001",
-        mobile: "+1 (555) 123-4567",
-        email: "info@techsolutions.com",
-        logo: "https://via.placeholder.com/150" // Replace with your actual image URL or Base64 string
+    const [activeId, setActiveId] = useState<string | null>(null);
+
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveId(event.active.id as string);
     };
 
-    const attn = {
-        name: "Mr. John Doe",
-        address: "456 Client Avenue\nSuite 789\nLos Angeles, CA 90001",
-        mobile: "+1 (555) 987-6543",
-        email: "john.doe@clientcompany.com"
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (!over?.id) {
+            setActiveId(null);
+            return;
+        }
+
+        if (active.id.toString().startsWith('pkg-') && over.id.toString().startsWith('pkg-')) {
+            const oldIndex = packages.findIndex(pkg => pkg.id === active.id);
+            const newIndex = packages.findIndex(pkg => pkg.id === over.id);
+            setPackages(arrayMove(packages, oldIndex, newIndex));
+        }
+        else if (active.id.toString().startsWith('prod-') && over.id.toString().startsWith('pkg-')) {
+            const sourcePackageId = active.data.current?.packageId as string;
+            const targetPackageId = over.id as string;
+            const draggedProductId = active.id as string;
+
+            if (sourcePackageId === targetPackageId) {
+                setActiveId(null);
+                return;
+            }
+
+            setPackages(prevPackages => {
+                const sourcePackage = prevPackages.find(pkg => pkg.id === sourcePackageId);
+                const targetPackage = prevPackages.find(pkg => pkg.id === targetPackageId);
+                const product = sourcePackage?.products.find(p => p.id === draggedProductId);
+
+                if (!sourcePackage || !targetPackage || !product) return prevPackages;
+
+                return prevPackages.map(pkg => {
+                    if (pkg.id === sourcePackageId) {
+                        return { ...pkg, products: pkg.products.filter(p => p.id !== draggedProductId) };
+                    }
+                    if (pkg.id === targetPackageId) {
+                        return { ...pkg, products: [...pkg.products, product] };
+                    }
+                    return pkg;
+                });
+            });
+        }
+
+        setActiveId(null);
     };
 
-    const items = [
-        { id: 1, description: "Web Development Service", quantity: 20, price: 75 },
-        { id: 2, description: "Technical Consulting", quantity: 10, price: 100 },
-        { id: 3, description: "Cloud Hosting", quantity: 12, price: 50 },
-        { id: 4, description: "Cloud Hosting", quantity: 12, price: 50 },
-        { id: 5, description: "Cloud Hosting", quantity: 12, price: 50 },
-        { id: 6, description: "Cloud Hosting", quantity: 12, price: 50 },
-    ];
-
-    const quotationDetails = {
-        number: "QT-2023-001",
-        date: new Date().toLocaleDateString()
+    const handleSubmit = () => {
+        console.log('Current Packages:', packages);
     };
-
-    // Calculate totals
-    const subtotal = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
-    const tax = subtotal * 0.10; // Assuming 10% tax
-    const total = subtotal + tax;
-
-    // Helper function to convert an image URL to a Base64 string
 
     return (
-        <div className='flex flex-col w-full'>
-            <div className="max-w-7xl mx-auto p-6 bg-white rounded-lg shadow-md">
-                {/* Download PDF Button */}
-                {/* <div className="mb-4 w-max">
-                    <button
-                        // onClick={downloadPDF}
-                        className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
-                    >
-                        Download PDF
-                    </button>
-                </div> */}
-
-                {/* Quotation Content Rendered on the Page */}
-                <div className='w-max'>
-                    {/* Company Header */}
-                    {/* <div className="flex justify-between items-start mb-8">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-800">{company.name}</h1>
-                            <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{company.address}</p>
-                            <p className="text-sm text-gray-600 mt-1">Mobile: {company.mobile}</p>
-                            <p className="text-sm text-gray-600">Email: {company.email}</p>
-                        </div>
-                        <div className="flex self-start">
-                            <img
-                                src={'/app/RenoExpert_logo-01.jpg'}
-                                alt="Company Logo"
-                                className="w-32 h-32 object-contain rounded-lg"
-                            />
-                        </div>
-                    </div> */}
-
-                    {/* Quotation Header */}
-                    {/* <div className="flex justify-between mb-8">
-                        <div>
-                            <h2 className="text-xl font-semibold text-gray-800">Quotation</h2>
-                            <p className="text-sm text-gray-600">Number: {quotationDetails.number}</p>
-                        </div>
-                        <p className="text-sm text-gray-600">Date: {quotationDetails.date}</p>
-                    </div> */}
-
-                    {/* Attn Section */}
-                    {/* <div className="mb-8">
-                        <h3 className="text-sm font-semibold text-gray-800 mb-2">Attn:</h3>
-                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{attn.name}</p>
-                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{attn.address}</p>
-                        <p className="text-sm text-gray-600 mt-1">Mobile: {attn.mobile}</p>
-                        <p className="text-sm text-gray-600">Email: {attn.email}</p>
-                    </div> */}
-
-                    {/* Items Table */}
-                    {/* <table className="w-full mb-8">
-                        <thead>
-                            <tr className="bg-gray-50">
-                                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Description</th>
-                                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Quantity</th>
-                                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Price</th>
-                                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-600">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {items.map((item) => (
-                                <tr key={item.id} className="border-t border-gray-100">
-                                    <td className="py-3 px-4 text-sm text-gray-600">{item.description}</td>
-                                    <td className="py-3 px-4 text-sm text-gray-600 text-right">{item.quantity}</td>
-                                    <td className="py-3 px-4 text-sm text-gray-600 text-right">${item.price.toFixed(2)}</td>
-                                    <td className="py-3 px-4 text-sm text-gray-600 text-right">${(item.quantity * item.price).toFixed(2)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table> */}
-
-                    {/* Totals */}
-                    {/* <div className="text-right">
-                        <div className="inline-block text-sm">
-                            <p className="mb-2">
-                                <span className="mr-4">Subtotal:</span>
-                                <span>${subtotal.toFixed(2)}</span>
-                            </p>
-                            <p className="mb-2">
-                                <span className="mr-4">Tax (10%):</span>
-                                <span>${tax.toFixed(2)}</span>
-                            </p>
-                            <p className="text-lg font-semibold">
-                                <span className="mr-4">Total:</span>
-                                <span>${total.toFixed(2)}</span>
-                            </p>
-                        </div>
-                    </div> */}
+        <div className="container mx-auto p-4 max-w-2xl">
+            <h1 className="text-2xl font-bold mb-6">Package Manager</h1>
+            <DndContext
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+            >
+                <div className="flex flex-col gap-6">
+                    {packages.map((pkg) => (
+                        <DraggablePackage
+                            key={pkg.id}
+                            pkg={pkg}
+                            isDragging={activeId === pkg.id}
+                        />
+                    ))}
                 </div>
+            </DndContext>
+            <div className="mt-6">
+                <button
+                    onClick={handleSubmit}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                    Submit
+                </button>
             </div>
-            <Quotation />
         </div>
     );
 }
+
+
 
 // interface TableColumn {
 //     field: keyof RenoProgress;

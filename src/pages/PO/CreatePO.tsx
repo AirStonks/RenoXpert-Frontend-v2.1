@@ -377,8 +377,9 @@ function CreatePO() {
                 );
                 return packageTotal + productTotal;
             }, 0);
-            return total + (packageTotal * packageItem.quantity);
+            return total + (packageTotal * (packageItem.quantity || 1));
         }, 0);
+        
 
         setTotalAmount(newTotal);
         return newTotal;

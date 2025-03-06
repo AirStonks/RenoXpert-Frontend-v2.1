@@ -70,12 +70,12 @@ function PackageMain() {
     const [packages, setPackages] = useState<Package[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState<number>(1);
-    const [size, setSize] = useState<number>(10);
+    const [page, setPage] = useState<number>(getInitialState().page);
+    const [size, setSize] = useState<number>(getInitialState().size);
     const [totalItems, setTotalItems] = useState<number>(0);
-    const [searchTerm, setSearchTerm] = useState<string>('');
-    const [sortField, setSortField] = useState<string>('');
-    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+    const [searchTerm, setSearchTerm] = useState<string>(getInitialState().searchTerm);
+    const [sortField, setSortField] = useState<string>(getInitialState().sortField);
+    const [sortOrder, setSortOrder] = useState<SortOrder>(getInitialState().sortOrder);
 
     const [selectedPackage, setSelectedPackage] = useState<{ id: number | string, name: string } | null>(null);
 
