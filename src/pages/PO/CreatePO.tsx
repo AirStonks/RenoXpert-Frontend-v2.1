@@ -454,7 +454,7 @@ function CreatePO() {
                                                                     className="menu-link"
                                                                     onClick={() => handleSelectSale(sale)}
                                                                 >
-                                                                    {sale.sales_no}
+                                                                    {sale.sales_no} ({sale.order.property.name} {sale.order.block}-{sale.order.floor}-{sale.order.unit_no})
                                                                 </button>
                                                             </div>
                                                         ))
@@ -534,40 +534,175 @@ function CreatePO() {
                     </div>
 
                     {selectedSale && (
-                        <div className="card flex flex-auto">
-                            <div className="card-header">
-                                <span className="font-semibold">Sales Order Detail</span>
-                            </div>
-                            <div className="card-body">
-                                <table className="table-auto">
-                                    <tbody>
-                                        <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Sales No:
-                                            </td>
-                                            <td className="text-xs text-gray-900 pb-3">
-                                                {selectedSale.sales_no}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Status:
-                                            </td>
-                                            <td className="text-xs text-gray-900 pb-3">
-                                                <span className={`badge badge-pill cursor-default
+                        <>
+                            <div className="card flex flex-auto">
+                                <div className="card-header">
+                                    <span className="font-semibold">Sales Order Detail</span>
+                                </div>
+                                <div className="card-body">
+                                    <table className="table-auto">
+                                        <tbody>
+                                            <tr>
+                                                <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Sales No:
+                                                </td>
+                                                <td className="text-xs text-gray-900 pb-3">
+                                                    {selectedSale.sales_no}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Status:
+                                                </td>
+                                                <td className="text-xs text-gray-900 pb-3">
+                                                    <span className={`badge badge-pill cursor-default
                                                 ${selectedSale.status === 'issued' ? 'badge-primary' : ''} 
                                                 ${selectedSale.status === 'partial-paid' ? 'badge-info' : ''} 
                                                 ${selectedSale.status === 'fully-paid' ? 'badge-success' : ''} 
                                                 badge-outline`}
-                                                >
-                                                    {selectedSale.status}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                                    >
+                                                        {selectedSale.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
+
+                            <div className="card">
+                                <div className="card-header flex justify-between items-center">
+                                    <h3 className="card-title">
+                                        Owner
+                                    </h3>
+                                </div>
+                                <div className="card-body pt-3.5 pb-3.5">
+                                    <table className="table-auto">
+                                        <tbody>
+                                            {selectedSale.order.user ?
+                                                <>
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Name:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.user.name}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Email:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.user.email}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Phone No.:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            +{selectedSale.order.user.country_code} {selectedSale.order.user.phone_no}
+                                                        </td>
+                                                    </tr>
+                                                </>
+                                                :
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    N/A
+                                                </td>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div className="card">
+                                <div className="card-header flex justify-between items-center">
+                                    <h3 className="card-title">
+                                        Property
+                                    </h3>
+                                </div>
+                                <div className="card-body pt-3.5 pb-3.5">
+                                    <table className="table-auto">
+                                        <tbody>
+                                            {selectedSale.order.property ?
+                                                <>
+
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Property Name:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.property.name}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Unit:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.block}-{selectedSale.order.floor}-{selectedSale.order.unit_no}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Unit Type:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.unit_type ? selectedSale.order.unit_type : "-"}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Address:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {[
+                                                                selectedSale.order.property.address,
+                                                                selectedSale.order.property.street,
+                                                                selectedSale.order.property.postcode,
+                                                                selectedSale.order.property.city,
+                                                                selectedSale.order.property.state,
+                                                            ]
+                                                                .filter(Boolean)
+                                                                .join(', ')
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Total Bedroom:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.bedroom_count}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Total Bathroom:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.bathroom_count}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Partition:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.include_partition ? 'Yes' : 'No'}
+                                                        </td>
+                                                    </tr>
+                                                </>
+                                                :
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    N/A
+                                                </td>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </>
                     )}
 
                     {selectedVendor && (
