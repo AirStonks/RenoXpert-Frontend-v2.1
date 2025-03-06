@@ -231,6 +231,9 @@ function POMain() {
                                 <tr>
                                     <th className='w-[100px] text-center'>PO No.</th>
                                     <th className='w-[100px] text-center'>Sales No.</th>
+                                    <th className='w-[100px] text-center'>Owner</th>
+                                    <th className='w-[60px] text-center'>Unit</th>
+                                    <th className='w-[60px] text-center'>Property</th>
                                     <th className='w-[60px] text-center'>Total Amount</th>
                                     <th className='w-[120px] text-center'>Order Status</th>
                                     <th className='w-[80px] text-center'>Payment Status</th>
@@ -269,6 +272,32 @@ function POMain() {
                                                         '-'
                                                     }
 
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="flex flex-col gap-1">
+                                                    {po.sale.order.user ?
+                                                        <>
+                                                            <span>{po.sale.order.user.name}</span>
+                                                            <span className="text-xs text-slate-400">{po.sale.order.user.email}</span>
+                                                            <span className="text-xs text-slate-700">+{po.sale.order.user.country_code} {po.sale.order.user.phone_no}</span>
+                                                        </>
+                                                        :
+                                                        '-'
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col gap-1">
+                                                    <span>{po.sale.order.block}-{po.sale.order.floor}-{po.sale.order.unit_no}</span>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col gap-1">
+                                                    <span>{po.sale.order.property ? po.sale.order.property.name : '-'}</span>
+                                                    <div className="badge">
+                                                        <span className="text-xs text-gray-900">{po.sale.order.unit_type}</span>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td>
