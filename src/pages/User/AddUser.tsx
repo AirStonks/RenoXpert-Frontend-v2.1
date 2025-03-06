@@ -195,6 +195,7 @@ function AddUser() {
                     name_first: formData.name_first,
                     name_last: formData.name_last,
                     email: formData.email,
+                    country_code: formData.country_code,
                     type: formData.type,
                     phone_no: formData.phone,
                 };
