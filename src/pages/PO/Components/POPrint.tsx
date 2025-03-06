@@ -92,7 +92,7 @@ function POPrint() {
 
     const ATTN_NAME = po.vendor.name;
     // const ATTN_ADDRESS = `${po.vendor.address.address_1}, ${po.vendor.address.address_2}, ${po.vendor.address.city}, ${po.vendor.address.state}, ${po.vendor.address.postcode}`;
-    const ATTN_ADDRESS = `TEST_ADDRESS`;
+    const ATTN_ADDRESS = `-`;
     const ATTN_MOBILE = `+${po.vendor.country_code} ${po.vendor.phone_no}`;
     const ATTN_EMAIL = po.vendor.email;
 

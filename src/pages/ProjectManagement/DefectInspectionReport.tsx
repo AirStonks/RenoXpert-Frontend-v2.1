@@ -4,8 +4,8 @@ import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
-import { DefectInspectionForm } from "../../types";
-import { fetchRenoProgress } from "../../services/api";
+import { DefectInspectionForm, RenoProgress } from "../../types";
+import { changeTaskStatus, fetchRenoProgress, markDIFormAsCompleted } from "../../services/api";
 import React from 'react';
 
 const APP_URL =
@@ -31,6 +31,7 @@ function DefectInspectionReport() {
     const renoProgressId = id ? parseInt(id, 10) : null;
 
     const [diForm, setDiForm] = useState<DefectInspectionForm | null>(null);
+    const [taskId, setTaskId] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -62,9 +63,11 @@ function DefectInspectionReport() {
 
             try {
                 const response = await fetchRenoProgress(renoProgressId);
+                const data: RenoProgress = response?.data;
 
                 if (response?.success) {
-                    setDiForm(response.data.defect_inspection_form);
+                    setDiForm(data.defect_inspection_form);
+                    setTaskId(Number(data.phases[0].jobs[1].tasks[0].id));
                 }
 
             } catch (error) {
@@ -96,6 +99,24 @@ function DefectInspectionReport() {
 
     }, [renoProgressId]);
 
+    const handleMarkAsComplete = async () => {
+        setIsLoading(true);
+        try {
+            const response = await markDIFormAsCompleted(Number(diForm?.id));
+
+            if (response?.success) {
+                notify('success', 'Marked as complete!');
+                setDiForm(response?.data);
+            }
+
+        } catch (error) {
+            notify('error', 'Failed to mark as complete!');
+            console.log(error);
+        }
+
+        setIsLoading(false);
+    }
+
     return (
         <>
             {isLoading && <Loading />}
@@ -110,7 +131,10 @@ function DefectInspectionReport() {
                     </span>
                 </div>
 
-                <button className="btn btn-success btn-sm">
+                <button
+                    className="btn btn-success btn-sm"
+                    onClick={handleMarkAsComplete}
+                >
                     Mark as Complete
                 </button>
             </div>

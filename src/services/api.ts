@@ -844,7 +844,7 @@ export const removeProperty = async (propertyId: number) => {
     }
 }
 
-export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, filter?: string) => {
+export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, filter?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + 'orders', {
             headers: getAuthHeaders(),
@@ -854,7 +854,8 @@ export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?
                 search: searchTerm,
                 sortOrder: order,
                 sortField: field,
-                filter: filter
+                filter: filter,
+                head: isHead,
             }
         });
         return response.data;
@@ -964,7 +965,7 @@ export const confirmOrder = async (orderId: number) => {
     }
 };
 
-export const salesIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+export const salesIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + 'sales', {
             headers: getAuthHeaders(),
@@ -973,7 +974,8 @@ export const salesIndex = async (size: number = 5, page: number = 1, searchTerm?
                 page: page,
                 search: searchTerm,
                 sortOrder: order,
-                sortField: field
+                sortField: field,
+                head: isHead,
             }
         });
         return response.data;
@@ -1632,6 +1634,18 @@ export const fetchProgressKeyManagement = async (keyManagementId: number) => {
     }
 }
 
+export const markDIFormAsCompleted = async (diFormId: number) => {
+    try {
+        const response = await axios.get(API_URL + `defect-inspection-forms/${diFormId}/completed`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const addKeyManagementItem = async (keyManagementId: number, category: string) => {
     try {
         const response = await axios.get(API_URL + `key-management/${keyManagementId}/${category}/add`, {
@@ -1756,7 +1770,7 @@ export const createPurchaseOrder = async (purchaseOrderData: PurchaseOrder) => {
     }
 };
 
-export const POIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+export const POIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + 'purchase-orders', {
             headers: getAuthHeaders(),
@@ -1765,7 +1779,8 @@ export const POIndex = async (size: number = 5, page: number = 1, searchTerm?: s
                 page: page,
                 search: searchTerm,
                 sortOrder: order,
-                sortField: field
+                sortField: field,
+                head: isHead,
             }
         });
         return response.data;

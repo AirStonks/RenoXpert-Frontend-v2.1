@@ -21,23 +21,73 @@ function ProductMain() {
     const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
+    // Define the shape of the stored config with expiration
+    interface StoredConfig {
+        page: number;
+        size: number;
+        searchTerm: string;
+        sortField: string;
+        sortOrder: SortOrder;
+        expiresAt: number; // Timestamp in milliseconds
+    }
+
+    // Load initial state from localStorage with expiration check
+    const getInitialState = (): StoredConfig => {
+        const savedState = localStorage.getItem('productMainConfig');
+        const defaultState = {
+            page: 1,
+            size: 10,
+            searchTerm: '',
+            sortField: '',
+            sortOrder: 'asc' as SortOrder,
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 1 day from now
+        };
+
+        if (savedState) {
+            const parsedState: StoredConfig = JSON.parse(savedState);
+            const currentTime = Date.now();
+
+            // Check if the data has expired
+            if (currentTime > parsedState.expiresAt) {
+                localStorage.removeItem('productMainConfig'); // Clear expired data
+                return defaultState;
+            }
+            return parsedState;
+        }
+        return defaultState;
+    };
+
     const [products, setProducts] = useState<Product[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState<number>(1);
-    const [size, setSize] = useState<number>(10);
+    const [page, setPage] = useState<number>(getInitialState().page);
+    const [size, setSize] = useState<number>(getInitialState().size);
     const [totalItems, setTotalItems] = useState<number>(0);
-    const [searchTerm, setSearchTerm] = useState<string>('');
-    const [sortField, setSortField] = useState<string>('');
-    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+    const [searchTerm, setSearchTerm] = useState<string>(getInitialState().searchTerm);
+    const [sortField, setSortField] = useState<string>(getInitialState().sortField);
+    const [sortOrder, setSortOrder] = useState<SortOrder>(getInitialState().sortOrder);
 
     const [selectedProduct, setSelectedProduct] = useState<{ id: number | string, name: string } | null>(null);
+
+    // Save state to localStorage whenever it changes
+    useEffect(() => {
+        const config: StoredConfig = {
+            page,
+            size,
+            searchTerm,
+            sortField,
+            sortOrder,
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000, // Set expiration to 1 day from now
+        };
+        localStorage.setItem('productMainConfig', JSON.stringify(config));
+    }, [page, size, searchTerm, sortField, sortOrder]);
+
 
     useEffect(() => {
         document.title = "Products | RenoXpert";
         KTComponent.init();
-        initProductTable(1, 10, '', null, '');
-    }, []);
+        initProductTable(page, size, searchTerm, sortOrder, sortField);
+    }, [page, size, searchTerm, sortField, sortOrder]);
 
     const initProductTable = async (
         page: number,

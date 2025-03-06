@@ -5,7 +5,7 @@ import Button from '../../components/Buttons/Button';
 import KTComponent from '../../metronic/core';
 import { useEffect, useRef, useState } from 'react';
 import { Package } from '../../types';
-import { packageIndex, packageIndexArchived, removePackage } from '../../services/api';
+import { packageIndexArchived, removePackage } from '../../services/api';
 import Loading from '../../components/Loading';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import { Link } from 'react-router-dom';
@@ -79,7 +79,7 @@ function PackageArchive() {
 
             try {
                 setIsLoading(true);
-                const response = await packageIndex(size, 1, value, sortOrder, sortField);
+                const response = await packageIndexArchived(size, 1, value, sortOrder, sortField);
 
                 const data = response?.data || [];
                 setPackages(data);
