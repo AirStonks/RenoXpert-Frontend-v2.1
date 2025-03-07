@@ -14,7 +14,7 @@ type Props = {
 
 type SortOrder = 'asc' | 'desc' | null;
 
-function IncludePOPackageModal({ setSelectedPOPackages, isOpen, setIsOpen, recalculateTotalAmount }: Props) {
+function IncludePOPackageModal({ selectedPOPackages, setSelectedPOPackages, isOpen, setIsOpen, recalculateTotalAmount }: Props) {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [packages, setPackages] = useState<Package[]>([]); // Initialize as an empty array
@@ -140,7 +140,10 @@ function IncludePOPackageModal({ setSelectedPOPackages, isOpen, setIsOpen, recal
 
     const handleSelectPackage = (button: HTMLButtonElement) => {
         const selectBtn = button.closest('[data-action="select"], [data-action="remove"]') as HTMLElement;
+
         if (!selectBtn?.dataset) return;
+
+        const id = selectBtn.dataset.id;
 
         const packageData = {
             package_id: selectBtn.dataset.id,
@@ -151,43 +154,67 @@ function IncludePOPackageModal({ setSelectedPOPackages, isOpen, setIsOpen, recal
             category: selectBtn.dataset.cat || ''
         };
 
-        const selectedPackage = packages.find(pkg => pkg.id === Number(packageData.package_id));
-        const poItems: POItem[] = selectedPackage?.products?.map((product: Product) => ({
-            product_id: String(product.id),
-            product_name: product.name,
-            product_desc: product.description || '',
-            qty: product.pivot?.quantity || 1,
-            supply: true,
-            install: true,
-            unit_price: (product.provisioning?.supply?.retail_price + product.provisioning?.install?.retail_price) || 0,
-            supply_price: product.pivot?.includeSupply ? product.provisioning?.supply?.cogs || 0 : 0,
-            install_price: product.pivot?.includeInstall ? product.provisioning?.install?.cogs || 0 : 0,
-            total_price: ((product.pivot?.includeSupply ? product.provisioning?.supply?.cogs || 0 : 0) +
-                (product.pivot?.includeInstall ? product.provisioning?.install?.cogs || 0 : 0)) *
-                (product.pivot?.quantity || 1),
-        })) || [];
+        // Check if the package is already selected
+        const packageIndex = selectedPOPackages.findIndex((pkg) => pkg.package_id === id);
 
-        setSelectedPOPackages((prevPackages) => {
-            const packageExists = prevPackages.some(pkg => pkg.id === packageData.package_id);
+        if (packageIndex > -1) {
+            // Package is already selected, remove it
+            setSelectedPOPackages((prevPackages) => prevPackages.filter((_, index) => index !== packageIndex));
 
-            if (packageExists) {
-                const updatedPackages = prevPackages.filter(pkg => pkg.id !== packageData.package_id);
-                selectBtn.dataset.action = 'select';
-                selectBtn.className = 'btn btn-primary btn-sm';
-                selectBtn.innerText = 'Select';
-                return updatedPackages;
-            } else {
-                const newPackage: POPackage = {
-                    ...packageData,
-                    po_items: poItems,
-                    quantity: 1,
-                };
-                selectBtn.dataset.action = 'remove';
-                selectBtn.className = 'btn btn-danger btn-sm';
-                selectBtn.innerText = 'Remove';
-                return [...prevPackages, newPackage];
-            }
-        });
+            selectBtn.dataset.action = 'select';
+            selectBtn.className = 'btn btn-primary btn-sm';
+            selectBtn.innerText = 'Select';
+        } else {
+            const selectedPackage = packages.find(pkg => pkg.id === Number(packageData.package_id));
+
+            const poItems: POItem[] = selectedPackage?.products?.map((product: Product) => ({
+                product_id: String(product.id),
+                product_name: product.name,
+                product_desc: product.description || '',
+                qty: product.pivot?.quantity || 1,
+                supply: true,
+                install: true,
+                unit_price: (product.provisioning?.supply?.retail_price + product.provisioning?.install?.retail_price) || 0,
+                supply_price: product.pivot?.includeSupply ? product.provisioning?.supply?.cogs || 0 : 0,
+                install_price: product.pivot?.includeInstall ? product.provisioning?.install?.cogs || 0 : 0,
+                total_price: ((product.pivot?.includeSupply ? product.provisioning?.supply?.cogs || 0 : 0) +
+                    (product.pivot?.includeInstall ? product.provisioning?.install?.cogs || 0 : 0)) *
+                    (product.pivot?.quantity || 1),
+            })) || [];
+
+            setSelectedPOPackages((prevPackages) => {
+                const packageExists = prevPackages.some(pkg => pkg.id === packageData.package_id);
+
+                if (packageExists) {
+                    const updatedPackages = prevPackages.filter(pkg => pkg.id !== packageData.package_id);
+                    selectBtn.dataset.action = 'select';
+                    selectBtn.className = 'btn btn-primary btn-sm';
+                    selectBtn.innerText = 'Select';
+                    return updatedPackages;
+                } else {
+                    const newPackage: POPackage = {
+                        ...packageData,
+                        po_items: poItems,
+                        quantity: 1,
+                        total_price: calculatePackageTotal({ ...packageData, po_items: poItems })
+                    };
+                    selectBtn.dataset.action = 'remove';
+                    selectBtn.className = 'btn btn-danger btn-sm';
+                    selectBtn.innerText = 'Remove';
+                    return [...prevPackages, newPackage];
+                }
+            });
+        }
+    };
+
+    const calculatePackageTotal = (poPackage: POPackage): number => {
+        return poPackage.po_items.reduce((total, item) => {
+            const itemTotal = item.qty * (
+                (item.supply ? item.supply_price : 0) +
+                (item.install ? item.install_price : 0)
+            );
+            return total + itemTotal;
+        }, 0);
     };
 
 
@@ -265,16 +292,11 @@ function IncludePOPackageModal({ setSelectedPOPackages, isOpen, setIsOpen, recal
                                         <tbody>
                                             {packages.length > 0 ? (
                                                 packages.map((pkg, pkgIndex) => {
-                                                    const selectedPackagesString = localStorage.getItem('include_packages');
-                                                    const selectedPackages = selectedPackagesString ? JSON.parse(selectedPackagesString) : [];
-
-                                                    const isSelected = selectedPackages.some((prodPackage: { id: number }) => prodPackage.id === pkg.id);
+                                                    const isSelected = selectedPOPackages?.some((poPackage: { package_id: string }) => Number(poPackage.package_id) === pkg.id) ?? false;
 
                                                     const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
                                                     const action = isSelected ? 'remove' : 'select';
                                                     const buttonText = isSelected ? 'Remove' : 'Select';
-
-                                                    const totalCogs = pkg.products.reduce((total, item) => total + item.provisioning.supply.co, 0);
 
                                                     return (
                                                         <tr

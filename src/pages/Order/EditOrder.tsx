@@ -1,23 +1,31 @@
-// src\pages\Order\CreateOrder.tsx
-
-import { useEffect, useRef, useState } from 'react';
-import { json, useNavigate, useParams } from 'react-router-dom';
-import { fetchUser, fetchUsers, fetchProperties, fetchProperty, fetchQuotations, updateOrder, fetchRegistrationForm } from '../../services/api';
-import { User, Order, Property, Quotation, OwnerRegistrationForm } from '../../types';
-import { KTAccordion, KTDropdown, KTTooltip } from '../../metronic/core';
-import { Package } from '../../types/index';
-import { Link } from 'react-router-dom';
-import { Slide, toast } from 'react-toastify';
-import useFetchOrder from '../../hook/useFetchOrder';
-import Loading from '../../components/Loading';
-import InputFieldGroup from '../../components/Forms/TextFields/InputFieldGroup';
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+    fetchUser,
+    fetchUsers,
+    fetchProperties,
+    fetchProperty,
+    fetchRegistrationForm,
+    updateOrder,
+} from "../../services/api";
+import { User, Order, Property, Quotation, OwnerRegistrationForm, Package } from "../../types";
+import { KTAccordion, KTTooltip } from "../../metronic/core";
+import { Slide, toast } from "react-toastify";
+import useFetchOrder from "../../hook/useFetchOrder";
+import Loading from "../../components/Loading";
+import InputFieldGroup from "../../components/Forms/TextFields/InputFieldGroup";
+import IncludeOrderQuotationPackageModal from "../../components/Modals/IncludeOrderQuotationPackageModal";
+import IncludeQuotationProductModal from "../../components/Modals/IncludeQuotationProductModal";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { SortablePackage } from "./components/SortablePackage"; // Adjust path as needed
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
         : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
             ? import.meta.env.VITE_STAGING_AWS_S3_URL
-            : null
+            : null;
 
 const categoryOptions = [
     { value: "renovation", label: "Renovation" },
@@ -33,53 +41,48 @@ function EditOrder() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const orderId = id ? parseInt(id, 10) : null;
+    const qtyBtnRef = useRef(null);
 
-    const [searchUserTerm, setSearchUserTerm] = useState('');
-    const [searchPropertyTerm, setSearchPropertyTerm] = useState('');
-    const [searchQuotationTerm, setSearchQuotationTerm] = useState('');
+    const [searchUserTerm, setSearchUserTerm] = useState("");
+    const [searchPropertyTerm, setSearchPropertyTerm] = useState("");
     const [users, setUsers] = useState<User[]>([]);
     const [properties, setProperties] = useState<Property[]>([]);
-    const [quotations, setQuotations] = useState<Quotation[]>([]);
+    const [selectedPackages, setSelectedPackages] = useState<Package[]>([]);
     const [formDetail, setFormDetail] = useState<OwnerRegistrationForm | null>(null);
 
-    const inputUserRef = useRef(null);
-    const inputPropertyRef = useRef(null);
-    const inputQuotationRef = useRef(null);
+    const inputUserRef = useRef<HTMLInputElement>(null);
+    const inputPropertyRef = useRef<HTMLInputElement>(null);
 
     const [isLoading, setIsLoading] = useState(false);
-
     const { orderDetail, loading, error } = useFetchOrder(orderId);
 
     const [formData, setFormData] = useState({
-        userId: '',
-        propertyId: '',
-        quotationId: '',
+        userId: "",
+        propertyId: "",
+        quotationId: "",
         totalAmount: 0,
         finalAmount: 0,
         completion_day: 0,
-        unit_type: '',
-        block: '',
-        floor: '',
-        unitNo: '',
-        status: '',
+        unit_type: "",
+        block: "",
+        floor: "",
+        unitNo: "",
+        status: "",
         isFinalAmountEnable: false,
         isDraftMode: false,
         bedroom_count: 1,
         bathroom_count: 1,
         include_partition: false,
-        internal_remark: '',
-        bonus: {
-            description: '',
-            value: '',
-        }
+        internal_remark: "",
+        bonus: { description: "", value: "" },
     });
 
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
     const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
-    const [selectedPackages, setSelectedPackages] = useState([]);
+    const [selectedPackageId, setSelectedPackageId] = useState("");
 
-    const notify = (type: 'success' | 'error', message: string) => {
+    const notify = (type: "success" | "error", message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
             position: "top-center",
             autoClose: 3000,
@@ -87,185 +90,88 @@ function EditOrder() {
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
-            theme: localStorage.getItem('theme'),
+            theme: localStorage.getItem("theme") as string,
             transition: Slide,
         });
     };
 
     useEffect(() => {
-        const runAsyncTasks = async () => {
-            document.title = "Revise Quotation Order | RenoXpert";
+        document.title = "Revise Quotation Order | RenoXpert";
 
-            if (orderDetail) {
-                // Set form data and perform other operations
-                if (orderDetail.form_id) {
-                    handleSearchForm(orderDetail.form_id);
-                }
+        if (orderDetail) {
+            const runAsyncTasks = async () => {
+                if (orderDetail.form_id) await handleSearchForm(orderDetail.form_id);
 
                 setFormData({
-                    userId: orderDetail.user_id || '',
-                    propertyId: orderDetail.property_id || '',
-                    quotationId: orderDetail.latest_quotation.quotation_id || '',
+                    userId: orderDetail.user_id || "",
+                    propertyId: orderDetail.property_id || "",
+                    quotationId: orderDetail.latest_quotation.quotation_id || "0",
                     totalAmount: orderDetail.latest_quotation.total_amount || 0,
                     finalAmount: orderDetail.final_amount || 0,
-                    unit_type: orderDetail.unit_type || '',
-                    block: orderDetail.block || '',
-                    floor: orderDetail.floor || '',
-                    unitNo: orderDetail.unit_no || '',
-                    status: orderDetail.status || '',
-                    isFinalAmountEnable: orderDetail.final_amount ? true : false,
-                    isDraftMode: orderDetail.user ? false : true,
+                    unit_type: orderDetail.unit_type || "",
+                    block: orderDetail.block || "",
+                    floor: orderDetail.floor || "",
+                    unitNo: orderDetail.unit_no || "",
+                    status: orderDetail.status || "",
+                    isFinalAmountEnable: !!orderDetail.final_amount,
+                    isDraftMode: !orderDetail.user,
                     bedroom_count: orderDetail.bedroom_count || 1,
                     bathroom_count: orderDetail.bathroom_count || 1,
                     completion_day: orderDetail.completion_day || 1,
-                    internal_remark: orderDetail.internal_remark || '',
-                    include_partition: orderDetail.include_partition ? true : false,
+                    internal_remark: orderDetail.internal_remark || "",
+                    include_partition: !!orderDetail.include_partition,
                     bonus: {
-                        description: orderDetail.latest_quotation.bonus?.description,
-                        value: orderDetail.latest_quotation.bonus?.value.toString(),
-                    }
+                        description: orderDetail.latest_quotation.bonus?.description || "",
+                        value: orderDetail.latest_quotation.bonus?.value?.toString() || "",
+                    },
                 });
 
-                const tmpEditOrder = {
-                    userId: orderDetail.user_id || '',
-                    propertyId: orderDetail.property_id || '',
-                    quotationId: orderDetail.latest_quotation.quotation_id || '',
-                    totalAmount: orderDetail.latest_quotation.total_amount || 0,
-                    finalAmount: orderDetail.final_amount || 0,
-                    unit_type: orderDetail.unit_type || '',
-                    block: orderDetail.block || '',
-                    floor: orderDetail.floor || '',
-                    unitNo: orderDetail.unit_no || '',
-                    status: orderDetail.status || '',
-                    isFinalAmountEnable: orderDetail.final_amount ? true : false,
-                    isDraftMode: orderDetail.user ? false : true,
-                    bedroom_count: orderDetail.bedroom_count || 1,
-                    bathroom_count: orderDetail.bathroom_count || 1,
-                    completion_day: orderDetail.completion_day || 1,
-                    internal_remark: orderDetail.internal_remark || '',
-                    include_partition: orderDetail.include_partition ? true : false,
-                    bonus: {
-                        description: orderDetail.latest_quotation.bonus?.description,
-                        value: orderDetail.latest_quotation.bonus?.value.toString(),
-                    }
-                }
+                if (orderDetail.user_id) await handleSelectUserById(Number(orderDetail.user_id));
+                if (orderDetail.property_id) await handleSelectPropertytById(Number(orderDetail.property_id));
+                if (orderDetail.latest_quotation) handleSelectQuotationtById();
 
-                if (localStorage.getItem('e:edit_order_data')) {
-                    const editedOrderData = JSON.parse(localStorage.getItem('e:edit_order_data'));
-
-                    setFormData((prevData) => ({
-                        ...prevData,
-                        userId: editedOrderData.userId || '',
-                        propertyId: editedOrderData.propertyId || '',
-                        quotationId: editedOrderData.quotationId || '',
-                        totalAmount: editedOrderData.totalAmount || 0,
-                        finalAmount: editedOrderData.finalAmount || 0,
-                        unit_type: editedOrderData.unit_type || '',
-                        block: editedOrderData.block || '',
-                        floor: editedOrderData.floor || '',
-                        unitNo: editedOrderData.unitNo || '',
-                        status: editedOrderData.status || '',
-                        isFinalAmountEnable: editedOrderData.isFinalAmountEnable,
-                        isDraftMode: editedOrderData.isDraftMode,
-                        bedroom_count: editedOrderData.bedroom_count || 1,
-                        bathroom_count: editedOrderData.bathroom_count || 1,
-                        completion_day: editedOrderData.completion_day || 1,
-                        internal_remark: editedOrderData.internal_remark || '',
-                        include_partition: editedOrderData.include_partition,
-                        bonus: editedOrderData.bonus
-                    }));
-
-                    localStorage.setItem('edit_order_data', localStorage.getItem('e:edit_order_data'));
-                } else {
-                    localStorage.setItem('edit_order_data', JSON.stringify(tmpEditOrder));
-                }
-
-                if (!localStorage.getItem('include_packages')) {
-                    localStorage.setItem('include_packages', JSON.stringify(orderDetail.latest_quotation.packages));
-                }
-
-                if (orderDetail.user_id) {
-                    handleSelectUserById(Number(orderDetail.user_id));
-                }
-
-                if (orderDetail.property_id) {
-                    handleSelectPropertytById(Number(orderDetail.property_id));
-                }
-
-                if (orderDetail.latest_quotation.id) {
-                    handleSelectQuotationtById();
-                }
-
-                // Run KTAccordion.createInstances() after all other tasks have completed
-                await new Promise(resolve => setTimeout(resolve, 1));
+                await new Promise((resolve) => setTimeout(resolve, 1));
                 KTAccordion.createInstances();
-            }
-        };
-
-        runAsyncTasks();
+            };
+            runAsyncTasks();
+        }
     }, [orderDetail]);
 
     useEffect(() => {
-        if (quotations.length > 0) {
-
-            // Call KTTooltip.createInstances after quotations are updated
-            KTTooltip.createInstances();
-            KTAccordion.createInstances();
-        }
-    }, [quotations.length]);
-
+        if (selectedPackages.length > 0) recalculateTotalAmount();
+        else setFormData((prev) => ({ ...prev, totalAmount: 0 }));
+    }, [selectedPackages]);
 
     const handleOpenOwnerDropdown = async () => {
-        setSearchUserTerm('');
-        inputUserRef.current.value = '';
-        inputUserRef.current.focus();
+        setSearchUserTerm("");
+        if (inputUserRef.current) inputUserRef.current.value = "";
+        inputUserRef.current?.focus();
         try {
-            const data = await fetchUsers('', 'owner');
+            const data = await fetchUsers("", "owner");
             setUsers(data.data);
-
         } catch (error) {
-            console.error('Failed to fetch quotations:', error);
+            console.error("Failed to fetch users:", error);
         }
-    }
+    };
 
     const handleOpenPropertyDropdown = async () => {
-        setSearchPropertyTerm('');
-        inputPropertyRef.current.value = '';
-        inputPropertyRef.current.focus();
+        setSearchPropertyTerm("");
+        if (inputPropertyRef.current) inputPropertyRef.current.value = "";
+        inputPropertyRef.current?.focus();
         try {
-            const data = await fetchProperties('', 6);
+            const data = await fetchProperties("", 6);
             setProperties(data.data);
-
         } catch (error) {
-            console.error('Failed to fetch quotations:', error);
+            console.error("Failed to fetch properties:", error);
         }
-    }
-
-    const handleOpenQuotationDropdown = async () => {
-        setSearchQuotationTerm('');
-        inputQuotationRef.current.value = '';
-        inputQuotationRef.current.focus();
-        try {
-            const data = await fetchQuotations('', 6);
-            setQuotations(data.data);
-
-        } catch (error) {
-            console.error('Failed to fetch quotations:', error);
-        }
-    }
+    };
 
     const handleSearchForm = async (formId: string) => {
-
         try {
-            const response = await fetchRegistrationForm(Number(formId)); // This returns AxiosResponse
-            const registrationForm: OwnerRegistrationForm = response.data.data; // Extract the data
-
-            if (registrationForm) {
-                setFormDetail(registrationForm);
-            } else {
-                toast.error("Registration form not found");
-            }
-
+            const response = await fetchRegistrationForm(Number(formId));
+            const registrationForm: OwnerRegistrationForm = response.data.data;
+            if (registrationForm) setFormDetail(registrationForm);
+            else toast.error("Registration form not found");
         } catch (error) {
             console.error("Error fetching registration form:", error);
             toast.error("Failed to fetch registration form");
@@ -273,158 +179,92 @@ function EditOrder() {
     };
 
     const handleToggleDraftMode = () => {
-        setFormData((prev) => ({
-            ...prev,
-            userId: '',
-            isDraftMode: !prev.isDraftMode
-        }));
+        setFormData((prev) => ({ ...prev, userId: "", isDraftMode: !prev.isDraftMode }));
         setSelectedUser(null);
-        setSearchUserTerm('');
+        setSearchUserTerm("");
         setUsers([]);
-    }
+    };
 
     const handleBackClick = () => {
-        localStorage.removeItem('edit_order_data');
-        localStorage.removeItem('include_packages');
-        localStorage.removeItem('selected_quotation_packages');
-        localStorage.removeItem('e:edit_order_data');
-        navigate('/orders/' + orderId);
+        navigate(`/orders/${orderId}`);
     };
 
     const handleSearchUser = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const term = event.target.value;
         setSearchUserTerm(term);
-
         try {
-            const data = await fetchUsers(term, 'owner');
+            const data = await fetchUsers(term, "owner");
             setUsers(data.data);
         } catch (error) {
-            console.error('Error fetching users:', error);
+            console.error("Error fetching users:", error);
         }
     };
 
     const handleSearchProperty = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const term = event.target.value;
         setSearchPropertyTerm(term);
-
         try {
-            const data = await fetchProperties(term, 6); // Assuming you have a similar fetch function
+            const data = await fetchProperties(term, 6);
             setProperties(data.data);
         } catch (error) {
-            console.error('Error fetching properties:', error);
+            console.error("Error fetching properties:", error);
         }
-    };
-
-    const handleSearchQuotation = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const term = event.target.value;
-        setSearchQuotationTerm(term);
-
-        try {
-            const data = await fetchQuotations(term, 6); // Assuming you have a similar fetch function
-            setQuotations(data.data);
-        } catch (error) {
-            console.error('Error fetching properties:', error);
-        }
-    };
-
-    const handleEditQuotation = () => {
-        localStorage.setItem('edit_order_data', JSON.stringify(formData));
     };
 
     const handleSelectUser = async (user: User) => {
-        setFormData((prev) => ({
-            ...prev,
-            userId: user.id,
-            isDraftMode: false,
-        }));
+        setFormData((prev) => ({ ...prev, userId: user.id, isDraftMode: false }));
         setSelectedUser(user);
-        setSearchUserTerm('');
+        setSearchUserTerm("");
         setUsers([]);
     };
 
     const handleSelectProperty = async (property: Property) => {
-        setFormData((prev) => ({
-            ...prev,
-            propertyId: property.id,
-        }));
+        setFormData((prev) => ({ ...prev, propertyId: property.id }));
         setSelectedProperty(property);
-        setSearchPropertyTerm('');
+        setSearchPropertyTerm("");
         setProperties([]);
-        localStorage.setItem('edit_order_data', JSON.stringify(formData));
-    };
-
-    const handleSelectQuotation = async (quotation: Quotation) => {
-        setFormData((prev) => ({
-            ...prev,
-            quotationId: quotation.id,
-        }));
-        setSelectedQuotation(quotation);
-        setSearchQuotationTerm('');
-        setQuotations([]);
-
-        // Store selected quotation package
-        localStorage.setItem('include_packages', JSON.stringify(quotation.metadata));
-        const storedPackages = localStorage.getItem('include_packages');
-
-        if (storedPackages) {
-            setSelectedPackages(JSON.parse(storedPackages));
-        }
     };
 
     const handleSelectUserById = async (id: number) => {
         try {
-            const data = await fetchUser(id); // Assuming you have a similar fetch function
-
-            setFormData((prev) => ({
-                ...prev,
-                userId: data.data.id,
-                isDraftMode: false,
-            }));
-
+            const data = await fetchUser(id);
+            setFormData((prev) => ({ ...prev, userId: data.data.id, isDraftMode: false }));
             setSelectedUser(data.data);
-            setSearchUserTerm('');
+            setSearchUserTerm("");
             setUsers([]);
-
         } catch (error) {
-            console.error('Error fetching properties:', error);
+            console.error("Error fetching user:", error);
         }
     };
 
     const handleSelectPropertytById = async (id: number) => {
         try {
-            const data = await fetchProperty(id); // Assuming you have a similar fetch function
-
-            setFormData((prev) => ({
-                ...prev,
-                propertyId: data.data.id,
-            }));
+            const data = await fetchProperty(id);
+            setFormData((prev) => ({ ...prev, propertyId: data.data.id }));
             setSelectedProperty(data.data);
-            setSearchPropertyTerm('');
+            setSearchPropertyTerm("");
             setProperties([]);
-
         } catch (error) {
-            console.error('Error fetching properties:', error);
+            console.error("Error fetching property:", error);
         }
     };
 
-    const handleSelectQuotationtById = async () => {
+    const handleSelectQuotationtById = () => {
         try {
-            let storedPackages = localStorage.getItem('include_packages');
+            let storedPackages = localStorage.getItem("include_packages");
 
             if (orderDetail.latest_quotation.quotation) {
                 const latestQuotation = orderDetail.latest_quotation.quotation;
                 latestQuotation.metadata = orderDetail.latest_quotation.metadata;
 
                 if (!storedPackages) {
-                    localStorage.setItem('include_packages', JSON.stringify(orderDetail.latest_quotation.metadata));
-
+                    localStorage.setItem("include_packages", JSON.stringify(orderDetail.latest_quotation.metadata));
                     storedPackages = JSON.stringify(orderDetail.latest_quotation.metadata);
                 }
 
                 setSelectedQuotation(latestQuotation);
-                setSelectedPackages(JSON.parse(storedPackages));
+                setSelectedPackages(JSON.parse(storedPackages || "[]"));
             } else {
-
                 const pastQuotation: Quotation = {
                     id: orderDetail.latest_quotation.id,
                     name: orderDetail.latest_quotation.quotation_name,
@@ -432,160 +272,359 @@ function EditOrder() {
                     total_amount: orderDetail.latest_quotation.total_amount,
                     valid_from: orderDetail.latest_quotation.from,
                     valid_until: orderDetail.latest_quotation.valid_until,
-                    metadata: orderDetail.latest_quotation.packages
-                }
+                    metadata: orderDetail.latest_quotation.packages,
+                };
 
                 setSelectedQuotation(pastQuotation);
                 setSelectedPackages(orderDetail.latest_quotation.packages);
             }
-
-
-            if (storedPackages) {
-                setSelectedPackages(JSON.parse(storedPackages));
-            }
-
         } catch (error) {
-            console.error('Error fetching latest quotation:', error);
+            console.error("Error fetching latest quotation:", error);
         }
     };
 
     const handleCustomQuotation = () => {
-        setFormData((prev) => ({
-            ...prev,
-            quotationId: '0',
-            totalAmount: 0,
-        }));
-        setSelectedQuotation({
-            id: '0',
-            name: 'Custom Quotation',
-            total_amount: 0,
-            metadata: null
-        });
-        setSearchQuotationTerm('');
-        setQuotations([]);
+        setFormData((prev) => ({ ...prev, quotationId: "0", totalAmount: 0 }));
+        setSelectedQuotation({ id: "0", name: "Custom Quotation", total_amount: 0, metadata: null });
         setSelectedPackages([]);
-        localStorage.setItem('include_packages', JSON.stringify([]));
-
-        notify('success', 'Custom quotation added.');
-    }
+        notify("success", "Custom quotation added.");
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-
-        // Check if the field is inside the "bonus" object
         if (name.startsWith("bonus.")) {
-            const bonusField = name.split(".")[1]; // Get the property of the bonus object (e.g., 'value')
-
-            // Convert value to a number if it's the 'bonus.value' field
-            const newValue = bonusField === 'value' ? Number(value) : value;
-
+            const bonusField = name.split(".")[1];
+            const newValue = bonusField === "value" ? Number(value) : value;
             setFormData((prevData) => ({
                 ...prevData,
-                bonus: {
-                    ...prevData.bonus,
-                    [bonusField]: newValue, // Update the specific bonus field
-                },
+                bonus: { ...prevData.bonus, [bonusField]: newValue },
             }));
         } else {
-            setFormData((prevData) => ({
-                ...prevData,
-                [name]: value,
-            }));
+            setFormData((prevData) => ({ ...prevData, [name]: value }));
         }
     };
 
     const toggleEnableFinalAmount = () => {
-        setFormData((prev) => ({
-            ...prev,
-            isFinalAmountEnable: !prev.isFinalAmountEnable
-        }))
-    }
+        setFormData((prev) => ({ ...prev, isFinalAmountEnable: !prev.isFinalAmountEnable }));
+    };
 
     const handleSubmit = async () => {
-
         setIsLoading(true);
 
         if (!formData.isDraftMode) {
             if (!selectedUser) {
-                notify('error', 'Please select a user.');
+                notify("error", "Please select a user.");
                 setIsLoading(false);
                 return;
             }
-
             if (!selectedProperty) {
-                notify('error', 'Please select a property.');
+                notify("error", "Please select a property.");
                 setIsLoading(false);
                 return;
             }
-
             if (!formData.block || !formData.floor || !formData.unitNo) {
-                notify('error', 'Please enter block, floor and unit no.');
+                notify("error", "Please enter block, floor and unit no.");
                 setIsLoading(false);
                 return;
             }
         }
 
         if (!selectedQuotation) {
-            notify('error', 'Please select a quotation.');
+            notify("error", "Please select a quotation.");
             setIsLoading(false);
             return;
         }
 
-        if (JSON.parse(localStorage.getItem('include_packages')).length === 0) {
-            notify('error', 'Please select at least one package.');
+        if (selectedPackages.length === 0) {
+            notify("error", "Please select at least one package.");
             setIsLoading(false);
             return;
         }
 
-        // parse bonus value to number
-        if (formData.bonus?.value) {
-            formData.bonus.value = Number(formData.bonus.value);
-        }
+        if (formData.bonus?.value) formData.bonus.value = Number(formData.bonus.value);
 
+        const newOrder: Order = {
+            id: orderDetail.id,
+            user_id: selectedUser?.id || "",
+            property_id: selectedProperty?.id || "",
+            quotation_id: selectedQuotation.id,
+            total_amount: formData.totalAmount,
+            final_amount: formData.isFinalAmountEnable ? formData.finalAmount : null,
+            unit_type: formData.unit_type,
+            block: formData.block,
+            floor: formData.floor,
+            unit_no: formData.unitNo,
+            bedroom_count: formData.bedroom_count,
+            bathroom_count: formData.bathroom_count,
+            include_partition: formData.include_partition,
+            description: "",
+            internal_remark: formData.internal_remark,
+            completion_day: formData.completion_day,
+            bonus: formData.bonus,
+            metadata: selectedPackages,
+        };
 
         try {
-            const newOrder: Order = {
-                id: orderDetail.id,
-                user_id: selectedUser?.id || '',
-                property_id: selectedProperty?.id || '',
-                quotation_id: selectedQuotation.id,
-                total_amount: formData.totalAmount,
-                final_amount: formData.isFinalAmountEnable ? formData.finalAmount : null,
-                unit_type: formData.unit_type,
-                block: formData.block,
-                floor: formData.floor,
-                unit_no: formData.unitNo,
-                bedroom_count: formData.bedroom_count,
-                bathroom_count: formData.bathroom_count,
-                include_partition: formData.include_partition,
-                description: '',
-                internal_remark: formData.internal_remark,
-                completion_day: formData.completion_day,
-                bonus: formData.bonus,
-                metadata: JSON.parse(localStorage.getItem('include_packages')),
-            }
-
             const response = await updateOrder(newOrder);
-
             if (response?.success) {
-                notify('success', "Quotation Updated Successfully!");
-                localStorage.removeItem('edit_order_data');
-                localStorage.removeItem('include_packages');
-                localStorage.removeItem('selected_quotation_packages');
-                localStorage.removeItem('e:edit_order_data');
-                navigate('/orders/' + orderId);
+                notify("success", "Quotation Updated Successfully!");
+                navigate(`/orders/${orderId}`);
             } else {
-                setIsLoading(false);
-                console.log(response);
-                notify('error', response);
+                notify("error", response?.data?.message || "Failed to update order");
             }
-
         } catch (error) {
-            notify('error', error.response.data.data);
+            notify("error", error.response?.data?.data || "An error occurred");
         }
-
         setIsLoading(false);
-    }
+    };
+
+    const openAddPackageModal = () => {
+        const datatableEl = document.querySelector("#packages_table") as HTMLElement;
+        if (datatableEl) {
+            const datatable = (datatableEl as any).instance;
+            if (datatable) datatable.reload();
+        }
+    };
+
+    const openAddProductModal = (event: React.MouseEvent<HTMLButtonElement>) => {
+        const id = event.currentTarget.getAttribute("data-id");
+        const selectedPackage = selectedPackages.find((pkg) => pkg.id === Number(id));
+        if (selectedPackage) {
+            setSelectedPackageId(selectedPackage.id.toString());
+            const datatableEl = document.querySelector("#products_table") as HTMLElement;
+            if (datatableEl) {
+                const datatable = (datatableEl as any).instance;
+                if (datatable) datatable.reload();
+            }
+        } else {
+            console.log("Package not found");
+        }
+    };
+
+    const toggleProperty = (id: number, packId: number, property: "supply" | "install") => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage) => {
+                if (prodPackage.id === packId) {
+                    const updatedProducts = prodPackage.products.map((product) => {
+                        if (product.id === id) {
+                            const key = property === "install" ? "includeInstall" : "includeSupply";
+                            const updatedPivot = {
+                                ...product.pivot,
+                                [key]: product.pivot ? !product.pivot[key] : true,
+                            };
+                            if (!updatedPivot.includeSupply && !updatedPivot.includeInstall) {
+                                updatedPivot.quantity = 1;
+                            }
+                            return { ...product, pivot: updatedPivot };
+                        }
+                        return product;
+                    });
+
+                    const packageTotalPrice = updatedProducts.reduce(
+                        (sum, product) =>
+                            sum +
+                            product.provisioning.supply.retail_price * product.pivot.quantity +
+                            product.provisioning.install.retail_price * product.pivot.quantity,
+                        0
+                    );
+
+                    let newTotalPrice = packageTotalPrice;
+                    updatedProducts.forEach((product) => {
+                        if (!product.pivot.includeSupply) {
+                            newTotalPrice -= product.provisioning.supply.excluded_price * product.pivot.quantity;
+                        }
+                        if (!product.pivot.includeInstall) {
+                            newTotalPrice -= product.provisioning.install.excluded_price * product.pivot.quantity;
+                        }
+                    });
+
+                    return { ...prodPackage, products: updatedProducts, total_price: newTotalPrice };
+                }
+                return prodPackage;
+            });
+            return updatedPackages;
+        });
+        recalculateTotalAmount();
+    };
+
+    const adjustQuantity = (prodId: number, packId: number, action: "increase" | "decrease") => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage) => {
+                if (prodPackage.id === packId) {
+                    const updatedProducts = prodPackage.products.map((product) => {
+                        if (product.id === prodId) {
+                            if (
+                                product.pivot.quantity === 1 &&
+                                action === "increase" &&
+                                !product.pivot.includeSupply &&
+                                !product.pivot.includeInstall
+                            ) {
+                                return {
+                                    ...product,
+                                    pivot: { ...product.pivot, includeSupply: true, includeInstall: true },
+                                };
+                            }
+                            if (!product.pivot.includeSupply && !product.pivot.includeInstall) return product;
+                            if (action === "decrease" && product.pivot.quantity === 1) {
+                                return {
+                                    ...product,
+                                    pivot: { ...product.pivot, includeSupply: false, includeInstall: false },
+                                };
+                            }
+                            const newQty =
+                                action === "increase" ? product.pivot.quantity + 1 : Math.max(1, product.pivot.quantity - 1);
+                            return { ...product, pivot: { ...product.pivot, quantity: newQty } };
+                        }
+                        return product;
+                    });
+
+                    const packageTotalPrice = updatedProducts.reduce(
+                        (sum, product) =>
+                            sum +
+                            product.provisioning.supply.retail_price * product.pivot.quantity +
+                            product.provisioning.install.retail_price * product.pivot.quantity,
+                        0
+                    );
+
+                    let newTotalPrice = packageTotalPrice;
+                    updatedProducts.forEach((product) => {
+                        if (!product.pivot.includeSupply) {
+                            newTotalPrice -= product.provisioning.supply.excluded_price * product.pivot.quantity;
+                        }
+                        if (!product.pivot.includeInstall) {
+                            newTotalPrice -= product.provisioning.install.excluded_price * product.pivot.quantity;
+                        }
+                    });
+
+                    return { ...prodPackage, products: updatedProducts, total_price: newTotalPrice };
+                }
+                return prodPackage;
+            });
+            return updatedPackages;
+        });
+        recalculateTotalAmount();
+    };
+
+    const adjustPackageQuantity = (packId: number, action: "increase" | "decrease") => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage) => {
+                if (prodPackage.id === packId) {
+                    const newQuantity =
+                        action === "increase" ? prodPackage.quantity + 1 : Math.max(1, prodPackage.quantity - 1);
+                    let packageTotalPrice = prodPackage.products.reduce(
+                        (sum, product) =>
+                            sum +
+                            product.provisioning.supply.retail_price * product.pivot.quantity +
+                            product.provisioning.install.retail_price * product.pivot.quantity,
+                        0
+                    );
+                    prodPackage.products.forEach((product) => {
+                        if (!product.pivot.includeSupply) {
+                            packageTotalPrice -= product.provisioning.supply.excluded_price * product.pivot.quantity;
+                        }
+                        if (!product.pivot.includeInstall) {
+                            packageTotalPrice -= product.provisioning.install.excluded_price * product.pivot.quantity;
+                        }
+                    });
+                    return { ...prodPackage, total_price: packageTotalPrice, quantity: newQuantity };
+                }
+                return prodPackage;
+            });
+            return updatedPackages;
+        });
+        recalculateTotalAmount();
+    };
+
+    const handleRemoveProduct = (packId: number, prodId: number) => {
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage: Package) => {
+                if (prodPackage.id === packId) {
+                    const updatedProducts = prodPackage.products.filter((product) => product.id !== prodId);
+                    const newTotalPrice = updatedProducts.reduce(
+                        (sum, product) =>
+                            sum +
+                            product.provisioning.supply.retail_price * product.pivot.quantity +
+                            product.provisioning.install.retail_price * product.pivot.quantity,
+                        0
+                    );
+                    return { ...prodPackage, products: updatedProducts, total_price: newTotalPrice };
+                }
+                return prodPackage;
+            });
+            return updatedPackages;
+        });
+        recalculateTotalAmount();
+    };
+
+    const handleRemovePackage = (packId: number) => {
+        setSelectedPackages((prevPackages: Package[]) =>
+            prevPackages.filter((prodPackage: Package) => prodPackage.id !== packId)
+        );
+        recalculateTotalAmount();
+    };
+
+    const recalculateTotalAmount = () => {
+        const newTotal = selectedPackages.reduce((sum, pkg) => {
+            sum +=
+                pkg.products.reduce((prodSum, product) => {
+                    if (!product.pivot.includeSupply) {
+                        prodSum +=
+                            product.provisioning.supply.retail_price * product.pivot.quantity -
+                            product.provisioning.supply.excluded_price * product.pivot.quantity;
+                    } else {
+                        prodSum += product.provisioning.supply.retail_price * product.pivot.quantity;
+                    }
+                    if (!product.pivot.includeInstall) {
+                        prodSum +=
+                            product.provisioning.install.retail_price * product.pivot.quantity -
+                            product.provisioning.install.excluded_price * product.pivot.quantity;
+                    } else {
+                        prodSum += product.provisioning.install.retail_price * product.pivot.quantity;
+                    }
+                    return prodSum;
+                }, 0) * (pkg.quantity || 1);
+            return sum;
+        }, 0);
+        setFormData((prev) => ({ ...prev, totalAmount: newTotal }));
+        return newTotal;
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (!over || active.id === over.id) return;
+
+        if (active.id.toString().startsWith("package-") && over.id.toString().startsWith("package-")) {
+            const oldIndex = selectedPackages.findIndex((pkg) => `package-${pkg.id}` === active.id);
+            const newIndex = selectedPackages.findIndex((pkg) => `package-${pkg.id}` === over.id);
+            const newPackages = arrayMove(selectedPackages, oldIndex, newIndex);
+            setSelectedPackages(newPackages);
+        } else if (active.id.toString().startsWith("product-") && over.id.toString().startsWith("product-")) {
+            const activeParts = active.id.toString().split("-");
+            const overParts = over.id.toString().split("-");
+            const activePackId = parseInt(activeParts[2]);
+            const overPackId = parseInt(overParts[2]);
+
+            if (activePackId === overPackId) {
+                setSelectedPackages((prevPackages) => {
+                    const updatedPackages = prevPackages.map((pkg) => {
+                        if (pkg.id === activePackId) {
+                            const oldIndex = pkg.products.findIndex(
+                                (prod) => `product-${prod.id}-${pkg.id}` === active.id
+                            );
+                            const newIndex = pkg.products.findIndex(
+                                (prod) => `product-${prod.id}-${pkg.id}` === over.id
+                            );
+                            const newProducts = arrayMove(pkg.products, oldIndex, newIndex);
+                            return { ...pkg, products: newProducts };
+                        }
+                        return pkg;
+                    });
+                    return updatedPackages;
+                });
+            }
+        }
+    };
 
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
@@ -594,15 +633,12 @@ function EditOrder() {
     return (
         <>
             {isLoading && <Loading />}
-
             <div className="flex justify-between items-center flex-wrap mb-6 lg:mr-[400px] lg:pr-6">
                 <div className="flex gap-4 items-center">
-                    <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
+                    <button className="text-gray-800 dark:text-gray-400" onClick={handleBackClick}>
                         <i className="ki-solid ki-arrow-left"></i>
                     </button>
-                    <span className="text-2xl font-bold text-gray-900">
-                        Revise Order
-                    </span>
+                    <span className="text-2xl font-bold text-gray-900">Revise Order</span>
                 </div>
                 <div className="flex items-center">
                     <label className="switch switch-lg">
@@ -610,12 +646,10 @@ function EditOrder() {
                             className="checkbox"
                             name="isDraftMode"
                             type="checkbox"
-                            checked={!!formData.isDraftMode}
+                            checked={formData.isDraftMode}
                             onChange={handleToggleDraftMode}
                         />
-                        <span className="switch-label">
-                            Draft Mode
-                        </span>
+                        <span className="switch-label">Draft Mode</span>
                     </label>
                 </div>
             </div>
@@ -624,14 +658,11 @@ function EditOrder() {
                 <div className="flex flex-col gap-8 mb-8" data-accordion="true" data-accordion-expand-all="true">
                     <div className="card">
                         <div className="card-body">
-                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Order</h2>
+                            <h2 className="text-xl mb-4 font-semibold text-gray-900">Order</h2>
                             <div className="flex gap-8">
                                 <div className="flex flex-col flex-1 gap-8">
                                     <div className="flex flex-col gap-2">
-                                        {/* Owner */}
-                                        <span className="text-base font-semibold text-gray-900">
-                                            Select an Owner
-                                        </span>
+                                        <span className="text-base font-semibold text-gray-900">Select an Owner</span>
                                         <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="contract_dropdown">
                                             <button
                                                 className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
@@ -656,10 +687,7 @@ function EditOrder() {
                                                 <div className="menu menu-default flex flex-col w-full">
                                                     {users.map((user, index) => (
                                                         <div className="menu-item" key={index} data-id={user.id}>
-                                                            <button
-                                                                className="menu-link"
-                                                                onClick={() => handleSelectUser(user)}
-                                                            >
+                                                            <button className="menu-link" onClick={() => handleSelectUser(user)}>
                                                                 <span className="menu-title">{user.name}</span>
                                                             </button>
                                                         </div>
@@ -671,20 +699,18 @@ function EditOrder() {
                                             <div className="card mb-4">
                                                 <div className="card-body">
                                                     <div className="flex flex-col gap-1 text-gray-900">
-                                                        <span className='text-sm font-semibold'>{selectedUser.name}</span>
-                                                        <span className='text-sm font-normal text-slate-400'>{selectedUser.email}</span>
-                                                        <span className='text-sm font-normal'>{selectedUser.phone_no}</span>
+                                                        <span className="text-sm font-semibold">{selectedUser.name}</span>
+                                                        <span className="text-sm font-normal text-slate-400">{selectedUser.email}</span>
+                                                        <span className="text-sm font-normal">
+                                                            +{selectedUser.country_code} {selectedUser.phone_no}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
                                     </div>
-
-                                    {/* Internal Remark */}
                                     <div className="flex flex-col gap-2">
-                                        <span className="text-base font-semibold text-gray-900">
-                                            Internal Remark
-                                        </span>
+                                        <span className="text-base font-semibold text-gray-900">Internal Remark</span>
                                         <textarea
                                             className="textarea"
                                             name="internal_remark"
@@ -695,12 +721,9 @@ function EditOrder() {
                                         ></textarea>
                                     </div>
                                 </div>
-
                                 <div className="flex flex-col flex-1 gap-2">
-                                    <span className="text-base font-semibold text-gray-900">
-                                        Select a Property
-                                    </span>
-                                    <div className="dropdow" data-dropdown="true" data-dropdown-trigger="click" id='property_dropdown'>
+                                    <span className="text-base font-semibold text-gray-900">Select a Property</span>
+                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="property_dropdown">
                                         <button
                                             className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
                                             onClick={handleOpenPropertyDropdown}
@@ -724,10 +747,7 @@ function EditOrder() {
                                             <div className="menu menu-default flex flex-col w-full">
                                                 {properties.map((property, index) => (
                                                     <div className="menu-item" key={index} data-id={property.id}>
-                                                        <button
-                                                            className="menu-link"
-                                                            onClick={() => handleSelectProperty(property)}
-                                                        >
+                                                        <button className="menu-link" onClick={() => handleSelectProperty(property)}>
                                                             <span className="menu-title">{property.name}</span>
                                                         </button>
                                                     </div>
@@ -740,89 +760,71 @@ function EditOrder() {
                                             <div className="card mb-4">
                                                 <div className="card-body">
                                                     <div className="flex flex-col gap-1 text-gray-900">
-                                                        <span className='text-sm font-semibold text-gray-900'>{selectedProperty.name}</span>
-                                                        <span className='text-sm font-normal text-slate-400'>
+                                                        <span className="text-sm font-semibold text-gray-900">{selectedProperty.name}</span>
+                                                        <span className="text-sm font-normal text-slate-400">
                                                             {[
                                                                 selectedProperty.address,
                                                                 selectedProperty.street,
                                                                 selectedProperty.postcode,
                                                                 selectedProperty.city,
-                                                                selectedProperty.state
-                                                            ].filter(Boolean).join(', ')}
+                                                                selectedProperty.state,
+                                                            ]
+                                                                .filter(Boolean)
+                                                                .join(", ")}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <div className="flex flex-col gap-2">
+                                            <div className="flex flex-col gap-4">
                                                 <div className="flex gap-4">
                                                     <div className="flex flex-col">
-                                                        <span className='text-sm font-semibold text-gray-900'>
-                                                            Unit Type
-                                                        </span>
-
+                                                        <span className="text-sm font-semibold text-gray-900">Unit Type</span>
                                                         <input
-                                                            className='input mb-2'
-                                                            type='text'
-                                                            name='unit_type'
+                                                            className="input mb-2"
+                                                            type="text"
+                                                            name="unit_type"
                                                             value={formData.unit_type}
                                                             onChange={handleChange}
                                                         />
                                                     </div>
                                                 </div>
-
                                                 <div className="flex gap-4">
                                                     <div className="flex flex-col">
-                                                        <span className='text-sm font-semibold text-gray-900'>
-                                                            Block
-                                                        </span>
-
+                                                        <span className="text-sm font-semibold text-gray-900">Block</span>
                                                         <input
-                                                            className='input mb-2'
-                                                            type='text'
-                                                            name='block'
+                                                            className="input mb-2"
+                                                            type="text"
+                                                            name="block"
                                                             value={formData.block}
                                                             onChange={handleChange}
                                                         />
                                                     </div>
-
                                                     <div className="flex flex-col">
-                                                        <span className='text-sm font-semibold text-gray-900'>
-                                                            Floor
-                                                        </span>
-
+                                                        <span className="text-sm font-semibold text-gray-900">Floor</span>
                                                         <input
-                                                            className='input mb-2'
-                                                            type='text'
-                                                            name='floor'
-                                                            value={formData.floor || ''}
+                                                            className="input mb-2"
+                                                            type="text"
+                                                            name="floor"
+                                                            value={formData.floor || ""}
                                                             onChange={handleChange}
                                                         />
                                                     </div>
-
                                                     <div className="flex flex-col">
-                                                        <span className='text-sm font-semibold text-gray-900'>
-                                                            Unit No
-                                                        </span>
-
+                                                        <span className="text-sm font-semibold text-gray-900">Unit No</span>
                                                         <input
-                                                            className='input mb-2'
-                                                            type='text'
-                                                            name='unitNo'
+                                                            className="input mb-2"
+                                                            type="text"
+                                                            name="unitNo"
                                                             value={formData.unitNo}
                                                             onChange={handleChange}
                                                         />
                                                     </div>
                                                 </div>
-
                                                 <div className="flex gap-8">
                                                     <div className="flex flex-col">
-                                                        <span className='text-sm font-semibold text-gray-900'>
-                                                            Total Bedroom
-                                                        </span>
-
+                                                        <span className="text-sm font-semibold text-gray-900">Total Bedroom</span>
                                                         <select
-                                                            className={`select`}
+                                                            className="select"
                                                             name="bedroom_count"
                                                             id="bedroom_count"
                                                             onChange={handleChange}
@@ -835,14 +837,10 @@ function EditOrder() {
                                                             <option value="5">5</option>
                                                         </select>
                                                     </div>
-
                                                     <div className="flex flex-col">
-                                                        <span className='text-sm font-semibold text-gray-900'>
-                                                            Total Bathroom
-                                                        </span>
-
+                                                        <span className="text-sm font-semibold text-gray-900">Total Bathroom</span>
                                                         <select
-                                                            className={`select`}
+                                                            className="select"
                                                             name="bathroom_count"
                                                             id="bathroom_count"
                                                             onChange={handleChange}
@@ -853,31 +851,26 @@ function EditOrder() {
                                                             <option value="3">3</option>
                                                         </select>
                                                     </div>
-
                                                     <div className="flex flex-col">
-                                                        <span className='text-sm font-semibold text-gray-900 mb-2'>
-                                                            Partition
-                                                        </span>
-
+                                                        <span className="text-sm font-semibold text-gray-900 mb-2">Partition</span>
                                                         <label className="switch switch-lg">
                                                             <input
                                                                 className="checkbox"
-                                                                name="isDraftMode"
+                                                                name="include_partition"
                                                                 type="checkbox"
-                                                                checked={!!formData.include_partition}
-                                                                onChange={() => setFormData((prev) => ({
-                                                                    ...prev,
-                                                                    include_partition: !prev.include_partition
-                                                                }))}
+                                                                checked={formData.include_partition}
+                                                                onChange={() =>
+                                                                    setFormData((prev) => ({
+                                                                        ...prev,
+                                                                        include_partition: !prev.include_partition,
+                                                                    }))
+                                                                }
                                                             />
-                                                            <span className="switch-label">
-                                                                {formData.include_partition ? "Yes" : "No"}
-                                                            </span>
+                                                            <span className="switch-label">{formData.include_partition ? "Yes" : "No"}</span>
                                                         </label>
                                                     </div>
                                                 </div>
                                             </div>
-
                                         </>
                                     )}
                                 </div>
@@ -886,143 +879,75 @@ function EditOrder() {
                     </div>
                     <div className="card">
                         <div className="card-body">
-                            <h2 className='text-xl mb-4 font-semibold text-gray-900'>Quotation</h2>
-
+                            <h2 className="text-xl mb-4 font-semibold text-gray-900">Quotation</h2>
                             <div className="flex gap-8">
-                                {/* Quotation and Completion Day */}
                                 <div className="flex flex-col flex-1 gap-8">
                                     <div className="flex flex-col gap-2">
-                                        <span className="text-base font-semibold text-gray-900">
-                                            Select a Quotation
-                                        </span>
-                                        {/* <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id='quotation_dropdown'>
-                                            <button
-                                                className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
-                                                onClick={handleOpenQuotationDropdown}
-                                            >
-                                                <span>Quotation</span>
-                                                <i className="ki-filled ki-down"></i>
-                                            </button>
-                                            <div className="dropdown-content w-full max-w-xl">
-                                                <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                                    <label className="input input-sm">
-                                                        <i className="ki-filled ki-magnifier"></i>
-                                                        <input
-                                                            ref={inputQuotationRef}
-                                                            placeholder="Search quotation"
-                                                            type="text"
-                                                            value={searchQuotationTerm}
-                                                            onChange={handleSearchQuotation}
-                                                        />
-                                                    </label>
-                                                </div>
-                                                <div className="menu menu-default flex flex-col">
-                                                    {quotations.map((quotation, index) => (
-                                                        <div className="menu-item" key={index} data-id={quotation.id}>
-                                                            <button
-                                                                className="menu-link flex justify-between items-center"
-                                                                onClick={() => handleSelectQuotation(quotation)}
-                                                            >
-                                                                <span className="menu-title">{quotation.name}</span>
-                                                                {!quotation.is_ready && (
-                                                                    <i
-                                                                        className="ki-outline ki-cross-circle text-danger"
-                                                                        data-tooltip="#draft_tooltip"
-                                                                    >
-                                                                    </i>
-                                                                )}
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div> */}
-                                        <span className='text-md font-semibold text-gray-900'>
-                                            <button
-                                                className='link'
-                                                onClick={handleCustomQuotation}
-                                            >
+                                        <span className="text-base font-semibold text-gray-900">Select a Quotation</span>
+                                        <span className="text-md font-semibold text-gray-900">
+                                            <button className="link" onClick={handleCustomQuotation}>
                                                 Create a custom quotation
                                             </button>
                                         </span>
                                     </div>
-
-                                    <div className="flex flex-col flex-1 gap-2">
+                                    <div className="flex flex-col gap-2">
                                         <InputFieldGroup
                                             fieldTitle="Completion Day(s)"
                                             description="Set the period for this renovation work completion day(s) (Working days)"
                                             type="number"
-                                            placeholder=''
+                                            placeholder=""
                                             name="completion_day"
                                             value={formData.completion_day}
                                             onChange={handleChange}
                                         />
                                     </div>
-
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-medium text-gray-900">
-                                            Final Pricing
-                                        </label>
-
+                                        <label className="text-sm font-medium text-gray-900">Final Pricing</label>
                                         <span className="text-xs text-gray-600 tracking-wide mb-2">
-                                            The final price that will billed and display to owner at the end (excluded bonuses)
+                                            The final price that will be billed and displayed to the owner at the end (excluding bonuses)
                                         </span>
-
                                         <label className="switch switch-lg">
                                             <input
                                                 className="checkbox"
-                                                name="is_ready"
+                                                name="isFinalAmountEnable"
                                                 type="checkbox"
-                                                checked={!!formData.isFinalAmountEnable}
+                                                checked={formData.isFinalAmountEnable}
                                                 onChange={toggleEnableFinalAmount}
                                             />
-                                            <span className="switch-label">
-                                                {formData.isFinalAmountEnable ? 'Enable' : 'Disable'}
-                                            </span>
+                                            <span className="switch-label">{formData.isFinalAmountEnable ? "Enable" : "Disable"}</span>
                                         </label>
-
                                         {formData.isFinalAmountEnable && (
                                             <input
-                                                className={`input mb-2`}
-                                                placeholder='Final Pricing'
+                                                className="input mb-2"
+                                                placeholder="Final Pricing"
                                                 type="number"
                                                 name="finalAmount"
-                                                value={formData.finalAmount}  // Display value as a string, but handle 0 properly
+                                                value={formData.finalAmount}
                                                 onChange={handleChange}
                                             />
                                         )}
                                     </div>
                                 </div>
-
-                                {/* Bonus */}
                                 <div className="flex flex-col flex-1 gap-2">
-                                    <span className="text-base font-semibold text-gray-900">
-                                        Apply Bonus (Optional)
-                                    </span>
-
+                                    <span className="text-base font-semibold text-gray-900">Apply Bonus (Optional)</span>
                                     <div className="flex flex-col mb-4">
-                                        <label className='mb-2 text-sm font-medium text-gray-900'>
-                                            Bonus Description
-                                        </label>
+                                        <label className="mb-2 text-sm font-medium text-gray-900">Bonus Description</label>
                                         <span className="text-xs text-gray-600 tracking-wide mb-2">
                                             Set a description of the bonus
                                         </span>
-
                                         <textarea
-                                            className="textarea"
-                                            name='bonus.description'
+                                            className="textarea Identifier"
+                                            name="bonus.description"
                                             rows={5}
-                                            value={formData.bonus.description || ''}
+                                            value={formData.bonus.description || ""}
                                             onChange={handleChange}
-                                        >
-                                        </textarea>
+                                        ></textarea>
                                     </div>
-
                                     <InputFieldGroup
                                         fieldTitle="Bonus Value"
                                         description="Set a total value of the bonus"
                                         type="number"
-                                        placeholder=''
+                                        placeholder=""
                                         name="bonus.value"
                                         value={formData.bonus.value}
                                         onChange={handleChange}
@@ -1032,192 +957,77 @@ function EditOrder() {
                         </div>
                     </div>
                     {selectedQuotation && (
-                        <div className="flex flex-col gap-4">
+                        <>
                             <div className="card">
                                 <div className="card-body quotation-info flex justify-between items-center gap-4">
                                     <div className="flex flex-col">
-                                        <span className='text-lg font-semibold text-gray-900'>
-                                            {selectedQuotation.name}
-                                        </span>
+                                        <span className="text-lg font-semibold text-gray-900">{selectedQuotation.name}</span>
                                         <span className="text-base font-normal text-gray-800">
-                                            Price: RM {
-                                                // Check if formData.totalAmount exists, and calculate the price with or without bonus
-                                                formData.totalAmount
-                                                    ? (formData.totalAmount - (Number(formData.bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                                                    : (selectedQuotation.total_amount - (Number(formData.bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                                            }
-                                            {formData.bonus.value &&
-                                                ` (Discount: RM${Number(formData.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
-                                            }
+                                            Price: RM{" "}
+                                            {(formData.totalAmount - (Number(formData.bonus?.value) || 0)).toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                            {formData.bonus?.value &&
+                                                ` (Discount: RM${Number(formData.bonus?.value).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })})`}
                                         </span>
-
-                                        <span className="text-base font-normal text-slate-400">
-                                            {selectedQuotation.description}
-                                        </span>
-                                    </div>
-                                    <div className="flex actions">
-                                        <Link
-                                            to={'/orders/edit/' + orderId + '/quotation/edit/' + selectedQuotation.id}
-                                            className="btn btn-primary btn-lg"
-                                            data-id={selectedQuotation.id}
-                                            onClick={handleEditQuotation}
-                                        >
-                                            Edit Quotation
-                                        </Link>
+                                        <span className="text-base font-normal text-slate-400">{selectedQuotation.description}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="card">
+                            <div className="card mb-6">
                                 <div className="card-body">
-                                    <div className="text-base font-semibold text-gray-900 mb-2">
-                                        Packages:
+                                    <div className="flex justify-between items-center flex-wrap mb-2">
+                                        <h2 className="text-xl mb-4 font-semibold text-gray-900">Packages</h2>
+                                        <button
+                                            className="btn btn-outline btn-primary flex justify-center items-center mb-4"
+                                            data-modal-toggle="#include_package_modal"
+                                            onClick={openAddPackageModal}
+                                        >
+                                            <i className="ki-outline ki-plus-squared"></i>
+                                            Add Packages
+                                        </button>
                                     </div>
-                                    <div className="flex flex-col gap-5">
-                                        {selectedPackages.map((prodPackage: Package) => (
-                                            <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
-                                                <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
-                                                    <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
-                                                        <div className="flex flex-col items-start">
-                                                            <span className="text-base text-gray-900 font-medium">
-                                                                {prodPackage.name}
-                                                            </span>
-                                                            {prodPackage.description_internal &&
-                                                                <div className="flex items-center gap-2">
-                                                                    <i className="ki-filled ki-information-2 text-warning text-xl"></i>
-                                                                    <span className="text-sm text-gray-700 font-medium">
-                                                                        {prodPackage.description_internal}
-                                                                    </span>
-                                                                </div>
-                                                            }
-                                                            <span className='text-base text-gray-700'>
-                                                                RM {(prodPackage.total_price * (prodPackage.quantity ? prodPackage.quantity : 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </span>
-                                                            {prodPackage.category &&
-                                                                <div className="badge text-sm">
-                                                                    {categoryOptions.find(option => option.value === prodPackage.category)?.label}
-                                                                </div>
-                                                            }
-                                                            <span className='text-sm text-slate-400'>
-                                                                {prodPackage.description}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-8">
-                                                            <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md">Quantity: {(prodPackage.quantity ? prodPackage.quantity : 1)}</span>
-                                                            <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                            <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
-                                                        </div>
-                                                    </button>
-                                                    <div className="accordion-content border-t hidden" id={"package_content_" + prodPackage.id.toString()}>
-                                                        <div className="product-list flex flex-col">
-                                                            <table className="table align-middle text-gray-700 font-medium text-sm">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th className='w-[10px] text-center'>Supply</th>
-                                                                        <th className='w-[10px] text-center'>Install</th>
-                                                                        <th className='w-[250px]'>Product</th>
-                                                                        <th className='w-[100px] text-center'>Quantity</th>
-                                                                        <th className='w-[100px] text-center'>Unit Price</th>
-                                                                        <th className='w-[100px] text-center'>Discount</th>
-                                                                        <th className='w-[100px] text-center'>Total Price</th>
-                                                                        <th className='w-[10px] text-center'></th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {prodPackage.products.map((product) => (
-                                                                        <tr
-                                                                            key={product.id}
-                                                                            className={`${!product.pivot.includeSupply && !product.pivot.includeInstall ? 'light:bg-orange-50 dark:bg-orange-950' : ''}`}
-                                                                        >
-                                                                            <td>
-                                                                                <span></span>
-                                                                                <div className="flex flex-col items-center">
-                                                                                    <input
-                                                                                        className="checkbox"
-                                                                                        name="supply"
-                                                                                        type="checkbox"
-                                                                                        checked={!!product.pivot.includeSupply}
-                                                                                        readOnly
-                                                                                    />
-                                                                                </div>
-                                                                            </td>
-                                                                            <td>
-                                                                                <div className="flex flex-col items-center">
-                                                                                    <input
-                                                                                        className="checkbox"
-                                                                                        name="install"
-                                                                                        type="checkbox"
-                                                                                        checked={!!product.pivot.includeInstall}
-                                                                                        readOnly
-                                                                                    />
-                                                                                </div>
-                                                                            </td>
-                                                                            <td>
-                                                                                <div className="flex flex-col">
-                                                                                    <span>{product.name}</span>
-                                                                                    <span className="text-xs text-slate-400">{product.description}</span>
-                                                                                </div>
-                                                                            </td>
-                                                                            <td className='text-center text-lg'>
-                                                                                <span className="mx-2 text-base">
-                                                                                    {product.pivot.included ? ((!product.pivot.includeSupply && !product.pivot.includeInstall ? 0 : product.pivot.quantity)) : '0'}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td className="text-center">
-                                                                                RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                            </td>
-                                                                            <td className='text-center'>
-                                                                                {!product.pivot.includeSupply || !product.pivot.includeInstall
-                                                                                    ? `- RM ${(
-                                                                                        (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0) +
-                                                                                        (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
-                                                                                    )
-                                                                                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                                    : null}
-                                                                            </td>
-                                                                            <td className="text-center">
-                                                                                {!product.pivot.included
-                                                                                    ? null
-                                                                                    : `RM ${(
-                                                                                        (product.provisioning.supply.retail_price * product.pivot.quantity -
-                                                                                            (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0)
-                                                                                        ) +
-                                                                                        (product.provisioning.install.retail_price * product.pivot.quantity -
-                                                                                            (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
-                                                                                        )
-                                                                                    )
-                                                                                        .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                            </td>
-                                                                            <td className="text-center">
-                                                                                {!product.pivot.visibility && <i className="ki-solid ki-eye-slash text-2xl"></i>}
-                                                                            </td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                    <DndContext onDragEnd={handleDragEnd}>
+                                        <SortableContext
+                                            items={selectedPackages.map((pkg) => `package-${pkg.id}`)}
+                                            strategy={verticalListSortingStrategy}
+                                        >
+                                            <div className="flex flex-col gap-5 mb-4" data-accordion="true">
+                                                {selectedPackages.length > 0 &&
+                                                    selectedPackages.map((prodPackage: Package) => (
+                                                        <SortablePackage
+                                                            key={prodPackage.id}
+                                                            prodPackage={prodPackage}
+                                                            categoryOptions={categoryOptions}
+                                                            adjustPackageQuantity={adjustPackageQuantity}
+                                                            handleRemovePackage={handleRemovePackage}
+                                                            openAddProductModal={openAddProductModal}
+                                                            toggleProperty={toggleProperty}
+                                                            adjustQuantity={adjustQuantity}
+                                                            handleRemoveProduct={handleRemoveProduct}
+                                                        />
+                                                    ))}
                                             </div>
-                                        ))}
-                                    </div>
+                                        </SortableContext>
+                                    </DndContext>
                                 </div>
                             </div>
-                        </div>
+                        </>
                     )}
-
                     <div className="flex justify-end gap-6">
-                        <button className="btn btn-lg btn-light">
+                        <button className="btn btn-lg btn-light" onClick={handleBackClick}>
                             Cancel
                         </button>
-                        <button
-                            className="btn btn-lg btn-primary"
-                            onClick={handleSubmit}
-                        >
+                        <button className="btn btn-lg btn-primary" onClick={handleSubmit}>
                             Update
                         </button>
                     </div>
                 </div>
-            </div >
+            </div>
 
             <div
                 className="w-[400px] drawer drawer-start grow fixed z-1 top-20 lg:top-20 bottom-12 lg:bottom-12 lg:right-8 lg:left-auto lg:translate-x-0 lg:flex flex-col items-stretch shrink-0 bg-[#fefefe] dark:bg-coal-500"
@@ -1900,9 +1710,16 @@ function EditOrder() {
                 </div>
             </div>
 
-            <div className="tooltip" id="draft_tooltip">
-                This quotation template is in <strong>Draft Mode</strong>. But you still can select it.
-            </div>
+            <IncludeOrderQuotationPackageModal
+                selectedPackages={selectedPackages}
+                setSelectedPackages={setSelectedPackages}
+            />
+            <IncludeQuotationProductModal
+                selectedPackages={selectedPackages}
+                setSelectedPackages={setSelectedPackages}
+                selectedPackageId={selectedPackageId}
+                recalculateTotalAmount={recalculateTotalAmount}
+            />
         </>
     );
 }

@@ -136,7 +136,11 @@ const IncludePOItemsModal: React.FC<IncludePOItemsModalProps> = ({
                 setSelectedPOPackages(prevSelectedPOPackages => {
                     const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
                         if (packageItem.package_id === selectedPOPackageId) {
-                            return { ...packageItem, po_items: updatedProducts };
+                            return {
+                                ...packageItem,
+                                po_items: updatedProducts,
+                                total_price: calculatePackageTotal({ ...packageItem, po_items: updatedProducts })
+                            };
                         }
                         return packageItem;
                     });
@@ -170,13 +174,14 @@ const IncludePOItemsModal: React.FC<IncludePOItemsModalProps> = ({
                                 }
                             ];
 
-                            return { ...packageItem, po_items: updatedProducts };
+                            return {
+                                ...packageItem,
+                                po_items: updatedProducts,
+                                total_price: calculatePackageTotal({ ...packageItem, po_items: updatedProducts })
+                            };
                         }
                         return packageItem;
                     });
-
-                    console.log(updatedPackages);
-                    
 
                     return updatedPackages;
                 });
@@ -188,6 +193,16 @@ const IncludePOItemsModal: React.FC<IncludePOItemsModalProps> = ({
             }
         }
     }
+
+    const calculatePackageTotal = (poPackage: POPackage): number => {
+        return poPackage.po_items.reduce((total, item) => {
+            const itemTotal = item.qty * (
+                (item.supply ? item.supply_price : 0) +
+                (item.install ? item.install_price : 0)
+            );
+            return total + itemTotal;
+        }, 0);
+    };
 
 
     return (

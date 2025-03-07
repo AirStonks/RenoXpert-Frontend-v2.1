@@ -8,13 +8,12 @@ import Loading from "../Loading";
 
 interface IncludeOrderQuotationPackageModallProps {
     selectedPackages: Package[];
-    updateSelectedPackages: (prodPackages: Package[]) => void;
-    previousModalId?: string; // Make this optional
+    setSelectedPackages: React.Dispatch<React.SetStateAction<Package[]>>;
 }
 
 type SortOrder = 'asc' | 'desc' | null;
 
-function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPackages, previousModalId }: IncludeOrderQuotationPackageModallProps) {
+function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackages }: IncludeOrderQuotationPackageModallProps) {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [packages, setPackages] = useState<Package[]>([]); // Initialize as an empty array
@@ -29,9 +28,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
-
         initPackageTable(1, 10, '', null, '');
-
     }, []);
 
     const initPackageTable = async (
@@ -46,10 +43,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
             const response = await packageIndex(size, page, searchTerm, order, field, false);
             const data = response?.data || [];
 
-            localStorage.setItem('packages_data', JSON.stringify(data));
-
             setPackages(data);
-            setTotalItems(response?.totalCount || 0);
         } catch (error) {
             console.error('Error fetching packages:', error);
             setError('Failed to load packages');
@@ -75,8 +69,6 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                 setIsLoading(true);
                 const response = await packageIndex(size, 1, value, sortOrder, sortField, false);
                 const data = response?.data || [];
-
-                localStorage.setItem('packages_data', JSON.stringify(data));
 
                 setPackages(data);
                 setTotalItems(response?.totalCount || 0);
@@ -141,8 +133,6 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
     const totalPages = Math.ceil(totalItems / size);
 
     const handleSelectPackage = (button: HTMLButtonElement) => {
-
-        // Find the select button element
         const selectBtn = button.closest('[data-action="select"], [data-action="remove"]') as HTMLElement;
 
         if (selectBtn) {
@@ -153,53 +143,46 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
             const packageCategory = selectBtn.dataset.cat;
             const packageInternalDesc = selectBtn.dataset.intdesc;
 
-            // Retrieve the current selected prodPackages from localStorage
-            const storedPackages = localStorage.getItem('selected_quotation_packages');
-            const selectedPackages = storedPackages ? JSON.parse(storedPackages) : [];
-            const packagesData = localStorage.getItem('packages_data');
-
-            /// Check if the prodPackage ID is already selected
-            const packageIndex = selectedPackages ? selectedPackages.findIndex(prodPackage => prodPackage.id === Number(id)) : -1;
+            // Check if the package is already selected
+            const packageIndex = selectedPackages.findIndex((pkg) => pkg.id === Number(id));
 
             if (packageIndex > -1) {
-                // If it is selected, remove it
-                selectedPackages.splice(packageIndex, 1);
-                // Change button to "Select"
+                // Remove the package immutably
+                const updatedPackages = selectedPackages.filter((_, index) => index !== packageIndex);
+                setSelectedPackages(updatedPackages);
+
+                // Update button to "Select"
                 selectBtn.dataset.action = 'select';
-                selectBtn.className = 'btn btn-primary btn-sm'; // Update class
+                selectBtn.className = 'btn btn-primary btn-sm';
                 selectBtn.innerText = 'Select';
             } else {
-                // If it is not selected, add it
-                const selectedPackage = JSON.parse(packagesData).find(prodPackage => prodPackage.id === Number(id));
+                // Add the package immutably
+                const selectedPackage = packages.find((pkg) => pkg.id === Number(id));
+                if (selectedPackage) {
+                    const newPackage = {
+                        id: Number(id),
+                        name: packageName,
+                        description: packageDescription,
+                        quantity: 1,
+                        total_price: packagePrice,
+                        category: packageCategory,
+                        description_internal: packageInternalDesc,
+                        products: selectedPackage.products || [], // Ensure products is included
+                    };
+                    
+                    const updatedPackages = [...selectedPackages, newPackage];
+                    setSelectedPackages(updatedPackages);
 
-                console.log(packageInternalDesc);
-                
-
-                selectedPackages.push({
-                    id: Number(id),
-                    name: packageName,
-                    description: packageDescription,
-                    quantity: 1,
-                    total_price: packagePrice,
-                    category: packageCategory,
-                    description_internal: packageInternalDesc,
-                    products: selectedPackage.products
-                });
-
-                // selectedPackages.push(selectedPackage);
-                // Change button to "Remove"
-                selectBtn.dataset.action = 'remove';
-                selectBtn.className = 'btn btn-danger btn-sm'; // Update class
-                selectBtn.innerText = 'Remove';
+                    // Update button to "Remove"
+                    selectBtn.dataset.action = 'remove';
+                    selectBtn.className = 'btn btn-danger btn-sm';
+                    selectBtn.innerText = 'Remove';
+                }
             }
 
-            // Save the updated array back to localStorage
-            localStorage.setItem('selected_quotation_packages', JSON.stringify(selectedPackages));
-
-            // TODO Update the prodPackage-list
-            updateSelectedPackages(selectedPackages);
+            console.log('Updated selectedPackages:', selectedPackages);
         }
-    }
+    };
 
     return (
         <>
@@ -212,10 +195,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                         <span className="text-lg text-gray-900 font-bold">Add Package into Quotation</span>
                         <button
                             className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
-                            {...(previousModalId
-                                ? { 'data-modal-toggle': `#${previousModalId}` }
-                                : { 'data-modal-dismiss': 'true' }
-                            )}
+                            data-modal-dismiss="true"
                         >
                             <i className="ki-filled ki-cross"></i>
                         </button>
@@ -271,9 +251,6 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, updateSelectedPac
                                 <tbody>
                                     {packages.length > 0 ? (
                                         packages.map((pkg, pkgIndex) => {
-                                            const selectedPackagesString = localStorage.getItem('selected_quotation_packages');
-                                            const selectedPackages = selectedPackagesString ? JSON.parse(selectedPackagesString) : [];
-
                                             const isSelected = selectedPackages?.some((prodPackage: { id: number }) => prodPackage.id === pkg.id) ?? false;
 
 

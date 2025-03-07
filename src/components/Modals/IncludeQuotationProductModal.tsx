@@ -7,13 +7,15 @@ import { KTDataTable } from "../../metronic/core";
 import Loading from "../Loading";
 
 interface IncludeQuotationProductModalProps {
-    updateSelectedPackages: (prodPackages: Package[]) => void;
-    isFromOrderQuotation: boolean;
+    selectedPackages: Package[];
+    setSelectedPackages: React.Dispatch<React.SetStateAction<Package[]>>;
+    selectedPackageId: string;
+    recalculateTotalAmount: () => void;
 }
 
 type SortOrder = 'asc' | 'desc' | null;
 
-function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuotation }: IncludeQuotationProductModalProps) {
+function IncludeQuotationProductModal({ selectedPackages, setSelectedPackages, selectedPackageId, recalculateTotalAmount }: IncludeQuotationProductModalProps) {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [products, setProducts] = useState<Product[]>([]); // Initialize as an empty array
@@ -29,7 +31,6 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
 
     useEffect(() => {
         initProductTable(1, 10, '', null, '');
-
     }, []);
 
 
@@ -45,7 +46,6 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
             const response = await productIndex(size, page, searchTerm, order, field);
             const data = response?.data || [];
             setProducts(data);
-            localStorage.setItem('products_data', JSON.stringify(data));
             setTotalItems(response?.totalCount || 0);
         } catch (error) {
             console.error('Error fetching products:', error);
@@ -139,125 +139,93 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
 
         if (selectBtn) {
             const prodId = selectBtn.dataset.id;
-            const packId = selectBtn.dataset.packid;
             const productName = selectBtn.dataset.name;
             const SKU = selectBtn.dataset.sku;
             const productPrice = parseFloat(selectBtn.dataset.price);
             const productDescription = selectBtn.dataset.desc;
 
             // Retrieve current selected products from localStorage
-            const storedProducts = localStorage.getItem('include_quotation_pack_prods');
-            const selectedProducts = storedProducts ? JSON.parse(storedProducts) : [];
+
+            const selectedPackage = selectedPackages.find(prodPackage => prodPackage.id === Number(selectedPackageId));
+            const selectedProducts = selectedPackage?.products || [];
 
             // Check if the product ID is already selected
             const productIndex = selectedProducts.findIndex(product => product.id === Number(prodId));
 
-            const productResponse = await fetchProduct(Number(prodId));
-            const product = productResponse.data;
-
             if (productIndex > -1) {
                 // Remove selected product
+                const updatedProducts = selectedProducts.filter((_, index) => index !== productIndex);
+
+                const newTotalPrice = updatedProducts.reduce((sum, product) => {
+                    return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
+                }, 0);
+
+                const updatedPackages = selectedPackages.map(prodPackage => prodPackage.id === Number(selectedPackageId)
+                    ? {
+                        ...prodPackage,
+                        products: updatedProducts,
+                        total_price: newTotalPrice,
+                    }
+                    : prodPackage
+                );
+
+                setSelectedPackages(updatedPackages);
+
                 selectedProducts.splice(productIndex, 1);
                 selectBtn.dataset.action = 'select';
                 selectBtn.className = 'btn btn-primary btn-sm';
                 selectBtn.innerText = 'Select';
 
-                if (product) {
-                    // Get selected quotation packages from localStorage
-                    const storedPackages = localStorage.getItem('selected_quotation_packages');
-                    const selectedPackages = storedPackages ? JSON.parse(storedPackages) : [];
-
-                    const selectedPackage = selectedPackages.find(prodPackage => prodPackage.id === Number(packId));
-
-                    // Filter out the item that id is match with prodId
-                    if (selectedPackage) {
-                        const filteredProducts = selectedPackage.products.filter(product => product.id !== Number(prodId));
-                        selectedPackage.products = filteredProducts;
-
-                        // Update the package in selectedPackages
-                        const packageIndex = selectedPackages.findIndex(prodPackage => prodPackage.id === Number(packId));
-                        if (packageIndex > -1) {
-                            selectedPackages[packageIndex] = selectedPackage;
-                        }
-
-                        // Save updated packages to localStorage
-                        localStorage.setItem('selected_quotation_packages', JSON.stringify(selectedPackages));
-                    }
-                }
-
             } else {
-                // Check if product already exists and update quantity if needed
-                const existingProduct = selectedProducts.find(product => product.id === Number(prodId));
-                if (existingProduct) {
-                    existingProduct.quantity += 1; // Update quantity
-                } else {
-                    // Add new product
-                    selectedProducts.push({
-                        id: Number(prodId),
-                        name: productName,
-                        SKU: SKU,
+                const selectedProduct = products.find((prod) => prod.id === Number(prodId));
+
+                if (selectedProduct) {
+                    const newProduct = {
+                        id: selectedProduct.id,
+                        name: selectedProduct.name,
+                        SKU: selectedProduct.SKU,
                         quantity: 1,
                         price: productPrice,
-                        description: productDescription
-                    });
-                }
-                selectBtn.dataset.action = 'remove';
-                selectBtn.className = 'btn btn-danger btn-sm';
-                selectBtn.innerText = 'Remove';
-
-                if (product) {
-                    product['pivot'] = {
-                        package_id: packId,
-                        product_id: prodId,
-                        quantity: 1,
-                        included: true,
-                        visibility: true,
-                        includeSupply: true,
-                        includeInstall: true,
-                        isOriginal: !isFromOrderQuotation,
+                        description: selectedProduct.description,
+                        provisioning: selectedProduct.provisioning,
+                        pivot: {
+                            package_id: selectedPackageId,
+                            product_id: prodId,
+                            quantity: 1,
+                            included: true,
+                            visibility: true,
+                            includeSupply: true,
+                            includeInstall: true,
+                            isOriginal: false,
+                        }
                     };
 
-                    // Get selected quotation packages from localStorage
-                    const storedPackages = localStorage.getItem('selected_quotation_packages');
-                    const selectedPackages = storedPackages ? JSON.parse(storedPackages) : [];
+                    const updatedProducts = [...selectedProducts, newProduct];
 
-                    const selectedPackage = selectedPackages.find(prodPackage => prodPackage.id === Number(packId));
+                    const newTotalPrice = updatedProducts.reduce((sum, product) => {
+                        return sum + (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
+                    }, 0);
 
-                    // Check if the selected package exists
-                    if (selectedPackage) {
-                        // Check if the product already exists in the package
-                        const existingProduct = selectedPackage.products.find(prod => prod.id === Number(prodId));
-
-                        if (!existingProduct) {
-                            // If the product doesn't exist, add it to the package
-                            selectedPackage.products.push(product);
-
-                            // Update the package in selectedPackages
-                            const packageIndex = selectedPackages.findIndex(prodPackage => prodPackage.id === Number(packId));
-                            if (packageIndex > -1) {
-                                selectedPackages[packageIndex] = selectedPackage;
-                            }
-
-                            // Save updated packages to localStorage
-                            localStorage.setItem('selected_quotation_packages', JSON.stringify(selectedPackages));
-                        } else {
-                            console.log('Product already exists in the package.');
+                    const updatedPackages = selectedPackages.map(prodPackage => prodPackage.id === Number(selectedPackageId)
+                        ? {
+                            ...prodPackage,
+                            products: updatedProducts,
+                            total_price: newTotalPrice,
                         }
-                    } else {
-                        console.log('Selected package not found.');
-                    }
+                        : prodPackage
+                    );
+
+                    setSelectedPackages(updatedPackages);
+
+                    // Update button to "Remove"
+                    selectBtn.dataset.action = 'remove';
+                    selectBtn.className = 'btn btn-danger btn-sm';
+                    selectBtn.innerText = 'Remove';
                 }
             }
-
-            // Save updated products to localStorage
-            // console.log(JSON.stringify(selectedProducts));
-
-            const selectedPackages = localStorage.getItem('selected_quotation_packages');
-
-            updateSelectedPackages(JSON.parse(selectedPackages));
-
-            localStorage.setItem('include_quotation_pack_prods', JSON.stringify(selectedProducts));
         }
+
+        recalculateTotalAmount();
     }
 
     return (
@@ -329,35 +297,10 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                 </tr>
                             </thead>
                             <tbody>
-                                {products.length > 0 ? (
+                                {selectedPackageId && products.length > 0 ? (
                                     products.map((product, prodIndex) => {
-                                        const selectedProductsString = localStorage.getItem('selected_quotation_packages');
-                                        const selectedPackageId = localStorage.getItem('quotation:selected_package_id');
-                                        let btn = false;
-
-                                        // Parse selected products from localStorage
-                                        const selectedProducts: Product[] = (() => {
-                                            try {
-                                                const parsed = selectedProductsString ? JSON.parse(selectedProductsString) : [];
-                                                // Find products for the current package
-                                                const currentPackage = parsed.find(pkg => pkg.id === Number(selectedPackageId));
-                                                return currentPackage?.products || [];
-                                            } catch (error) {
-                                                console.error('Error parsing selected products:', error);
-                                                return [];
-                                            }
-                                        })();
-
-                                        // Check if the current product is selected
-                                        const isSelected = selectedProducts.some(prod => prod.id === product.id);
-
-                                        // Check if the product is original and should not display the button
-                                        if (isFromOrderQuotation) {
-                                            const isOriginal = selectedProducts.some(prod => prod.id === product.id && prod.pivot.isOriginal);
-                                            if (isOriginal) {
-                                                btn = true; // Return an empty string if the product is original
-                                            }
-                                        }
+                                        const selectedPackage = selectedPackages.find(prodPackage => prodPackage.id === Number(selectedPackageId));
+                                        const isSelected = selectedPackage.products.some(prod => prod.id === product.id);
 
                                         // Determine button classes and text based on selection state
                                         const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
@@ -387,23 +330,21 @@ function IncludeQuotationProductModal({ updateSelectedPackages, isFromOrderQuota
                                                 </td>
                                                 <td className='text-center'>
                                                     <div className="flex justify-around gap-2">
-                                                        {!btn && (
-                                                            <button
-                                                                ref={buttonRef}
-                                                                className={`btn ${buttonClass} btn-sm`}
-                                                                data-action={action}
-                                                                data-id={product.id}
-                                                                data-packid={selectedPackageId}
-                                                                data-sku={product.SKU}
-                                                                data-price={product.provisioning.supply.retail_price + product.provisioning.install.retail_price}
-                                                                data-name={product.name}
-                                                                data-desc={product.description}
-                                                                // Pass current button into handleSelectProduct
-                                                                onClick={(e) => handleSelectProduct(e.target)}
-                                                            >
-                                                                {buttonText}
-                                                            </button>
-                                                        )}
+                                                        <button
+                                                            ref={buttonRef}
+                                                            className={`btn ${buttonClass} btn-sm`}
+                                                            data-action={action}
+                                                            data-id={product.id}
+                                                            data-packid={selectedPackageId}
+                                                            data-sku={product.SKU}
+                                                            data-price={product.provisioning.supply.retail_price + product.provisioning.install.retail_price}
+                                                            data-name={product.name}
+                                                            data-desc={product.description}
+                                                            // Pass current button into handleSelectProduct
+                                                            onClick={(e) => handleSelectProduct(e.target)}
+                                                        >
+                                                            {buttonText}
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>

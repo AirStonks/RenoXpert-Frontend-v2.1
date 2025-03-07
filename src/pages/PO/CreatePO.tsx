@@ -150,35 +150,56 @@ function CreatePO() {
         }
     };
 
-    const handleSelectSale = async (selectedSale: Sale) => {
-        if (selectedSale) {
-            const updatedSale: Sale = {
-                ...selectedSale, // Spread the existing sale object to preserve other properties
-                order: {
-                    ...selectedSale.order,
-                    latest_quotation: {
-                        ...selectedSale.order.latest_quotation,
-                        packages: selectedSale.order.latest_quotation.packages.map((prodPackage: Package) => {
-                            return {
-                                ...prodPackage,
-                                products: prodPackage.products.filter((product: Product) => product.pm_category_id !== 1)
-                            };
-                        })
-                    }
-                }
-            };
+    const handleSelectSale = async (selectedSale: Sale | null, saleId?: string) => {
+        if (selectedSale || saleId) {
+            let updatedSale: Sale;
 
-            // Set POPackages
-            const poPackages: POPackage[] = updatedSale.order.latest_quotation.packages.map((prodPackage: Package) => ({
-                package_id: String(prodPackage.id),
-                name: prodPackage.name,
-                description: prodPackage.description,
-                description_internal: prodPackage.description_internal,
-                category: prodPackage.category,
-                quantity: prodPackage.quantity,
-                total_price: prodPackage.total_price,
-                status: 'pending',
-                po_items: prodPackage.products.map((product: Product) => ({
+            if (selectedSale) {
+                updatedSale = {
+                    ...selectedSale,
+                    order: {
+                        ...selectedSale.order,
+                        latest_quotation: {
+                            ...selectedSale.order.latest_quotation,
+                            packages: selectedSale.order.latest_quotation.packages.map((prodPackage: Package) => {
+                                return {
+                                    ...prodPackage,
+                                    products: prodPackage.products.filter((product: Product) => product.pm_category_id !== 1)
+                                };
+                            })
+                        }
+                    }
+                };
+            } else if (saleId) {
+                try {
+                    const response = await fetchSale(saleId);
+                    updatedSale = {
+                        ...response.data,
+                        order: {
+                            ...response.data.order,
+                            latest_quotation: {
+                                ...response.data.order.latest_quotation,
+                                packages: response.data.order.latest_quotation.packages.map((prodPackage: Package) => {
+                                    return {
+                                        ...prodPackage,
+                                        products: prodPackage.products.filter((product: Product) => product.pm_category_id !== 1)
+                                    };
+                                })
+                            }
+                        }
+                    };
+                } catch (error) {
+                    notify('error', 'Error while fetching sale order.');
+                    return;
+                }
+            } else {
+                notify('error', 'Error while fetching sale order.');
+                return;
+            }
+
+            // Set POPackages using calculatePackageTotal
+            const poPackages: POPackage[] = updatedSale.order.latest_quotation.packages.map((prodPackage: Package) => {
+                const poItems = prodPackage.products.map((product: Product) => ({
                     product_id: String(product.id),
                     product_name: product.name,
                     qty: product.pivot.quantity,
@@ -189,20 +210,34 @@ function CreatePO() {
                     supply_price: product.provisioning.supply.cogs,
                     install_price: product.provisioning.install.cogs,
                     total_price: (product.provisioning.supply.cogs + product.provisioning.install.cogs) * product.pivot.quantity,
-                }))
-            }))
+                }));
+
+                const newPOPackage : POPackage = {
+                    package_id: String(prodPackage.id),
+                    name: prodPackage.name,
+                    description: prodPackage.description,
+                    description_internal: prodPackage.description_internal || null,
+                    category: prodPackage.category || null,
+                    quantity: prodPackage.quantity || 1,
+                    status: 'pending',
+                    po_items: poItems
+                };
+
+                return {
+                    ...newPOPackage,
+                    total_price: calculatePackageTotal({ ...newPOPackage, po_items: poItems }),
+                }
+            });
 
             setSelectedPOPackages(poPackages);
-
-            setTotalAmount(totalAmount);
             setSelectedSale(updatedSale);
             setSearchSaleTerm('');
             setSales([]);
+            recalculateTotalAmount();
         } else {
             notify('error', 'Error while fetching sale order.');
         }
-
-    }
+    };
 
     const handleSelectVendor = async (vendor?: User, vendorId?: string) => {
         if (vendor) {
@@ -234,34 +269,51 @@ function CreatePO() {
             const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
                 if (Number(packageItem.package_id) === packId) {
                     const updatedProducts = packageItem.po_items.filter((product) => product.product_id !== String(id));
-                    return { ...packageItem, po_items: updatedProducts };
+                    const newTotalPrice = calculatePackageTotal({ ...packageItem, po_items: updatedProducts });
+                    return {
+                        ...packageItem,
+                        po_items: updatedProducts,
+                        total_price: newTotalPrice
+                    };
                 }
                 return packageItem;
-            })
-
+            });
             return updatedPackages;
-        })
+        });
     };
 
     const handleChangeQty = (e: React.ChangeEvent<HTMLInputElement>, prodId: string) => {
         const value = Number(e.target.value);
-        if (isNaN(value) || value < 1) return; // Prevent invalid values
+        if (isNaN(value) || value < 1) return;
 
-        const productIndex = selectedPOProducts.findIndex(product => Number(product.product_id) === Number(prodId));
-        if (productIndex > -1) {
-            const updatedProducts = selectedPOProducts.map((product, index) => {
-                if (index === productIndex) {
-                    return {
-                        ...product,
-                        qty: value,
-                        total_price: (value * (product.supply ? product.supply_price : 0)) +
-                            (value * (product.install ? product.install_price : 0)),
-                    };
-                }
-                return product;
+        setSelectedPOPackages((prevSelectedPOPackages) => {
+            const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
+                const updatedProducts = packageItem.po_items.map((product) => {
+                    if (product.product_id === prodId) {
+                        const updatedProduct = {
+                            ...product,
+                            qty: value,
+                            total_price: value * (
+                                (product.supply ? product.supply_price : 0) +
+                                (product.install ? product.install_price : 0)
+                            ),
+                        };
+                        return updatedProduct;
+                    }
+                    return product;
+                });
+                const newTotalPrice = calculatePackageTotal({ ...packageItem, po_items: updatedProducts });
+                return {
+                    ...packageItem,
+                    po_items: updatedProducts,
+                    total_price: newTotalPrice
+                };
             });
-        }
+            return updatedPackages;
+        });
     };
+
+
 
     const adjustProductQty = (id: number, packId: number, action: 'increase' | 'decrease') => {
         setSelectedPOPackages((prevSelectedPOPackages) => {
@@ -269,32 +321,33 @@ function CreatePO() {
                 if (Number(packageItem.package_id) === packId) {
                     const updatedPOProducts = packageItem.po_items.map((product) => {
                         if (Number(product.product_id) === id) {
-
-
-                            const value = action === 'increase' ? product.qty + 1 : product.qty - 1
-
-
+                            const value = action === 'increase' ? product.qty + 1 : product.qty - 1;
                             if (value < 1) return product;
 
-                            return {
+                            const updatedProduct = {
                                 ...product,
                                 qty: value,
-                                total_price: (value * (product.supply ? product.supply_price : 0)) +
-                                    (value * (product.install ? product.install_price : 0)),
+                                total_price: (value * (
+                                    (product.supply ? product.supply_price : 0) +
+                                    (product.install ? product.install_price : 0)
+                                )),
                             };
+                            return updatedProduct;
                         }
                         return product;
                     });
-                    return { ...packageItem, po_items: updatedPOProducts };
+                    const newTotalPrice = calculatePackageTotal({ ...packageItem, po_items: updatedPOProducts });
+                    return {
+                        ...packageItem,
+                        po_items: updatedPOProducts,
+                        total_price: newTotalPrice
+                    };
                 }
                 return packageItem;
             });
-
-            console.log(updatedPackages);
-
             return updatedPackages;
         });
-    }
+    };
 
     const adjustPackageQty = (id: number, action: 'increase' | 'decrease') => {
         setSelectedPOPackages(prevPackages =>
@@ -317,19 +370,29 @@ function CreatePO() {
                 if (Number(packageItem.package_id) === packId) {
                     const updatedProducts = packageItem.po_items.map((product) => {
                         if (Number(product.product_id) === id) {
+                            const updatedProduct = { ...product };
                             if (property === 'supply') {
-                                product.supply = !product.supply;
+                                updatedProduct.supply = !product.supply;
                             } else if (property === 'install') {
-                                product.install = !product.install;
+                                updatedProduct.install = !product.install;
                             }
+                            updatedProduct.total_price = updatedProduct.qty * (
+                                (updatedProduct.supply ? updatedProduct.supply_price : 0) +
+                                (updatedProduct.install ? updatedProduct.install_price : 0)
+                            );
+                            return updatedProduct;
                         }
                         return product;
                     });
-                    return { ...packageItem, products: updatedProducts };
+                    const newTotalPrice = calculatePackageTotal({ ...packageItem, po_items: updatedProducts });
+                    return {
+                        ...packageItem,
+                        po_items: updatedProducts,
+                        total_price: newTotalPrice
+                    };
                 }
                 return packageItem;
             });
-
             return updatedPackages;
         });
     };
@@ -379,11 +442,24 @@ function CreatePO() {
             }, 0);
             return total + (packageTotal * (packageItem.quantity || 1));
         }, 0);
-        
+
 
         setTotalAmount(newTotal);
         return newTotal;
     };
+
+    const calculatePackageTotal = (poPackage: POPackage): number => {
+        return poPackage.po_items.reduce((total, item) => {
+            
+            const itemTotal = item.qty * (
+                (item.supply ? item.supply_price : 0) +
+                (item.install ? item.install_price : 0)
+            );
+            return total + itemTotal;
+        }, 0);
+    };
+
+
 
     const toggleAccordion = (packageId) => {
         setOpenAccordions(prev => ({
@@ -413,15 +489,15 @@ function CreatePO() {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-8 mb-4">
-                <div className="flex flex-wrap gap-4">
-                    <div className="card flex flex-auto">
+            <div className="flex gap-8 mb-4">
+                <div className="flex flex-col gap-4 flex-1">
+                    <div className="card flex w-full">
                         <div className="card-header">
                             <span className="font-semibold">General</span>
                         </div>
 
                         <div className="card-body py-6 px-4 lg:px-6 bg-white rounded-lg shadow-sm">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-rows-1 md:grid-rows-2 gap-6">
                                 {/* Sales Order Section */}
                                 <div className="flex flex-col space-y-2">
                                     <label className="text-sm text-gray-900 font-semibold">
@@ -536,7 +612,7 @@ function CreatePO() {
 
                     {selectedSale && (
                         <>
-                            <div className="card flex flex-auto">
+                            <div className="card flex w-full">
                                 <div className="card-header">
                                     <span className="font-semibold">Sales Order Detail</span>
                                 </div>
@@ -571,7 +647,7 @@ function CreatePO() {
                                 </div>
                             </div>
 
-                            <div className="card">
+                            <div className="card w-full">
                                 <div className="card-header flex justify-between items-center">
                                     <h3 className="card-title">
                                         Owner
@@ -616,7 +692,8 @@ function CreatePO() {
                                     </table>
                                 </div>
                             </div>
-                            <div className="card">
+
+                            <div className="card w-full">
                                 <div className="card-header flex justify-between items-center">
                                     <h3 className="card-title">
                                         Property
@@ -707,7 +784,7 @@ function CreatePO() {
                     )}
 
                     {selectedVendor && (
-                        <div className="card flex flex-auto">
+                        <div className="card flex flex-auto w-full">
                             <div className="card-header">
                                 <span className="font-semibold">Vendor Detail</span>
                             </div>
@@ -743,8 +820,10 @@ function CreatePO() {
                             </div>
                         </div>
                     )}
+                </div>
 
-                    <div className="card flex flex-auto">
+                <div className="flex flex-col gap-4 flex-[4]">
+                    <div className="card flex w-full">
                         <div className="card-header">
                             <span className="font-semibold">Total Amount</span>
                         </div>
@@ -752,9 +831,7 @@ function CreatePO() {
                             <span>RM {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     </div>
-                </div>
 
-                <div className="flex flex-col gap-4 max-h-[600px]">
                     <div className="card w-full">
                         <div className="card-body flex flex-col">
                             <div className="flex flex-col">
@@ -770,175 +847,180 @@ function CreatePO() {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="overflow-y-auto max-h-[500px] scrollable-y">
-                                    <div className="flex flex-col gap-4">
-                                        {selectedPOPackages.map((poPackage: POPackage, index) => (
+                                <div className="flex flex-col gap-4">
+                                    {selectedPOPackages.map((poPackage: POPackage, index) => (
+                                        <div
+                                            key={index}
+                                            className="accordion rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white"
+                                        >
+                                            {/* Accordion Header */}
                                             <div
-                                                key={index}
-                                                className="accordion rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white"
+                                                className="accordion-header flex items-center justify-between w-full p-5 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                                                onClick={() => toggleAccordion(poPackage.package_id)}
                                             >
-                                                {/* Accordion Header */}
-                                                <div
-                                                    className="accordion-header flex items-center justify-between w-full p-5 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
-                                                    onClick={() => toggleAccordion(poPackage.package_id)}
-                                                >
-                                                    <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-3">
+                                                    <button
+                                                        className="btn btn-icon btn-sm hover:bg-red-100 rounded-full transition-colors duration-200"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRemovePOPackage(Number(poPackage.package_id));
+                                                        }}
+                                                    >
+                                                        <i className="ki-filled ki-cross text-red-500 text-lg"></i>
+                                                    </button>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-gray-800 font-semibold text-sm">{poPackage.name}</span>
+                                                        <span className="text-gray-600 text-sm">RM {(poPackage.total_price * (poPackage.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-4">
+                                                    {/* Package Quantity Input */}
+                                                    <div className="flex items-center justify-center gap-2">
                                                         <button
-                                                            className="btn btn-icon btn-sm hover:bg-red-100 rounded-full transition-colors duration-200"
+                                                            className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                handleRemovePOPackage(Number(poPackage.package_id));
+                                                                adjustPackageQty(Number(poPackage.package_id), 'decrease');
                                                             }}
                                                         >
-                                                            <i className="ki-filled ki-cross text-red-500 text-lg"></i>
+                                                            <i className="ki-solid ki-minus-squared text-gray-600"></i>
                                                         </button>
-                                                        <span className="text-gray-800 font-semibold text-sm">{poPackage.name}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-4">
-                                                        {/* Package Quantity Input */}
-                                                        <div className="flex items-center justify-center gap-2">
-                                                            <button
-                                                                className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    adjustPackageQty(Number(poPackage.package_id), 'decrease');
-                                                                }}
-                                                            >
-                                                                <i className="ki-solid ki-minus-squared text-gray-600"></i>
-                                                            </button>
-                                                            <input
-                                                                type="text"
-                                                                className="input input-sm text-center px-2 w-12 border-gray-200 focus:border-primary focus:ring focus:ring-primary/20 transition-all duration-200 disabled"
-                                                                value={poPackage.quantity || 1} // Assuming package has a qty property, default to 1
-                                                                // onChange={(e) => handleChangePackageQty(e, poPackage.package_id)}
-                                                                onClick={(e) => e.stopPropagation()}
-                                                            />
-                                                            <button
-                                                                className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    adjustPackageQty(Number(poPackage.package_id), 'increase');
-                                                                }}
-                                                            >
-                                                                <i className="ki-solid ki-plus-squared text-gray-600"></i>
-                                                            </button>
-                                                        </div>
-                                                        <i className={`ki-solid ki-down text-gray-600 transition-transform duration-300 ease-in-out ${openAccordions[poPackage.package_id] ? 'rotate-180' : ''}`}></i>
-                                                    </div>
-                                                </div>
-
-                                                {/* Accordion Content */}
-                                                <div
-                                                    className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${openAccordions[poPackage.package_id]
-                                                        ? 'max-h-[1000px] opacity-100'
-                                                        : 'max-h-0 opacity-0 p-0'
-                                                        }`}
-                                                >
-                                                    <div className="flex justify-end mb-2 p-4">
+                                                        <input
+                                                            type="text"
+                                                            className="input input-sm text-center px-2 w-12 border-gray-200 focus:border-primary focus:ring focus:ring-primary/20 transition-all duration-200 disabled"
+                                                            value={poPackage.quantity || 1} // Assuming package has a qty property, default to 1
+                                                            // onChange={(e) => handleChangePackageQty(e, poPackage.package_id)}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        />
                                                         <button
-                                                            className="btn btn-success btn-sm"
-                                                            data-modal-toggle="#add_item_modal"
-                                                            onClick={() => handleOpenProductModal(poPackage.package_id)}
+                                                            className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                adjustPackageQty(Number(poPackage.package_id), 'increase');
+                                                            }}
                                                         >
-                                                            Add Product
+                                                            <i className="ki-solid ki-plus-squared text-gray-600"></i>
                                                         </button>
                                                     </div>
-                                                    <table className="table align-middle text-gray-700 font-medium text-2xs w-full">
-                                                        <thead className="bg-gray-100 rounded-t">
-                                                            <tr className="text-gray-600">
-                                                                <th className="w-[10px] p-3"></th>
-                                                                <th className="w-[180px] p-3">Item</th>
-                                                                <th className="w-[180px] p-3">Description</th>
-                                                                <th className="w-[100px] p-3 text-center">Supply Price</th>
-                                                                <th className="w-[100px] p-3 text-center">Install Price</th>
-                                                                <th className="w-[70px] p-3 text-center">Qty</th>
-                                                                <th className="w-[100px] p-3 text-center">Total Supply</th>
-                                                                <th className="w-[100px] p-3 text-center">Total Install</th>
-                                                                <th className="w-[100px] p-3 text-center">Total Price</th>
-                                                                <th className="w-[10px] p-3 text-center">Supply</th>
-                                                                <th className="w-[10px] p-3 text-center">Install</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {poPackage.po_items.map((poProd: POItem, index) => (
-                                                                <tr
-                                                                    key={index}
-                                                                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 ${!poProd.supply && !poProd.install ? 'bg-orange-50' : ''
-                                                                        }`}
-                                                                >
-                                                                    <td className="p-3">
-                                                                        <button
-                                                                            className="btn btn-icon btn-sm hover:bg-red-100 rounded-full transition-colors duration-200"
-                                                                            onClick={() => handleRemovePOProduct(Number(poProd.product_id), Number(poPackage.package_id))}
-                                                                        >
-                                                                            <i className="ki-filled ki-cross text-red-500"></i>
-                                                                        </button>
-                                                                    </td>
-                                                                    <td className="p-3">{poProd.product_name}</td>
-                                                                    <td className="p-3 text-gray-600">{poProd.product_desc}</td>
-                                                                    <td className="p-3 text-center">RM {poProd.supply_price}</td>
-                                                                    <td className="p-3 text-center">RM {poProd.install_price}</td>
-                                                                    <td className="p-3 text-center">
-                                                                        <div className="flex items-center justify-center gap-2">
-                                                                            <button
-                                                                                className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
-                                                                                onClick={() => adjustProductQty(Number(poProd.product_id), Number(poPackage.package_id), 'decrease')}
-                                                                            >
-                                                                                <i className="ki-solid ki-minus-squared text-gray-600"></i>
-                                                                            </button>
-                                                                            <input
-                                                                                type="text"
-                                                                                className="input input-sm text-center px-2 w-12 border-gray-200 focus:border-primary focus:ring focus:ring-primary/20 transition-all duration-200"
-                                                                                value={poProd.qty}
-                                                                                onChange={(e) => handleChangeQty(e, poProd.product_id)}
-                                                                            />
-                                                                            <button
-                                                                                className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
-                                                                                onClick={() => adjustProductQty(Number(poProd.product_id), Number(poPackage.package_id), 'increase')}
-                                                                            >
-                                                                                <i className="ki-solid ki-plus-squared text-gray-600"></i>
-                                                                            </button>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="p-3 text-center">
-                                                                        {poProd.supply ?
-                                                                            <span className="text-green-600">RM {(poProd.supply_price * poProd.qty * (poPackage.quantity || 1)).toFixed(2)}</span>
-                                                                            : <span className="text-gray-400">-</span>
-                                                                        }
-                                                                    </td>
-                                                                    <td className="p-3 text-center">
-                                                                        {poProd.install ?
-                                                                            <span className="text-green-600">RM {(poProd.install_price * poProd.qty * (poPackage.quantity || 1)).toFixed(2)}</span>
-                                                                            : <span className="text-gray-400">-</span>
-                                                                        }
-                                                                    </td>
-                                                                    <td className="p-3 text-center font-semibold">
-                                                                        RM {(((poProd.supply ? poProd.supply_price : 0) + (poProd.install ? poProd.install_price : 0)) * poProd.qty * (poPackage.quantity || 1)).toFixed(2)}
-                                                                    </td>
-                                                                    <td className="p-3 text-center">
-                                                                        <input
-                                                                            className="checkbox checkbox-sm rounded checked:bg-primary"
-                                                                            type="checkbox"
-                                                                            checked={!!poProd.supply}
-                                                                            onChange={() => toggleProperty(Number(poProd.product_id), Number(poPackage.package_id), 'supply')}
-                                                                        />
-                                                                    </td>
-                                                                    <td className="p-3 text-center">
-                                                                        <input
-                                                                            className="checkbox checkbox-sm rounded checked:bg-primary"
-                                                                            type="checkbox"
-                                                                            checked={!!poProd.install}
-                                                                            onChange={() => toggleProperty(Number(poProd.product_id), Number(poPackage.package_id), 'install')}
-                                                                        />
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
+                                                    <i className={`ki-solid ki-down text-gray-600 transition-transform duration-300 ease-in-out ${openAccordions[poPackage.package_id] ? 'rotate-180' : ''}`}></i>
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
+
+                                            {/* Accordion Content */}
+                                            <div
+                                                className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${openAccordions[poPackage.package_id]
+                                                    ? 'opacity-100'
+                                                    : 'max-h-0 opacity-0 p-0'
+                                                    }`}
+                                            >
+                                                <div className="flex justify-end mb-2 p-4">
+                                                    <button
+                                                        className="btn btn-success btn-sm"
+                                                        data-modal-toggle="#add_item_modal"
+                                                        onClick={() => handleOpenProductModal(poPackage.package_id)}
+                                                    >
+                                                        Add Product
+                                                    </button>
+                                                </div>
+                                                <table className="table align-middle text-gray-700 font-medium text-2xs w-full">
+                                                    <thead className="bg-gray-100 rounded-t">
+                                                        <tr className="text-gray-600">
+                                                            <th className="w-[10px] p-3"></th>
+                                                            <th className="w-[180px] p-3">Item</th>
+                                                            <th className="w-[180px] p-3">Description</th>
+                                                            <th className="w-[100px] p-3 text-center">Supply Price</th>
+                                                            <th className="w-[100px] p-3 text-center">Install Price</th>
+                                                            <th className="w-[70px] p-3 text-center">Qty</th>
+                                                            <th className="w-[50px] p-3 text-center">UOM</th>
+                                                            <th className="w-[100px] p-3 text-center">Total Supply</th>
+                                                            <th className="w-[100px] p-3 text-center">Total Install</th>
+                                                            <th className="w-[100px] p-3 text-center">Total Price</th>
+                                                            <th className="w-[10px] p-3 text-center">Supply</th>
+                                                            <th className="w-[10px] p-3 text-center">Install</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {poPackage.po_items.map((poProd: POItem, index) => (
+                                                            <tr
+                                                                key={index}
+                                                                className={`border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 ${!poProd.supply && !poProd.install ? 'bg-orange-50' : ''
+                                                                    }`}
+                                                            >
+                                                                <td className="p-3">
+                                                                    <button
+                                                                        className="btn btn-icon btn-sm hover:bg-red-100 rounded-full transition-colors duration-200"
+                                                                        onClick={() => handleRemovePOProduct(Number(poProd.product_id), Number(poPackage.package_id))}
+                                                                    >
+                                                                        <i className="ki-filled ki-cross text-red-500"></i>
+                                                                    </button>
+                                                                </td>
+                                                                <td className="p-3">{poProd.product_name}</td>
+                                                                <td className="p-3 text-gray-600">{poProd.product_desc}</td>
+                                                                <td className="p-3 text-center">RM {poProd.supply_price}</td>
+                                                                <td className="p-3 text-center">RM {poProd.install_price}</td>
+                                                                <td className="p-3 text-center">
+                                                                    <div className="flex items-center justify-center gap-2">
+                                                                        <button
+                                                                            className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
+                                                                            onClick={() => adjustProductQty(Number(poProd.product_id), Number(poPackage.package_id), 'decrease')}
+                                                                        >
+                                                                            <i className="ki-solid ki-minus-squared text-gray-600"></i>
+                                                                        </button>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="input input-sm text-center px-2 w-12 border-gray-200 focus:border-primary focus:ring focus:ring-primary/20 transition-all duration-200"
+                                                                            value={poProd.qty}
+                                                                            onChange={(e) => handleChangeQty(e, poProd.product_id)}
+                                                                        />
+                                                                        <button
+                                                                            className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
+                                                                            onClick={() => adjustProductQty(Number(poProd.product_id), Number(poPackage.package_id), 'increase')}
+                                                                        >
+                                                                            <i className="ki-solid ki-plus-squared text-gray-600"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="p-3 text-center">
+                                                                    {poProd.uom}
+                                                                </td>
+                                                                <td className="p-3 text-center">
+                                                                    {poProd.supply ?
+                                                                        <span className="text-green-600">RM {(poProd.supply_price * poProd.qty * (poPackage.quantity || 1)).toFixed(2)}</span>
+                                                                        : <span className="text-gray-400">-</span>
+                                                                    }
+                                                                </td>
+                                                                <td className="p-3 text-center">
+                                                                    {poProd.install ?
+                                                                        <span className="text-green-600">RM {(poProd.install_price * poProd.qty * (poPackage.quantity || 1)).toFixed(2)}</span>
+                                                                        : <span className="text-gray-400">-</span>
+                                                                    }
+                                                                </td>
+                                                                <td className="p-3 text-center font-semibold">
+                                                                    RM {(((poProd.supply ? poProd.supply_price : 0) + (poProd.install ? poProd.install_price : 0)) * poProd.qty * (poPackage.quantity || 1)).toFixed(2)}
+                                                                </td>
+                                                                <td className="p-3 text-center">
+                                                                    <input
+                                                                        className="checkbox checkbox-sm rounded checked:bg-primary"
+                                                                        type="checkbox"
+                                                                        checked={!!poProd.supply}
+                                                                        onChange={() => toggleProperty(Number(poProd.product_id), Number(poPackage.package_id), 'supply')}
+                                                                    />
+                                                                </td>
+                                                                <td className="p-3 text-center">
+                                                                    <input
+                                                                        className="checkbox checkbox-sm rounded checked:bg-primary"
+                                                                        type="checkbox"
+                                                                        checked={!!poProd.install}
+                                                                        onChange={() => toggleProperty(Number(poProd.product_id), Number(poPackage.package_id), 'install')}
+                                                                    />
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>

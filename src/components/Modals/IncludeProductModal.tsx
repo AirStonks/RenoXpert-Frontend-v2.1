@@ -10,7 +10,7 @@ interface IncludeProductModalProps {
     selectedProducts: Product[];
     updateSelectedProducts: (products: Product[]) => void;
     updateTotalPrice: (price: number, operator: string) => void;
-    previousModalId?: string; // Make this optional
+    previousModalId?: string;
 }
 
 type SortOrder = 'asc' | 'desc' | null;
@@ -23,7 +23,7 @@ function IncludeProductModal({
 }: IncludeProductModalProps) {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const [products, setProducts] = useState<Product[]>([]); // Initialize as an empty array
+    const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);
@@ -32,70 +32,9 @@ function IncludeProductModal({
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [sortField, setSortField] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
-    const buttonRef = useRef<HTMLButtonElement>(null);
-
-
-    // const handleTableClick = useCallback((event: MouseEvent) => {
-    //     const target = event.target as HTMLElement;
-
-    //     // Find the select button element
-    //     const selectBtn = target.closest('[data-action="select"], [data-action="remove"]') as HTMLElement;
-
-    //     if (selectBtn) {
-    //         const id = selectBtn.dataset.id;
-    //         const productName = selectBtn.dataset.name;
-    //         const productPrice = parseFloat(selectBtn.dataset.price);
-    //         const productDescription = selectBtn.dataset.desc;
-
-    //         // Retrieve the current selected products from localStorage
-    //         const storedProducts = localStorage.getItem('include_prod_selected_products');
-    //         const selectedProducts = storedProducts ? JSON.parse(storedProducts) : [];
-
-    //         // Check if the product ID is already selected
-    //         const productIndex = selectedProducts.findIndex(product => product.id === Number(id));
-
-    //         if (productIndex > -1) {
-    //             // If it is selected, remove it
-    //             const productQuantity = selectedProducts[productIndex].quantity;
-
-    //             selectedProducts.splice(productIndex, 1);
-    //             selectBtn.dataset.action = 'select';
-    //             selectBtn.className = 'btn btn-primary btn-sm';
-    //             selectBtn.innerText = 'Select';
-
-    //             updateTotalPrice(productPrice * productQuantity, '-');
-    //         } else {
-    //             // If it is not selected, add it
-    //             selectedProducts.push({
-    //                 id: Number(id),
-    //                 name: productName,
-    //                 quantity: 1,
-    //                 visibility: true,
-    //                 price: productPrice,
-    //                 description: productDescription,
-    //                 supply: true,
-    //                 install: true,
-    //             });
-    //             selectBtn.dataset.action = 'remove';
-    //             selectBtn.className = 'btn btn-danger btn-sm';
-    //             selectBtn.innerText = 'Remove';
-
-    //             updateTotalPrice(productPrice, '+');
-
-    //         }
-
-    //         // Save the updated array back to localStorage
-    //         localStorage.setItem('include_prod_selected_products', JSON.stringify(selectedProducts));
-
-    //         // TODO Update the product-list
-    //         updateSelectedProducts(selectedProducts);
-    //     }
-    // }, [selectedProducts, updateSelectedProducts]);
 
     useEffect(() => {
-
         initProductTable(1, 10, '', null, '');
-
     }, []);
 
     const initProductTable = async (
@@ -123,18 +62,15 @@ function IncludeProductModal({
         const value = event.target.value;
         setSearchTerm(value);
 
-        // Debounce logic remains the same
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
 
         debounceTimeout.current = setTimeout(async () => {
             setPage(1);
-
             try {
                 setIsLoading(true);
                 const response = await productIndex(size, 1, value, sortOrder, sortField);
-
                 const data = response?.data || [];
                 setProducts(data);
                 setTotalItems(response?.totalCount || 0);
@@ -144,7 +80,6 @@ function IncludeProductModal({
             } finally {
                 setIsLoading(false);
             }
-
         }, 500);
     };
 
@@ -156,12 +91,11 @@ function IncludeProductModal({
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
-        setPage(1); // Reset to the first page when changing the page size
+        setPage(1);
     };
 
     const handleSort = (field: string) => {
         if (sortField === field) {
-            // Cycle through states: null -> asc -> desc -> null
             if (sortOrder === null) {
                 setSortOrder('asc');
                 initProductTable(page, size, searchTerm, 'asc', field);
@@ -174,7 +108,6 @@ function IncludeProductModal({
                 initProductTable(page, size, searchTerm, null, '');
             }
         } else {
-            // New field, start with ascending
             setSortField(field);
             setSortOrder('asc');
             initProductTable(page, size, searchTerm, 'asc', field);
@@ -195,70 +128,55 @@ function IncludeProductModal({
         }
     };
 
-    const totalPages = Math.ceil(totalItems / size);
-
-    const handleSelectProduct = (button: HTMLButtonElement) => {
-        // Find the select button element
+    const handleSelectProduct = (button: EventTarget & HTMLButtonElement) => {
         const selectBtn = button.closest('[data-action="select"], [data-action="remove"]') as HTMLElement;
+        if (!selectBtn) return;
 
-        if (selectBtn) {
-            const id = selectBtn.dataset.id;
-            const productName = selectBtn.dataset.name;
-            const SKU = selectBtn.dataset.sku;
-            const productPrice = parseFloat(selectBtn.dataset.price);
-            const productDescription = selectBtn.dataset.desc;
+        const id = Number(selectBtn.dataset.id);
+        const productName = selectBtn.dataset.name;
+        const SKU = selectBtn.dataset.sku;
+        const productPrice = parseFloat(selectBtn.dataset.price || '0');
+        const productDescription = selectBtn.dataset.desc;
 
-            // Retrieve the current selected products from localStorage
-            const storedProducts = localStorage.getItem('include_prod_selected_products');
-            const selectedProducts = storedProducts ? JSON.parse(storedProducts) : [];
+        const productIndex = selectedProducts.findIndex(product => product.id === id);
 
-            // Check if the product ID is already selected
-            const productIndex = selectedProducts.findIndex(product => product.id === Number(id));
+        let updatedProducts = [...selectedProducts];
 
-            if (productIndex > -1) {
-                // If it is selected, remove it
-                const productQuantity = selectedProducts[productIndex].quantity;
-
-                selectedProducts.splice(productIndex, 1);
-                selectBtn.dataset.action = 'select';
-                selectBtn.className = 'btn btn-primary btn-sm';
-                selectBtn.innerText = 'Select';
-
-                updateTotalPrice(productPrice * productQuantity, '-');
-            } else {
-                // If it is not selected, add it
-                selectedProducts.push({
-                    id: Number(id),
-                    name: productName,
-                    SKU: SKU,
-                    quantity: 1,
-                    visibility: true,
-                    price: productPrice,
-                    description: productDescription,
-                    supply: true,
-                    install: true,
-                });
-                selectBtn.dataset.action = 'remove';
-                selectBtn.className = 'btn btn-danger btn-sm';
-                selectBtn.innerText = 'Remove';
-
-                updateTotalPrice(productPrice, '+');
-
-            }
-
-            // Save the updated array back to localStorage
-            localStorage.setItem('include_prod_selected_products', JSON.stringify(selectedProducts));
-
-            // TODO Update the product-list
-            updateSelectedProducts(selectedProducts);
+        if (productIndex > -1) {
+            // Remove product
+            const productQuantity = updatedProducts[productIndex].quantity;
+            updatedProducts = updatedProducts.filter(product => product.id !== id);
+            selectBtn.dataset.action = 'select';
+            selectBtn.className = 'btn btn-primary btn-sm';
+            selectBtn.innerText = 'Select';
+            updateTotalPrice(productPrice * productQuantity, '-');
+        } else {
+            // Add product
+            updatedProducts.push({
+                id,
+                name: productName || '',
+                SKU,
+                quantity: 1,
+                visibility: true,
+                price: productPrice,
+                description: productDescription,
+                supply: true,
+                install: true,
+            });
+            selectBtn.dataset.action = 'remove';
+            selectBtn.className = 'btn btn-danger btn-sm';
+            selectBtn.innerText = 'Remove';
+            updateTotalPrice(productPrice, '+');
         }
-    }
+
+        updateSelectedProducts(updatedProducts);
+    };
+
+    const totalPages = Math.ceil(totalItems / size);
 
     return (
         <>
-            {/* Loading Overlay */}
             {isLoading && <Loading />}
-
             <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="include_product_modal">
                 <div className="modal-content modal-center-y max-w-[900px]">
                     <div className="modal-header py-4 px-5">
@@ -273,7 +191,7 @@ function IncludeProductModal({
                             <i className="ki-filled ki-cross"></i>
                         </button>
                     </div>
-                    <div className="modal-body p-0 pb-5 ">
+                    <div className="modal-body p-0 pb-5">
                         <div className="flex mb-2">
                             <label className="input input-lg">
                                 <i className="ki-filled ki-magnifier"></i>
@@ -290,34 +208,22 @@ function IncludeProductModal({
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th
-                                        className='text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('name')}
-                                    >
+                                    <th className='text-center cursor-pointer hover:bg-gray-50' onClick={() => handleSort('name')}>
                                         <div className="flex items-center justify-center gap-2">
                                             Name {getSortIcon('name')}
                                         </div>
                                     </th>
-                                    <th
-                                        className='min-w-[150px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('pm_category_id')}
-                                    >
+                                    <th className='min-w-[150px] text-center cursor-pointer hover:bg-gray-50' onClick={() => handleSort('pm_category_id')}>
                                         <div className="flex items-center justify-center gap-2">
                                             Category {getSortIcon('pm_category_id')}
                                         </div>
                                     </th>
-                                    <th
-                                        className='min-w-[150px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('type')}
-                                    >
+                                    <th className='min-w-[150px] text-center cursor-pointer hover:bg-gray-50' onClick={() => handleSort('type')}>
                                         <div className="flex items-center justify-center gap-2">
                                             Product Type {getSortIcon('type')}
                                         </div>
                                     </th>
-                                    <th
-                                        className='min-w-[120px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('price')}
-                                    >
+                                    <th className='min-w-[120px] text-center cursor-pointer hover:bg-gray-50' onClick={() => handleSort('price')}>
                                         <div className="flex items-center justify-center gap-2">
                                             Selling Price {getSortIcon('price')}
                                         </div>
@@ -328,20 +234,13 @@ function IncludeProductModal({
                             <tbody>
                                 {products.length > 0 ? (
                                     products.map((product, prodIndex) => {
-                                        const selectedProductsString = localStorage.getItem('include_prod_selected_products');
-                                        const selectedProducts = selectedProductsString ? JSON.parse(selectedProductsString) : [];
-
-                                        const isSelected = selectedProducts.some((selProd: { id: number }) => selProd.id === product.id);
-
+                                        const isSelected = selectedProducts.some((selProd) => selProd.id === product.id);
                                         const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
                                         const action = isSelected ? 'remove' : 'select';
                                         const buttonText = isSelected ? 'Remove' : 'Select';
 
                                         return (
-                                            <tr
-                                                key={prodIndex}
-                                                className={`${prodIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
-                                            >
+                                            <tr key={prodIndex} className={`${prodIndex % 2 === 0 ? '' : 'bg-gray-100'}`}>
                                                 <td>
                                                     <div className="flex flex-col">
                                                         <span>{product.name}</span>
@@ -361,7 +260,6 @@ function IncludeProductModal({
                                                 <td className='text-center'>
                                                     <div className="flex justify-around gap-2">
                                                         <button
-                                                            ref={buttonRef}
                                                             className={`btn ${buttonClass} btn-sm`}
                                                             data-action={action}
                                                             data-id={product.id}
@@ -369,15 +267,14 @@ function IncludeProductModal({
                                                             data-price={product.provisioning.supply.retail_price + product.provisioning.install.retail_price}
                                                             data-name={product.name}
                                                             data-desc={product.description}
-                                                            // Pass current button into handleSelectProduct
-                                                            onClick={(e) => handleSelectProduct(e.target)}
+                                                            onClick={(e) => handleSelectProduct(e.target as HTMLButtonElement)}
                                                         >
                                                             {buttonText}
                                                         </button>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        )
+                                        );
                                     })
                                 ) : (
                                     <tr>
@@ -409,40 +306,22 @@ function IncludeProductModal({
                         <div className="flex items-center gap-4">
                             <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span>
                             <div className="pagination">
-                                {/* Previous Page Button */}
                                 <button
                                     className={`btn ${page === 1 ? 'disabled' : ''}`}
                                     onClick={() => handlePageChange(page - 1)}
                                 >
                                     <i className="ki-outline ki-black-left"></i>
                                 </button>
-
-                                {/* Page Number Buttons with Ellipses */}
                                 {totalPages > 0 && (
                                     <>
                                         {page > 3 && (
                                             <>
-                                                <button
-                                                    className="btn"
-                                                    onClick={() => handlePageChange(1)}
-                                                >
-                                                    1
-                                                </button>
+                                                <button className="btn" onClick={() => handlePageChange(1)}>1</button>
                                                 <span className="btn btn-disabled">...</span>
                                             </>
                                         )}
-
-                                        {Array.from({
-                                            length: Math.min(3, totalPages)
-                                        }, (_, index) => {
-                                            // Determine the start of the 3-page window
-                                            const startPage = Math.max(1,
-                                                Math.min(
-                                                    page - 1,
-                                                    totalPages - 2
-                                                )
-                                            );
-
+                                        {Array.from({ length: Math.min(3, totalPages) }, (_, index) => {
+                                            const startPage = Math.max(1, Math.min(page - 1, totalPages - 2));
                                             const currentPage = startPage + index;
                                             return (
                                                 <button
@@ -454,22 +333,16 @@ function IncludeProductModal({
                                                 </button>
                                             );
                                         })}
-
                                         {page < totalPages - 2 && (
                                             <>
                                                 <span className="btn btn-disabled">...</span>
-                                                <button
-                                                    className="btn"
-                                                    onClick={() => handlePageChange(totalPages)}
-                                                >
+                                                <button className="btn" onClick={() => handlePageChange(totalPages)}>
                                                     {totalPages}
                                                 </button>
                                             </>
                                         )}
                                     </>
                                 )}
-
-                                {/* Next Page Button */}
                                 <button
                                     className={`btn ${page === totalPages ? 'disabled' : ''}`}
                                     onClick={() => handlePageChange(page + 1)}

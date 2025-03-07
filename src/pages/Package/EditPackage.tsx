@@ -33,7 +33,6 @@ function EditPackage() {
     const [totalPrice, setTotalPrice] = useState<number>(0);
 
     const handleBackClick = () => {
-        localStorage.removeItem('include_prod_selected_products');
         navigate('/packages/' + packageId);
     };
 
@@ -54,15 +53,16 @@ function EditPackage() {
         document.title = "Edit Package | RenoXpert";
 
         if (packageDetail) {
-            setFormData((prev) => ({
-                ...prev,
+            setFormData({
                 packageName: packageDetail.name,
                 description: packageDetail.description,
                 description_internal: packageDetail.description_internal,
                 category: packageDetail.category,
-            }));
+                packagePrice: 0,
+                products: [],
+            });
 
-            const selectedProducts = packageDetail.products.map(({ id, name, SKU, pivot, provisioning, description }) => ({
+            const transformedProducts = packageDetail.products.map(({ id, name, SKU, pivot, provisioning, description }) => ({
                 id,
                 name,
                 SKU,
@@ -72,15 +72,8 @@ function EditPackage() {
                 description,
             }));
 
-            localStorage.setItem('include_prod_selected_products', JSON.stringify(selectedProducts));
-            updateSelectedProducts(selectedProducts);
-        }
-
-        const storedProducts = localStorage.getItem('include_prod_selected_products');
-        if (storedProducts) {
-            const parsedProducts = JSON.parse(storedProducts);
-            setSelectedProducts(parsedProducts);
-            const initialTotalPrice = parsedProducts.reduce(
+            setSelectedProducts(transformedProducts);
+            const initialTotalPrice = transformedProducts.reduce(
                 (acc, product) => acc + (product.price * product.quantity),
                 0
             );
@@ -97,45 +90,35 @@ function EditPackage() {
     };
 
     const handleVisibilityToggle = (id: number) => {
-        setSelectedProducts((prevProducts) => {
-            const updatedProducts = prevProducts.map((product) =>
+        setSelectedProducts((prevProducts) =>
+            prevProducts.map((product) =>
                 product.id === id ? { ...product, visibility: !product.visibility } : product
-            );
-            updateLocalStorage(updatedProducts);
-            return updatedProducts;
-        });
+            )
+        );
     };
 
     const handleNoteChange = (id: string | number, value: string) => {
-        setSelectedProducts((prevProducts) => {
-            const updatedProducts = prevProducts.map((product) =>
+        setSelectedProducts((prevProducts) =>
+            prevProducts.map((product) =>
                 product.id === id ? { ...product, note: value } : product
-            );
-            updateLocalStorage(updatedProducts);
-            return updatedProducts;
-        });
+            )
+        );
     };
 
     const handleSubmit = async () => {
-        const storedProducts = localStorage.getItem('include_prod_selected_products');
-
         if (selectedProducts.length === 0) {
             notify('error', "Please select at least one product.");
             return;
         }
 
         try {
-            let newProducts: Product[] = [];
-            if (storedProducts) {
-                const parsedProducts = JSON.parse(storedProducts);
-                newProducts = parsedProducts.map((item: any) => ({
-                    id: item.id,
-                    name: item.name,
-                    quantity: item.quantity,
-                    visibility: item.visibility,
-                    product_retail_price: parseFloat(item.product_retail_price), // Ensure the price is a number if needed
-                }));
-            }
+            const newProducts = selectedProducts.map((item) => ({
+                id: item.id,
+                name: item.name,
+                quantity: item.quantity,
+                visibility: item.visibility,
+                product_retail_price: parseFloat(item.product_retail_price || item.price.toString()),
+            }));
 
             const packageData: Package = {
                 id: packageDetail.id,
@@ -151,7 +134,6 @@ function EditPackage() {
 
             if (response?.success) {
                 notify('success', "Package Updated Successfully!");
-                localStorage.removeItem('include_prod_selected_products');
                 navigate('/packages/' + packageData.id);
             }
         } catch (error) {
@@ -181,13 +163,8 @@ function EditPackage() {
 
     const updateSelectedProducts = (products: Product[]) => {
         setSelectedProducts(products);
-        localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
         const newTotalPrice = products.reduce((acc, product) => acc + (product.price * product.quantity), 0);
         setTotalPrice(newTotalPrice);
-    };
-
-    const updateLocalStorage = (products: Product[]) => {
-        localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
     const updateTotalPrice = (price: number, operator: string) => {
@@ -197,8 +174,8 @@ function EditPackage() {
     };
 
     const adjustQuantity = (id: number, action: 'increase' | 'decrease') => {
-        setSelectedProducts((prevProducts) => {
-            const updatedProducts = prevProducts.map((product) => {
+        setSelectedProducts((prevProducts) =>
+            prevProducts.map((product) => {
                 if (product.id === id) {
                     const newQty = action === 'increase' ? product.quantity + 1 : Math.max(1, product.quantity - 1);
                     const operator = action === 'increase' ? '+' : '-';
@@ -208,21 +185,17 @@ function EditPackage() {
                     return { ...product, quantity: newQty };
                 }
                 return product;
-            });
-            updateLocalStorage(updatedProducts);
-            return updatedProducts;
-        });
+            })
+        );
     };
 
     const handleRemoveProduct = (id: number) => {
         setSelectedProducts((prevProducts) => {
-            const updatedProducts = prevProducts.filter((product) => product.id !== id);
             const removedProduct = prevProducts.find((product) => product.id === id);
             if (removedProduct) {
                 updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
             }
-            updateLocalStorage(updatedProducts);
-            return updatedProducts;
+            return prevProducts.filter((product) => product.id !== id);
         });
     };
 
@@ -232,9 +205,7 @@ function EditPackage() {
             setSelectedProducts((prev) => {
                 const oldIndex = prev.findIndex((p) => `product-${p.id}` === active.id);
                 const newIndex = prev.findIndex((p) => `product-${p.id}` === over.id);
-                const newArray = arrayMove(prev, oldIndex, newIndex);
-                updateLocalStorage(newArray);
-                return newArray;
+                return arrayMove(prev, oldIndex, newIndex);
             });
         }
     };

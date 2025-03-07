@@ -229,12 +229,12 @@ function POMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[100px] text-center'>PO No.</th>
-                                    <th className='w-[100px] text-center'>Sales No.</th>
-                                    <th className='w-[100px] text-center'>Owner</th>
+                                    <th className='w-[100px]'>PO No.</th>
+                                    <th className='w-[100px]'>Sales No.</th>
+                                    <th className='w-[100px]'>Owner</th>
                                     <th className='w-[60px] text-center'>Unit</th>
                                     <th className='w-[60px] text-center'>Property</th>
-                                    <th className='w-[60px] text-center'>Total Amount</th>
+                                    <th className='w-[60px]'>Total Amount</th>
                                     <th className='w-[120px] text-center'>Order Status</th>
                                     <th className='w-[80px] text-center'>Payment Status</th>
                                     <th className='w-[80px] text-center'>Delivery/Fulfillment</th>
@@ -337,7 +337,7 @@ function POMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="text-center text-gray-500">
+                                        <td colSpan={10} className="text-center text-gray-500">
                                             No purchase orders available
                                         </td>
                                     </tr>

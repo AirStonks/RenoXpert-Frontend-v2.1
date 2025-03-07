@@ -42,7 +42,6 @@ function CreatePackage() {
     };
 
     const handleBackClick = () => {
-        localStorage.removeItem('include_prod_selected_products');
         if (state) {
             navigate(state.fromUrl);
         } else {
@@ -71,7 +70,6 @@ function CreatePackage() {
                         visibility: product.pivot.visibility,
                     }));
 
-                    localStorage.setItem('include_prod_selected_products', JSON.stringify(transformedProducts));
                     setSelectedProducts(transformedProducts);
                     const calculatedTotalPrice = transformedProducts.reduce(
                         (total, product) => total + (product.price * product.quantity),
@@ -95,17 +93,6 @@ function CreatePackage() {
             console.log('Duplicate Package ID: ', state.dupPackId);
             handleDuplicateProducts(state.dupPackId);
         }
-
-        const storedProducts = localStorage.getItem('include_prod_selected_products');
-        if (storedProducts) {
-            const parsedProducts = JSON.parse(storedProducts);
-            setSelectedProducts(parsedProducts);
-            const initialTotalPrice = parsedProducts.reduce(
-                (acc, product) => acc + (product.price * product.quantity),
-                0
-            );
-            setTotalPrice(initialTotalPrice);
-        }
     }, [state]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -117,27 +104,22 @@ function CreatePackage() {
     };
 
     const handleVisibilityToggle = (id: number) => {
-        setSelectedProducts((prevProducts) => {
-            const updatedProducts = prevProducts.map((product) =>
+        setSelectedProducts((prevProducts) =>
+            prevProducts.map((product) =>
                 product.id === id ? { ...product, visibility: !product.visibility } : product
-            );
-            updateLocalStorage(updatedProducts);
-            return updatedProducts;
-        });
+            )
+        );
     };
 
     const handleNoteChange = (id: string | number, value: string) => {
-        setSelectedProducts((prevProducts) => {
-            const updatedProducts = prevProducts.map((product) =>
+        setSelectedProducts((prevProducts) =>
+            prevProducts.map((product) =>
                 product.id === id ? { ...product, note: value } : product
-            );
-            updateLocalStorage(updatedProducts);
-            return updatedProducts;
-        });
+            )
+        );
     };
 
     const handleSubmit = async () => {
-        const storedProducts = localStorage.getItem('include_prod_selected_products');
         if (selectedProducts.length === 0) {
             notify('error', "Please select at least one product.");
             return;
@@ -152,20 +134,16 @@ function CreatePackage() {
         }
 
         try {
-            let newProducts: Product[] = [];
-            if (storedProducts) {
-                const parsedProducts = JSON.parse(storedProducts);
-                newProducts = parsedProducts.map((item: any) => ({
-                    id: item.id,
-                    name: item.name,
-                    SKU: item.SKU,
-                    quantity: item.quantity,
-                    visibility: item.visibility,
-                    internal_note: item.note,
-                    supply: item.supply,
-                    install: item.install,
-                }));
-            }
+            const newProducts = selectedProducts.map((item) => ({
+                id: item.id,
+                name: item.name,
+                SKU: item.SKU,
+                quantity: item.quantity,
+                visibility: item.visibility,
+                internal_note: item.note,
+                supply: item.supply,
+                install: item.install,
+            }));
 
             const packageData: Package = {
                 name: formData.packageName,
@@ -179,7 +157,6 @@ function CreatePackage() {
             const response = await createPackage(packageData);
             if (response?.success) {
                 notify('success', "Package Created Successfully!");
-                localStorage.removeItem('include_prod_selected_products');
                 navigate('/packages');
             }
         } catch (error) {
@@ -209,11 +186,6 @@ function CreatePackage() {
 
     const updateSelectedProducts = (products: Product[]) => {
         setSelectedProducts(products);
-        localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
-    };
-
-    const updateLocalStorage = (products: Product[]) => {
-        localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
     const updateTotalPrice = (price: number, operator: string) => {
@@ -224,7 +196,7 @@ function CreatePackage() {
 
     const adjustQuantity = (id: number, action: 'increase' | 'decrease') => {
         setSelectedProducts((prevProducts) => {
-            const updatedProducts = prevProducts.map((product) => {
+            return prevProducts.map((product) => {
                 if (product.id === id) {
                     const newQty = action === 'increase' ? product.quantity + 1 : Math.max(1, product.quantity - 1);
                     const operator = action === 'increase' ? '+' : '-';
@@ -235,20 +207,16 @@ function CreatePackage() {
                 }
                 return product;
             });
-            updateLocalStorage(updatedProducts);
-            return updatedProducts;
         });
     };
 
     const handleRemoveProduct = (id: number) => {
         setSelectedProducts((prevProducts) => {
-            const updatedProducts = prevProducts.filter((product) => product.id !== id);
             const removedProduct = prevProducts.find((product) => product.id === id);
             if (removedProduct) {
                 updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
             }
-            updateLocalStorage(updatedProducts);
-            return updatedProducts;
+            return prevProducts.filter((product) => product.id !== id);
         });
     };
 
@@ -258,9 +226,7 @@ function CreatePackage() {
             setSelectedProducts((prev) => {
                 const oldIndex = prev.findIndex((p) => `product-${p.id}` === active.id);
                 const newIndex = prev.findIndex((p) => `product-${p.id}` === over.id);
-                const newArray = arrayMove(prev, oldIndex, newIndex);
-                updateLocalStorage(newArray);
-                return newArray;
+                return arrayMove(prev, oldIndex, newIndex);
             });
         }
     };
