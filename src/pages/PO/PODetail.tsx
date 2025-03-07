@@ -160,6 +160,140 @@ function PODetail() {
                         </div>
                     </div>
 
+
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Owner
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    {po.sale.order.user ?
+                                        <>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Name:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {po.sale.order.user.name}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Email:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {po.sale.order.user.email}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Phone No.:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    +{po.sale.order.user.country_code} {po.sale.order.user.phone_no}
+                                                </td>
+                                            </tr>
+                                        </>
+                                        :
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            N/A
+                                        </td>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Property
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    {po.sale.order.property ?
+                                        <>
+
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Property Name:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {po.sale.order.property.name}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Unit:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {po.sale.order.block}-{po.sale.order.floor}-{po.sale.order.unit_no}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Unit Type:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {po.sale.order.unit_type ? po.sale.order.unit_type : "-"}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Address:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {[
+                                                        po.sale.order.property.address,
+                                                        po.sale.order.property.street,
+                                                        po.sale.order.property.postcode,
+                                                        po.sale.order.property.city,
+                                                        po.sale.order.property.state,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(', ')
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Total Bedroom:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {po.sale.order.bedroom_count}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Total Bathroom:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {po.sale.order.bathroom_count}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Partition:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {po.sale.order.include_partition ? 'Yes' : 'No'}
+                                                </td>
+                                            </tr>
+                                        </>
+                                        :
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            N/A
+                                        </td>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     {po.sale_id && (
                         <div className="card">
                             <div className="card-header">
@@ -286,6 +420,7 @@ function PODetail() {
                                                             <th className="w-[100px] p-3 text-center">Supply Price</th>
                                                             <th className="w-[100px] p-3 text-center">Install Price</th>
                                                             <th className="w-[70px] p-3 text-center">Qty</th>
+                                                            <th className="w-[50px] p-3 text-center">UOM</th>
                                                             <th className="w-[100px] p-3 text-center">Total Supply</th>
                                                             <th className="w-[100px] p-3 text-center">Total Install</th>
                                                             <th className="w-[100px] p-3 text-center">Total Price</th>
@@ -313,6 +448,9 @@ function PODetail() {
                                                                             readOnly
                                                                         />
                                                                     </div>
+                                                                </td>
+                                                                <td className="text-center">
+                                                                    {poProd.uom}
                                                                 </td>
                                                                 <td className="p-3 text-center">
                                                                     {poProd.supply ?

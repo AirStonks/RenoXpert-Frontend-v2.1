@@ -96,20 +96,33 @@ function POPrint() {
     const ATTN_MOBILE = `+${po.vendor.country_code} ${po.vendor.phone_no}`;
     const ATTN_EMAIL = po.vendor.email;
 
-    // // Calculate totals based on package unitPrice and qty
-    // const totalItems = orderDetail.latest_quotation.packages.reduce((sum, item) => sum + item.quantity, 0);
-    // const categoryTotals = orderDetail.latest_quotation.packages.reduce((acc, pkg) => {
-    //     const category = pkg.category;
-    //     const categoryTotal = pkg.total_price * (pkg.quantity || 1);
+    const OWNER_ADDRESS = [
+        po.sale.order.user.address.address_1,
+        po.sale.order.user.address.address_2,
+        po.sale.order.user.address.city,
+        po.sale.order.user.address.state,
+        po.sale.order.user.address.postcode
+    ]
+        .filter(value => value) // Removes null, undefined, and empty strings
+        .join(", ") || "N/A"; // Default to "N/A" if all values are empty
 
-    //     if (!acc[category]) {
-    //         acc[category] = { total_price: 0, quantity: 0 };
-    //     }
-    //     acc[category].total_price += categoryTotal;
-    //     acc[category].quantity += pkg.quantity;
+    const OWNER_NAME = po.sale.order.user.name;
+    const OWNER_COUNTRY_CODE = po.sale.order.user.country_code;
+    const OWNER_MOBILE = po.sale.order.user.phone_no;
+    const OWNER_EMAIL = po.sale.order.user.email;
 
-    //     return acc;
-    // }, {});
+    const UNIT_NO = `${po.sale.order.block}-${po.sale.order.floor}-${po.sale.order.unit_no}`;
+    const PROPERTY_NAME = po.sale.order.property.name;
+    const UNIT_TYPE = po.sale.order.unit_type || "N/A";
+    const PROPERTY_ADDRESS = [
+        po.sale.order.property.address,
+        po.sale.order.property.street,
+        po.sale.order.property.postcode,
+        po.sale.order.property.city,
+        po.sale.order.property.state,
+    ]
+        .filter(Boolean)
+        .join(', ') || "N/A";
 
     // const totalPriceBeforeDiscount = Object.values(categoryTotals).reduce((sum, cat) => sum + cat.total_price, 0);
     const totalPrice = po.total_amount;
@@ -128,7 +141,6 @@ function POPrint() {
                     </Text>
                 </View>
                 <View>
-                    {/* Placeholder for image (replace with actual Image component when logo is available) */}
                     <Image src={COMPANY_LOGO_URL} style={styles.companyImage} />
                 </View>
             </View>
@@ -142,16 +154,45 @@ function POPrint() {
                 </View>
             </View>
 
-            {/* Redesigned Attn Header */}
-            <View style={styles.attnHeader}>
-                <View style={styles.attnTitle}>
-                    <Text style={styles.attnLabel}>Vendor:</Text>
+            {/* Vendor and Owner Headers in the Same Row */}
+            <View style={styles.headerRow}>
+                {/* Vendor Header */}
+                <View style={styles.attnHeader}>
+                    <View style={styles.attnTitle}>
+                        <Text style={[styles.attnLabel, styles.vendorLabel]}>Vendor:</Text>
+                    </View>
                     <Text style={styles.attnText}>{ATTN_NAME}</Text>
+                    <Text style={styles.attnText}>
+                        {ATTN_ADDRESS}{'\n'}
+                        {ATTN_MOBILE}{'\n'}
+                        {ATTN_EMAIL}
+                    </Text>
+                </View>
+
+                {/* Owner Header */}
+                <View style={styles.attnHeader}>
+                    <View style={styles.attnTitle}>
+                        <Text style={[styles.attnLabel, styles.ownerLabel]}>Owner:</Text>
+                    </View>
+                    <Text style={styles.attnText}>{OWNER_NAME}</Text>
+                    <Text style={styles.attnText}>
+                        {OWNER_ADDRESS}{'\n'}
+                        +{OWNER_COUNTRY_CODE} {OWNER_MOBILE}{'\n'}
+                        {OWNER_EMAIL}
+                    </Text>
+                </View>
+            </View>
+
+            {/* Unit Header - Explicitly Full Width */}
+            <View style={[styles.attnHeader, styles.unitHeader]}>
+                <View style={styles.attnTitle}>
+                    <Text style={[styles.attnLabel, styles.unitLabel]}>Unit:</Text>
                 </View>
                 <Text style={styles.attnText}>
-                    {ATTN_ADDRESS}{'\n'}
-                    {ATTN_MOBILE}{'\n'}
-                    {ATTN_EMAIL}
+                    Unit No: {UNIT_NO}{'\n'}
+                    Property Name: {PROPERTY_NAME}{'\n'}
+                    Unit Type: {UNIT_TYPE}{'\n'}
+                    Address: {PROPERTY_ADDRESS}
                 </Text>
             </View>
 
@@ -159,26 +200,20 @@ function POPrint() {
             <View>
                 {/* Package Table */}
                 <View style={styles.packageTable}>
-                    {/* Table Header */}
                     <View style={styles.thead}>
                         <Text style={styles.th1}>No</Text>
                         <Text style={styles.th2}>Description</Text>
                         <Text style={styles.th3}>QTY</Text>
                         <Text style={styles.th4}>UOM</Text>
                     </View>
-
-                    {/* Package Rows */}
                     {po.po_packages.map((pkg, pkgIndex) => (
                         <View style={styles.packageRow} key={pkgIndex}>
-                            {/* Package Set Row */}
                             <View style={styles.setRow}>
                                 <Text style={[styles.td, styles.td1]}>{pkgIndex + 1}</Text>
                                 <Text style={[styles.td, styles.td2]}>{pkg.name}</Text>
                                 <Text style={[styles.td, styles.td3]}>{pkg.quantity}</Text>
                                 <Text style={[styles.td, styles.td4]}>-</Text>
                             </View>
-
-                            {/* Product Rows */}
                             {pkg.po_items.map((product) => (
                                 <View style={styles.productRow} key={product.id}>
                                     <Text style={[styles.td, styles.td1]}>{''}</Text>
@@ -188,9 +223,7 @@ function POPrint() {
                                             {product.product_desc}
                                         </Text>
                                     </View>
-                                    <Text style={[styles.td, styles.td3]}>
-                                        {product.qty}
-                                    </Text>
+                                    <Text style={[styles.td, styles.td3]}>{product.qty}</Text>
                                     <Text style={[styles.td, styles.td4]}>{product.uom}</Text>
                                 </View>
                             ))}
@@ -198,32 +231,11 @@ function POPrint() {
                     ))}
                 </View>
 
-                {/* Bonus Table */}
-                {/* {orderDetail.latest_quotation?.bonus &&
-                    <View wrap={false}>
-                        <View style={styles.bonusTable}>
-                            <Text style={styles.bonusTitle}>Bonus:</Text>
-                            <View style={styles.bonusList}>
-                                {orderDetail.latest_quotation?.bonus?.description.split('\n').map((item, index) => (
-                                    <Text style={styles.bonusItem} key={index}>{item}</Text>
-                                ))}
-                            </View>
-                            <Text style={styles.bonusDiscountLabel}>Discount:</Text>
-                            <Text style={styles.bonusDiscountValue}>RM {Number(orderDetail.latest_quotation?.bonus?.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                        </View>
-                    </View>
-                } */}
-
                 {/* Total Price Table */}
                 <View wrap={false}>
                     <View style={styles.totalTable}>
                         <Text style={styles.totalTitle}>Total Amount:</Text>
                         <Text style={styles.totalValue}>RM {totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                        {/* {orderDetail.latest_quotation?.bonus && (
-                            <Text style={styles.originalPrice}>
-                                Original Price: RM {Number(totalPriceBeforeDiscount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </Text>
-                        )} */}
                     </View>
                 </View>
             </View>

@@ -72,31 +72,58 @@ export const styles = StyleSheet.create({
         color: '#4b5563',
         lineHeight: 1.5,
     },
-    // Redesigned attnHeader
+
+    // Row for Vendor and Owner headers
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+    },
+
+    // Base attnHeader style (for Vendor and Owner)
     attnHeader: {
         flexDirection: 'column',
         padding: 12,
-        backgroundColor: '#fff', // White background
         borderWidth: 1,
-        borderColor: '#ececec', // Subtle border
+        borderColor: '#ececec',
         borderRadius: 8,
+        width: '48%', // For Vendor and Owner in the row
+    },
+
+    // Specific style for Unit Header to ensure full width
+    unitHeader: {
+        width: '100%', // Explicitly full width
         marginBottom: 12,
     },
+
     attnTitle: {
         flexDirection: 'row',
         marginRight: 4,
         alignItems: 'center',
     },
+
+    // Base label style
     attnLabel: {
         fontSize: 12,
         fontWeight: 'medium',
-        color: '#9333ea', // Purple for a modern touch
         marginBottom: 4,
         marginRight: 4,
     },
+
+    // Specific label colors
+    vendorLabel: {
+        color: '#d97706', // Amber for Vendor
+    },
+    ownerLabel: {
+        color: '#1d4ed8', // Blue for Owner
+    },
+    unitLabel: {
+        color: '#047857', // Green for Unit
+    },
+
     attnText: {
         fontSize: 10,
-        color: '#374151', // Darker gray for readability
+        color: '#374151',
         lineHeight: 1.5,
     },
     headerTitle: {
