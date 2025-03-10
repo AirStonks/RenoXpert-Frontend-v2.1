@@ -1,17 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Package, POPackage, Product, PurchaseOrder, Sale, User } from "../../types";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Package, POItem, POPackage, Product, PurchaseOrder, Sale, User } from "../../types";
 import { KTDropdown } from '../../metronic/core/components/dropdown/dropdown';
-import { createPurchaseOrder, fetchSale, fetchSales, fetchUsers } from "../../services/api";
+import { createPurchaseOrder, fetchPO, fetchSale, fetchSales, fetchUser, fetchUsers, updatePurchaseOrder } from "../../services/api";
 import IncludePOItemsModal from "./components/IncludePOItemsModal";
 import { Slide, toast } from "react-toastify";
 import IncludePOPackageModal from "./components/IncludePOPackageModal";
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { SortablePOPackage } from "./components/SortablePOPackage";
+import Loading from "../../components/Loading";
 
-function CreatePO() {
+function EditPO() {
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
+    const poId = id ? parseInt(id, 10) : null;
     const location = useLocation();
     const { state } = useLocation();
     const queryParams = new URLSearchParams(location.search);
@@ -21,22 +24,27 @@ function CreatePO() {
     const inputVendorRef = useRef(null);
     const [searchSaleTerm, setSearchSaleTerm] = useState('');
     const [searchVendorTerm, setSearchVendorTerm] = useState('');
+
     const [sales, setSales] = useState<Sale[]>([]);
     const [vendors, setVendors] = useState<User[]>([]);
+    const [poDetail, setPoDetail] = useState<PurchaseOrder | null>(null);
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
     const [selectedVendor, setSelectedVendor] = useState<User | null>(null);
     const [totalAmount, setTotalAmount] = useState<number>(0);
+
     const [selectedPOPackages, setSelectedPOPackages] = useState<POPackage[]>([]);
+
     const [selectedPOPackageId, setSelectedPOPackageId] = useState('');
     const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const [openAccordions, setOpenAccordions] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleBackClick = () => {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/purchase-orders');
+            navigate('/purchase-orders/ ' + poId);
         }
     };
 
@@ -54,13 +62,18 @@ function CreatePO() {
     };
 
     useEffect(() => {
-        document.title = "Create Purchase Orders | RenoXpert";
+        document.title = "Edit Purchase Orders | RenoXpert";
+        // Get the order
         initDropdown();
+        fetchPurchaseOrderData();
+
         if (saleId) {
             handleSelectSale(null, saleId);
         }
+
     }, [saleId]);
 
+    // Recalculate whenever selectedPOPackages changes
     useEffect(() => {
         if (selectedPOPackages.length > 0) {
             recalculateTotalAmount();
@@ -75,20 +88,55 @@ function CreatePO() {
 
     const handleOpenProductModal = (packageId: string) => {
         setIsProductModalOpen(true);
+        console.log(packageId);
+
         setSelectedPOPackageId(packageId);
     };
+
+    const fetchPurchaseOrderData = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetchPO(poId);
+            const po = response.data;
+            setPoDetail(po);
+            setSelectedSale(po.sale);
+            setSelectedVendor(po.vendor);
+            setSelectedPOPackages(po.po_packages || []);
+            setTotalAmount(po.total_amount || 0);
+        } catch (error) {
+            console.error('Failed to fetch purchase order:', error);
+            toast.error('Error fetching purchase order data.', {
+                position: "top-center",
+                autoClose: 3000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: localStorage.getItem('theme'),
+                transition: Slide,
+            });
+            navigate('/purchase-orders');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
 
     const initDropdown = async () => {
         const orderEl = document.querySelector('#sales_dropdown') as HTMLElement;
         const orderDropdown = KTDropdown.getInstance(orderEl);
+
+
         const vendorEl = document.querySelector('#vendors_dropdown') as HTMLElement;
         const vendorDropdown = KTDropdown.getInstance(vendorEl);
 
         const orderEventId = orderDropdown.on('show', async () => {
             inputOrderRef.current.focus();
+
             try {
                 const data = await fetchSales('', 15);
                 setSales(data.data);
+
             } catch (error) {
                 console.error('Failed to fetch sale orders: ', error);
             }
@@ -96,6 +144,7 @@ function CreatePO() {
 
         const vendorEventId = vendorDropdown.on('show', async () => {
             inputVendorRef.current.focus();
+
             try {
                 const data = await fetchUsers('', 'vendor');
                 setVendors(data.data);
@@ -104,18 +153,22 @@ function CreatePO() {
             }
         });
 
+        // Cleanup the event listeners when the component unmounts
         return () => {
             orderDropdown.off('show', orderEventId);
             vendorDropdown.off('show', vendorEventId);
         };
-    };
+    }
 
     const handleSearchSale = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const term = event.target.value;
+
         setSearchSaleTerm(term);
+
         try {
             const data = await fetchSales(term, 15);
             setSales(data.data);
+
         } catch (error) {
             console.error('Error fetching users:', error);
         }
@@ -123,10 +176,13 @@ function CreatePO() {
 
     const handleSearchVendor = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const term = event.target.value;
+
         setSearchSaleTerm(term);
+
         try {
             const data = await fetchUsers(term, 'vendor');
             setVendors(data.data);
+
         } catch (error) {
             console.error('Error fetching users:', error);
         }
@@ -135,6 +191,7 @@ function CreatePO() {
     const handleSelectSale = async (selectedSale: Sale | null, saleId?: string) => {
         if (selectedSale || saleId) {
             let updatedSale: Sale;
+
             if (selectedSale) {
                 updatedSale = {
                     ...selectedSale,
@@ -142,10 +199,12 @@ function CreatePO() {
                         ...selectedSale.order,
                         latest_quotation: {
                             ...selectedSale.order.latest_quotation,
-                            packages: selectedSale.order.latest_quotation.packages.map((prodPackage: Package) => ({
-                                ...prodPackage,
-                                products: prodPackage.products.filter((product: Product) => product.pm_category_id !== 1)
-                            }))
+                            packages: selectedSale.order.latest_quotation.packages.map((prodPackage: Package) => {
+                                return {
+                                    ...prodPackage,
+                                    products: prodPackage.products.filter((product: Product) => product.pm_category_id !== 1)
+                                };
+                            })
                         }
                     }
                 };
@@ -158,10 +217,12 @@ function CreatePO() {
                             ...response.data.order,
                             latest_quotation: {
                                 ...response.data.order.latest_quotation,
-                                packages: response.data.order.latest_quotation.packages.map((prodPackage: Package) => ({
-                                    ...prodPackage,
-                                    products: prodPackage.products.filter((product: Product) => product.pm_category_id !== 1)
-                                }))
+                                packages: response.data.order.latest_quotation.packages.map((prodPackage: Package) => {
+                                    return {
+                                        ...prodPackage,
+                                        products: prodPackage.products.filter((product: Product) => product.pm_category_id !== 1)
+                                    };
+                                })
                             }
                         }
                     };
@@ -174,6 +235,7 @@ function CreatePO() {
                 return;
             }
 
+            // Set POPackages using calculatePackageTotal
             const poPackages: POPackage[] = updatedSale.order.latest_quotation.packages.map((prodPackage: Package) => {
                 const poItems = prodPackage.products.map((product: Product) => ({
                     product_id: String(product.id),
@@ -202,7 +264,7 @@ function CreatePO() {
                 return {
                     ...newPOPackage,
                     total_price: calculatePackageTotal({ ...newPOPackage, po_items: poItems }),
-                };
+                }
             });
 
             setSelectedPOPackages(poPackages);
@@ -221,19 +283,21 @@ function CreatePO() {
             setSearchVendorTerm('');
             setVendors([]);
         }
-    };
+    }
 
     const handleRemoveSalesOrder = () => {
         setSelectedSale(null);
         setSearchSaleTerm('');
         setSelectedPOPackages([]);
         setTotalAmount(0);
-    };
+    }
 
     const handleRemovePOPackage = (id: number) => {
         const packageIndex = selectedPOPackages.findIndex(pack => Number(pack.package_id) === id);
+
         if (packageIndex > -1) {
             const updatedPackages = selectedPOPackages.filter((pack, index) => index !== packageIndex);
+
             setSelectedPOPackages(updatedPackages);
         }
     };
@@ -242,7 +306,8 @@ function CreatePO() {
         setSelectedPOPackages((prevSelectedPOPackages) => {
             const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
                 if (Number(packageItem.package_id) === packId) {
-                    const updatedProducts = packageItem.po_items.filter((product) => product.product_id !== String(id));
+                    const updatedProducts = packageItem.po_items.filter((product) => Number(product.product_id) !== Number(id));
+                    console.log(updatedProducts);
                     const newTotalPrice = calculatePackageTotal({ ...packageItem, po_items: updatedProducts });
                     return {
                         ...packageItem,
@@ -290,6 +355,8 @@ function CreatePO() {
         });
     };
 
+
+
     const adjustProductQty = (id: number, packId: number, action: 'increase' | 'decrease') => {
         setSelectedPOPackages((prevSelectedPOPackages) => {
             const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
@@ -298,6 +365,7 @@ function CreatePO() {
                         if (Number(product.product_id) === id) {
                             const value = action === 'increase' ? product.qty + 1 : product.qty - 1;
                             if (value < 1) return product;
+
                             const updatedProduct = {
                                 ...product,
                                 qty: value,
@@ -331,7 +399,7 @@ function CreatePO() {
                         ...pkg,
                         quantity: action === 'increase'
                             ? (pkg.quantity || 1) + 1
-                            : Math.max(1, (pkg.quantity || 1) - 1)
+                            : Math.max(1, (pkg.quantity || 1) - 1) // Prevent going below 1
                     }
                     : pkg
             )
@@ -372,30 +440,44 @@ function CreatePO() {
     };
 
     const handleSubmit = async () => {
+
+        setIsLoading(true);
+
         if (!selectedVendor) {
             notify('error', 'Please select a vendor.');
+            setIsLoading(false);
             return;
         }
+
         if (selectedPOPackages.length < 1) {
             notify('error', 'Please select at least one package.');
+            setIsLoading(false);
             return;
         }
+
         const updatedPO: PurchaseOrder = {
+            id: poDetail.id,
             sale_id: selectedSale ? selectedSale.id : null,
             vendor_id: selectedVendor.id,
             total_amount: totalAmount,
             po_packages: selectedPOPackages,
         };
+
         try {
-            const response = await createPurchaseOrder(updatedPO);
+            const response = await updatePurchaseOrder(poId, updatedPO);
+
             if (response?.success) {
-                notify('success', "PO Created Successfully!");
-                navigate('/purchase-orders');
+                notify('success', "PO Edited Successfully!");
+                navigate('/purchase-orders/' + poId);
             }
+
         } catch (error) {
             console.log(error);
             notify('error', 'Error occurred during PO creation.');
+        } finally {
+            setIsLoading(false);
         }
+
     };
 
     const recalculateTotalAmount = () => {
@@ -409,21 +491,26 @@ function CreatePO() {
             }, 0);
             return total + (packageTotal * (packageItem.quantity || 1));
         }, 0);
+
+
         setTotalAmount(newTotal);
         return newTotal;
     };
 
     const calculatePackageTotal = (poPackage: POPackage): number => {
         return poPackage.po_items.reduce((total, item) => {
+
             const itemTotal = item.qty * (
                 (item.supply ? item.supply_price : 0) +
-                (item.install ? item.supply_price : 0)
+                (item.install ? item.install_price : 0)
             );
             return total + itemTotal;
         }, 0);
     };
 
-    const toggleAccordion = (packageId: string) => {
+
+
+    const toggleAccordion = (packageId) => {
         setOpenAccordions(prev => ({
             ...prev,
             [packageId]: !prev[packageId]
@@ -437,14 +524,7 @@ function CreatePO() {
                 // Reorder packages
                 const oldIndex = selectedPOPackages.findIndex(pkg => `package-${pkg.package_id}` === active.id);
                 const newIndex = selectedPOPackages.findIndex(pkg => `package-${pkg.package_id}` === over.id);
-                setSelectedPOPackages(prevPackages => {
-                    const reorderedPackages = arrayMove(prevPackages, oldIndex, newIndex);
-                    // Update sequence for all packages
-                    return reorderedPackages.map((pkg, index) => ({
-                        ...pkg,
-                        sequence: index
-                    }));
-                });
+                setSelectedPOPackages(arrayMove(selectedPOPackages, oldIndex, newIndex));
             } else if (active.id.startsWith('item-') && over.id.startsWith('item-')) {
                 // Reorder products within the same package
                 const activeParts = active.id.split('-');
@@ -453,17 +533,12 @@ function CreatePO() {
                 const overPackId = overParts[2];
                 if (activePackId === overPackId) {
                     setSelectedPOPackages(prevPackages => {
-                        const packageIndex = prevPackages.findIndex(pkg => pkg.package_id === activePackId);
+                        const packageIndex = prevPackages.findIndex(pkg => Number(pkg.package_id) === Number(activePackId));                        
                         const packageItem = prevPackages[packageIndex];
                         const oldIndex = packageItem.po_items.findIndex(item => `item-${item.product_id}-${activePackId}` === active.id);
                         const newIndex = packageItem.po_items.findIndex(item => `item-${item.product_id}-${activePackId}` === over.id);
-                        const reorderedItems = arrayMove(packageItem.po_items, oldIndex, newIndex);
-                        // Update sequence for all items in the package
-                        const updatedItems = reorderedItems.map((item, index) => ({
-                            ...item,
-                            sequence: index
-                        }));
-                        const updatedPackage = { ...packageItem, po_items: updatedItems };
+                        const newPoItems = arrayMove(packageItem.po_items, oldIndex, newIndex);
+                        const updatedPackage = { ...packageItem, po_items: newPoItems };
                         const newPackages = [...prevPackages];
                         newPackages[packageIndex] = updatedPackage;
                         return newPackages;
@@ -473,15 +548,25 @@ function CreatePO() {
         }
     };
 
+    if (selectedSale) {
+        // console.log('packages:', selectedOrder.latest_quotation.packages);
+        // selectedOrder.latest_quotation.quotation.packages.map((prodPackage: Package) => {
+
+
+        // })
+    }
+
     return (
         <>
+            {isLoading && <Loading />}
+
             <div className="flex justify-between items-center flex-wrap mb-6">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
                         <i className="ki-solid ki-arrow-left"></i>
                     </button>
                     <span className="text-2xl font-bold text-gray-900">
-                        Create New Purchase Order
+                        Edit Purchase Order
                     </span>
                 </div>
             </div>
@@ -492,16 +577,22 @@ function CreatePO() {
                         <div className="card-header">
                             <span className="font-semibold">General</span>
                         </div>
+
                         <div className="card-body py-6 px-4 lg:px-6 bg-white rounded-lg shadow-sm">
                             <div className="grid grid-rows-1 md:grid-rows-2 gap-6">
+                                {/* Sales Order Section */}
                                 <div className="flex flex-col space-y-2">
-                                    <label className="text-sm text-gray-900 font-semibold">Sales Order</label>
+                                    <label className="text-sm text-gray-900 font-semibold">
+                                        Sales Order
+                                    </label>
+
                                     <div className="flex items-center gap-2">
                                         <div className="relative w-full max-w-md" data-dropdown="true" data-dropdown-trigger="click" id='sales_dropdown'>
                                             <button className="dropdown-toggle w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                                 <span>{selectedSale ? selectedSale.sales_no : 'Select a Sales Order'}</span>
                                                 <i className="ki-filled ki-down w-4 h-4 text-gray-500"></i>
                                             </button>
+
                                             <div className="dropdown-content absolute z-10 mt-1 w-full max-w-80 bg-white border border-gray-200 rounded-md shadow-lg hidden">
                                                 <div className="p-3">
                                                     <input
@@ -534,6 +625,7 @@ function CreatePO() {
                                                 </div>
                                             </div>
                                         </div>
+
                                         {selectedSale && (
                                             <button
                                                 className="flex items-center justify-center w-8 h-8 text-red-500 hover:text-red-600 focus:outline-none"
@@ -543,15 +635,24 @@ function CreatePO() {
                                             </button>
                                         )}
                                     </div>
-                                    <span className="text-xs text-gray-600">Duplicate from Order/Quotation</span>
+
+                                    <span className="text-xs text-gray-600">
+                                        Duplicate from Order/Quotation
+                                    </span>
                                 </div>
+
+                                {/* Vendor Section */}
                                 <div className="flex flex-col space-y-2">
-                                    <label className="text-sm text-gray-900 font-semibold">Vendor</label>
+                                    <label className="text-sm text-gray-900 font-semibold">
+                                        Vendor
+                                    </label>
+
                                     <div className="relative w-full max-w-md" data-dropdown="true" data-dropdown-trigger="click" id='vendors_dropdown'>
                                         <button className="dropdown-toggle w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                             <span>{selectedVendor ? selectedVendor.name : 'Select a Vendor'}</span>
                                             <i className="ki-filled ki-down w-4 h-4 text-gray-500"></i>
                                         </button>
+
                                         <div className="dropdown-content absolute z-10 mt-1 w-full max-w-80 bg-white border border-gray-200 rounded-md shadow-lg hidden">
                                             <div className="p-3">
                                                 <input
@@ -582,7 +683,10 @@ function CreatePO() {
                                             </div>
                                         </div>
                                     </div>
-                                    <span className="text-xs text-gray-600">Select a vendor</span>
+
+                                    <span className="text-xs text-gray-600">
+                                        Select a vendor
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -598,17 +702,23 @@ function CreatePO() {
                                     <table className="table-auto">
                                         <tbody>
                                             <tr>
-                                                <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Sales No:</td>
-                                                <td className="text-xs text-gray-900 pb-3">{selectedSale.sales_no}</td>
+                                                <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Sales No:
+                                                </td>
+                                                <td className="text-xs text-gray-900 pb-3">
+                                                    {selectedSale.sales_no}
+                                                </td>
                                             </tr>
                                             <tr>
-                                                <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Status:</td>
+                                                <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                    Status:
+                                                </td>
                                                 <td className="text-xs text-gray-900 pb-3">
                                                     <span className={`badge badge-pill cursor-default
-                                                        ${selectedSale.status === 'issued' ? 'badge-primary' : ''} 
-                                                        ${selectedSale.status === 'partial-paid' ? 'badge-info' : ''} 
-                                                        ${selectedSale.status === 'fully-paid' ? 'badge-success' : ''} 
-                                                        badge-outline`}
+                                                ${selectedSale.status === 'issued' ? 'badge-primary' : ''} 
+                                                ${selectedSale.status === 'partial-paid' ? 'badge-info' : ''} 
+                                                ${selectedSale.status === 'fully-paid' ? 'badge-success' : ''} 
+                                                badge-outline`}
                                                     >
                                                         {selectedSale.status}
                                                     </span>
@@ -618,58 +728,93 @@ function CreatePO() {
                                     </table>
                                 </div>
                             </div>
+
                             <div className="card w-full">
                                 <div className="card-header flex justify-between items-center">
-                                    <h3 className="card-title">Owner</h3>
+                                    <h3 className="card-title">
+                                        Owner
+                                    </h3>
                                 </div>
                                 <div className="card-body pt-3.5 pb-3.5">
                                     <table className="table-auto">
                                         <tbody>
-                                            {selectedSale.order.user ? (
+                                            {selectedSale.order.user ?
                                                 <>
                                                     <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Name:</td>
-                                                        <td className="text-sm text-gray-900 pb-3">{selectedSale.order.user.name}</td>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Name:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.user.name}
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Email:</td>
-                                                        <td className="text-sm text-gray-900 pb-3">{selectedSale.order.user.email}</td>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Email:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.user.email}
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Phone No.:</td>
-                                                        <td className="text-sm text-gray-900 pb-3">+{selectedSale.order.user.country_code} {selectedSale.order.user.phone_no}</td>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Phone No.:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            +{selectedSale.order.user.country_code} {selectedSale.order.user.phone_no}
+                                                        </td>
                                                     </tr>
                                                 </>
-                                            ) : (
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">N/A</td>
-                                            )}
+                                                :
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    N/A
+                                                </td>
+                                            }
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
+
                             <div className="card w-full">
                                 <div className="card-header flex justify-between items-center">
-                                    <h3 className="card-title">Property</h3>
+                                    <h3 className="card-title">
+                                        Property
+                                    </h3>
                                 </div>
                                 <div className="card-body pt-3.5 pb-3.5">
                                     <table className="table-auto">
                                         <tbody>
-                                            {selectedSale.order.property ? (
+                                            {selectedSale.order.property ?
                                                 <>
+
                                                     <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Property Name:</td>
-                                                        <td className="text-sm text-gray-900 pb-3">{selectedSale.order.property.name}</td>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Property Name:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.property.name}
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Unit:</td>
-                                                        <td className="text-sm text-gray-900 pb-3">{selectedSale.order.block}-{selectedSale.order.floor}-{selectedSale.order.unit_no}</td>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Unit:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.block}-{selectedSale.order.floor}-{selectedSale.order.unit_no}
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Unit Type:</td>
-                                                        <td className="text-sm text-gray-900 pb-3">{selectedSale.order.unit_type ? selectedSale.order.unit_type : "-"}</td>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Unit Type:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.unit_type ? selectedSale.order.unit_type : "-"}
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Address:</td>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Address:
+                                                        </td>
                                                         <td className="text-sm text-gray-900 pb-3">
                                                             {[
                                                                 selectedSale.order.property.address,
@@ -677,25 +822,42 @@ function CreatePO() {
                                                                 selectedSale.order.property.postcode,
                                                                 selectedSale.order.property.city,
                                                                 selectedSale.order.property.state,
-                                                            ].filter(Boolean).join(', ')}
+                                                            ]
+                                                                .filter(Boolean)
+                                                                .join(', ')
+                                                            }
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Total Bedroom:</td>
-                                                        <td className="text-sm text-gray-900 pb-3">{selectedSale.order.bedroom_count}</td>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Total Bedroom:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.bedroom_count}
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Total Bathroom:</td>
-                                                        <td className="text-sm text-gray-900 pb-3">{selectedSale.order.bathroom_count}</td>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Total Bathroom:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.bathroom_count}
+                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Partition:</td>
-                                                        <td className="text-sm text-gray-900 pb-3">{selectedSale.order.include_partition ? 'Yes' : 'No'}</td>
+                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                            Partition:
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pb-3">
+                                                            {selectedSale.order.include_partition ? 'Yes' : 'No'}
+                                                        </td>
                                                     </tr>
                                                 </>
-                                            ) : (
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">N/A</td>
-                                            )}
+                                                :
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    N/A
+                                                </td>
+                                            }
                                         </tbody>
                                     </table>
                                 </div>
@@ -712,16 +874,28 @@ function CreatePO() {
                                 <table className="table-auto">
                                     <tbody>
                                         <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Vendor Name:</td>
-                                            <td className="text-xs text-gray-900 pb-3">{selectedVendor.name}</td>
+                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Vendor Name:
+                                            </td>
+                                            <td className="text-xs text-gray-900 pb-3">
+                                                {selectedVendor.name}
+                                            </td>
                                         </tr>
                                         <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Email:</td>
-                                            <td className="text-xs text-gray-900 pb-3">{selectedVendor.email}</td>
+                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Email:
+                                            </td>
+                                            <td className="text-xs text-gray-900 pb-3">
+                                                {selectedVendor.email}
+                                            </td>
                                         </tr>
                                         <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Phone No.:</td>
-                                            <td className="text-xs text-gray-900 pb-3">+{selectedVendor.country_code} {selectedVendor.phone_no}</td>
+                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Phone No.:
+                                            </td>
+                                            <td className="text-xs text-gray-900 pb-3">
+                                                +{selectedVendor.country_code} {selectedVendor.phone_no}
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -784,11 +958,18 @@ function CreatePO() {
                     </div>
 
                     <div className="flex justify-end gap-4">
-                        <button className="btn btn-lg btn-light">Cancel</button>
-                        <button className="btn btn-lg btn-primary" onClick={handleSubmit}>Create</button>
+                        <button className="btn btn-lg btn-light">
+                            Cancel
+                        </button>
+                        <button
+                            className="btn btn-lg btn-primary"
+                            onClick={handleSubmit}
+                        >
+                            Edit
+                        </button>
                     </div>
                 </div>
-            </div>
+            </div >
 
             <IncludePOPackageModal
                 selectedPOPackages={selectedPOPackages}
@@ -811,4 +992,4 @@ function CreatePO() {
     );
 }
 
-export default CreatePO;
+export default EditPO;

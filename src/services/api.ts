@@ -1770,6 +1770,20 @@ export const createPurchaseOrder = async (purchaseOrderData: PurchaseOrder) => {
     }
 };
 
+export const updatePurchaseOrder = async (poId: number, purchaseOrderData: PurchaseOrder) => {
+    try {
+        const response = await axios.put(API_URL + `purchase-orders/${poId}`, purchaseOrderData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
 export const POIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + 'purchase-orders', {

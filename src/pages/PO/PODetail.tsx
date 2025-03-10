@@ -55,12 +55,12 @@ function PODetail() {
                     </span>
                 </div>
                 <div className="flex gap-3">
-                    {/* <Link
-                        to={'/purchase-order/edit/' + poId}
+                    <Link
+                        to={'/purchase-orders/edit/' + poId}
                         className="btn btn-info btn-sm"
                     >
-                        Update PO
-                    </Link> */}
+                        Edit PO
+                    </Link>
                     <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
                         <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
                             <i className="ki-filled ki-dots-vertical"></i>
@@ -170,7 +170,7 @@ function PODetail() {
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
-                                    {po.sale.order.user ?
+                                    {po.sale ?
                                         <>
                                             <tr>
                                                 <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
@@ -215,7 +215,7 @@ function PODetail() {
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
-                                    {po.sale.order.property ?
+                                    {po.sale ?
                                         <>
 
                                             <tr>
@@ -408,7 +408,7 @@ function PODetail() {
                                             {/* Accordion Content */}
                                             <div
                                                 className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${openAccordions[index]
-                                                    ? 'max-h-[1000px] opacity-100'
+                                                    ? 'opacity-100'
                                                     : 'max-h-0 opacity-0 p-0'
                                                     }`}
                                             >

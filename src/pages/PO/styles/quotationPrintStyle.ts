@@ -153,7 +153,7 @@ export const styles = StyleSheet.create({
         paddingBottom: 8,
     },
     th1: {
-        width: "10%",
+        width: "8%", // S.o.W
         textAlign: "left",
         fontSize: 10,
         paddingLeft: 8,
@@ -162,7 +162,25 @@ export const styles = StyleSheet.create({
         color: "#333",
     },
     th2: {
-        width: "70%",
+        // Supply header
+        width: "8%",
+        textAlign: "center",
+        fontSize: 10,
+        paddingTop: 8,
+        fontWeight: "medium",
+        color: "#333",
+    },
+    th3: {
+        // Install header
+        width: "8%",
+        textAlign: "center",
+        fontSize: 10,
+        paddingTop: 8,
+        fontWeight: "medium",
+        color: "#333",
+    },
+    th4: { // Description
+        width: "56%",
         textAlign: "left",
         fontSize: 10,
         paddingLeft: 12,
@@ -170,7 +188,7 @@ export const styles = StyleSheet.create({
         fontWeight: "medium",
         color: "#333",
     },
-    th3: {
+    th5: { // QTY
         width: "10%",
         textAlign: "center",
         fontSize: 10,
@@ -178,7 +196,7 @@ export const styles = StyleSheet.create({
         fontWeight: "medium",
         color: "#333",
     },
-    th4: {
+    th6: { // UOM
         width: "10%",
         textAlign: "center",
         fontSize: 10,
@@ -187,12 +205,6 @@ export const styles = StyleSheet.create({
         color: "#333",
     },
 
-    tr: {
-        flexDirection: "row",
-        borderTop: 1,
-        borderColor: "#ececec",
-        paddingBottom: 8,
-    },
     packageRow: {
         marginBottom: 12,
     },
@@ -208,23 +220,60 @@ export const styles = StyleSheet.create({
         color: '#555',
         paddingVertical: 2,
     },
-
     td1: {
-        width: '10%',
+        width: '8%', // S.o.W
+        textAlign: 'center',
         paddingLeft: 8,
     },
     td2: {
-        width: '70%',
-        paddingLeft: 12,
+        // Supply cell
+        width: "8%",
+        textAlign: "center",
+        fontSize: 12, // Slightly larger for emphasis
+        fontFamily: "Helvetica",
+        paddingVertical: 2,
+        color: "#15803d", // Green for "Yes"
     },
     td3: {
+        // Install cell
+        width: "8%",
+        textAlign: "center",
+        fontSize: 12,
+        fontFamily: "Helvetica",
+        paddingVertical: 2,
+        color: "#15803d", // Green for "Yes"
+    },
+    td4: { // Description
+        width: '56%',
+        paddingLeft: 12,
+    },
+    td5: { // QTY
         width: '10%',
         textAlign: 'center',
     },
-    td4: {
+    td6: { // UOM
         width: '10%',
         textAlign: 'center',
     },
+    checkbox: {
+        width: 10,
+        height: 10,
+        borderWidth: 1,
+        borderColor: "#15803d",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    checkmark: {
+        fontSize: 8,
+        color: "#15803d",
+    },
+    emptyBox: {
+        width: 10,
+        height: 10,
+        borderWidth: 1,
+        borderColor: "#6b7280",
+    },
+
     productRow: {
         flexDirection: 'row',
         paddingVertical: 4,
@@ -233,16 +282,12 @@ export const styles = StyleSheet.create({
         fontSize: 9,
         color: '#666',
     },
-    productName: {
-        width: "70%",
-        textAlign: "left",
-        paddingLeft: 12,
-    },
     productDescription: {
         fontSize: 8,
         color: '#888',
         paddingLeft: 8,
     },
+
     productQty: {
         width: "10%",
         textAlign: "center",

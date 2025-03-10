@@ -234,6 +234,7 @@ function POMain() {
                                     <th className='w-[100px]'>Owner</th>
                                     <th className='w-[60px] text-center'>Unit</th>
                                     <th className='w-[60px] text-center'>Property</th>
+                                    <th className='w-[100px]'>Vendor</th>
                                     <th className='w-[60px]'>Total Amount</th>
                                     <th className='w-[120px] text-center'>Order Status</th>
                                     <th className='w-[80px] text-center'>Payment Status</th>
@@ -276,7 +277,7 @@ function POMain() {
                                             </td>
                                             <td>
                                                 <div className="flex flex-col gap-1">
-                                                    {po.sale.order.user ?
+                                                    {po.sale ?
                                                         <>
                                                             <span>{po.sale.order.user.name}</span>
                                                             <span className="text-xs text-slate-400">{po.sale.order.user.email}</span>
@@ -289,15 +290,36 @@ function POMain() {
                                             </td>
                                             <td className='text-center'>
                                                 <div className="flex flex-col gap-1">
-                                                    <span>{po.sale.order.block}-{po.sale.order.floor}-{po.sale.order.unit_no}</span>
+                                                    {po.sale ?
+                                                        <span>{po.sale.order.block}-{po.sale.order.floor}-{po.sale.order.unit_no}</span>
+                                                        :
+                                                        '-'
+                                                    }
                                                 </div>
                                             </td>
                                             <td className='text-center'>
-                                                <div className="flex flex-col gap-1">
-                                                    <span>{po.sale.order.property ? po.sale.order.property.name : '-'}</span>
-                                                    <div className="badge">
-                                                        <span className="text-xs text-gray-900">{po.sale.order.unit_type}</span>
+                                                {po.sale ?
+                                                    <div className="flex flex-col gap-1">
+                                                        <span>{po.sale.order.property ? po.sale.order.property.name : '-'}</span>
+                                                        <div className="badge">
+                                                            <span className="text-xs text-gray-900">{po.sale.order.unit_type}</span>
+                                                        </div>
                                                     </div>
+                                                    :
+                                                    '-'
+                                                }
+                                            </td>
+                                            <td>
+                                                <div className="flex flex-col gap-1">
+                                                    {po.vendor ?
+                                                        <>
+                                                            <span>{po.vendor.name}</span>
+                                                            <span className="text-xs text-slate-400">{po.vendor.email}</span>
+                                                            <span className="text-xs text-slate-700">+{po.vendor.country_code} {po.vendor.phone_no}</span>
+                                                        </>
+                                                        :
+                                                        '-'
+                                                    }
                                                 </div>
                                             </td>
                                             <td>
@@ -337,7 +359,7 @@ function POMain() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={10} className="text-center text-gray-500">
+                                        <td colSpan={11} className="text-center text-gray-500">
                                             No purchase orders available
                                         </td>
                                     </tr>

@@ -167,7 +167,7 @@ function IncludePOPackageModal({ selectedPOPackages, setSelectedPOPackages, isOp
         } else {
             const selectedPackage = packages.find(pkg => pkg.id === Number(packageData.package_id));
 
-            const poItems: POItem[] = selectedPackage?.products?.map((product: Product) => ({
+            const poItems: POItem[] = selectedPackage?.products?.map((product: Product, index) => ({
                 product_id: String(product.id),
                 product_name: product.name,
                 product_desc: product.description || '',
@@ -180,6 +180,7 @@ function IncludePOPackageModal({ selectedPOPackages, setSelectedPOPackages, isOp
                 total_price: ((product.pivot?.includeSupply ? product.provisioning?.supply?.cogs || 0 : 0) +
                     (product.pivot?.includeInstall ? product.provisioning?.install?.cogs || 0 : 0)) *
                     (product.pivot?.quantity || 1),
+                sequence: index + 1,
             })) || [];
 
             setSelectedPOPackages((prevPackages) => {
@@ -196,7 +197,8 @@ function IncludePOPackageModal({ selectedPOPackages, setSelectedPOPackages, isOp
                         ...packageData,
                         po_items: poItems,
                         quantity: 1,
-                        total_price: calculatePackageTotal({ ...packageData, po_items: poItems })
+                        total_price: calculatePackageTotal({ ...packageData, po_items: poItems }),
+                        sequence: prevPackages.length + 1,
                     };
                     selectBtn.dataset.action = 'remove';
                     selectBtn.className = 'btn btn-danger btn-sm';

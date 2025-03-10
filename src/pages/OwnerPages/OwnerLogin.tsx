@@ -150,9 +150,11 @@ const OwnerLogin: React.FC = () => {
                 navigate(redirectUrl);
             } else {
                 console.log('Invalid');
+                notify('error', 'Invalid OTP. Please try again.');
             }
         } catch (error) {
             console.error('Error fetching order details:', error);
+            notify('error', 'Invalid OTP. Please try again.');
         }
     };
 

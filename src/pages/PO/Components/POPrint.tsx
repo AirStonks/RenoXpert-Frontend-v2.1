@@ -1,5 +1,4 @@
 import { Document, Page, PDFViewer, Text, View, Image } from '@react-pdf/renderer';
-import React, { useEffect } from 'react'
 import { useParams } from 'react-router-dom';
 import useFetchPO from '../../../hook/useFetchPO';
 import { styles } from '../styles/quotationPrintStyle';
@@ -10,64 +9,10 @@ const getCurrentDate = () => {
     return date.toLocaleDateString('en-GB', options);
 };
 
-// const formatDate = (dateStr: string) => {
-//     const [day, month, year] = dateStr.split("/");
-//     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-//     return `${day} ${monthNames[parseInt(month) - 1]} ${year}`;
-// };
-
-// const convertToWords = (num: number) => {
-//     const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
-//     const teens = ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
-//     const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
-
-//     if (num < 10) {
-//         return ones[num];
-//     } else if (num >= 10 && num < 20) {
-//         return teens[num - 10];
-//     } else {
-//         const tenPart = Math.floor(num / 10);
-//         const onePart = num % 10;
-//         return tens[tenPart] + (onePart > 0 ? "-" + ones[onePart] : "");
-//     }
-// }
-
 function POPrint() {
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
     const { po, loading, error } = useFetchPO(poId);
-
-    useEffect(() => {
-
-
-    }, []);
-
-    // // Function to generate and download PDF
-    // const downloadPDF = async () => {
-    //     const doc = (
-    //         <Document>
-    //             <QuotationPDF />
-    //             <TncPDF />
-    //             <RenoAgreementPDF />
-    //         </Document>
-    //     );
-    //     const blob = await pdf(doc).toBlob();
-    //     const url = URL.createObjectURL(blob);
-    //     const link = document.createElement('a');
-    //     link.href = url;
-    //     link.download = `${QUOTATION_NUMBER}_${ATTN_NAME.toUpperCase().replace(/\s+/g, '_')}.pdf`;
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     document.body.removeChild(link);
-    //     URL.revokeObjectURL(url);
-    // };
-
-    // // Trigger download when orderDetail is loaded
-    // useEffect(() => {
-    //     if (!loading && orderDetail && !error && packageCategories.length > 0) {
-    //         downloadPDF();
-    //     }
-    // }, [loading, orderDetail, error]);
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center w-full">
@@ -96,7 +41,7 @@ function POPrint() {
     const ATTN_MOBILE = `+${po.vendor.country_code} ${po.vendor.phone_no}`;
     const ATTN_EMAIL = po.vendor.email;
 
-    const OWNER_ADDRESS = [
+    const OWNER_ADDRESS = po.sale ? [
         po.sale.order.user.address.address_1,
         po.sale.order.user.address.address_2,
         po.sale.order.user.address.city,
@@ -104,17 +49,19 @@ function POPrint() {
         po.sale.order.user.address.postcode
     ]
         .filter(value => value) // Removes null, undefined, and empty strings
-        .join(", ") || "N/A"; // Default to "N/A" if all values are empty
+        .join(", ") || "N/A"
+        :
+        'N/A'; // Default to "N/A" if all values are empty
 
-    const OWNER_NAME = po.sale.order.user.name;
-    const OWNER_COUNTRY_CODE = po.sale.order.user.country_code;
-    const OWNER_MOBILE = po.sale.order.user.phone_no;
-    const OWNER_EMAIL = po.sale.order.user.email;
+    const OWNER_NAME = po.sale ? po.sale.order.user.name : 'N/A';
+    const OWNER_COUNTRY_CODE = po.sale ? po.sale.order.user.country_code : '';
+    const OWNER_MOBILE = po.sale ? po.sale.order.user.phone_no : 'N/A';
+    const OWNER_EMAIL = po.sale ? po.sale.order.user.email : 'N/A';
 
-    const UNIT_NO = `${po.sale.order.block}-${po.sale.order.floor}-${po.sale.order.unit_no}`;
-    const PROPERTY_NAME = po.sale.order.property.name;
-    const UNIT_TYPE = po.sale.order.unit_type || "N/A";
-    const PROPERTY_ADDRESS = [
+    const UNIT_NO = po.sale ? `${po.sale.order.block}-${po.sale.order.floor}-${po.sale.order.unit_no}` : 'N/A';
+    const PROPERTY_NAME = po.sale ? po.sale.order.property.name : 'N/A';
+    const UNIT_TYPE = po.sale ? (po.sale.order.unit_type || "N/A") : 'N/A';
+    const PROPERTY_ADDRESS = po.sale ? [
         po.sale.order.property.address,
         po.sale.order.property.street,
         po.sale.order.property.postcode,
@@ -122,9 +69,10 @@ function POPrint() {
         po.sale.order.property.state,
     ]
         .filter(Boolean)
-        .join(', ') || "N/A";
+        .join(', ') || "N/A"
+        :
+        'N/A';
 
-    // const totalPriceBeforeDiscount = Object.values(categoryTotals).reduce((sum, cat) => sum + cat.total_price, 0);
     const totalPrice = po.total_amount;
 
     const QuotationPDF = () => (
@@ -201,30 +149,52 @@ function POPrint() {
                 {/* Package Table */}
                 <View style={styles.packageTable}>
                     <View style={styles.thead}>
-                        <Text style={styles.th1}>No</Text>
-                        <Text style={styles.th2}>Description</Text>
-                        <Text style={styles.th3}>QTY</Text>
-                        <Text style={styles.th4}>UOM</Text>
+                        <Text style={styles.th1}>S.o.W</Text>
+                        <Text style={styles.th2}>Supply</Text>
+                        <Text style={styles.th3}>Install</Text>
+                        <Text style={styles.th4}>Description</Text>
+                        <Text style={styles.th5}>QTY</Text>
+                        <Text style={styles.th6}>UOM</Text>
                     </View>
                     {po.po_packages.map((pkg, pkgIndex) => (
                         <View style={styles.packageRow} key={pkgIndex}>
                             <View style={styles.setRow}>
                                 <Text style={[styles.td, styles.td1]}>{pkgIndex + 1}</Text>
-                                <Text style={[styles.td, styles.td2]}>{pkg.name}</Text>
-                                <Text style={[styles.td, styles.td3]}>{pkg.quantity}</Text>
-                                <Text style={[styles.td, styles.td4]}>-</Text>
+                                <Text style={[styles.td, styles.td2]}></Text> {/* Blank for Supply in package */}
+                                <Text style={[styles.td, styles.td3]}></Text> {/* Blank for Install in package */}
+                                <Text style={[styles.td, styles.td4]}>{pkg.name}</Text>
+                                <Text style={[styles.td, styles.td5]}>{pkg.quantity}</Text>
+                                <Text style={[styles.td, styles.td6]}>-</Text>
                             </View>
                             {pkg.po_items.map((product) => (
                                 <View style={styles.productRow} key={product.id}>
                                     <Text style={[styles.td, styles.td1]}>{''}</Text>
-                                    <View style={styles.td2}>
+                                    <Text style={[styles.td, styles.td2]}>
+                                        {product.supply ? (
+                                            <View style={styles.checkbox}>
+                                                <Text style={styles.checkmark}>Y</Text>
+                                            </View>
+                                        ) : (
+                                            <View style={styles.emptyBox} />
+                                        )}
+                                    </Text>
+                                    <Text style={[styles.td, styles.td3]}>
+                                        {product.install ? (
+                                            <View style={styles.checkbox}>
+                                                <Text style={styles.checkmark}>Y</Text>
+                                            </View>
+                                        ) : (
+                                            <View style={styles.emptyBox} />
+                                        )}
+                                    </Text>
+                                    <View style={styles.td4}>
                                         <Text style={styles.productItem}>{product.product_name}</Text>
                                         <Text style={styles.productDescription}>
                                             {product.product_desc}
                                         </Text>
                                     </View>
-                                    <Text style={[styles.td, styles.td3]}>{product.qty}</Text>
-                                    <Text style={[styles.td, styles.td4]}>{product.uom}</Text>
+                                    <Text style={[styles.td, styles.td5]}>{product.qty}</Text>
+                                    <Text style={[styles.td, styles.td6]}>{product.uom}</Text>
                                 </View>
                             ))}
                         </View>
@@ -252,8 +222,6 @@ function POPrint() {
             <PDFViewer width="100%" height="100%">
                 <Document>
                     <QuotationPDF />
-                    {/* <TncPDF />
-                    <RenoAgreementPDF /> */}
                 </Document>
             </PDFViewer>
         </div>
