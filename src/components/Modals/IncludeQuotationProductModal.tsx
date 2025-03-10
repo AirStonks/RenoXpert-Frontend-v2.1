@@ -181,16 +181,11 @@ function IncludeQuotationProductModal({ selectedPackages, setSelectedPackages, s
 
                 if (selectedProduct) {
                     const newProduct = {
-                        id: selectedProduct.id,
-                        name: selectedProduct.name,
-                        SKU: selectedProduct.SKU,
+                        ...selectedProduct,
                         quantity: 1,
-                        price: productPrice,
-                        description: selectedProduct.description,
-                        provisioning: selectedProduct.provisioning,
                         pivot: {
-                            package_id: selectedPackageId,
-                            product_id: prodId,
+                            package_id: Number(selectedPackageId),
+                            product_id: selectedProduct.id,
                             quantity: 1,
                             included: true,
                             visibility: true,

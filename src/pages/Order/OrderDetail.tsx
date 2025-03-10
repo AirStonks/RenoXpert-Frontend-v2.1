@@ -898,7 +898,7 @@ function OrderDetail() {
                                 Summary Pricing
                             </h3>
                         </div>
-                        <div className="card-body pt-3.5 pb-3.5">
+                        <div className="card-group pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
                                     {packageCategories.map((category, index: number) => (
@@ -913,7 +913,41 @@ function OrderDetail() {
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                        <div className="card-group">
+                            <table className="table-auto">
+                                <tbody>
+                                    {selectedQuotation.bonus &&
+                                        <>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Sub-Total:
+                                                </td>
+                                                <td className="text-sm text-gray-700 font-medium pb-3">
+                                                    RM {orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Bonus :
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    - RM {selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                            </tr>
+                                        </>
+                                    }
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Total:
+                                        </td>
+                                        <td className="text-sm text-gray-700 font-medium pb-3">
+                                            RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </td>
+                                    </tr>
 
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

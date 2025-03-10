@@ -302,11 +302,15 @@ function EditPO() {
         }
     };
 
-    const handleRemovePOProduct = (id: number, packId: number) => {
+    const handleRemovePOProduct = (itemId: number, packId: number) => {
+        console.log(itemId, packId);
+        
         setSelectedPOPackages((prevSelectedPOPackages) => {
             const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
+                console.log(prevSelectedPOPackages, packId);
+                
                 if (Number(packageItem.package_id) === packId) {
-                    const updatedProducts = packageItem.po_items.filter((product) => Number(product.product_id) !== Number(id));
+                    const updatedProducts = packageItem.po_items.filter((product) => Number(product.product_id) !== Number(itemId));
                     console.log(updatedProducts);
                     const newTotalPrice = calculatePackageTotal({ ...packageItem, po_items: updatedProducts });
                     return {

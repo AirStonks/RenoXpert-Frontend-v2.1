@@ -114,7 +114,7 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
             <td className="p-3" onClick={stopPropagation}>
                 <button
                     className="btn btn-icon btn-sm hover:bg-red-100 rounded-full transition-colors duration-200"
-                    onClick={() => handleRemovePOProduct(packId, Number(poItem.product_id))}
+                    onClick={() => handleRemovePOProduct(Number(poItem.product_id), packId)}
                 >
                     <i className="ki-filled ki-cross text-red-500"></i>
                 </button>

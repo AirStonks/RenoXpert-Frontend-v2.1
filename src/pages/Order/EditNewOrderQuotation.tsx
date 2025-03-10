@@ -327,9 +327,6 @@ function EditNewOrderQuotation() {
                 return prodPackage; // Return the original package if not matched
             });
 
-            console.log(updatedPackages);
-
-
             const newTotalAmount = calculateTotalAmount(updatedPackages);
             setTotalAmount(newTotalAmount); // Update totalAmount
             updateLocalStorage(updatedPackages);

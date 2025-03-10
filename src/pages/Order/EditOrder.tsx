@@ -140,6 +140,7 @@ function EditOrder() {
     useEffect(() => {
         if (selectedPackages.length > 0) recalculateTotalAmount();
         else setFormData((prev) => ({ ...prev, totalAmount: 0 }));
+        
     }, [selectedPackages]);
 
     const handleOpenOwnerDropdown = async () => {

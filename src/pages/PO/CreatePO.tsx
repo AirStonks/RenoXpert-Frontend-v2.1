@@ -238,11 +238,11 @@ function CreatePO() {
         }
     };
 
-    const handleRemovePOProduct = (id: number, packId: number) => {
+    const handleRemovePOProduct = (itemId: number, packId: number) => {
         setSelectedPOPackages((prevSelectedPOPackages) => {
             const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
                 if (Number(packageItem.package_id) === packId) {
-                    const updatedProducts = packageItem.po_items.filter((product) => product.product_id !== String(id));
+                    const updatedProducts = packageItem.po_items.filter((product) => product.product_id !== String(itemId));
                     const newTotalPrice = calculatePackageTotal({ ...packageItem, po_items: updatedProducts });
                     return {
                         ...packageItem,
