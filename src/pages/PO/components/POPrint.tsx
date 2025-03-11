@@ -137,7 +137,9 @@ function POPrint() {
                 <View style={styles.packageCard} key={pkgIndex} wrap={false}>
                     <View style={styles.packageHeader}>
                         <Text style={styles.packageTitle}>Package {pkgIndex + 1}: {pkg.name}</Text>
-                        <Text style={styles.packageDetail}>Quantity: {pkg.quantity}</Text>
+                        <View style={styles.quantityBadge}>
+                            <Text style={styles.quantityBadgeText}>Quantity: {pkg.quantity}</Text>
+                        </View>
                     </View>
                     <View style={styles.itemTable}>
                         <View style={styles.itemHeader}>

@@ -470,6 +470,8 @@ export const styles = StyleSheet.create({
     },
     packageHeader: {
         marginBottom: 4,
+        flexDirection: 'column',    // Keep vertical stacking
+        alignItems: 'flex-start',   // Align items to the left
     },
     packageTitle: {
         fontSize: 10,
@@ -479,7 +481,21 @@ export const styles = StyleSheet.create({
     packageDetail: {
         fontSize: 8,
         color: '#555',
+        padding: 6,
+        borderRadius: 4,
         marginBottom: 4,
+    },
+    quantityBadge: {
+        backgroundColor: '#EFEFEF', // Blue background for contrast
+        borderRadius: 10,           // Rounded corners for badge effect
+        paddingVertical: 4,         // Vertical padding
+        paddingHorizontal: 8,       // Horizontal padding
+        marginTop: 2,               // Space from S.o.W text
+    },
+    quantityBadgeText: {
+        fontSize: 8,                // Matches packageDetail size
+        fontWeight: 'semibold',         // Bold for emphasis
+        textAlign: 'center',        // Center the number
     },
     itemTable: {
         width: '100%',
