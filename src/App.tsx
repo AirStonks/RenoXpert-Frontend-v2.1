@@ -92,6 +92,7 @@ import PMProgressTrack from './pages/ProjectManagement/PMProgressTrack';
 import QuotationOrderPrint from './pages/Order/components/QuotationOrderPrint';
 import POPrint from './pages/PO/components/POPrint';
 import EditPO from './pages/PO/EditPO';
+import VendorLogin from './pages/VendorLogin';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -118,6 +119,7 @@ const OperationProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) 
 
 const routes = [
   { path: '/login', element: <Login />, layout: null },
+  { path: '/vendor-login', element: <VendorLogin />, layout: null },
   { path: '/dashboard', element: <Dashboard />, layout: ProtectedLayout },
 
 

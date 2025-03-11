@@ -180,12 +180,18 @@ const OwnerLogin: React.FC = () => {
                     <div className="flex flex-col items-center justify-center grow bg-center bg-no-repeat page-bg">
                         <img className="default-logo min-h-[22px] h-[52px] max-w-none mb-6" src="/app/RenoExpert_logo-01.svg"></img>
                         <form className="card max-w-[370px] w-full gap-5">
-                            <div className="flex justify-end mt-2 mr-2">
+                            <div className="flex gap-2 justify-end mt-2 mr-2">
                                 <Link
                                     to={'/login'}
                                     className="btn btn-light btn-sm"
                                 >
                                     Staff Login
+                                </Link>
+                                <Link
+                                    to={'/vendor-login'}
+                                    className="btn btn-light btn-sm"
+                                >
+                                    Vendor Login
                                 </Link>
                             </div>
 

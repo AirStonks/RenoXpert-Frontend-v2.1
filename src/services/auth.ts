@@ -2,14 +2,14 @@
 
 import axios from 'axios';
 
-const API_URL = 
-    import.meta.env.VITE_APP_ENV === "production"
-        ? import.meta.env.VITE_API_URL
-        : import.meta.env.VITE_APP_ENV === "staging"
-            ? import.meta.env.VITE_STAGING_API_URL
-            : import.meta.env.VITE_APP_ENV === "local"
-                ? import.meta.env.VITE_LOCAL_API_URL
-                : null;
+const API_URL =
+  import.meta.env.VITE_APP_ENV === "production"
+    ? import.meta.env.VITE_API_URL
+    : import.meta.env.VITE_APP_ENV === "staging"
+      ? import.meta.env.VITE_STAGING_API_URL
+      : import.meta.env.VITE_APP_ENV === "local"
+        ? import.meta.env.VITE_LOCAL_API_URL
+        : null;
 
 export const userLogin = async (email: string, password: string) => {
   try {
@@ -29,6 +29,19 @@ export const staffLoginToOwner = async (country_code: string, mobile: string, pa
     const response = await axios.post(API_URL + 'owner/staff/login', { country_code, mobile, passphrase });
     if (response.data.success) {
       localStorage.setItem('o_token', response.data.data.token); // Store the token
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error('Login error', error);
+    throw error;
+  }
+}
+
+export const vendorLogin = async (email: string, password: string) => {
+  try {
+    const response = await axios.post(API_URL + 'vendor/login', { email, password });
+    if (response.data.success) {
+      localStorage.setItem('token', response.data.data.token); // Store the token
       return response.data.data;
     }
   } catch (error) {
@@ -101,7 +114,7 @@ export const logoutOwner = async () => {
 export const logoutOperation = async () => {
 
   const token = localStorage.getItem('p_token') || sessionStorage.getItem('p_token');
-  
+
   try {
     // Make the request to the logout endpoint with the token
     const response = await axios.post(API_URL + 'logout', {}, {

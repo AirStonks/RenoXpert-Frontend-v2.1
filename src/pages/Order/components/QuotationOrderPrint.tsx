@@ -411,6 +411,12 @@ function QuotationOrderPrint() {
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
+                            Complimentary items are provided if required for the unit, subject to necessity. These items are non-exchangeable for cash, discounts, or any other value. If deemed unnecessary for the unit, they will not be applicable for redemption.
+                        </Text>
+                    </View>
+                    <View style={styles.tncItem}>
+                        <Text style={styles.tncBullet}>•</Text>
+                        <Text style={styles.tncText}>
                             Payment verification: Kindly WhatsApp us at +6011-5899 6291 with the bank-in slip or online payment receipt, along with the client’s name, development name, and unit number.
                         </Text>
                     </View>
