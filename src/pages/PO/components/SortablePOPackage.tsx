@@ -1,4 +1,3 @@
-// SortablePOPackage.tsx
 import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -36,22 +35,33 @@ export const SortablePOPackage: React.FC<SortablePOPackageProps> = ({
 
     const style = {
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-        transition,
-        opacity: isDragging ? 0.5 : 1,
+        transition: isDragging ? "none" : transition, // Disable transition during drag for smoothness
+        opacity: isDragging ? 0.7 : 1, // Slightly higher opacity for better visibility
+        border: isDragging ? "2px dashed #ccc" : "none", // Visual feedback during drag
     };
 
+    // Stop event propagation for interactive elements
+    const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
+
     return (
-        <div ref={setNodeRef} style={style} {...attributes} className="accordion rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white">
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            className="accordion rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white"
+        >
             <div
                 className="accordion-header flex items-center justify-between w-full p-5 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
                 onClick={() => toggleAccordion(poPackage.package_id)}
             >
                 <div className="flex items-center gap-3">
-                    <span {...listeners} style={{ cursor: "move" }}>☰</span>
+                    <span {...listeners} style={{ cursor: "move" }}>
+                        ☰
+                    </span>
                     <button
                         className="btn btn-icon btn-sm hover:bg-red-100 rounded-full transition-colors duration-200"
                         onClick={(e) => {
-                            e.stopPropagation();
+                            stopPropagation(e);
                             handleRemovePOPackage(Number(poPackage.package_id));
                         }}
                     >
@@ -59,16 +69,22 @@ export const SortablePOPackage: React.FC<SortablePOPackageProps> = ({
                     </button>
                     <div className="flex flex-col">
                         <span className="text-gray-800 font-semibold text-sm">{poPackage.name}</span>
-                        <span className="text-gray-600 text-sm">RM {(poPackage.total_price * (poPackage.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="text-gray-600 text-sm">
+                            RM{" "}
+                            {(poPackage.total_price * (poPackage.quantity || 1)).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                            })}
+                        </span>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-2" onClick={stopPropagation}>
                         <button
                             className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
                             onClick={(e) => {
-                                e.stopPropagation();
-                                adjustPackageQty(Number(poPackage.package_id), 'decrease');
+                                stopPropagation(e);
+                                adjustPackageQty(Number(poPackage.package_id), "decrease");
                             }}
                         >
                             <i className="ki-solid ki-minus-squared text-gray-600"></i>
@@ -77,30 +93,38 @@ export const SortablePOPackage: React.FC<SortablePOPackageProps> = ({
                             type="text"
                             className="input input-sm text-center px-2 w-12 border-gray-200 focus:border-primary focus:ring focus:ring-primary/20 transition-all duration-200 disabled"
                             value={poPackage.quantity || 1}
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={stopPropagation}
+                            readOnly // Assuming this is display-only; remove if editable
                         />
                         <button
                             className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
                             onClick={(e) => {
-                                e.stopPropagation();
-                                adjustPackageQty(Number(poPackage.package_id), 'increase');
+                                stopPropagation(e);
+                                adjustPackageQty(Number(poPackage.package_id), "increase");
                             }}
                         >
                             <i className="ki-solid ki-plus-squared text-gray-600"></i>
                         </button>
                     </div>
-                    <i className={`ki-solid ki-down text-gray-600 transition-transform duration-300 ease-in-out ${openAccordions[poPackage.package_id] ? 'rotate-180' : ''}`}></i>
+                    <i
+                        className={`ki-solid ki-down text-gray-600 transition-transform duration-300 ease-in-out ${openAccordions[poPackage.package_id] ? "rotate-180" : ""
+                            }`}
+                    ></i>
                 </div>
             </div>
 
             <div
-                className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${openAccordions[poPackage.package_id] ? 'opacity-100' : 'max-h-0 opacity-0 p-0'}`}
+                className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${openAccordions[poPackage.package_id] ? "opacity-100" : "max-h-0 opacity-0 p-0"
+                    }`}
             >
                 <div className="flex justify-end mb-2 p-4">
                     <button
                         className="btn btn-success btn-sm"
                         data-modal-toggle="#add_item_modal"
-                        onClick={() => handleOpenProductModal(poPackage.package_id)}
+                        onClick={(e) => {
+                            stopPropagation(e);
+                            handleOpenProductModal(poPackage.package_id);
+                        }}
                     >
                         Add Product
                     </button>
@@ -120,11 +144,14 @@ export const SortablePOPackage: React.FC<SortablePOPackageProps> = ({
                             <th className="w-[100px] p-3 text-center">Total Price</th>
                             <th className="w-[10px] p-3 text-center">Supply</th>
                             <th className="w-[10px] p-3 text-center">Install</th>
+                            <th className="w-[10px] p-3"></th> {/* Added for remove button */}
                         </tr>
                     </thead>
                     <tbody>
                         <SortableContext
-                            items={poPackage.po_items.map((item) => `item-${item.product_id}-${poPackage.package_id}`)}
+                            items={poPackage.po_items.map(
+                                (item) => `item-${item.product_id}-${poPackage.package_id}`
+                            )}
                             strategy={verticalListSortingStrategy}
                         >
                             {poPackage.po_items.map((poProd: POItem) => (
@@ -145,4 +172,3 @@ export const SortablePOPackage: React.FC<SortablePOPackageProps> = ({
         </div>
     );
 };
-

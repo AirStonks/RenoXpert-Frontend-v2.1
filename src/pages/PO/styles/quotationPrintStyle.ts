@@ -153,7 +153,7 @@ export const styles = StyleSheet.create({
         paddingBottom: 8,
     },
     th1: {
-        width: "8%", // S.o.W
+        width: "8%", // No
         textAlign: "left",
         fontSize: 10,
         paddingLeft: 8,
@@ -161,26 +161,8 @@ export const styles = StyleSheet.create({
         fontWeight: "medium",
         color: "#333",
     },
-    th2: {
-        // Supply header
-        width: "8%",
-        textAlign: "center",
-        fontSize: 10,
-        paddingTop: 8,
-        fontWeight: "medium",
-        color: "#333",
-    },
-    th3: {
-        // Install header
-        width: "8%",
-        textAlign: "center",
-        fontSize: 10,
-        paddingTop: 8,
-        fontWeight: "medium",
-        color: "#333",
-    },
-    th4: { // Description
-        width: "56%",
+    th4: { // S.o.W
+        width: "15%",
         textAlign: "left",
         fontSize: 10,
         paddingLeft: 12,
@@ -188,7 +170,16 @@ export const styles = StyleSheet.create({
         fontWeight: "medium",
         color: "#333",
     },
-    th5: { // QTY
+    th5: { // Description
+        width: "57%",
+        textAlign: "left",
+        fontSize: 10,
+        paddingLeft: 12,
+        paddingTop: 8,
+        fontWeight: "medium",
+        color: "#333",
+    },
+    th6: { // QTY
         width: "10%",
         textAlign: "center",
         fontSize: 10,
@@ -196,7 +187,7 @@ export const styles = StyleSheet.create({
         fontWeight: "medium",
         color: "#333",
     },
-    th6: { // UOM
+    th7: { // UOM (renamed from th6)
         width: "10%",
         textAlign: "center",
         fontSize: 10,
@@ -221,37 +212,23 @@ export const styles = StyleSheet.create({
         paddingVertical: 2,
     },
     td1: {
-        width: '8%', // S.o.W
+        width: '8%', // No
         textAlign: 'center',
         paddingLeft: 8,
     },
-    td2: {
-        // Supply cell
-        width: "8%",
-        textAlign: "center",
-        fontSize: 12, // Slightly larger for emphasis
-        fontFamily: "Helvetica",
-        paddingVertical: 2,
-        color: "#15803d", // Green for "Yes"
-    },
-    td3: {
-        // Install cell
-        width: "8%",
-        textAlign: "center",
-        fontSize: 12,
-        fontFamily: "Helvetica",
-        paddingVertical: 2,
-        color: "#15803d", // Green for "Yes"
-    },
-    td4: { // Description
-        width: '56%',
+    td4: { // S.o.W
+        width: '15%',
         paddingLeft: 12,
     },
-    td5: { // QTY
+    td5: { // Description
+        width: '57%',
+        paddingLeft: 12,
+    },
+    td6: { // QTY
         width: '10%',
         textAlign: 'center',
     },
-    td6: { // UOM
+    td7: { // UOM (renamed from td6)
         width: '10%',
         textAlign: 'center',
     },

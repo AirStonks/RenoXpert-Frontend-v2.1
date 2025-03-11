@@ -149,52 +149,38 @@ function POPrint() {
                 {/* Package Table */}
                 <View style={styles.packageTable}>
                     <View style={styles.thead}>
-                        <Text style={styles.th1}>S.o.W</Text>
-                        <Text style={styles.th2}>Supply</Text>
-                        <Text style={styles.th3}>Install</Text>
-                        <Text style={styles.th4}>Description</Text>
-                        <Text style={styles.th5}>QTY</Text>
-                        <Text style={styles.th6}>UOM</Text>
+                        <Text style={styles.th1}>No</Text>
+                        <Text style={styles.th4}>S.o.W</Text>
+                        <Text style={styles.th5}>Description</Text>
+                        <Text style={styles.th6}>QTY</Text>
+                        <Text style={styles.th7}>UOM</Text>
                     </View>
                     {po.po_packages.map((pkg, pkgIndex) => (
                         <View style={styles.packageRow} key={pkgIndex}>
                             <View style={styles.setRow}>
                                 <Text style={[styles.td, styles.td1]}>{pkgIndex + 1}</Text>
-                                <Text style={[styles.td, styles.td2]}></Text> {/* Blank for Supply in package */}
-                                <Text style={[styles.td, styles.td3]}></Text> {/* Blank for Install in package */}
-                                <Text style={[styles.td, styles.td4]}>{pkg.name}</Text>
-                                <Text style={[styles.td, styles.td5]}>{pkg.quantity}</Text>
-                                <Text style={[styles.td, styles.td6]}>-</Text>
+                                <Text style={[styles.td, styles.td4]}>{pkg.sow || '-'}</Text>
+                                <Text style={[styles.td, styles.td5]}>{pkg.name}</Text>
+                                <Text style={[styles.td, styles.td6]}>{pkg.quantity}</Text>
+                                <Text style={[styles.td, styles.td7]}>-</Text>
                             </View>
                             {pkg.po_items.map((product) => (
                                 <View style={styles.productRow} key={product.id}>
                                     <Text style={[styles.td, styles.td1]}>{''}</Text>
-                                    <Text style={[styles.td, styles.td2]}>
-                                        {product.supply ? (
-                                            <View style={styles.checkbox}>
-                                                <Text style={styles.checkmark}>Y</Text>
-                                            </View>
-                                        ) : (
-                                            <View style={styles.emptyBox} />
-                                        )}
+                                    <Text style={[styles.td, styles.td4]}>
+                                        {(product.supply && product.install) ? 'Supply and Install' :
+                                            (!product.supply && !product.install) ? '-' :
+                                                (product.supply && !product.install) ? 'Supply' :
+                                                    (!product.supply && product.install) ? 'Install' : '-'}
                                     </Text>
-                                    <Text style={[styles.td, styles.td3]}>
-                                        {product.install ? (
-                                            <View style={styles.checkbox}>
-                                                <Text style={styles.checkmark}>Y</Text>
-                                            </View>
-                                        ) : (
-                                            <View style={styles.emptyBox} />
-                                        )}
-                                    </Text>
-                                    <View style={styles.td4}>
+                                    <View style={[styles.td, styles.td5]}>
                                         <Text style={styles.productItem}>{product.product_name}</Text>
                                         <Text style={styles.productDescription}>
                                             {product.product_desc}
                                         </Text>
                                     </View>
-                                    <Text style={[styles.td, styles.td5]}>{product.qty}</Text>
-                                    <Text style={[styles.td, styles.td6]}>{product.uom}</Text>
+                                    <Text style={[styles.td, styles.td6]}>{product.qty}</Text>
+                                    <Text style={[styles.td, styles.td7]}>{product.uom}</Text>
                                 </View>
                             ))}
                         </View>

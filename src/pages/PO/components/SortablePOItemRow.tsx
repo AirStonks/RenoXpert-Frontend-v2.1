@@ -1,4 +1,3 @@
-// SortablePOItem.tsx
 import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { POItem } from "../../../types";
@@ -21,16 +20,17 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
     handleChangeQty,
 }) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id: `item-${poItem.product_id}-${packId}`, // Ensure unique ID
+        id: `item-${poItem.product_id}-${packId}`, // Unique ID for each item
     });
 
     const style = {
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-        transition,
-        opacity: isDragging ? 0.5 : 1,
+        transition: isDragging ? "none" : transition, // Disable transition during drag for smoothness
+        opacity: isDragging ? 0.7 : 1, // Slightly higher opacity for visibility
+        border: isDragging ? "2px dashed #ccc" : "none", // Visual feedback during drag
     };
 
-    // Prevent event propagation from buttons/inputs to drag listeners
+    // Stop event propagation for interactive elements
     const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
 
     return (
@@ -38,8 +38,7 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
             ref={setNodeRef}
             style={style}
             {...attributes}
-            className={`${!poItem.supply && !poItem.install ? "bg-orange-50" : ""
-                }`}
+            className={`${!poItem.supply && !poItem.install ? "bg-orange-50" : ""}`}
         >
             <td className="p-3" onClick={stopPropagation}>
                 <span {...listeners} style={{ cursor: "move", padding: "8px" }}>
@@ -54,7 +53,10 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
                 <div className="flex items-center justify-center gap-2" onClick={stopPropagation}>
                     <button
                         className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
-                        onClick={() => adjustProductQty(Number(poItem.product_id), packId, "decrease")}
+                        onClick={(e) => {
+                            stopPropagation(e);
+                            adjustProductQty(Number(poItem.product_id), packId, "decrease");
+                        }}
                     >
                         <i className="ki-solid ki-minus-squared text-gray-600"></i>
                     </button>
@@ -67,7 +69,10 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
                     />
                     <button
                         className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
-                        onClick={() => adjustProductQty(Number(poItem.product_id), packId, "increase")}
+                        onClick={(e) => {
+                            stopPropagation(e);
+                            adjustProductQty(Number(poItem.product_id), packId, "increase");
+                        }}
                     >
                         <i className="ki-solid ki-plus-squared text-gray-600"></i>
                     </button>
@@ -93,14 +98,22 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
                 )}
             </td>
             <td className="p-3 text-center font-semibold">
-                RM {(((poItem.supply ? poItem.supply_price : 0) + (poItem.install ? poItem.install_price : 0)) * poItem.qty).toFixed(2)}
+                RM{" "}
+                {(
+                    ((poItem.supply ? poItem.supply_price : 0) +
+                        (poItem.install ? poItem.install_price : 0)) *
+                    poItem.qty
+                ).toFixed(2)}
             </td>
             <td className="p-3 text-center" onClick={stopPropagation}>
                 <input
                     className="checkbox checkbox-sm rounded checked:bg-primary"
                     type="checkbox"
                     checked={!!poItem.supply}
-                    onChange={() => toggleProperty(Number(poItem.product_id), packId, "supply")}
+                    onChange={(e) => {
+                        stopPropagation(e);
+                        toggleProperty(Number(poItem.product_id), packId, "supply");
+                    }}
                 />
             </td>
             <td className="p-3 text-center" onClick={stopPropagation}>
@@ -108,13 +121,19 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
                     className="checkbox checkbox-sm rounded checked:bg-primary"
                     type="checkbox"
                     checked={!!poItem.install}
-                    onChange={() => toggleProperty(Number(poItem.product_id), packId, "install")}
+                    onChange={(e) => {
+                        stopPropagation(e);
+                        toggleProperty(Number(poItem.product_id), packId, "install");
+                    }}
                 />
             </td>
             <td className="p-3" onClick={stopPropagation}>
                 <button
                     className="btn btn-icon btn-sm hover:bg-red-100 rounded-full transition-colors duration-200"
-                    onClick={() => handleRemovePOProduct(Number(poItem.product_id), packId)}
+                    onClick={(e) => {
+                        stopPropagation(e);
+                        handleRemovePOProduct(packId, Number(poItem.product_id));
+                    }}
                 >
                     <i className="ki-filled ki-cross text-red-500"></i>
                 </button>
