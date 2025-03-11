@@ -67,6 +67,8 @@ function CreatePO() {
         } else {
             setTotalAmount(0);
         }
+        console.log(selectedPOPackages);
+
     }, [selectedPOPackages]);
 
     const handleOpenPackageModal = () => {
@@ -178,6 +180,7 @@ function CreatePO() {
                 const poItems = prodPackage.products.map((product: Product) => ({
                     product_id: String(product.id),
                     product_name: product.name,
+                    product_desc: product.description,
                     qty: product.pivot.quantity,
                     uom: product.uom,
                     supply: product.pivot.includeSupply,
@@ -238,15 +241,29 @@ function CreatePO() {
         }
     };
 
-    const handleRemovePOProduct = (itemId: number, packId: number) => {
+    const handleRemovePOProduct = (packId: number, itemId: number) => {
         setSelectedPOPackages((prevSelectedPOPackages) => {
             const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
                 if (Number(packageItem.package_id) === packId) {
-                    const updatedProducts = packageItem.po_items.filter((product) => product.product_id !== String(itemId));
-                    const newTotalPrice = calculatePackageTotal({ ...packageItem, po_items: updatedProducts });
+                    // Filter out the removed product
+                    const updatedProducts = packageItem.po_items.filter(
+                        (product) => Number(product.product_id) !== Number(itemId)
+                    );
+
+                    // Reorder the sequence starting from 1
+                    const reorderedProducts = updatedProducts.map((product, index) => ({
+                        ...product,
+                        sequence: index + 1
+                    }));
+
+                    const newTotalPrice = calculatePackageTotal({
+                        ...packageItem,
+                        po_items: reorderedProducts
+                    });
+
                     return {
                         ...packageItem,
-                        po_items: updatedProducts,
+                        po_items: reorderedProducts,
                         total_price: newTotalPrice
                     };
                 }

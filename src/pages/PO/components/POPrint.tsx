@@ -79,6 +79,9 @@ function POPrint() {
         <Page size="A4" style={styles.page}>
             {/* Redesigned Company Header */}
             <View style={styles.companyHeader}>
+                <View>
+                    <Image src={COMPANY_LOGO_URL} style={styles.companyImage} />
+                </View>
                 <View style={styles.companyInfo}>
                     <Text style={styles.companyTitle}>{COMPANY_NAME}</Text>
                     <Text style={styles.companyDetails}>
@@ -87,9 +90,6 @@ function POPrint() {
                         Contact Number: {COMPANY_MOBILE}{'\n'}
                         Email: {COMPANY_EMAIL}
                     </Text>
-                </View>
-                <View>
-                    <Image src={COMPANY_LOGO_URL} style={styles.companyImage} />
                 </View>
             </View>
 
@@ -170,8 +170,8 @@ function POPrint() {
                                     <Text style={[styles.td, styles.td4]}>
                                         {(product.supply && product.install) ? 'Supply and Install' :
                                             (!product.supply && !product.install) ? '-' :
-                                                (product.supply && !product.install) ? 'Supply' :
-                                                    (!product.supply && product.install) ? 'Install' : '-'}
+                                                (product.supply && !product.install) ? 'Supply Only' :
+                                                    (!product.supply && product.install) ? 'Install Only' : '-'}
                                     </Text>
                                     <View style={[styles.td, styles.td5]}>
                                         <Text style={styles.productItem}>{product.product_name}</Text>

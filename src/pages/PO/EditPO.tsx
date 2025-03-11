@@ -240,6 +240,7 @@ function EditPO() {
                 const poItems = prodPackage.products.map((product: Product) => ({
                     product_id: String(product.id),
                     product_name: product.name,
+                    product_desc: product.description,
                     qty: product.pivot.quantity,
                     uom: product.uom,
                     supply: product.pivot.includeSupply,
@@ -302,20 +303,30 @@ function EditPO() {
         }
     };
 
-    const handleRemovePOProduct = (itemId: number, packId: number) => {
-        console.log(itemId, packId);
-        
+    const handleRemovePOProduct = (packId: number, itemId: number) => {
+
         setSelectedPOPackages((prevSelectedPOPackages) => {
             const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
-                console.log(prevSelectedPOPackages, packId);
-                
                 if (Number(packageItem.package_id) === packId) {
-                    const updatedProducts = packageItem.po_items.filter((product) => Number(product.product_id) !== Number(itemId));
-                    console.log(updatedProducts);
-                    const newTotalPrice = calculatePackageTotal({ ...packageItem, po_items: updatedProducts });
+                    // Filter out the removed product
+                    const updatedProducts = packageItem.po_items.filter(
+                        (product) => Number(product.product_id) !== Number(itemId)
+                    );
+
+                    // Reorder the sequence starting from 1
+                    const reorderedProducts = updatedProducts.map((product, index) => ({
+                        ...product,
+                        sequence: index + 1
+                    }));
+
+                    const newTotalPrice = calculatePackageTotal({
+                        ...packageItem,
+                        po_items: reorderedProducts
+                    });
+
                     return {
                         ...packageItem,
-                        po_items: updatedProducts,
+                        po_items: reorderedProducts,
                         total_price: newTotalPrice
                     };
                 }
@@ -537,7 +548,7 @@ function EditPO() {
                 const overPackId = overParts[2];
                 if (activePackId === overPackId) {
                     setSelectedPOPackages(prevPackages => {
-                        const packageIndex = prevPackages.findIndex(pkg => Number(pkg.package_id) === Number(activePackId));                        
+                        const packageIndex = prevPackages.findIndex(pkg => Number(pkg.package_id) === Number(activePackId));
                         const packageItem = prevPackages[packageIndex];
                         const oldIndex = packageItem.po_items.findIndex(item => `item-${item.product_id}-${activePackId}` === active.id);
                         const newIndex = packageItem.po_items.findIndex(item => `item-${item.product_id}-${activePackId}` === over.id);

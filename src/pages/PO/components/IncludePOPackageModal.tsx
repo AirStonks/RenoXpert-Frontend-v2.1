@@ -166,7 +166,8 @@ function IncludePOPackageModal({ selectedPOPackages, setSelectedPOPackages, isOp
             selectBtn.innerText = 'Select';
         } else {
             const selectedPackage = packages.find(pkg => pkg.id === Number(packageData.package_id));
-
+            console.log(selectedPackage?.products);
+            
             const poItems: POItem[] = selectedPackage?.products?.map((product: Product, index) => ({
                 product_id: String(product.id),
                 product_name: product.name,

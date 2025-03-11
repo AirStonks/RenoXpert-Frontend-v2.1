@@ -215,14 +215,28 @@ function PMTable() {
                                         className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
                                     >
                                         <div className="flex items-center justify-center gap-2">
-                                            Owner Schedule
+                                            Permit Approval Date
                                         </div>
                                     </th>
                                     <th
                                         className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
                                     >
                                         <div className="flex items-center justify-center gap-2">
-                                            Sub Contractor Schedule
+                                            P1 End Date
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            QC End Date
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Handover Date
                                         </div>
                                     </th>
                                     <th
@@ -340,21 +354,18 @@ function PMTable() {
                                             </td>
                                             <td className="text-center">
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-sm text-gray-900">
-                                                        {progress.contractual_start_date
-                                                            ? new Date(progress.contractual_start_date).toLocaleDateString('en-GB', {
+                                                    <span className="text-sm text-gray-900 badge badge-warning badge-outline">
+                                                        {progress.contractual_end_date
+                                                            ? new Date(progress.contractual_end_date).toLocaleDateString('en-GB', {
                                                                 day: '2-digit',
                                                                 month: 'short',
                                                                 year: 'numeric'
                                                             })
                                                             : '-'}
                                                     </span>
-                                                    <span className="text-sm text-gray-600">
-                                                        to
-                                                    </span>
-                                                    <span className="text-sm text-gray-900">
-                                                        {progress.contractual_end_date
-                                                            ? new Date(progress.contractual_end_date).toLocaleDateString('en-GB', {
+                                                    <span className="text-sm text-gray-900 badge badge-info badge-outline">
+                                                        {progress.contractor_end_date
+                                                            ? new Date(progress.contractor_end_date).toLocaleDateString('en-GB', {
                                                                 day: '2-digit',
                                                                 month: 'short',
                                                                 year: 'numeric'
@@ -365,21 +376,62 @@ function PMTable() {
                                             </td>
                                             <td className="text-center">
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-sm text-gray-900">
-                                                        {progress.contractor_start_date
-                                                            ? new Date(progress.contractor_start_date).toLocaleDateString('en-GB', {
+                                                    <span className="text-sm text-gray-900 badge badge-warning badge-outline">
+                                                        {progress.contractual_p1_end_date
+                                                            ? new Date(progress.contractual_p1_end_date).toLocaleDateString('en-GB', {
                                                                 day: '2-digit',
                                                                 month: 'short',
                                                                 year: 'numeric'
                                                             })
                                                             : '-'}
                                                     </span>
-                                                    <span className="text-sm text-gray-600">
-                                                        to
+                                                    <span className="text-sm text-gray-900 badge badge-info badge-outline">
+                                                        {progress.contractor_p1_end_date
+                                                            ? new Date(progress.contractor_p1_end_date).toLocaleDateString('en-GB', {
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric'
+                                                            })
+                                                            : '-'}
                                                     </span>
-                                                    <span className="text-sm text-gray-900">
-                                                        {progress.contractor_end_date
-                                                            ? new Date(progress.contractor_end_date).toLocaleDateString('en-GB', {
+                                                </div>
+                                            </td>
+                                            <td className="text-center">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-sm text-gray-900 badge badge-warning badge-outline">
+                                                        {progress.contractual_qc_end_date
+                                                            ? new Date(progress.contractual_qc_end_date).toLocaleDateString('en-GB', {
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric'
+                                                            })
+                                                            : '-'}
+                                                    </span>
+                                                    <span className="text-sm text-gray-900 badge badge-info badge-outline">
+                                                        {progress.contractor_qc_end_date
+                                                            ? new Date(progress.contractor_qc_end_date).toLocaleDateString('en-GB', {
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric'
+                                                            })
+                                                            : '-'}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="text-center">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-sm text-gray-900 badge badge-warning badge-outline">
+                                                        {progress.contractual_handover_date
+                                                            ? new Date(progress.contractual_handover_date).toLocaleDateString('en-GB', {
+                                                                day: '2-digit',
+                                                                month: 'short',
+                                                                year: 'numeric'
+                                                            })
+                                                            : '-'}
+                                                    </span>
+                                                    <span className="text-sm text-gray-900 badge badge-info badge-outline">
+                                                        {progress.contractor_handover_date
+                                                            ? new Date(progress.contractor_handover_date).toLocaleDateString('en-GB', {
                                                                 day: '2-digit',
                                                                 month: 'short',
                                                                 year: 'numeric'
@@ -537,7 +589,7 @@ function PMTable() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={12} className="text-center text-gray-500">
+                                        <td colSpan={14} className="text-center text-gray-500">
                                             No Project available
                                         </td>
                                     </tr>
