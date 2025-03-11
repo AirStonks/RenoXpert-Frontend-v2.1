@@ -29,14 +29,11 @@ function POPrint() {
     const COMPANY_EMAIL = "sales@renoxpert.my";
     const COMPANY_LOGO_URL = "/public/app/RenoExpert_logo-01.jpg";
 
-    // Define constants for quotationHeader
     const ITEM_TITLE = "Purchase Order";
     const ITEM_NUMBER = po.po_no;
     const ITEM_DATE = getCurrentDate();
 
-
     const ATTN_NAME = po.vendor.name;
-    // const ATTN_ADDRESS = `${po.vendor.address.address_1}, ${po.vendor.address.address_2}, ${po.vendor.address.city}, ${po.vendor.address.state}, ${po.vendor.address.postcode}`;
     const ATTN_ADDRESS = `-`;
     const ATTN_MOBILE = `+${po.vendor.country_code} ${po.vendor.phone_no}`;
     const ATTN_EMAIL = po.vendor.email;
@@ -47,11 +44,7 @@ function POPrint() {
         po.sale.order.user.address.city,
         po.sale.order.user.address.state,
         po.sale.order.user.address.postcode
-    ]
-        .filter(value => value) // Removes null, undefined, and empty strings
-        .join(", ") || "N/A"
-        :
-        'N/A'; // Default to "N/A" if all values are empty
+    ].filter(value => value).join(", ") || "N/A" : 'N/A';
 
     const OWNER_NAME = po.sale ? po.sale.order.user.name : 'N/A';
     const OWNER_COUNTRY_CODE = po.sale ? po.sale.order.user.country_code : '';
@@ -67,17 +60,13 @@ function POPrint() {
         po.sale.order.property.postcode,
         po.sale.order.property.city,
         po.sale.order.property.state,
-    ]
-        .filter(Boolean)
-        .join(', ') || "N/A"
-        :
-        'N/A';
+    ].filter(Boolean).join(', ') || "N/A" : 'N/A';
 
     const totalPrice = po.total_amount;
 
     const QuotationPDF = () => (
         <Page size="A4" style={styles.page}>
-            {/* Redesigned Company Header */}
+            {/* Company Header */}
             <View style={styles.companyHeader}>
                 <View>
                     <Image src={COMPANY_LOGO_URL} style={styles.companyImage} />
@@ -143,54 +132,59 @@ function POPrint() {
                 </Text>
             </View>
 
-            {/* Quotation Body */}
-            <View>
-                <View style={styles.packageTable}>
-                    <View style={styles.thead}>
-                        <Text style={styles.th1}>No</Text>
-                        <Text style={styles.th4}>S.o.W</Text>
-                        <Text style={styles.th5}>Description</Text>
-                        <Text style={styles.th6}>QTY</Text>
-                        <Text style={styles.th7}>UOM</Text>
+            {/* Package Cards */}
+            {po.po_packages.map((pkg, pkgIndex) => (
+                <View style={styles.packageCard} key={pkgIndex} wrap={false}>
+                    <View style={styles.packageHeader}>
+                        <Text style={styles.packageTitle}>Package {pkgIndex + 1}: {pkg.name}</Text>
+                        <Text style={styles.packageDetail}>Quantity: {pkg.quantity}</Text>
                     </View>
-                    {po.po_packages.map((pkg, pkgIndex) => (
-                        <View style={styles.packageRow} key={pkgIndex}>
-                            <View style={styles.setRow}>
-                                <Text style={[styles.td, styles.td1]}>{pkgIndex + 1}</Text>
-                                <Text style={[styles.td, styles.td4]}>{pkg.sow || '-'}</Text>
-                                <Text style={[styles.td, styles.td5]}>{pkg.name}</Text>
-                                <Text style={[styles.td, styles.td6]}>{pkg.quantity}</Text>
-                                <Text style={[styles.td, styles.td7]}>-</Text>
+                    <View style={styles.itemTable}>
+                        <View style={styles.itemHeader}>
+                            <View style={{ flex: 2 }}>
+                                <Text style={styles.itemTh}>S.o.W</Text>
                             </View>
-                            {pkg.po_items.map((product) => (
-                                <View style={styles.productRow} key={product.id}>
-                                    <Text style={[styles.td, styles.td1]}>{''}</Text>
-                                    <Text style={[styles.td, styles.td4]}>
+                            <View style={{ flex: 6 }}>
+                                <Text style={styles.itemTh}>Description</Text>
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.itemTh}>QTY</Text>
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.itemTh}>UOM</Text>
+                            </View>
+                        </View>
+                        {pkg.po_items.map((product) => (
+                            <View style={styles.itemRow} key={product.id}>
+                                <View style={{ flex: 2 }}>
+                                    <Text style={styles.itemTd}>
                                         {(product.supply && product.install) ? 'Supply and Install' :
                                             (!product.supply && !product.install) ? '-' :
                                                 (product.supply && !product.install) ? 'Supply Only' :
                                                     (!product.supply && product.install) ? 'Install Only' : '-'}
                                     </Text>
-                                    <View style={[styles.td, styles.td5]}>
-                                        <Text style={styles.productItem}>{product.product_name}</Text>
-                                        <Text style={styles.productDescription}>
-                                            {product.product_desc}
-                                        </Text>
-                                    </View>
-                                    <Text style={[styles.td, styles.td6]}>{product.qty}</Text>
-                                    <Text style={[styles.td, styles.td7]}>{product.uom}</Text>
                                 </View>
-                            ))}
-                        </View>
-                    ))}
-                </View>
-
-                {/* Total Price Table */}
-                <View wrap={false}>
-                    <View style={styles.totalTable}>
-                        <Text style={styles.totalTitle}>Total Amount:</Text>
-                        <Text style={styles.totalValue}>RM {totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                                <View style={{ flex: 6 }}>
+                                    <Text style={styles.itemTd}>{product.product_name}</Text>
+                                    <Text style={styles.itemTdSecondary}>{product.product_desc}</Text>
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.itemTd}>{product.qty}</Text>
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.itemTd}>{product.uom}</Text>
+                                </View>
+                            </View>
+                        ))}
                     </View>
+                </View>
+            ))}
+
+            {/* Total Price Table */}
+            <View wrap={false}>
+                <View style={styles.totalTable}>
+                    <Text style={styles.totalTitle}>Total Amount:</Text>
+                    <Text style={styles.totalValue}>RM {totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                 </View>
             </View>
 
@@ -220,7 +214,7 @@ function POPrint() {
                 </Document>
             </PDFViewer>
         </div>
-    )
+    );
 }
 
-export default POPrint
+export default POPrint;
