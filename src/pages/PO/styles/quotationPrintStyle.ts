@@ -6,42 +6,56 @@ export const styles = StyleSheet.create({
         backgroundColor: '#fff',
         color: '#262626',
         fontFamily: 'Helvetica',
-        fontSize: 10, // Reduced from 12
-        padding: '20px 30px', // Reduced from 30px 50px
+        fontSize: 10,
+        padding: '20px 30px',
+    },
+    watermark: {
+        position: 'absolute',
+        fontSize: 140,
+        color: '#000000',
+        opacity: 0.1,
+        transform: 'rotate(-45deg)',
+        top: '42%',
+        left: '12%',
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
     pageNumber: {
         position: 'absolute',
-        bottom: 5, // Reduced from 10
+        bottom: 5,
         left: 0,
         right: 0,
         textAlign: 'center',
-        fontSize: 8, // Reduced from 10
+        fontSize: 8,
     },
     companyHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingBottom: 2, // Reduced from 16
-        borderBottomWidth: 1, // Reduced from 2
+        paddingBottom: 2,
+        borderBottomWidth: 1,
         borderBottomColor: '#272f48',
-        marginBottom: 8, // Reduced from 12
+        marginBottom: 8,
     },
     companyInfo: {
         flexDirection: 'column',
+        textAlign: 'right', // This should propagate to children, but we'll enforce it below
     },
     companyTitle: {
-        fontSize: 12, // Reduced from 20
+        fontSize: 12,
         fontWeight: 'bold',
         color: '#272f48',
-        marginBottom: 2, // Reduced from 4
+        marginBottom: 2,
+        textAlign: 'right', // Explicitly set to right
     },
     companyDetails: {
-        fontSize: 8, // Reduced from 10
+        fontSize: 8,
         color: '#4b5563',
-        lineHeight: 1.2, // Reduced from 1.5
+        lineHeight: 1.2,
+        textAlign: 'right', // Already set, just confirming
     },
     companyImage: {
-        width: "80px", // Reduced from 100px
+        width: "140px", // Reduced from 100px
         height: "80px",
         objectFit: "contain",
         borderRadius: 6, // Reduced from 8
@@ -130,6 +144,7 @@ export const styles = StyleSheet.create({
         flexDirection: "row",
         backgroundColor: "#f9f9f9",
         paddingBottom: 4, // Reduced from 8
+        zIndex: 1,
     },
     th1: {
         width: "8%",
@@ -190,7 +205,7 @@ export const styles = StyleSheet.create({
         paddingVertical: 1, // Reduced from 2
     },
     td1: { width: '8%', paddingLeft: 4 }, // Reduced from 8
-    td4: { width: '18%', paddingLeft: 6 }, // Reduced from 12
+    td4: { width: '18%', paddingLeft: 6, fontSize: 6 }, // Reduced from 12
     td5: { width: '54%', paddingLeft: 6 }, // Reduced from 12
     td6: { width: '10%', textAlign: 'center' },
     td7: { width: '10%', textAlign: 'center' },

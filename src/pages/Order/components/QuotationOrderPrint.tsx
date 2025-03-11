@@ -169,19 +169,21 @@ function QuotationOrderPrint() {
     const QuotationPDF = () => (
         <Page size="A4" style={styles.page}>
             {/* Redesigned Company Header */}
+            {/* Redesigned Company Header */}
             <View style={styles.companyHeader}>
+                <View>
+                    <Image src={COMPANY_LOGO_URL} style={styles.companyImage} />
+                </View>
                 <View style={styles.companyInfo}>
-                    <Text style={styles.companyTitle}>{COMPANY_NAME}</Text>
+                    <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={styles.companyTitle}>{COMPANY_NAME}</Text>
+                    </View>
                     <Text style={styles.companyDetails}>
                         {COMPANY_ADDRESS}{'\n'}
                         {COMPANY_CITY_STATE}{'\n'}
                         Contact Number: {COMPANY_MOBILE}{'\n'}
                         Email: {COMPANY_EMAIL}
                     </Text>
-                </View>
-                <View>
-                    {/* Placeholder for image (replace with actual Image component when logo is available) */}
-                    <Image src={COMPANY_LOGO_URL} style={styles.companyImage} />
                 </View>
             </View>
 

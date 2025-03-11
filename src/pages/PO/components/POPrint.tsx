@@ -83,7 +83,9 @@ function POPrint() {
                     <Image src={COMPANY_LOGO_URL} style={styles.companyImage} />
                 </View>
                 <View style={styles.companyInfo}>
-                    <Text style={styles.companyTitle}>{COMPANY_NAME}</Text>
+                    <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={styles.companyTitle}>{COMPANY_NAME}</Text>
+                    </View>
                     <Text style={styles.companyDetails}>
                         {COMPANY_ADDRESS}{'\n'}
                         {COMPANY_CITY_STATE}{'\n'}
@@ -93,18 +95,17 @@ function POPrint() {
                 </View>
             </View>
 
-            {/* Redesigned Quotation Header */}
+            {/* Quotation Header */}
             <View style={styles.quotationHeader}>
                 <Text style={styles.quotationTitle}>{ITEM_TITLE}</Text>
                 <View style={styles.quotationDetails}>
                     <Text style={styles.quotationText}>Number: {ITEM_NUMBER}</Text>
-                    <Text style={styles.quotationText}>Date: {ITEM_DATE}</Text>
+                    <Text style={styles.quotationText}>Created Date: {ITEM_DATE}</Text>
                 </View>
             </View>
 
-            {/* Vendor and Owner Headers in the Same Row */}
+            {/* Vendor and Owner Headers */}
             <View style={styles.headerRow}>
-                {/* Vendor Header */}
                 <View style={styles.attnHeader}>
                     <View style={styles.attnTitle}>
                         <Text style={[styles.attnLabel, styles.vendorLabel]}>Vendor:</Text>
@@ -116,8 +117,6 @@ function POPrint() {
                         {ATTN_EMAIL}
                     </Text>
                 </View>
-
-                {/* Owner Header */}
                 <View style={styles.attnHeader}>
                     <View style={styles.attnTitle}>
                         <Text style={[styles.attnLabel, styles.ownerLabel]}>Owner:</Text>
@@ -131,7 +130,7 @@ function POPrint() {
                 </View>
             </View>
 
-            {/* Unit Header - Explicitly Full Width */}
+            {/* Unit Header */}
             <View style={[styles.attnHeader, styles.unitHeader]}>
                 <View style={styles.attnTitle}>
                     <Text style={[styles.attnLabel, styles.unitLabel]}>Unit:</Text>
@@ -146,7 +145,6 @@ function POPrint() {
 
             {/* Quotation Body */}
             <View>
-                {/* Package Table */}
                 <View style={styles.packageTable}>
                     <View style={styles.thead}>
                         <Text style={styles.th1}>No</Text>
@@ -195,11 +193,22 @@ function POPrint() {
                     </View>
                 </View>
             </View>
+
+            {/* Page Number */}
             <Text
                 style={styles.pageNumber}
                 render={({ pageNumber, totalPages }) => `${pageNumber}`}
                 fixed
             />
+
+            {po.order_status === "unreleased" && (
+                <Text
+                    style={styles.watermark}
+                    fixed
+                >
+                    DRAFT
+                </Text>
+            )}
         </Page>
     );
 
