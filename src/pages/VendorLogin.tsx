@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { userLogin } from '../services/auth';
+import { userLogin, vendorLogin } from '../services/auth';
 import KTComponent from '../metronic/core';
-import { ToastContainer } from 'react-toastify';
+import { Slide, toast, ToastContainer } from 'react-toastify';
 
 interface LoginForm {
     email: string;
@@ -21,6 +21,19 @@ const VendorLogin: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate(); // React Router's useNavigate hook
 
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData({
@@ -36,12 +49,13 @@ const VendorLogin: React.FC = () => {
         
 
         try {
-            const userData = await vendorLogin(email, formData.password);
+            const userData = await vendorLogin(formData.email, formData.password);
             if (userData) {
                 navigate('/dashboard'); // Redirect to dashboard on successful userLogin
             }
         } catch (err) {
-            setError('Invalid userLogin credentials. Please try again.');
+            setError('Invalid user login credentials. Please try again.');
+            notify('error', 'Invalid user login credentials. Please try again.');
         } finally {
             setLoading(false);
         }
