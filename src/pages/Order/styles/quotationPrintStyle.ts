@@ -96,7 +96,6 @@ export const styles = StyleSheet.create({
         borderColor: '#ececec',
         borderRadius: 6, // Reduced from 8
         width: '100%',
-        marginBottom: 4, // Reduced from 12
     },
     attnTitle: {
         flexDirection: 'row',
@@ -452,5 +451,76 @@ export const styles = StyleSheet.create({
     },
     bold: {
         fontWeight: 'bold',
+    },
+
+    packageCard: {
+        marginBottom: 8,
+        padding: 8,
+        backgroundColor: '#ffffff',
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#ececec',
+    },
+    packageHeader: {
+        marginBottom: 4,
+        flexDirection: 'column',    // Keep vertical stacking
+        alignItems: 'flex-start',   // Align items to the left
+    },
+    packageTitle: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    packageDetail: {
+        fontSize: 8,
+        color: '#555',
+        padding: 6,
+        borderRadius: 4,
+        marginBottom: 4,
+    },
+    quantityBadge: {
+        backgroundColor: '#EFEFEF', // Blue background for contrast
+        borderRadius: 10,           // Rounded corners for badge effect
+        paddingVertical: 4,         // Vertical padding
+        paddingHorizontal: 8,       // Horizontal padding
+        marginTop: 2,               // Space from S.o.W text
+    },
+    quantityBadgeText: {
+        fontSize: 8,                // Matches packageDetail size
+        fontWeight: 'semibold',         // Bold for emphasis
+        textAlign: 'center',        // Center the number
+    },
+    itemTable: {
+        width: '100%',
+    },
+    itemHeader: {
+        flexDirection: 'row',
+        backgroundColor: '#EFEFEF',
+        paddingVertical: 4,
+        borderRadius: 4,
+    },
+    itemTh: {
+        fontSize: 8,
+        fontWeight: 'medium',
+        color: '#333',
+        textAlign: 'left',
+        paddingLeft: 4,
+    },
+    itemRow: {
+        flexDirection: 'row',
+        paddingVertical: 2,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ececec',
+    },
+    itemTd: {
+        fontSize: 7,
+        color: '#666',
+        paddingLeft: 4,
+    },
+    itemTdSecondary: {
+        fontSize: 6,           // Smaller than itemTd (7) for subtlety
+        color: '#888',         // Lighter than #666 for less emphasis
+        paddingLeft: 8,        // Consistent with itemTd
+        fontWeight: 'normal',  // Ensure it’s not bold (optional, depending on fontFamily)
     },
 });

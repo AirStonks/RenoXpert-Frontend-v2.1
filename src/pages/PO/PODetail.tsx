@@ -4,15 +4,34 @@ import { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
 import { POItem, POPackage } from "../../types";
+import { useUser } from "../../context/UserContext";
+import ConfirmationModal from "./components/ConfirmationModal";
+import { acceptPO, rejectPO } from "../../services/api";
+import { Slide, toast } from "react-toastify";
+import { KTModal } from "../../metronic/core";
 
 function PODetail() {
     const navigate = useNavigate();
     const { state } = useLocation();
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
-    const { po, loading, error } = useFetchPO(poId);
+    const { poDetail, loading, error, refetch } = useFetchPO(poId);
+    const { currentUser, loading: userLoading } = useUser();
 
     const [openAccordions, setOpenAccordions] = useState({});
+
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
 
     const handleBackClick = () => {
         if (state) {
@@ -26,13 +45,55 @@ function PODetail() {
         document.title = 'Purchase Order Detail | RenoXpert';
     }, []);
 
+    const handleAcceptPo = async () => {
+        try {
+            const response = await acceptPO(Number(poDetail.id));
+
+            if (response?.success) {
+                refetch();
+
+                const modalEl = document.querySelector('#po_accept_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+
+                console.log(modal);
+
+
+                modal.hide();
+
+                notify('success', "PO Accepted Successfully!");
+            }
+
+        } catch (error) {
+            notify('error', 'Error occurred during PO acceptance.');
+        }
+    }
+
+    const handleRejectPo = async () => {
+        try {
+            const response = await rejectPO(Number(poDetail.id));
+
+            if (response?.success) {
+                refetch();
+
+                const modalEl = document.querySelector('#po_reject_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+                modal.hide();
+
+                notify('success', "PO Rejected Successfully!");
+            }
+
+        } catch (error) {
+            notify('error', 'Error occurred during PO rejection.');
+        }
+    }
+
     if (!poId) return null;
 
-    if (loading) {
+    if (loading || userLoading) {
         return <Loading />;
     } else if (error) {
         return <div className="text-red-600">Something went wrong: {error}</div>;
-    } else if (!po) {
+    } else if (!poDetail) {
         return <div>Purchase Order not found</div>;
     }
 
@@ -55,12 +116,31 @@ function PODetail() {
                     </span>
                 </div>
                 <div className="flex gap-3">
-                    <Link
-                        to={'/purchase-orders/edit/' + poId}
-                        className="btn btn-info btn-sm"
-                    >
-                        Edit PO
-                    </Link>
+                    {currentUser.type !== 'backend-vendor' ?
+                        <Link
+                            to={'/purchase-orders/edit/' + poId}
+                            className="btn btn-info btn-sm"
+                        >
+                            Edit PO
+                        </Link>
+                        :
+                        poDetail.order_status === 'released' &&
+
+                        <>
+                            <button
+                                className="btn btn-success btn-sm"
+                                data-modal-toggle="#po_accept_modal"
+                            >
+                                Accept Order
+                            </button>
+                            <button
+                                className="btn btn-danger btn-outline btn-sm"
+                                data-modal-toggle="#po_reject_modal"
+                            >
+                                Reject Order
+                            </button>
+                        </>
+                    }
                     <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
                         <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
                             <i className="ki-filled ki-dots-vertical"></i>
@@ -100,7 +180,7 @@ function PODetail() {
                                             PO No.:
                                         </td>
                                         <td className="text-xs text-gray-900 pb-3">
-                                            {po.po_no}
+                                            {poDetail.po_no}
                                         </td>
                                     </tr>
                                     <tr>
@@ -108,8 +188,8 @@ function PODetail() {
                                             Created Date:
                                         </td>
                                         <td className="text-xs text-gray-900 pb-3">
-                                            {po.created_at
-                                                ? new Date(po.created_at).toLocaleDateString('en-GB', {
+                                            {poDetail.created_at
+                                                ? new Date(poDetail.created_at).toLocaleDateString('en-GB', {
                                                     day: 'numeric',
                                                     month: 'short',
                                                     year: 'numeric'
@@ -122,13 +202,13 @@ function PODetail() {
                                             Order Status:
                                         </td>
                                         <td className="text-xs text-gray-900 pb-3">
-                                            <span className={`badge badge-pill cursor-default
-                                                        ${po.order_status === 'issued' ? 'badge-primary' : ''} 
-                                                        ${po.order_status === 'partial-paid' ? 'badge-info' : ''} 
-                                                        ${po.order_status === 'fully-paid' ? 'badge-success' : ''} 
+                                            <span className={`badge badge-pill cursor-default capitalize
+                                                        ${poDetail.order_status === 'released' ? 'badge-primary' : ''} 
+                                                        ${poDetail.order_status === 'accepted' ? 'badge-success' : ''} 
+                                                        ${poDetail.order_status === 'rejected' ? 'badge-danger' : ''} 
                                                         badge-outline`}
                                             >
-                                                {po.order_status}
+                                                {poDetail.order_status}
                                             </span>
                                         </td>
                                     </tr>
@@ -138,12 +218,12 @@ function PODetail() {
                                         </td>
                                         <td className="text-xs text-gray-900 pb-3">
                                             <span className={`badge badge-pill cursor-default
-                                                        ${po.payment_status === 'issued' ? 'badge-primary' : ''} 
-                                                        ${po.payment_status === 'partial-paid' ? 'badge-info' : ''} 
-                                                        ${po.payment_status === 'fully-paid' ? 'badge-success' : ''} 
+                                                        ${poDetail.payment_status === 'issued' ? 'badge-primary' : ''} 
+                                                        ${poDetail.payment_status === 'partial-paid' ? 'badge-info' : ''} 
+                                                        ${poDetail.payment_status === 'fully-paid' ? 'badge-success' : ''} 
                                                         badge-outline`}
                                             >
-                                                {po.payment_status}
+                                                {poDetail.payment_status}
                                             </span>
                                         </td>
                                     </tr>
@@ -152,7 +232,7 @@ function PODetail() {
                                             Total Amount
                                         </td>
                                         <td className="text-xs text-gray-900 pb-3">
-                                            RM {po.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            RM {poDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -170,14 +250,14 @@ function PODetail() {
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
-                                    {po.sale ?
+                                    {poDetail.sale ?
                                         <>
                                             <tr>
                                                 <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                                     Name:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {po.sale.order.user.name}
+                                                    {poDetail.sale.order.user.name}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -185,7 +265,7 @@ function PODetail() {
                                                     Email:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {po.sale.order.user.email}
+                                                    {poDetail.sale.order.user.email}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -193,7 +273,7 @@ function PODetail() {
                                                     Phone No.:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    +{po.sale.order.user.country_code} {po.sale.order.user.phone_no}
+                                                    +{poDetail.sale.order.user.country_code} {poDetail.sale.order.user.phone_no}
                                                 </td>
                                             </tr>
                                         </>
@@ -215,7 +295,7 @@ function PODetail() {
                         <div className="card-body pt-3.5 pb-3.5">
                             <table className="table-auto">
                                 <tbody>
-                                    {po.sale ?
+                                    {poDetail.sale ?
                                         <>
 
                                             <tr>
@@ -223,7 +303,7 @@ function PODetail() {
                                                     Property Name:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {po.sale.order.property.name}
+                                                    {poDetail.sale.order.property.name}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -231,7 +311,7 @@ function PODetail() {
                                                     Unit:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {po.sale.order.block}-{po.sale.order.floor}-{po.sale.order.unit_no}
+                                                    {poDetail.sale.order.block}-{poDetail.sale.order.floor}-{poDetail.sale.order.unit_no}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -239,7 +319,7 @@ function PODetail() {
                                                     Unit Type:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {po.sale.order.unit_type ? po.sale.order.unit_type : "-"}
+                                                    {poDetail.sale.order.unit_type ? poDetail.sale.order.unit_type : "-"}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -248,11 +328,11 @@ function PODetail() {
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
                                                     {[
-                                                        po.sale.order.property.address,
-                                                        po.sale.order.property.street,
-                                                        po.sale.order.property.postcode,
-                                                        po.sale.order.property.city,
-                                                        po.sale.order.property.state,
+                                                        poDetail.sale.order.property.address,
+                                                        poDetail.sale.order.property.street,
+                                                        poDetail.sale.order.property.postcode,
+                                                        poDetail.sale.order.property.city,
+                                                        poDetail.sale.order.property.state,
                                                     ]
                                                         .filter(Boolean)
                                                         .join(', ')
@@ -264,7 +344,7 @@ function PODetail() {
                                                     Total Bedroom:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {po.sale.order.bedroom_count}
+                                                    {poDetail.sale.order.bedroom_count}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -272,7 +352,7 @@ function PODetail() {
                                                     Total Bathroom:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {po.sale.order.bathroom_count}
+                                                    {poDetail.sale.order.bathroom_count}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -280,7 +360,7 @@ function PODetail() {
                                                     Partition:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {po.sale.order.include_partition ? 'Yes' : 'No'}
+                                                    {poDetail.sale.order.include_partition ? 'Yes' : 'No'}
                                                 </td>
                                             </tr>
                                         </>
@@ -294,7 +374,7 @@ function PODetail() {
                         </div>
                     </div>
 
-                    {po.sale_id && (
+                    {poDetail.sale_id && (
                         <div className="card">
                             <div className="card-header">
                                 <span className="font-semibold">Sales Order Detail</span>
@@ -307,7 +387,7 @@ function PODetail() {
                                                 Sales No:
                                             </td>
                                             <td className="text-xs text-gray-900 pb-3">
-                                                {po.sale.sales_no}
+                                                {poDetail.sale.sales_no}
                                             </td>
                                         </tr>
                                         <tr>
@@ -316,12 +396,12 @@ function PODetail() {
                                             </td>
                                             <td className="text-xs text-gray-900 pb-3">
                                                 <span className={`badge badge-pill cursor-default
-                                                        ${po.sale.status === 'issued' ? 'badge-primary' : ''} 
-                                                        ${po.sale.status === 'partial-paid' ? 'badge-info' : ''} 
-                                                        ${po.sale.status === 'fully-paid' ? 'badge-success' : ''} 
+                                                        ${poDetail.sale.status === 'issued' ? 'badge-primary' : ''} 
+                                                        ${poDetail.sale.status === 'partial-paid' ? 'badge-info' : ''} 
+                                                        ${poDetail.sale.status === 'fully-paid' ? 'badge-success' : ''} 
                                                         badge-outline`}
                                                 >
-                                                    {po.sale.status}
+                                                    {poDetail.sale.status}
                                                 </span>
                                             </td>
                                         </tr>
@@ -331,7 +411,7 @@ function PODetail() {
                         </div>
                     )}
 
-                    {po.vendor_id && (
+                    {poDetail.vendor_id && (
                         <div className="card">
                             <div className="card-header">
                                 <span className="font-semibold">Vendor Detail</span>
@@ -344,7 +424,7 @@ function PODetail() {
                                                 Vendor Name:
                                             </td>
                                             <td className="text-xs text-gray-900 pb-3">
-                                                {po.vendor.name}
+                                                {poDetail.vendor.name}
                                             </td>
                                         </tr>
                                         <tr>
@@ -352,7 +432,7 @@ function PODetail() {
                                                 Email:
                                             </td>
                                             <td className="text-xs text-gray-900 pb-3">
-                                                {po.vendor.email}
+                                                {poDetail.vendor.email}
                                             </td>
                                         </tr>
                                         <tr>
@@ -360,7 +440,7 @@ function PODetail() {
                                                 Phone No.:
                                             </td>
                                             <td className="text-xs text-gray-900 pb-3">
-                                                {/* +{po.vendor.country} {po.vendor.phone_no} */}
+                                                {/* +{poDetail.vendor.country} {poDetail.vendor.phone_no} */}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -377,7 +457,7 @@ function PODetail() {
                                     <h2 className="text-lg font-semibold mb-4">PO Items</h2>
                                 </div>
                                 <div className="flex flex-col gap-4">
-                                    {po.po_packages.map((poPackage: POPackage, index) => (
+                                    {poDetail.po_packages.map((poPackage: POPackage, index) => (
                                         <div
                                             key={index}
                                             className="accordion rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white"
@@ -498,6 +578,26 @@ function PODetail() {
             </div>
 
             <div className="flex justify-end gap-4"></div>
+
+            <ConfirmationModal
+                modalId="po_accept_modal"
+                modalTitle="Accept PO"
+                modalPrompt="Are you sure you want to accept this PO?"
+                modalItemName={poDetail.po_no}
+                submitBtnClass="btn-success"
+                submitBtnText="Accept"
+                handleSubmit={handleAcceptPo}
+            />
+
+            <ConfirmationModal
+                modalId="po_reject_modal"
+                modalTitle="Reject PO"
+                modalPrompt="Are you sure you want to reject this PO?"
+                modalItemName={poDetail.po_no}
+                submitBtnClass="btn-danger"
+                submitBtnText="Reject"
+                handleSubmit={handleRejectPo}
+            />
         </>
     )
 }

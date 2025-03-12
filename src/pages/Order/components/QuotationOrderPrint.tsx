@@ -148,6 +148,17 @@ function QuotationOrderPrint() {
     const ATTN_MOBILE = `+${orderDetail.user.country_code} ${orderDetail.user.phone_no}`;
     const ATTN_EMAIL = orderDetail.user.email;
 
+    const RENO_PROPERTY_NAME = orderDetail.property.name;
+    const RENO_UNIT_NO = `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}`
+    const RENO_UNIT_TYPE = orderDetail.unit_type || "N/A";
+    const RENO_PROPERTY_ADDRESS = [
+        orderDetail.property.address,
+        orderDetail.property.street,
+        orderDetail.property.postcode,
+        orderDetail.property.city,
+        orderDetail.property.state,
+    ].filter(Boolean).join(', ') || "N/A";
+
     // Calculate totals based on package unitPrice and qty
     const totalItems = orderDetail.latest_quotation.packages.reduce((sum, item) => sum + item.quantity, 0);
     const categoryTotals = orderDetail.latest_quotation.packages.reduce((acc, pkg) => {
@@ -197,62 +208,96 @@ function QuotationOrderPrint() {
             </View>
 
             {/* Redesigned Attn Header */}
-            <View style={styles.attnHeader}>
-                <View style={styles.attnTitle}>
-                    <Text style={styles.attnLabel}>Attn:</Text>
-                    <Text style={styles.attnText}>{ATTN_NAME}</Text>
+
+
+            <View style={styles.headerRow}>
+                <View style={styles.attnHeader}>
+                    <View style={styles.attnTitle}>
+                        <Text style={styles.attnLabel}>Attn:</Text>
+                    </View>
+                    <Text style={styles.attnText}>
+                        {ATTN_NAME}{'\n'}
+                        {ATTN_ADDRESS}{'\n'}
+                        {ATTN_MOBILE}{'\n'}
+                        {ATTN_EMAIL}
+                    </Text>
                 </View>
-                <Text style={styles.attnText}>
-                    {ATTN_ADDRESS}{'\n'}
-                    {ATTN_MOBILE}{'\n'}
-                    {ATTN_EMAIL}
-                </Text>
+                <View style={styles.attnHeader}>
+                    <View style={styles.attnTitle}>
+                        <Text style={styles.attnLabel}>Unit to be renovated:</Text>
+                    </View>
+                    <Text style={styles.attnText}>
+                        {RENO_UNIT_NO}{'\n'}
+                        {RENO_PROPERTY_NAME}{'\n'}
+                        Type {RENO_UNIT_TYPE}{'\n'}
+                        {RENO_PROPERTY_ADDRESS}
+                    </Text>
+                </View>
+                {/* <View style={styles.attnHeader}>
+                    <View style={styles.attnTitle}>
+                        <Text style={[styles.attnLabel, styles.ownerLabel]}>Owner:</Text>
+                    </View>
+                    <Text style={styles.attnText}>{OWNER_NAME}</Text>
+                    <Text style={styles.attnText}>
+                        {OWNER_ADDRESS}{'\n'}
+                        +{OWNER_COUNTRY_CODE} {OWNER_MOBILE}{'\n'}
+                        {OWNER_EMAIL}
+                    </Text>
+                </View> */}
             </View>
 
             {/* Quotation Body */}
             <View>
                 {/* Package Table */}
-                <View style={styles.packageTable}>
-                    {/* Table Header */}
-                    <View style={styles.thead}>
-                        <Text style={styles.th1}>No</Text>
-                        <Text style={styles.th2}>Description</Text>
-                        <Text style={styles.th3}>QTY</Text>
-                        <Text style={styles.th4}>UOM</Text>
-                    </View>
-
-                    {/* Package Rows */}
-                    {orderDetail.latest_quotation.packages.map((pkg, pkgIndex) => (
-                        <View style={styles.packageRow} key={pkgIndex}>
-                            {/* Package Set Row */}
-                            <View style={styles.setRow}>
-                                <Text style={[styles.td, styles.td1]}>{pkgIndex + 1}</Text>
-                                <Text style={[styles.td, styles.td2]}>{pkg.name}</Text>
-                                <Text style={[styles.td, styles.td3]}>{pkg.quantity}</Text>
-                                <Text style={[styles.td, styles.td4]}>-</Text>
+                {orderDetail.latest_quotation.packages.map((pkg, pkgIndex) => (
+                    <View style={styles.packageCard} key={pkgIndex} wrap={false}>
+                        <View style={styles.packageHeader}>
+                            <Text style={styles.packageTitle}>Package {pkgIndex + 1}: {pkg.name}</Text>
+                            <View style={styles.quantityBadge}>
+                                <Text style={styles.quantityBadgeText}>Quantity: {pkg.quantity}</Text>
                             </View>
-
-                            {/* Product Rows */}
+                        </View>
+                        <View style={styles.itemTable}>
+                            <View style={styles.itemHeader}>
+                                <View style={{ flex: 2 }}>
+                                    <Text style={styles.itemTh}>S.o.W</Text>
+                                </View>
+                                <View style={{ flex: 6 }}>
+                                    <Text style={styles.itemTh}>Description</Text>
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.itemTh}>QTY</Text>
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.itemTh}>UOM</Text>
+                                </View>
+                            </View>
                             {pkg.products.map((product) => (
                                 (product.pivot.visibility == true && product.pivot.includeInstall == true && product.pivot.includeSupply == true) && (
-                                    <View style={styles.productRow} key={product.id}>
-                                        <Text style={[styles.td, styles.td1]}>{''}</Text>
-                                        <View style={styles.td2}>
-                                            <Text style={styles.productItem}>{product.name}</Text>
-                                            <Text style={styles.productDescription}>
-                                                {product.description}
+                                    <View style={styles.itemRow} key={product.id}>
+                                        <View style={{ flex: 2 }}>
+                                            <Text style={styles.itemTd}>
+                                                {(product.pivot.includeSupply && product.pivot.includeInstall) ? 'Supply and Install' :
+                                                    (!product.pivot.includeSupply && !product.pivot.includeInstall) ? '-' :
+                                                        (product.pivot.includeSupply && !product.pivot.includeInstall) ? 'Supply Only' :
+                                                            (!product.pivot.includeSupply && product.pivot.includeInstall) ? 'Install Only' : '-'}
                                             </Text>
                                         </View>
-                                        <Text style={[styles.td, styles.td3]}>
-                                            {product.pivot.quantity}
-                                        </Text>
-                                        <Text style={[styles.td, styles.td4]}>{product.uom}</Text>
+                                        <View style={{ flex: 6 }}>
+                                            <Text style={styles.itemTd}>{product.name}</Text>
+                                            <Text style={styles.itemTdSecondary}>{product.description}</Text>
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.itemTd}>{product.pivot.quantity}</Text>
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.itemTd}>{product.uom}</Text>
+                                        </View>
                                     </View>
-                                )
-                            ))}
+                                )))}
                         </View>
-                    ))}
-                </View>
+                    </View>
+                ))}
 
                 {/* Category Summary Table */}
                 <View wrap={false}>

@@ -1,30 +1,37 @@
 // src/hooks/useFetchProduct.ts
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchPO } from '../services/api';
 import { PurchaseOrder } from '../types';
 
-const useFetchPO = (id: number) => {
-    const [po, setPO] = useState<PurchaseOrder>(null);
+const useFetchPO = (poId: number | null) => {
+    const [poDetail, setPo] = useState<PurchaseOrder | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (id) {
+    // Fetch po function
+    const fetchPOData = useCallback(() => {
+        if (poId) {
             setLoading(true);
-            fetchPO(id)
+            setError(null); // Reset error before fetching
+            fetchPO(poId)
                 .then((data) => {
-                    setPO(data.data);
+                    setPo(data.data);
                     setLoading(false);
                 })
-                .catch(() => {
-                    setError('Failed to fetch po');
+                .catch((err) => {
+                    setError('Failed to fetch Purchase Order');
                     setLoading(false);
                 });
         }
-    }, [id]);
+    }, [poId]);
 
-    return { po, loading, error };
+
+    useEffect(() => {
+        fetchPOData();
+    }, [poId, fetchPOData]);
+
+    return { poDetail, loading, error, refetch: fetchPOData };
 };
 
 export default useFetchPO;

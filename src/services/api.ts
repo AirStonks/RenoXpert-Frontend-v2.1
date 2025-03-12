@@ -1827,6 +1827,30 @@ export const markPOItemAsDelivered = async (poId: number) => {
     }
 }
 
+export const acceptPO = async (poId: number) => {
+    try {
+        const response = await axios.get(API_URL + `purchase-orders/${poId}/order/status/accepted`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const rejectPO = async (poId: number) => {
+    try {
+        const response = await axios.get(API_URL + `purchase-orders/${poId}/order/status/rejected`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const inventoryIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
         const response = await axios.get(API_URL + 'inventory', {

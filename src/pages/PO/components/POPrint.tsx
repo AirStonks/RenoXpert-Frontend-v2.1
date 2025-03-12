@@ -12,7 +12,7 @@ const getCurrentDate = () => {
 function POPrint() {
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
-    const { po, loading, error } = useFetchPO(poId);
+    const { poDetail, loading, error } = useFetchPO(poId);
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center w-full">
@@ -20,7 +20,7 @@ function POPrint() {
         </div>
     );
     if (error) return <p>Error fetching order.</p>;
-    if (!po) return <p>No order found.</p>;
+    if (!poDetail) return <p>No order found.</p>;
 
     const COMPANY_NAME = "RenoXpert Sdn Bhd";
     const COMPANY_ADDRESS = "No. 42-46, Ground Floor, Jalan SS 19/1D";
@@ -30,39 +30,39 @@ function POPrint() {
     const COMPANY_LOGO_URL = "/public/app/RenoExpert_logo-01.jpg";
 
     const ITEM_TITLE = "Purchase Order";
-    const ITEM_NUMBER = po.po_no;
+    const ITEM_NUMBER = poDetail.po_no;
     const ITEM_DATE = getCurrentDate();
 
-    const ATTN_NAME = po.vendor.name;
+    const ATTN_NAME = poDetail.vendor.name;
     const ATTN_ADDRESS = `-`;
-    const ATTN_MOBILE = `+${po.vendor.country_code} ${po.vendor.phone_no}`;
-    const ATTN_EMAIL = po.vendor.email;
+    const ATTN_MOBILE = `+${poDetail.vendor.country_code} ${poDetail.vendor.phone_no}`;
+    const ATTN_EMAIL = poDetail.vendor.email;
 
-    const OWNER_ADDRESS = po.sale ? [
-        po.sale.order.user.address.address_1,
-        po.sale.order.user.address.address_2,
-        po.sale.order.user.address.city,
-        po.sale.order.user.address.state,
-        po.sale.order.user.address.postcode
+    const OWNER_ADDRESS = poDetail.sale ? [
+        poDetail.sale.order.user.address.address_1,
+        poDetail.sale.order.user.address.address_2,
+        poDetail.sale.order.user.address.city,
+        poDetail.sale.order.user.address.state,
+        poDetail.sale.order.user.address.postcode
     ].filter(value => value).join(", ") || "N/A" : 'N/A';
 
-    const OWNER_NAME = po.sale ? po.sale.order.user.name : 'N/A';
-    const OWNER_COUNTRY_CODE = po.sale ? po.sale.order.user.country_code : '';
-    const OWNER_MOBILE = po.sale ? po.sale.order.user.phone_no : 'N/A';
-    const OWNER_EMAIL = po.sale ? po.sale.order.user.email : 'N/A';
+    const OWNER_NAME = poDetail.sale ? poDetail.sale.order.user.name : 'N/A';
+    const OWNER_COUNTRY_CODE = poDetail.sale ? poDetail.sale.order.user.country_code : '';
+    const OWNER_MOBILE = poDetail.sale ? poDetail.sale.order.user.phone_no : 'N/A';
+    const OWNER_EMAIL = poDetail.sale ? poDetail.sale.order.user.email : 'N/A';
 
-    const UNIT_NO = po.sale ? `${po.sale.order.block}-${po.sale.order.floor}-${po.sale.order.unit_no}` : 'N/A';
-    const PROPERTY_NAME = po.sale ? po.sale.order.property.name : 'N/A';
-    const UNIT_TYPE = po.sale ? (po.sale.order.unit_type || "N/A") : 'N/A';
-    const PROPERTY_ADDRESS = po.sale ? [
-        po.sale.order.property.address,
-        po.sale.order.property.street,
-        po.sale.order.property.postcode,
-        po.sale.order.property.city,
-        po.sale.order.property.state,
+    const UNIT_NO = poDetail.sale ? `${poDetail.sale.order.block}-${poDetail.sale.order.floor}-${poDetail.sale.order.unit_no}` : 'N/A';
+    const PROPERTY_NAME = poDetail.sale ? poDetail.sale.order.property.name : 'N/A';
+    const UNIT_TYPE = poDetail.sale ? (poDetail.sale.order.unit_type || "N/A") : 'N/A';
+    const PROPERTY_ADDRESS = poDetail.sale ? [
+        poDetail.sale.order.property.address,
+        poDetail.sale.order.property.street,
+        poDetail.sale.order.property.postcode,
+        poDetail.sale.order.property.city,
+        poDetail.sale.order.property.state,
     ].filter(Boolean).join(', ') || "N/A" : 'N/A';
 
-    const totalPrice = po.total_amount;
+    const totalPrice = poDetail.total_amount;
 
     const QuotationPDF = () => (
         <Page size="A4" style={styles.page}>
@@ -133,7 +133,7 @@ function POPrint() {
             </View>
 
             {/* Package Cards */}
-            {po.po_packages.map((pkg, pkgIndex) => (
+            {poDetail.po_packages.map((pkg, pkgIndex) => (
                 <View style={styles.packageCard} key={pkgIndex} wrap={false}>
                     <View style={styles.packageHeader}>
                         <Text style={styles.packageTitle}>Package {pkgIndex + 1}: {pkg.name}</Text>
@@ -197,7 +197,7 @@ function POPrint() {
                 fixed
             />
 
-            {po.order_status === "unreleased" && (
+            {poDetail.order_status === "unreleased" && (
                 <Text
                     style={styles.watermark}
                     fixed

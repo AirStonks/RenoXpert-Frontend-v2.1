@@ -10,8 +10,8 @@ function POFulfillment() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
-    const { po, loading, error } = useFetchPO(poId);
-    const [poDetail, setPo] = useState<PurchaseOrder | null>(null);
+    const { poDetail, loading, error } = useFetchPO(poId);
+    const [po, setPo] = useState<PurchaseOrder | null>(null);
     const [openAccordions, setOpenAccordions] = useState({});
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -33,10 +33,10 @@ function POFulfillment() {
 
     useEffect(() => {
         document.title = 'PO Delivery/Fulfillment | RenoXpert';
-        if (po) {
-            setPo(po);
+        if (poDetail) {
+            setPo(poDetail);
         }
-    }, [po]);
+    }, [poDetail]);
 
     const handleMarkAsDeliver = async (poItem: POItem) => {
         try {
@@ -78,7 +78,7 @@ function POFulfillment() {
 
     if (loading) return <Loading />;
     if (error) return <div className="text-red-600">Something went wrong: {error}</div>;
-    if (!poDetail) return <div>Purchase Order not found</div>;
+    if (!po) return <div>Purchase Order not found</div>;
 
     return (
         <>
@@ -109,13 +109,13 @@ function POFulfillment() {
                                 <tbody>
                                     <tr>
                                         <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">PO No.:</td>
-                                        <td className="text-xs text-gray-900 pb-3">{poDetail.po_no}</td>
+                                        <td className="text-xs text-gray-900 pb-3">{po.po_no}</td>
                                     </tr>
                                     <tr>
                                         <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Created Date:</td>
                                         <td className="text-xs text-gray-900 pb-3">
-                                            {poDetail.created_at
-                                                ? new Date(poDetail.created_at).toLocaleDateString('en-GB', {
+                                            {po.created_at
+                                                ? new Date(po.created_at).toLocaleDateString('en-GB', {
                                                     day: 'numeric',
                                                     month: 'short',
                                                     year: 'numeric'
@@ -126,12 +126,12 @@ function POFulfillment() {
                                     <tr>
                                         <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Order Status:</td>
                                         <td className="text-xs text-gray-900 pb-3">
-                                            <span className={`badge badge-pill cursor-default
-                                                ${poDetail.order_status === 'issued' ? 'badge-primary' : ''} 
-                                                ${poDetail.order_status === 'partial-paid' ? 'badge-info' : ''} 
-                                                ${poDetail.order_status === 'fully-paid' ? 'badge-success' : ''} 
+                                            <span className={`badge badge-pill cursor-default capitalize
+                                                    ${poDetail.order_status === 'released' ? 'badge-primary' : ''} 
+                                                    ${poDetail.order_status === 'accepted' ? 'badge-success' : ''} 
+                                                    ${poDetail.order_status === 'rejected' ? 'badge-danger' : ''} 
                                                 badge-outline`}>
-                                                {poDetail.order_status}
+                                                {po.order_status}
                                             </span>
                                         </td>
                                     </tr>
@@ -139,18 +139,18 @@ function POFulfillment() {
                                         <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Payment Status:</td>
                                         <td className="text-xs text-gray-900 pb-3">
                                             <span className={`badge badge-pill cursor-default
-                                                ${poDetail.payment_status === 'issued' ? 'badge-primary' : ''} 
-                                                ${poDetail.payment_status === 'partial-paid' ? 'badge-info' : ''} 
-                                                ${poDetail.payment_status === 'fully-paid' ? 'badge-success' : ''} 
+                                                ${po.payment_status === 'issued' ? 'badge-primary' : ''} 
+                                                ${po.payment_status === 'partial-paid' ? 'badge-info' : ''} 
+                                                ${po.payment_status === 'fully-paid' ? 'badge-success' : ''} 
                                                 badge-outline`}>
-                                                {poDetail.payment_status}
+                                                {po.payment_status}
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Total Amount</td>
                                         <td className="text-xs text-gray-900 pb-3">
-                                            RM {poDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            RM {po.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -158,7 +158,7 @@ function POFulfillment() {
                         </div>
                     </div>
 
-                    {poDetail.sale_id && (
+                    {po.sale_id && (
                         <div className="card">
                             <div className="card-header">
                                 <span className="font-semibold">Sales Order Detail</span>
@@ -168,17 +168,17 @@ function POFulfillment() {
                                     <tbody>
                                         <tr>
                                             <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Sales No:</td>
-                                            <td className="text-xs text-gray-900 pb-3">{poDetail.sale.sales_no}</td>
+                                            <td className="text-xs text-gray-900 pb-3">{po.sale.sales_no}</td>
                                         </tr>
                                         <tr>
                                             <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Status:</td>
                                             <td className="text-xs text-gray-900 pb-3">
                                                 <span className={`badge badge-pill cursor-default
-                                                    ${poDetail.sale.status === 'issued' ? 'badge-primary' : ''} 
-                                                    ${poDetail.sale.status === 'partial-paid' ? 'badge-info' : ''} 
-                                                    ${poDetail.sale.status === 'fully-paid' ? 'badge-success' : ''} 
+                                                    ${po.sale.status === 'issued' ? 'badge-primary' : ''} 
+                                                    ${po.sale.status === 'partial-paid' ? 'badge-info' : ''} 
+                                                    ${po.sale.status === 'fully-paid' ? 'badge-success' : ''} 
                                                     badge-outline`}>
-                                                    {poDetail.sale.status}
+                                                    {po.sale.status}
                                                 </span>
                                             </td>
                                         </tr>
@@ -188,7 +188,7 @@ function POFulfillment() {
                         </div>
                     )}
 
-                    {poDetail.vendor_id && (
+                    {po.vendor_id && (
                         <div className="card">
                             <div className="card-header">
                                 <span className="font-semibold">Vendor Detail</span>
@@ -198,16 +198,16 @@ function POFulfillment() {
                                     <tbody>
                                         <tr>
                                             <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Vendor Name:</td>
-                                            <td className="text-xs text-gray-900 pb-3">{poDetail.vendor.name}</td>
+                                            <td className="text-xs text-gray-900 pb-3">{po.vendor.name}</td>
                                         </tr>
                                         <tr>
                                             <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Email:</td>
-                                            <td className="text-xs text-gray-900 pb-3">{poDetail.vendor.email}</td>
+                                            <td className="text-xs text-gray-900 pb-3">{po.vendor.email}</td>
                                         </tr>
                                         <tr>
                                             <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">Phone No.:</td>
                                             <td className="text-xs text-gray-900 pb-3">
-                                                +{poDetail.vendor.country_code} {poDetail.vendor.phone_no}
+                                                +{po.vendor.country_code} {po.vendor.phone_no}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -223,7 +223,7 @@ function POFulfillment() {
                             <div className="flex flex-col">
                                 <h2 className="text-lg font-semibold mb-4">PO Items</h2>
                                 <div className="flex flex-col gap-4">
-                                    {poDetail.po_packages.map((poPackage: POPackage, index) => (
+                                    {po.po_packages.map((poPackage: POPackage, index) => (
                                         <div
                                             key={index}
                                             className="accordion rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white"
@@ -294,7 +294,7 @@ function POFulfillment() {
                                                                         : '-'}
                                                                 </td>
                                                                 <td className="p-3 text-center">
-                                                                    {poProd.status !== 'delivered' && (
+                                                                    {po.order_status === 'accepted' && poProd.status !== 'delivered' && (
                                                                         <button
                                                                             className="btn btn-sm btn-info btn-outline"
                                                                             onClick={() => handleMarkAsDeliver(poProd)}

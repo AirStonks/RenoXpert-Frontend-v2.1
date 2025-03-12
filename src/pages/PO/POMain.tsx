@@ -5,11 +5,13 @@ import { Slide, toast } from "react-toastify";
 import { POIndex } from "../../services/api";
 import { PurchaseOrder } from "../../types";
 import Loading from "../../components/Loading";
+import { useUser } from "../../context/UserContext";
 
 type SortOrder = 'asc' | 'desc' | null;
 
 function POMain() {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+    const { currentUser, loading } = useUser();
 
     const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -159,7 +161,7 @@ function POMain() {
     return (
         <>
             {/* Loading Overlay */}
-            {isLoading && <Loading />}
+            {(isLoading || loading) && <Loading />}
 
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center flex-wrap">
@@ -167,14 +169,16 @@ function POMain() {
                         Purchase Orders
                     </span>
                     <div className="flex gap-3 flex-wrap">
-                        <Link
-                            to={'/purchase-orders/create'}
-                            className='btn btn-primary btn-sm'
-                            data-modal-toggle="#create_order_modal"
-                        >
-                            <i className="ki-outline ki-plus-squared"></i>
-                            Create PO
-                        </Link>
+                        {currentUser && currentUser.type !== 'backend-vendor' &&
+                            <Link
+                                to={'/purchase-orders/create'}
+                                className='btn btn-primary btn-sm'
+                                data-modal-toggle="#create_order_modal"
+                            >
+                                <i className="ki-outline ki-plus-squared"></i>
+                                Create PO
+                            </Link>
+                        }
                     </div>
                 </div>
 
@@ -230,7 +234,9 @@ function POMain() {
                             <thead>
                                 <tr>
                                     <th className='w-[100px]'>PO No.</th>
-                                    <th className='w-[100px]'>Sales No.</th>
+                                    {currentUser && currentUser.type !== 'backend-vendor' &&
+                                        <th className='w-[100px]'>Sales No.</th>
+                                    }
                                     <th className='w-[100px]'>Owner</th>
                                     <th className='w-[60px] text-center'>Unit</th>
                                     <th className='w-[60px] text-center'>Property</th>
@@ -259,22 +265,24 @@ function POMain() {
                                                     </Link>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <div className="flex flex-col gap-1">
-                                                    {po.sale ?
-                                                        <Link
-                                                            to={`/sales/${po.sale_id}`}
-                                                            state={{ fromUrl: '/purchase-orders' }}
-                                                            className="cursor-pointer text-orange-500"
-                                                        >
-                                                            {po.sale.sales_no}
-                                                        </Link>
-                                                        :
-                                                        '-'
-                                                    }
+                                            {currentUser && currentUser.type !== 'backend-vendor' &&
+                                                <td>
+                                                    <div className="flex flex-col gap-1">
+                                                        {po.sale ?
+                                                            <Link
+                                                                to={`/sales/${po.sale_id}`}
+                                                                state={{ fromUrl: '/purchase-orders' }}
+                                                                className="cursor-pointer text-orange-500"
+                                                            >
+                                                                {po.sale.sales_no}
+                                                            </Link>
+                                                            :
+                                                            '-'
+                                                        }
 
-                                                </div>
-                                            </td>
+                                                    </div>
+                                                </td>
+                                            }
                                             <td>
                                                 <div className="flex flex-col gap-1">
                                                     {po.sale ?
@@ -326,16 +334,17 @@ function POMain() {
                                                 <span>RM {po.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                             </td>
                                             <td className='text-center'>
-                                                <span className={`badge badge-pill p-2 cursor-default
-                                                    ${po.order_status === 'confirmed' ? 'badge-success' : ''} 
-                                                    ${po.order_status === 'revoked' ? 'badge-danger' : ''} 
+                                                <span className={`badge badge-pill p-2 cursor-default capitalize
+                                                    ${po.order_status === 'released' ? 'badge-primary' : ''} 
+                                                    ${po.order_status === 'accepted' ? 'badge-success' : ''} 
+                                                    ${po.order_status === 'rejected' ? 'badge-danger' : ''} 
                                                     badge-outline`}
                                                 >
                                                     {po.order_status}
                                                 </span>
                                             </td>
                                             <td className='text-center'>
-                                                <span className={`badge badge-pill p-2 cursor-default
+                                                <span className={`badge badge-pill p-2 cursor-default capitalize
                                                     ${po.payment_status === 'confirmed' ? 'badge-success' : ''} 
                                                     ${po.payment_status === 'revoked' ? 'badge-danger' : ''} 
                                                     badge-outline`}
