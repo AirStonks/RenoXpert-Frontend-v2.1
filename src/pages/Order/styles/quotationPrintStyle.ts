@@ -51,6 +51,7 @@ export const styles = StyleSheet.create({
         fontSize: 8, // Reduced from 10
         color: '#4b5563',
         lineHeight: 1.2, // Reduced from 1.5
+        textAlign: 'right', // Already set, just confirming
     },
     companyImage: {
         width: "140px", // Reduced from 100px

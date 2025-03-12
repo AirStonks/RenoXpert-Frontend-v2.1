@@ -51,7 +51,7 @@ const VendorLogin: React.FC = () => {
         try {
             const userData = await vendorLogin(formData.email, formData.password);
             if (userData) {
-                navigate('/dashboard'); // Redirect to dashboard on successful userLogin
+                navigate('/purchase-orders'); // Redirect to dashboard on successful userLogin
             }
         } catch (err) {
             setError('Invalid user login credentials. Please try again.');

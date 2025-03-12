@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { userLogin } from '../services/auth';
 import KTComponent from '../metronic/core';
 import { ToastContainer } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
 interface LoginForm {
     email: string;
@@ -67,14 +68,14 @@ const Login: React.FC = () => {
                 </div>
             </div>
             <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
-                <form className="card max-w-[370px] w-full p-10 gap-5" onSubmit={handleSubmit}>
+                <form className="card max-w-[370px] w-full p-10 gap-2" onSubmit={handleSubmit}>
                     <div className="text-center mb-2.5">
                         <h3 className="text-lg font-medium text-gray-900 leading-none mb-2.5">
                             Sign in
                         </h3>
                     </div>
                     {error && <p className="text-red-500">{error}</p>}
-                    <div className="flex flex-col gap-1 justify-center">
+                    <div className="flex flex-col gap-1 justify-center mb-2">
                         <label className="form-label font-normal text-gray-900">Email</label>
                         <div className="flex items-center">
                             <input
@@ -90,7 +91,7 @@ const Login: React.FC = () => {
                             <div className='badge badge-lg text-md rounded-md cursor-default'>@belive.asia</div>
                         </div>
                     </div>
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 mb-2">
                         <div className="flex items-center justify-between gap-1">
                             <label className="form-label font-normal text-gray-900">
                                 Password
@@ -118,7 +119,7 @@ const Login: React.FC = () => {
                         </div>
 
                     </div>
-                    <label className="checkbox-group">
+                    <label className="checkbox-group mb-2">
                         <input
                             className="checkbox checkbox-sm"
                             name="check" type="checkbox"
@@ -131,6 +132,12 @@ const Login: React.FC = () => {
                         disabled={loading}>
                         {loading ? 'Signing In...' : 'Sign In'}
                     </button>
+                    <Link
+                        to={'/vendor-login'}
+                        className="btn btn-secondary flex justify-center grow"
+                        type="submit">
+                        Switch to Vendor login
+                    </Link>
                 </form>
             </div>
 

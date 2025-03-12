@@ -655,7 +655,7 @@ function QuotationOrderPrint() {
                 </View>
 
                 {/* First Schedule */}
-                <View style={styles.agreementSection}>
+                <View style={styles.agreementSection} wrap={false}>
                     <View style={styles.agreementHeader}>
                         <Text style={[styles.agreementBold, { textDecoration: 'underline' }]}>FIRST SCHEDULE</Text>
                         <Text style={styles.agreementText}>(to be taken read and construed as an essential part of this Agreement)</Text>
