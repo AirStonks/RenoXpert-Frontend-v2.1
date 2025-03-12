@@ -192,9 +192,56 @@ function OrderDetail() {
     if (error) return <div>{error}</div>;
     if (!orderDetail) return <div>Order not found</div>;
 
+
     // console.log(orderDetail);
-    const selectedQuotation = JSON.parse(JSON.stringify(orderDetail.latest_quotation)) as OrderQuotation;
-    const selectedPackages = JSON.parse(JSON.stringify(orderDetail.latest_quotation.packages)) as Package[];
+    const selectedQuotation = orderDetail.latest_quotation;
+    const selectedPackages = orderDetail.latest_quotation.packages;
+
+
+    const calculateQuotationMargin = () => {
+        // Calculate total retail price
+        const totalRetailPrice = selectedPackages.reduce((total, pkg) => {
+            const packageRetail = pkg.products.reduce((pkgTotal, product) => {
+                let supplyPrice = product.pivot.includeSupply
+                    ? product.provisioning.supply.retail_price * product.pivot.quantity
+                    : 0;
+                let installPrice = product.pivot.includeInstall
+                    ? product.provisioning.install.retail_price * product.pivot.quantity
+                    : 0;
+                return pkgTotal + (supplyPrice + installPrice);
+            }, 0);
+            return total + (packageRetail * (pkg.quantity || 1));
+        }, 0);
+
+        // Calculate total COGS (Cost of Goods Sold)
+        const totalCogs = selectedPackages.reduce((total, pkg) => {
+            const packageCogs = pkg.products.reduce((pkgTotal, product) => {
+                let supplyCogs = product.pivot.includeSupply
+                    ? product.provisioning.supply.cogs * product.pivot.quantity
+                    : 0;
+                let installCogs = product.pivot.includeInstall
+                    ? product.provisioning.install.cogs * product.pivot.quantity
+                    : 0;
+                return pkgTotal + (supplyCogs + installCogs);
+            }, 0);
+            return total + (packageCogs * (pkg.quantity || 1));
+        }, 0);
+
+        // Calculate margin in amount
+        const marginInAmount = totalRetailPrice - totalCogs;
+
+        // Calculate margin in percentage
+        const marginInPercentage = totalRetailPrice > 0
+            ? (marginInAmount / totalRetailPrice) * 100
+            : 0;
+
+        return {
+            marginInAmount,
+            marginInPercentage
+        };
+    };
+
+    const { marginInAmount, marginInPercentage } = calculateQuotationMargin();
 
     const address = orderDetail.user ? [
         orderDetail.user.address.address_1,
@@ -593,6 +640,22 @@ function OrderDetail() {
                                             </td>
                                         </tr>
                                     }
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Margin Amount:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            RM {marginInAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Margin Percentage:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {marginInPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Status:
