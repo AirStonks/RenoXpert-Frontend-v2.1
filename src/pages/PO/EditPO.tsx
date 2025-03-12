@@ -513,14 +513,14 @@ function EditPO() {
     };
 
     const calculatePackageTotal = (poPackage: POPackage): number => {
-        return poPackage.po_items.reduce((total, item) => {
-
-            const itemTotal = item.qty * (
-                (item.supply ? item.supply_price : 0) +
-                (item.install ? item.install_price : 0)
+        const packageTotal = poPackage.po_items.reduce((packageTotal, product) => {
+            const productTotal = product.qty * (
+                (product.supply ? product.supply_price : 0) +
+                (product.install ? product.install_price : 0)
             );
-            return total + itemTotal;
+            return packageTotal + productTotal;
         }, 0);
+        return packageTotal * (poPackage.quantity || 1);
     };
 
 
