@@ -99,7 +99,7 @@ function CreatePO() {
         const vendorEventId = vendorDropdown.on('show', async () => {
             inputVendorRef.current.focus();
             try {
-                const data = await fetchUsers('', 'vendor');
+                const data = await fetchUsers('', 'backend-vendor');
                 setVendors(data.data);
             } catch (error) {
                 console.error('Failed to fetch sale vendors: ', error);
