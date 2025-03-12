@@ -10,6 +10,7 @@ import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { SortablePOPackage } from "./components/SortablePOPackage";
 import Loading from "../../components/Loading";
+import { KTModal } from "../../metronic/core";
 
 function EditPO() {
     const navigate = useNavigate();
@@ -88,7 +89,12 @@ function EditPO() {
 
     const handleOpenProductModal = (packageId: string) => {
         setIsProductModalOpen(true);
-        console.log(packageId);
+
+        const modalEl = document.querySelector('#add_item_modal') as HTMLElement;
+        const modal = KTModal.getInstance(modalEl);
+
+        modal.show();
+
 
         setSelectedPOPackageId(packageId);
     };
