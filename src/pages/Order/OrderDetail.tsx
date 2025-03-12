@@ -236,12 +236,13 @@ function OrderDetail() {
             : 0;
 
         return {
+            totalCogs,
             marginInAmount,
             marginInPercentage
         };
     };
 
-    const { marginInAmount, marginInPercentage } = calculateQuotationMargin();
+    const { totalCogs, marginInAmount, marginInPercentage } = calculateQuotationMargin();
 
     const address = orderDetail.user ? [
         orderDetail.user.address.address_1,
@@ -615,9 +616,19 @@ function OrderDetail() {
                                             {`RM ${orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                         </td>
                                     </tr>
+                                    {selectedQuotation.bonus &&
+                                        <>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                Discount Amount:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                - RM {selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                        </>
+                                    }
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Total Amount:
+                                            Nett Amount:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <span className="text-sm text-gray-900 pb-3">
@@ -630,7 +641,7 @@ function OrderDetail() {
                                         <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 flex items-center gap-1">
                                                 <i data-tooltip="#final_pricing_tooltip" className="ki-filled ki-information-2 textlg text-warning mt-[1.5px]"></i>
-                                                <span>Final Amount:</span>
+                                                <span>Nett Amount:</span>
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <span className="text-sm text-gray-900 pb-3">
@@ -640,6 +651,14 @@ function OrderDetail() {
                                             </td>
                                         </tr>
                                     }
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            COGS:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            RM {totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Margin Amount:
@@ -985,7 +1004,7 @@ function OrderDetail() {
                                         <>
                                             <tr>
                                                 <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Sub-Total:
+                                                    Original Amount:
                                                 </td>
                                                 <td className="text-sm text-gray-700 font-medium pb-3">
                                                     RM {orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -993,7 +1012,7 @@ function OrderDetail() {
                                             </tr>
                                             <tr>
                                                 <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Bonus :
+                                                    Bonus/Discount :
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
                                                     - RM {selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -1003,7 +1022,7 @@ function OrderDetail() {
                                     }
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Total:
+                                            Nett Amount:
                                         </td>
                                         <td className="text-sm text-gray-700 font-medium pb-3">
                                             RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

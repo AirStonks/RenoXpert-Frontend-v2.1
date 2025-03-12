@@ -127,7 +127,7 @@ function CreatePO() {
         const term = event.target.value;
         setSearchSaleTerm(term);
         try {
-            const data = await fetchUsers(term, 'vendor');
+            const data = await fetchUsers(term, 'backend-vendor');
             setVendors(data.data);
         } catch (error) {
             console.error('Error fetching users:', error);

@@ -146,7 +146,7 @@ function EditPO() {
             inputVendorRef.current.focus();
 
             try {
-                const data = await fetchUsers('', 'vendor');
+                const data = await fetchUsers('', 'backend-vendor');
                 setVendors(data.data);
             } catch (error) {
                 console.error('Failed to fetch sale vendors: ', error);
@@ -180,7 +180,7 @@ function EditPO() {
         setSearchSaleTerm(term);
 
         try {
-            const data = await fetchUsers(term, 'vendor');
+            const data = await fetchUsers(term, 'backend-vendor');
             setVendors(data.data);
 
         } catch (error) {
