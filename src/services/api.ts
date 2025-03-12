@@ -1827,6 +1827,18 @@ export const markPOItemAsDelivered = async (poId: number) => {
     }
 }
 
+export const releasePO = async (poId: number) => {
+    try {
+        const response = await axios.get(API_URL + `purchase-orders/${poId}/order/status/released`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const acceptPO = async (poId: number) => {
     try {
         const response = await axios.get(API_URL + `purchase-orders/${poId}/order/status/accepted`, {

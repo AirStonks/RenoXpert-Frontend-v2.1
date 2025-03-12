@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { POItem, POPackage } from "../../types";
 import { useUser } from "../../context/UserContext";
 import ConfirmationModal from "./components/ConfirmationModal";
-import { acceptPO, rejectPO } from "../../services/api";
+import { acceptPO, rejectPO, releasePO } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
 
@@ -44,6 +44,29 @@ function PODetail() {
     useEffect(() => {
         document.title = 'Purchase Order Detail | RenoXpert';
     }, []);
+
+    const handleReleasePo = async () => {
+        try {
+            const response = await releasePO(Number(poDetail.id));
+
+            if (response?.success) {
+                refetch();
+
+                const modalEl = document.querySelector('#po_release_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+
+                console.log(modal);
+
+
+                modal.hide();
+
+                notify('success', "PO Released Successfully!");
+            }
+
+        } catch (error) {
+            notify('error', 'Error occurred during PO release.');
+        }
+    }
 
     const handleAcceptPo = async () => {
         try {
@@ -117,12 +140,21 @@ function PODetail() {
                 </div>
                 <div className="flex gap-3">
                     {currentUser.type !== 'backend-vendor' ?
-                        <Link
-                            to={'/purchase-orders/edit/' + poId}
-                            className="btn btn-info btn-sm"
-                        >
-                            Edit PO
-                        </Link>
+                        poDetail.order_status === 'unreleased' &&
+                        <>
+                            <Link
+                                to={'/purchase-orders/edit/' + poId}
+                                className="btn btn-info btn-sm"
+                            >
+                                Edit PO
+                            </Link>
+                            <button
+                                className="btn btn-success btn-sm"
+                                data-modal-toggle="#po_release_modal"
+                            >
+                                Release Order
+                            </button>
+                        </>
                         :
                         poDetail.order_status === 'released' &&
 
@@ -578,6 +610,16 @@ function PODetail() {
             </div>
 
             <div className="flex justify-end gap-4"></div>
+
+            <ConfirmationModal
+                modalId="po_release_modal"
+                modalTitle="Accept PO"
+                modalPrompt="Are you sure you want to release this PO?"
+                modalItemName={poDetail.po_no}
+                submitBtnClass="btn-success"
+                submitBtnText="Release"
+                handleSubmit={handleReleasePo}
+            />
 
             <ConfirmationModal
                 modalId="po_accept_modal"
