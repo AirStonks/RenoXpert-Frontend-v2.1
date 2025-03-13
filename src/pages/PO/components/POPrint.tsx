@@ -1,8 +1,9 @@
-import { Document, Page, PDFDownloadLink, Text, View, Image } from '@react-pdf/renderer';
+import { Document, Page, PDFDownloadLink, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import { useParams } from 'react-router-dom';
 import useFetchPO from '../../../hook/useFetchPO';
 import { styles } from '../styles/quotationPrintStyle';
-import { useEffect } from 'react';
+import { PDFViewer } from '@react-pdf/renderer';
+import { Link } from 'react-router-dom';
 
 const getCurrentDate = () => {
     const date = new Date();
@@ -11,7 +12,7 @@ const getCurrentDate = () => {
 };
 
 // Separate the PDF content into its own component
-const QuotationPDF = ({ poDetail }) => {
+const PoPDF = ({ poDetail }) => {
     const COMPANY_NAME = "RenoXpert Sdn Bhd";
     const COMPANY_ADDRESS = "No. 42-46, Ground Floor, Jalan SS 19/1D";
     const COMPANY_CITY_STATE = "Subang Jaya, Selangor, 46500";
@@ -56,7 +57,6 @@ const QuotationPDF = ({ poDetail }) => {
 
     return (
         <Page size="A4" style={styles.page}>
-            {/* Company Header */}
             <View style={styles.companyHeader}>
                 <View>
                     <Image src={COMPANY_LOGO_URL} style={styles.companyImage} />
@@ -74,7 +74,6 @@ const QuotationPDF = ({ poDetail }) => {
                 </View>
             </View>
 
-            {/* Rest of your PDF content remains the same */}
             <View style={styles.quotationHeader}>
                 <Text style={styles.quotationTitle}>{ITEM_TITLE}</Text>
                 <View style={styles.quotationDetails}>
@@ -194,50 +193,94 @@ const QuotationPDF = ({ poDetail }) => {
     );
 };
 
+// Custom styles to hide PDFViewer toolbar
+const viewerStyles = StyleSheet.create({
+    viewer: {
+        width: '100%',
+        height: '100%',
+        border: 'none',
+    },
+});
+
 function POPrint() {
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
     const { poDetail, loading, error } = useFetchPO(poId);
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center w-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="min-h-screen flex items-center justify-center w-full bg-gray-100">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600" />
         </div>
     );
-    if (error) return <p>Error fetching order.</p>;
-    if (!poDetail) return <p>No order found.</p>;
+    if (error) return (
+        <div className="min-h-screen flex items-center justify-center w-full bg-gray-100">
+            <p className="text-red-600 text-lg font-semibold">Error fetching order.</p>
+        </div>
+    );
+    if (!poDetail) return (
+        <div className="min-h-screen flex items-center justify-center w-full bg-gray-100">
+            <p className="text-gray-600 text-lg font-semibold">No order found.</p>
+        </div>
+    );
 
-    const fileName = `Purchase_Order_${poDetail.po_no}.pdf`;
+    const fileName = `PURCHASE_ORDER_${poDetail.po_no}.pdf`;
+
+    const pdfDocument = (
+        <Document>
+            <PoPDF poDetail={poDetail} />
+        </Document>
+    );
 
     return (
-        <div className='w-full h-full'>
-            <PDFDownloadLink
-                document={
-                    <Document>
-                        <QuotationPDF poDetail={poDetail} />
-                    </Document>
-                }
-                fileName={fileName}
-            >
-                {({ blob, url, loading, error }) => {
-                    if (!loading && url) {
-                        // Automatically trigger download when URL is available
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = fileName;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        // Optionally redirect back or close window after download
-                        setTimeout(() => {
-                            window.history.back();
-                        }, 1000);
-                    }
-                    return loading ? 'Generating PDF...' : 'Download ready';
-                }}
-            </PDFDownloadLink>
+        <div className="w-full min-h-screen bg-gray-100">
+            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6 flex flex-col h-screen">
+                {/* Header */}
+                <div className="flex items-center gap-4 mb-6">
+                    {/* Back */}
+                    <Link
+                        to={'/purchase-orders/' + poId}
+                        className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                    >
+                        <i className="ki-solid ki-arrow-left text-2xl"></i>
+                    </Link>
+
+                    <h1 className="text-2xl font-bold text-gray-800">Purchase Order Preview</h1>
+                </div>
+
+                {/* Download Button */}
+                <div className="mb-6">
+                    <PDFDownloadLink
+                        document={pdfDocument}
+                        fileName={fileName}
+                    >
+                        {({ loading }) => (
+                            <button
+                                className={`w-full sm:w-auto px-6 py-3 rounded-lg text-white font-semibold transition-colors duration-200 ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                                    }`}
+                                disabled={loading}
+                            >
+                                {loading ? 'Generating PDF...' : 'Download PDF'}
+                            </button>
+                        )}
+                    </PDFDownloadLink>
+                </div>
+
+                {/* PDF Preview (Always Visible, Fills Remaining Space) */}
+                <div className="w-full flex-1 bg-white border border-gray-300 rounded-lg overflow-hidden shadow-md">
+                    <PDFViewer
+                        width="100%"
+                        height="100%"
+                        style={viewerStyles.viewer}
+                        showToolbar={false} // Hides the default toolbar with download button
+                    >
+                        {pdfDocument}
+                    </PDFViewer>
+                </div>
+            </div>
         </div>
     );
+
+
 }
 
 export default POPrint;
