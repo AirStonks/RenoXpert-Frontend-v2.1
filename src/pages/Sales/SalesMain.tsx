@@ -53,11 +53,18 @@ function SalesMain() {
         searchTerm?: string,
         order?: string,
         field?: string,
-        filter?: string
+        filters: FilterOption[] = []
     ) => {
         try {
             setIsLoading(true);
-            const response = await salesIndex(size, page, searchTerm, order, field, filter);
+            // Convert FilterOption array to FilterParams object
+            const filterParams = filters.reduce((acc, curr) => {
+                acc[curr.column] = curr.value;
+                return acc;
+            }, {} as Record<string, string>);
+
+            console.log('FilterParams in initSalesTable:', filterParams);
+            const response = await salesIndex(size, page, searchTerm, order, field, filterParams);
 
             const data = response?.data || [];
             setSales(data);
@@ -80,7 +87,7 @@ function SalesMain() {
     ) => {
         try {
             setIsLoading(true);
-            const response = await propertyIndex(size, page, searchTerm, order, field);
+            const response = await propertyIndex(100, 1, '', 'asc', '');
 
             const data = response?.data || [];
             setProperties(data);
@@ -114,7 +121,7 @@ function SalesMain() {
                 newFilters[filterIndex] = {
                     column: field,
                     value: value,
-                    ...(label && { label }) // Only add label if it exists
+                    ...(label && { label })
                 };
                 return newFilters;
             });
@@ -123,20 +130,33 @@ function SalesMain() {
             const newFilter = {
                 column: field,
                 value: value,
-                ...(label && { label }) // Only add label if it exists
+                ...(label && { label })
             };
             setFilter(prevFilter => [...prevFilter, newFilter]);
         }
 
         setPage(1);
-        initSalesTable(1, size, searchTerm, sortOrder, field, value);
+        // Use updated filter state by awaiting the state update
+        const updatedFilters = filterIndex !== -1
+            ? filter.map(f => f.column === field ? { column: field, value: value, ...(label && { label }) } : f)
+            : [...filter, { column: field, value: value, ...(label && { label }) }];
+
+        console.log('Updated filters before API call:', updatedFilters);
+        await initSalesTable(1, size, searchTerm, sortOrder, sortField, updatedFilters);
     };
 
+
     const handleClearFilterTable = async (field: string) => {
-        setFilter(prevFilter => prevFilter.filter(f => f.column !== field));
+        // Remove the filter with the specified column
+        const updatedFilters = filter.filter(f => f.column !== field);
+
+        // Update the filter state
+        setFilter(updatedFilters);
+
+        // Reset to page 1 and refresh the table with the updated filters
         setPage(1);
-        initSalesTable(1, size, searchTerm, sortOrder, '', '');
-    }
+        await initSalesTable(1, size, searchTerm, sortOrder, sortField, updatedFilters);
+    };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
@@ -170,13 +190,13 @@ function SalesMain() {
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
-        initSalesTable(newPage, size, searchTerm, sortOrder, sortField);
+        initSalesTable(newPage, size, searchTerm, sortOrder, sortField, filter);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
-        initSalesTable(1, newSize, searchTerm, sortOrder, sortField);
+        initSalesTable(1, newSize, searchTerm, sortOrder, sortField, filter);
     };
 
     const handleSort = (field: string) => {
@@ -241,7 +261,7 @@ function SalesMain() {
                     <div className="flex gap-2">
                         <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-start" data-dropdown-trigger="click">
                             <button
-                                className={`dropdown-toggle btn btn-sm rounded-full btn-light `}
+                                className={`dropdown-toggle btn btn-sm rounded-full btn-light ${filter.find(f => f.column === 'status') ? 'btn-success btn-outline' : ''}`}
                             >
                                 {/* ${filter === 'confirmed' ? 'btn-success btn-outline' : 'btn-light'} */}
                                 {`Payment Status ${filter.find(f => f.column === 'status') ? `= ${filter.find(f => f.column === 'status')?.label}` : ''}`}
@@ -311,24 +331,24 @@ function SalesMain() {
 
                         <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-start" data-dropdown-trigger="click">
                             <button
-                                className={`dropdown-toggle btn btn-sm rounded-full btn-light `}
+                                className={`dropdown-toggle btn btn-sm rounded-full btn-light ${filter.find(f => f.column === 'property_id') ? 'btn-success btn-outline' : ''} `}
                             >
                                 {/* ${filter === 'confirmed' ? 'btn-success btn-outline' : 'btn-light'} */}
-                                {`Property ${filter.find(f => f.column === 'status') ? `= ${filter.find(f => f.column === 'status')?.label}` : ''}`}
+                                {`Property ${filter.find(f => f.column === 'property_id') ? `= ${filter.find(f => f.column === 'property_id')?.label}` : ''}`}
 
                                 {
-                                    filter.find(f => f.column === 'status') &&
+                                    filter.find(f => f.column === 'property_id') &&
                                     <i
                                         className="ki-filled ki-cross"
                                         onClick={(e) => [
                                             e.stopPropagation(),
-                                            handleClearFilterTable('status')
+                                            handleClearFilterTable('property_id')
                                         ]}
                                     ></i>
                                 }
                             </button>
 
-                            <div className="dropdown-content menu menu-default w-full max-w-64 py-2">
+                            <div className="dropdown-content menu menu-default w-full max-w-64 py-2 max-h-96 overflow-y-auto">
                                 <div className="menu-item mx-[10px] px-[10px] py-1">
                                     <div className="text-[13px] font-medium text-gray-600 cursor-default">
                                         Property
@@ -338,7 +358,7 @@ function SalesMain() {
                                     <div className="menu-item" data-dropdown-dismiss="true" key={index}>
                                         <button
                                             className="menu-link copy-link"
-                                            onClick={() => handleFilterTable('status', 'partial-paid', 'Partial Paid')}
+                                            onClick={() => handleFilterTable('property_id', property.id, property.name)}
                                         >
                                             <span className="menu-title">
                                                 <div className="flex gap-2 items-center">
