@@ -965,7 +965,7 @@ export const confirmOrder = async (orderId: number) => {
     }
 };
 
-export const salesIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
+export const salesIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, filter?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + 'sales', {
             headers: getAuthHeaders(),
@@ -975,6 +975,7 @@ export const salesIndex = async (size: number = 5, page: number = 1, searchTerm?
                 search: searchTerm,
                 sortOrder: order,
                 sortField: field,
+                filter: filter,
                 head: isHead,
             }
         });

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Package, POPackage, Product, PurchaseOrder, Sale, User } from "../../types";
+import { Package, POItem, POPackage, Product, PurchaseOrder, Sale, User } from "../../types";
 import { KTDropdown } from '../../metronic/core/components/dropdown/dropdown';
 import { createPurchaseOrder, fetchSale, fetchSales, fetchUsers } from "../../services/api";
 import IncludePOItemsModal from "./components/IncludePOItemsModal";
@@ -9,6 +9,7 @@ import IncludePOPackageModal from "./components/IncludePOPackageModal";
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { SortablePOPackage } from "./components/SortablePOPackage";
+import { KTModal } from "../../metronic/core";
 
 function CreatePO() {
     const navigate = useNavigate();
@@ -77,6 +78,13 @@ function CreatePO() {
 
     const handleOpenProductModal = (packageId: string) => {
         setIsProductModalOpen(true);
+
+        const modalEl = document.querySelector('#add_item_modal') as HTMLElement;
+        const modal = KTModal.getInstance(modalEl);
+
+        modal.show();
+
+
         setSelectedPOPackageId(packageId);
     };
 
@@ -177,7 +185,7 @@ function CreatePO() {
             }
 
             const poPackages: POPackage[] = updatedSale.order.latest_quotation.packages.map((prodPackage: Package) => {
-                const poItems = prodPackage.products.map((product: Product) => ({
+                const poItems : POItem[] = prodPackage.products.map((product: Product) => ({
                     product_id: String(product.id),
                     product_name: product.name,
                     product_desc: product.description,
@@ -431,13 +439,14 @@ function CreatePO() {
     };
 
     const calculatePackageTotal = (poPackage: POPackage): number => {
-        return poPackage.po_items.reduce((total, item) => {
-            const itemTotal = item.qty * (
-                (item.supply ? item.supply_price : 0) +
-                (item.install ? item.supply_price : 0)
+        const packageTotal = poPackage.po_items.reduce((packageTotal, product) => {
+            const productTotal = product.qty * (
+                (product.supply ? product.supply_price : 0) +
+                (product.install ? product.install_price : 0)
             );
-            return total + itemTotal;
+            return packageTotal + productTotal;
         }, 0);
+        return packageTotal * (poPackage.quantity || 1);
     };
 
     const toggleAccordion = (packageId: string) => {
