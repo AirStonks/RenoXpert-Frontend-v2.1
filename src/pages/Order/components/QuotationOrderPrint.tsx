@@ -206,17 +206,6 @@ function QuotationOrderPrint() {
                         {RENO_PROPERTY_ADDRESS}
                     </Text>
                 </View>
-                {/* <View style={styles.attnHeader}>
-                    <View style={styles.attnTitle}>
-                        <Text style={[styles.attnLabel, styles.ownerLabel]}>Owner:</Text>
-                    </View>
-                    <Text style={styles.attnText}>{OWNER_NAME}</Text>
-                    <Text style={styles.attnText}>
-                        {OWNER_ADDRESS}{'\n'}
-                        +{OWNER_COUNTRY_CODE} {OWNER_MOBILE}{'\n'}
-                        {OWNER_EMAIL}
-                    </Text>
-                </View> */}
             </View>
 
             {/* Quotation Body */}
@@ -227,7 +216,7 @@ function QuotationOrderPrint() {
                         <View style={styles.packageHeader}>
                             <Text style={styles.packageTitle}>Package {pkgIndex + 1}: {pkg.name}</Text>
                             <View style={styles.quantityBadge}>
-                                <Text style={styles.quantityBadgeText}>Quantity: {pkg.quantity}</Text>
+                                <Text style={styles.quantityBadgeText}>Quantity: {pkg.quantity || 1}</Text>
                             </View>
                         </View>
                         <View style={styles.itemTable}>
