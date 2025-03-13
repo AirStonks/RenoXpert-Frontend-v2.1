@@ -1,4 +1,4 @@
-import { Document, Page, PDFViewer, Text, View, Image, pdf } from '@react-pdf/renderer';
+import { Document, Page, PDFViewer, Text, View, Image, pdf, PDFDownloadLink } from '@react-pdf/renderer';
 import React, { useEffect, useState } from 'react'
 import useFetchOrder from '../../../hook/useFetchOrder';
 import { styles } from '../styles/quotationPrintStyle';
@@ -94,33 +94,6 @@ function QuotationOrderPrint() {
         );
 
     }, [orderDetail?.latest_quotation?.packages]);
-
-    // Function to generate and download PDF
-    const downloadPDF = async () => {
-        const doc = (
-            <Document>
-                <QuotationPDF />
-                <TncPDF />
-                <RenoAgreementPDF />
-            </Document>
-        );
-        const blob = await pdf(doc).toBlob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${QUOTATION_NUMBER}_${ATTN_NAME.toUpperCase().replace(/\s+/g, '_')}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
-
-    // Trigger download when orderDetail is loaded
-    useEffect(() => {
-        if (!loading && orderDetail && !error && packageCategories.length > 0) {
-            downloadPDF();
-        }
-    }, [loading, orderDetail, error]);
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center w-full">
@@ -762,15 +735,36 @@ function QuotationOrderPrint() {
         </Page>
     );
 
+
+    const fileName = `Quotation_${orderDetail.order_no}.pdf`;
+
     return (
         <div className='w-full h-full'>
-            <PDFViewer width="100%" height="100%">
-                <Document>
-                    <QuotationPDF />
-                    <TncPDF />
-                    <RenoAgreementPDF />
-                </Document>
-            </PDFViewer>
+            <PDFDownloadLink
+                document={
+                    <Document>
+                        <QuotationPDF />
+                        <TncPDF />
+                        <RenoAgreementPDF />
+                    </Document>
+                }
+                fileName={fileName}
+            >
+                {({ blob, url, loading, error }) => {
+                    if (!loading && url) {
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        setTimeout(() => {
+                            window.history.back();
+                        }, 1000);
+                    }
+                    return loading ? 'Generating PDF...' : 'Download ready';
+                }}
+            </PDFDownloadLink>
         </div>
     )
 }
