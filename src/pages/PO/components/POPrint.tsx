@@ -1,7 +1,8 @@
-import { Document, Page, PDFViewer, Text, View, Image } from '@react-pdf/renderer';
+import { Document, Page, PDFDownloadLink, Text, View, Image } from '@react-pdf/renderer';
 import { useParams } from 'react-router-dom';
 import useFetchPO from '../../../hook/useFetchPO';
 import { styles } from '../styles/quotationPrintStyle';
+import { useEffect } from 'react';
 
 const getCurrentDate = () => {
     const date = new Date();
@@ -9,19 +10,8 @@ const getCurrentDate = () => {
     return date.toLocaleDateString('en-GB', options);
 };
 
-function POPrint() {
-    const { id } = useParams<{ id: string }>();
-    const poId = id ? parseInt(id, 10) : null;
-    const { poDetail, loading, error } = useFetchPO(poId);
-
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center w-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-        </div>
-    );
-    if (error) return <p>Error fetching order.</p>;
-    if (!poDetail) return <p>No order found.</p>;
-
+// Separate the PDF content into its own component
+const QuotationPDF = ({ poDetail }) => {
     const COMPANY_NAME = "RenoXpert Sdn Bhd";
     const COMPANY_ADDRESS = "No. 42-46, Ground Floor, Jalan SS 19/1D";
     const COMPANY_CITY_STATE = "Subang Jaya, Selangor, 46500";
@@ -64,7 +54,7 @@ function POPrint() {
 
     const totalPrice = poDetail.total_amount;
 
-    const QuotationPDF = () => (
+    return (
         <Page size="A4" style={styles.page}>
             {/* Company Header */}
             <View style={styles.companyHeader}>
@@ -84,7 +74,7 @@ function POPrint() {
                 </View>
             </View>
 
-            {/* Quotation Header */}
+            {/* Rest of your PDF content remains the same */}
             <View style={styles.quotationHeader}>
                 <Text style={styles.quotationTitle}>{ITEM_TITLE}</Text>
                 <View style={styles.quotationDetails}>
@@ -93,7 +83,6 @@ function POPrint() {
                 </View>
             </View>
 
-            {/* Vendor and Owner Headers */}
             <View style={styles.headerRow}>
                 <View style={styles.attnHeader}>
                     <View style={styles.attnTitle}>
@@ -119,7 +108,6 @@ function POPrint() {
                 </View>
             </View>
 
-            {/* Unit Header */}
             <View style={[styles.attnHeader, styles.unitHeader]}>
                 <View style={styles.attnTitle}>
                     <Text style={[styles.attnLabel, styles.unitLabel]}>Unit:</Text>
@@ -132,7 +120,6 @@ function POPrint() {
                 </Text>
             </View>
 
-            {/* Package Cards */}
             {poDetail.po_packages.map((pkg, pkgIndex) => (
                 <View style={styles.packageCard} key={pkgIndex} wrap={false}>
                     <View style={styles.packageHeader}>
@@ -182,7 +169,6 @@ function POPrint() {
                 </View>
             ))}
 
-            {/* Total Price Table */}
             <View wrap={false}>
                 <View style={styles.totalTable}>
                     <Text style={styles.totalTitle}>Total Amount:</Text>
@@ -190,7 +176,6 @@ function POPrint() {
                 </View>
             </View>
 
-            {/* Page Number */}
             <Text
                 style={styles.pageNumber}
                 render={({ pageNumber, totalPages }) => `${pageNumber}`}
@@ -207,14 +192,50 @@ function POPrint() {
             )}
         </Page>
     );
+};
+
+function POPrint() {
+    const { id } = useParams<{ id: string }>();
+    const poId = id ? parseInt(id, 10) : null;
+    const { poDetail, loading, error } = useFetchPO(poId);
+
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center w-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        </div>
+    );
+    if (error) return <p>Error fetching order.</p>;
+    if (!poDetail) return <p>No order found.</p>;
+
+    const fileName = `Purchase_Order_${poDetail.po_no}.pdf`;
 
     return (
         <div className='w-full h-full'>
-            <PDFViewer width="100%" height="100%">
-                <Document>
-                    <QuotationPDF />
-                </Document>
-            </PDFViewer>
+            <PDFDownloadLink
+                document={
+                    <Document>
+                        <QuotationPDF poDetail={poDetail} />
+                    </Document>
+                }
+                fileName={fileName}
+            >
+                {({ blob, url, loading, error }) => {
+                    if (!loading && url) {
+                        // Automatically trigger download when URL is available
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        // Optionally redirect back or close window after download
+                        setTimeout(() => {
+                            window.history.back();
+                        }, 1000);
+                    }
+                    return loading ? 'Generating PDF...' : 'Download ready';
+                }}
+            </PDFDownloadLink>
         </div>
     );
 }
