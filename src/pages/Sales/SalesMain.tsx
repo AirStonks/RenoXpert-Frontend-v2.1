@@ -3,14 +3,20 @@
 import { useEffect, useRef, useState } from 'react';
 import SalesTable from '../../components/Tables/SalesTable';
 import Loading from '../../components/Loading';
-import { Sale } from '../../types';
+import { Property, Sale } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { salesIndex } from '../../services/api';
+import { propertyIndex, salesIndex } from '../../services/api';
 // import CreatePropertyModal from '../../components/Modals/CreatePropertyModal';
 // import PropertyTable from '../../components/Tables/PropertyTable';
 
 type SortOrder = 'asc' | 'desc' | null;
+
+interface FilterOption {
+    column: string;
+    value: string;
+    label?: string;
+}
 
 function SalesMain() {
     const navigate = useNavigate();
@@ -23,26 +29,42 @@ function SalesMain() {
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [filter, setFilter] = useState<FilterOption[]>([]);
     const [sortField, setSortField] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+
+    const [properties, setProperties] = useState<Property[]>([]);
 
     const [selectedQuotation, setSelectedQuotation] = useState<{ id: number | string, name: string } | null>(null);
 
     useEffect(() => {
         document.title = "Sales | RenoXpert";
         initSalesTable(1, 10, '', null, '');
+        initProperties(1, 10, '', null, '');
     }, []);
+
+    useEffect(() => {
+        console.log(filter);
+    }, [filter]);
 
     const initSalesTable = async (
         page: number,
         size: number,
         searchTerm?: string,
         order?: string,
-        field?: string
+        field?: string,
+        filters: FilterOption[] = []
     ) => {
         try {
             setIsLoading(true);
-            const response = await salesIndex(size, page, searchTerm, order, field);
+            // Convert FilterOption array to FilterParams object
+            const filterParams = filters.reduce((acc, curr) => {
+                acc[curr.column] = curr.value;
+                return acc;
+            }, {} as Record<string, string>);
+
+            console.log('FilterParams in initSalesTable:', filterParams);
+            const response = await salesIndex(size, page, searchTerm, order, field, filterParams);
 
             const data = response?.data || [];
             setSales(data);
@@ -56,8 +78,84 @@ function SalesMain() {
         }
     };
 
+    const initProperties = async (
+        page: number,
+        size: number,
+        searchTerm?: string,
+        order?: string,
+        field?: string
+    ) => {
+        try {
+            setIsLoading(true);
+            const response = await propertyIndex(100, 1, '', 'asc', '');
+
+            const data = response?.data || [];
+            setProperties(data);
+
+            setTotalItems(response?.totalCount || 0);
+        } catch (error) {
+            console.error('Error fetching properties:', error);
+            setError('Failed to load properties');
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     const handleRefreshTable = async () => {
         initSalesTable(page, size, searchTerm, sortOrder, sortField);
+    };
+
+    interface FilterOption {
+        column: string;
+        value: string;
+        label?: string;
+    }
+
+    const handleFilterTable = async (field: string, value: string, label?: string) => {
+        const filterIndex = filter.findIndex(f => f.column === field);
+
+        if (filterIndex !== -1) {
+            // If filter with same column exists, replace it
+            setFilter(prevFilter => {
+                const newFilters = [...prevFilter];
+                newFilters[filterIndex] = {
+                    column: field,
+                    value: value,
+                    ...(label && { label })
+                };
+                return newFilters;
+            });
+        } else {
+            // If no filter with this column exists, add new filter
+            const newFilter = {
+                column: field,
+                value: value,
+                ...(label && { label })
+            };
+            setFilter(prevFilter => [...prevFilter, newFilter]);
+        }
+
+        setPage(1);
+        // Use updated filter state by awaiting the state update
+        const updatedFilters = filterIndex !== -1
+            ? filter.map(f => f.column === field ? { column: field, value: value, ...(label && { label }) } : f)
+            : [...filter, { column: field, value: value, ...(label && { label }) }];
+
+        console.log('Updated filters before API call:', updatedFilters);
+        await initSalesTable(1, size, searchTerm, sortOrder, sortField, updatedFilters);
+    };
+
+
+    const handleClearFilterTable = async (field: string) => {
+        // Remove the filter with the specified column
+        const updatedFilters = filter.filter(f => f.column !== field);
+
+        // Update the filter state
+        setFilter(updatedFilters);
+
+        // Reset to page 1 and refresh the table with the updated filters
+        setPage(1);
+        await initSalesTable(1, size, searchTerm, sortOrder, sortField, updatedFilters);
     };
 
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,13 +190,13 @@ function SalesMain() {
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
-        initSalesTable(newPage, size, searchTerm, sortOrder, sortField);
+        initSalesTable(newPage, size, searchTerm, sortOrder, sortField, filter);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
-        initSalesTable(1, newSize, searchTerm, sortOrder, sortField);
+        initSalesTable(1, newSize, searchTerm, sortOrder, sortField, filter);
     };
 
     const handleSort = (field: string) => {
@@ -155,6 +253,170 @@ function SalesMain() {
                     </div>
                 </div>
 
+
+
+                <div className="flex items-center">
+                    <span className='font-semibold mr-4'>Quick Filter: </span>
+
+                    <div className="flex gap-2">
+                        <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-start" data-dropdown-trigger="click">
+                            <button
+                                className={`dropdown-toggle btn btn-sm rounded-full btn-light ${filter.find(f => f.column === 'status') ? 'btn-success btn-outline' : ''}`}
+                            >
+                                {/* ${filter === 'confirmed' ? 'btn-success btn-outline' : 'btn-light'} */}
+                                {`Payment Status ${filter.find(f => f.column === 'status') ? `= ${filter.find(f => f.column === 'status')?.label}` : ''}`}
+
+                                {
+                                    filter.find(f => f.column === 'status') &&
+                                    <i
+                                        className="ki-filled ki-cross"
+                                        onClick={(e) => [
+                                            e.stopPropagation(),
+                                            handleClearFilterTable('status')
+                                        ]}
+                                    ></i>
+                                }
+                            </button>
+
+                            <div className="dropdown-content menu menu-default w-full max-w-64 py-2">
+                                <div className="menu-item mx-[10px] px-[10px] py-1">
+                                    <div className="text-[13px] font-medium text-gray-600 cursor-default">
+                                        Payment Status
+                                    </div>
+                                </div>
+                                <div className="menu-item" data-dropdown-dismiss="true">
+                                    <button
+                                        className="menu-link copy-link"
+                                        onClick={() => handleFilterTable('status', 'issued', 'Issued')}
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <span className="">
+                                                    Issued
+                                                </span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div className="menu-item" data-dropdown-dismiss="true">
+                                    <button
+                                        className="menu-link copy-link"
+                                        onClick={() => handleFilterTable('status', 'partial-paid', 'Partial Paid')}
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <span className="">
+                                                    Partial Paid
+                                                </span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div className="menu-item" data-dropdown-dismiss="true">
+                                    <button
+                                        className="menu-link copy-link"
+                                        onClick={() => handleFilterTable('status', 'paid', 'Paid')}
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <span className="">
+                                                    Paid
+                                                </span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-start" data-dropdown-trigger="click">
+                            <button
+                                className={`dropdown-toggle btn btn-sm rounded-full btn-light ${filter.find(f => f.column === 'property_id') ? 'btn-success btn-outline' : ''} `}
+                            >
+                                {/* ${filter === 'confirmed' ? 'btn-success btn-outline' : 'btn-light'} */}
+                                {`Property ${filter.find(f => f.column === 'property_id') ? `= ${filter.find(f => f.column === 'property_id')?.label}` : ''}`}
+
+                                {
+                                    filter.find(f => f.column === 'property_id') &&
+                                    <i
+                                        className="ki-filled ki-cross"
+                                        onClick={(e) => [
+                                            e.stopPropagation(),
+                                            handleClearFilterTable('property_id')
+                                        ]}
+                                    ></i>
+                                }
+                            </button>
+
+                            <div className="dropdown-content menu menu-default w-full max-w-64 py-2 max-h-96 overflow-y-auto">
+                                <div className="menu-item mx-[10px] px-[10px] py-1">
+                                    <div className="text-[13px] font-medium text-gray-600 cursor-default">
+                                        Property
+                                    </div>
+                                </div>
+                                {properties.map((property, index) => (
+                                    <div className="menu-item" data-dropdown-dismiss="true" key={index}>
+                                        <button
+                                            className="menu-link copy-link"
+                                            onClick={() => handleFilterTable('property_id', property.id, property.name)}
+                                        >
+                                            <span className="menu-title">
+                                                <div className="flex gap-2 items-center">
+                                                    <span className="">
+                                                        {property.name}
+                                                    </span>
+                                                </div>
+                                            </span>
+                                        </button>
+                                    </div>
+                                ))}
+                                {/* <div className="menu-item" data-dropdown-dismiss="true">
+                                    <button
+                                        className="menu-link copy-link"
+                                        onClick={() => handleFilterTable('status', 'issued', 'Issued')}
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <span className="">
+                                                    Issued
+                                                </span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div className="menu-item" data-dropdown-dismiss="true">
+                                    <button
+                                        className="menu-link copy-link"
+                                        onClick={() => handleFilterTable('status', 'partial-paid', 'Partial Paid')}
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <span className="">
+                                                    Partial Paid
+                                                </span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div className="menu-item" data-dropdown-dismiss="true">
+                                    <button
+                                        className="menu-link copy-link"
+                                        onClick={() => handleFilterTable('status', 'paid', 'Paid')}
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <span className="">
+                                                    Paid
+                                                </span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div> */}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="card">
                     <div className="card-header flex-wrap gap-2">
                         <div className="card-title">
@@ -206,8 +468,8 @@ function SalesMain() {
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[100px]'>Sale No.</th>
-                                    <th className='w-[100px]'>Order No.</th>
+                                    <th className='w-[100px]'>Sales Order No.</th>
+                                    <th className='w-[100px]'>Quotation No.</th>
                                     <th className='w-[100px] text-center'>Status</th>
                                     <th className='w-[100px] text-center'>Owner</th>
                                     <th className='w-[60px] text-center'>Unit</th>
@@ -431,7 +693,7 @@ function SalesMain() {
 
                 {/* <SalesTable  /> */}
                 {/* <CreatePropertyModal /> */}
-            </div>
+            </div >
         </>
     );
 }

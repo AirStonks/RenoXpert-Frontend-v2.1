@@ -175,6 +175,7 @@ function IncludePOPackageModal({ selectedPOPackages, setSelectedPOPackages, isOp
                 qty: product.pivot?.quantity || 1,
                 supply: true,
                 install: true,
+                uom: product.uom,
                 unit_price: (product.provisioning?.supply?.retail_price + product.provisioning?.install?.retail_price) || 0,
                 supply_price: product.pivot?.includeSupply ? product.provisioning?.supply?.cogs || 0 : 0,
                 install_price: product.pivot?.includeInstall ? product.provisioning?.install?.cogs || 0 : 0,

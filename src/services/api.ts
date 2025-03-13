@@ -21,6 +21,10 @@ const getAuthHeaders = () => {
     };
 };
 
+interface FilterParams {
+    [key: string]: string | undefined;
+}
+
 
 export const testGenerateProgress = async () => {
     try {
@@ -965,18 +969,38 @@ export const confirmOrder = async (orderId: number) => {
     }
 };
 
-export const salesIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
+export const salesIndex = async (
+    size: number = 5,
+    page: number = 1,
+    searchTerm?: string,
+    order?: string,
+    field?: string,
+    filters: FilterParams = {},
+    isHead: boolean = true
+) => {
+    console.log('Filters received in salesIndex:', filters); // Debug log
     try {
+        const params: any = {
+            size: size,
+            page: page,
+            search: searchTerm,
+            sortOrder: order,
+            sortField: field,
+            head: isHead,
+        };
+
+        if (Object.keys(filters).length > 0) {
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined && value !== '') {
+                    params[`filter[${key}]`] = value;
+                }
+            });
+        }
+
+        console.log('API params:', params); // Debug log
         const response = await axios.get(API_URL + 'sales', {
             headers: getAuthHeaders(),
-            params: {
-                size: size,
-                page: page,
-                search: searchTerm,
-                sortOrder: order,
-                sortField: field,
-                head: isHead,
-            }
+            params: params
         });
         return response.data;
     } catch (error) {

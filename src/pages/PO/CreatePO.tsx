@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Package, POPackage, Product, PurchaseOrder, Sale, User } from "../../types";
+import { Package, POItem, POPackage, Product, PurchaseOrder, Sale, User } from "../../types";
 import { KTDropdown } from '../../metronic/core/components/dropdown/dropdown';
 import { createPurchaseOrder, fetchSale, fetchSales, fetchUsers } from "../../services/api";
 import IncludePOItemsModal from "./components/IncludePOItemsModal";
@@ -185,7 +185,7 @@ function CreatePO() {
             }
 
             const poPackages: POPackage[] = updatedSale.order.latest_quotation.packages.map((prodPackage: Package) => {
-                const poItems = prodPackage.products.map((product: Product) => ({
+                const poItems : POItem[] = prodPackage.products.map((product: Product) => ({
                     product_id: String(product.id),
                     product_name: product.name,
                     product_desc: product.description,
