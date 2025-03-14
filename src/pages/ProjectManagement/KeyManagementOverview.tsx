@@ -21,6 +21,7 @@ const getLabelForName = (name) => {
         'main_door_key': 'Main Door Key',
         'room_door_key': 'Guest Access Card',
         'yard_door_key': 'Yard Key',
+        'grill_door_key': 'Grill Door key',
         'mailbox_key': 'Mailbox Key',
         'ac_ledge_key': 'AC Ledge Key',
         'ac_remote': 'AC Remote',
@@ -30,7 +31,7 @@ const getLabelForName = (name) => {
     return labelMap[name] || name; // Return original name if no mapping found
 };
 
-const AccordionItem = ({ title, id, items }) => {
+const AccordionItem = ({ title, id, items, itemQty }) => {
     return (
         <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={id}>
             <button className="accordion-toggle p-4" data-accordion-toggle={`#${id}_content`}>
@@ -38,8 +39,8 @@ const AccordionItem = ({ title, id, items }) => {
                     <h3 className="text-md text-gray-900 font-bold">{title}</h3>
                 </div>
                 <div className="flex items-center gap-4">
-                    {items.length > 0 ?
-                        <div className="badge text-sm">Quantity: {items.length}</div>
+                    {itemQty > 0 ?
+                        <div className="badge text-sm">Quantity: {itemQty}</div>
                         :
                         <div className="badge badge-danger badge-outline">Empty</div>
                     }
@@ -241,7 +242,7 @@ function KeyManagementOverview() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            No. of main door:
+                                            No. of main door keys:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             {renoProgressDetail.key_management.no_main_door}
@@ -249,7 +250,7 @@ function KeyManagementOverview() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            No. of room:
+                                            No. of room door keys:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             {renoProgressDetail.key_management.no_room}
@@ -300,7 +301,7 @@ function KeyManagementOverview() {
                             <div className="flex flex-col mb-4 gap-2" data-accordion="true">
                                 {renoProgressDetail.key_management.metadata.length > 0 &&
                                     renoProgressDetail.key_management.metadata.map((item: any, index: number) => (
-                                        <AccordionItem key={index} title={getLabelForName(item.name)} id={item.name} items={item.value} />
+                                        <AccordionItem key={index} title={getLabelForName(item.name)} id={item.name} items={item.value} itemQty={item.quantity} />
                                     ))}
                             </div>
                         </div>

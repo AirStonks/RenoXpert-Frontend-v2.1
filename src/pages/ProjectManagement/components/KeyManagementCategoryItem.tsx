@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { addKeyManagementItem, changeKeyManagementItemName, changeKeyManagementItemPhoto, changeKeyManagementItemRemark, removeKeyManagementItem, uploadKeyManagementItemPhoto } from "../../../services/api";
+import { addKeyManagementItem, changeKeyManagementItemName, changeKeyManagementItemPhoto, changeKeyManagementItemRemark, removeKeyManagementItem, updateKeyCategoryQuantity, uploadKeyManagementItemPhoto } from "../../../services/api";
 import { KTAccordion } from "../../../metronic/core";
+import { Slide, toast } from "react-toastify";
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -11,14 +12,32 @@ const AWS_S3_URL =
 
 interface Props {
     renoProgressId: number;
+    keyManagementId: number;
+    categoryQty: number;
     title: string;
     id: string;
     items: [];
+    handleUpdateMetadata: React.Dispatch<React.SetStateAction<{
+        metadata: any[];
+    }>>
 }
 
-function KeyManagementCategoryItem({ renoProgressId, title, id, items: initialItems }: Props) {
+function KeyManagementCategoryItem({ renoProgressId, keyManagementId, categoryQty, title, id, items: initialItems, handleUpdateMetadata }: Props) {
     const [items, setItems] = useState(initialItems);
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
 
     useEffect(() => {
         KTAccordion.init();
@@ -59,6 +78,30 @@ function KeyManagementCategoryItem({ renoProgressId, title, id, items: initialIt
                 console.error('Error updating item:', error);
             }
         }, 1000);
+    };
+
+    const handleCategoryQuantityChange = async (
+        category: string,
+        action: 'increase' | 'decrease',
+    ) => {
+        // minimum quantity is 0
+        const newCategoryQty = action === 'increase'
+            ? ((categoryQty ? categoryQty : 0) + 1)
+            : ((categoryQty ? categoryQty : 0) - 1 < 0 ? 0 : categoryQty - 1);
+
+        console.log(categoryQty, newCategoryQty);
+
+
+        try {
+            const response = await updateKeyCategoryQuantity(keyManagementId, category, newCategoryQty);
+            if (response?.success) {
+                handleUpdateMetadata({
+                    metadata: response.data
+                });
+            }
+        } catch (error) {
+            notify('error', 'Failed to update info');
+        }
     };
 
     const handleAddItem = async (category: string) => {
@@ -144,8 +187,8 @@ function KeyManagementCategoryItem({ renoProgressId, title, id, items: initialIt
                         <h3 className="text-md text-gray-900 font-bold">{title}</h3>
                     </div>
                     <div className="flex items-center gap-4">
-                        {items.length > 0 ?
-                            <div className="badge text-sm">Quantity: {items.length}</div>
+                        {categoryQty > 0 ?
+                            <div className="badge text-sm">Quantity: {categoryQty}</div>
                             :
                             <div className="badge badge-danger badge-outline">Empty</div>
                         }
@@ -154,6 +197,24 @@ function KeyManagementCategoryItem({ renoProgressId, title, id, items: initialIt
                     </div>
                 </button>
                 <div className="accordion-content hidden border-t" id={`${id}_content`}>
+                    <div className="flex items-center text-gray-700 gap-2 p-2 rounded-md bg-blue-50 dark:bg-sky-950">
+                        <span>Package Quantity: </span>
+                        <div className="flex text-center">
+                            <button
+                                data-action="decrease"
+                                onClick={() => handleCategoryQuantityChange(id, "decrease")}
+                            >
+                                <i className="ki-solid ki-minus-squared"></i>
+                            </button>
+                            <span className="mx-2 text-base">{categoryQty || 0}</span>
+                            <button
+                                data-action="increase"
+                                onClick={() => handleCategoryQuantityChange(id, "increase")}
+                            >
+                                <i className="ki-solid ki-plus-squared"></i>
+                            </button>
+                        </div>
+                    </div>
                     <div className="flex flex-col gap-2 p-4">
                         {items.length === 0 ? (
                             <>

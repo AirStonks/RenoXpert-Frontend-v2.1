@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import useFetchKeyManagement from "../../hook/useFetchKeyManagement";
 import Loading from "../../components/Loading";
-import { addKeyManagementItem, updateKeyManagementInfo } from "../../services/api";
+import { addKeyManagementItem, updateKeyCategoryQuantity, updateKeyManagementInfo } from "../../services/api";
 import KeyManagementCategoryItem from "./components/KeyManagementCategoryItem";
 import { Slide, toast } from "react-toastify";
 
@@ -70,7 +70,7 @@ function UpdateKeyManagement() {
             setMetadataItems({
                 metadata: keyManagementDetail.metadata
             });
-        }
+        }        
 
     }, [keyManagementDetail]);
 
@@ -105,7 +105,7 @@ function UpdateKeyManagement() {
     };
 
     // Add handlers for number inputs
-    const handleNumberChange = (field: 'no_main_door' | 'no_room', action: 'increase' | 'decrease') => {
+    const handleKeyNumberChange = (field: 'no_main_door' | 'no_room', action: 'increase' | 'decrease') => {
         setFormData(prevData => {
             const newData = {
                 ...prevData,
@@ -182,6 +182,7 @@ function UpdateKeyManagement() {
             'main_door_key': 'Main Door Key',
             'room_door_key': 'Guest Access Card',
             'yard_door_key': 'Yard Key',
+            'grill_door_key': 'Grill Door key',
             'mailbox_key': 'Mailbox Key',
             'ac_ledge_key': 'AC Ledge Key',
             'ac_remote': 'AC Remote',
@@ -189,86 +190,6 @@ function UpdateKeyManagement() {
         };
 
         return labelMap[name] || name; // Return original name if no mapping found
-    };
-
-    const AccordionItem = ({ title, id, items }) => {
-        return (
-            <div className="accordion-item border rounded-xl w-full" data-accordion-item="true" id={id}>
-                <button className="accordion-toggle p-4" data-accordion-toggle={`#${id}_content`}>
-                    <div className="flex flex-col items-start">
-                        <h3 className="text-md text-gray-900 font-bold">{title}</h3>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        {items.length > 0 ?
-                            <div className="badge text-sm">Quantity: {items.length}</div>
-                            :
-                            <div className="badge badge-danger badge-outline">Empty</div>
-                        }
-                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
-                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
-                    </div>
-                </button>
-                <div className="accordion-content hidden border-t" id={`${id}_content`}>
-                    <div className="flex flex-col gap-2 p-4">
-                        {items.length === 0 ? (
-                            <>
-                                <div className="col-span-full text-center text-gray-500">No items available</div>
-                                <div className="col-span-full text-center">
-                                    <button
-                                        className="btn btn-sm btn-primary"
-                                        onClick={() => handleAddItem(id)}
-                                    >
-                                        Add Item
-                                    </button>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                {items.map((card, index) => (
-                                    <div className="card rounded-lg overflow-hidden" key={index}>
-                                        <div className="card-body p-0">
-                                            <div className="flex flex-col sm:flex-row">
-                                                <div className="w-24 h-24 mr-1">
-                                                    <a
-                                                        className=""
-                                                        href={card.image}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                    >
-                                                        <img
-                                                            src={card.image}
-                                                            alt={card.title}
-                                                            className="w-24 h-24 object-cover"
-                                                        />
-                                                    </a>
-                                                </div>
-                                                <div className="w-full sm:w-3/4 p-2">
-                                                    <h3 className="font-semibold mb-2 text-gray-900">{card.title}</h3>
-                                                    <p className="text-xs text-gray-600">Remark: {card.description ? card.description : 'N/A'}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-
-                                <div className="card rounded-lg overflow-hidden">
-                                    <div className="card-body h-24 flex justify-center items-center text-center p-0">
-                                        <button
-                                            className="btn btn-sm btn-primary"
-                                            onClick={() => handleAddItem(id)}
-                                        >
-                                            Add Item
-                                        </button>
-                                    </div>
-                                </div>
-                            </>
-
-                        )}
-                    </div>
-
-                </div>
-            </div>
-        );
     };
 
     if (loading) {
@@ -364,12 +285,12 @@ function UpdateKeyManagement() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            No. of main door:
+                                            No. of main door keys:
                                         </td>
                                         <td className="text-lg text-gray-900 pb-3">
                                             <button
                                                 className="text-gray-600"
-                                                onClick={() => handleNumberChange('no_main_door', 'decrease')}
+                                                onClick={() => handleKeyNumberChange('no_main_door', 'decrease')}
                                             >
                                                 <i className="ki-solid ki-minus-squared"></i>
                                             </button>
@@ -378,7 +299,7 @@ function UpdateKeyManagement() {
                                             </span>
                                             <button
                                                 className="text-gray-600"
-                                                onClick={() => handleNumberChange('no_main_door', 'increase')}
+                                                onClick={() => handleKeyNumberChange('no_main_door', 'increase')}
                                             >
                                                 <i className="ki-solid ki-plus-squared"></i>
                                             </button>
@@ -386,12 +307,12 @@ function UpdateKeyManagement() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            No. of room:
+                                            No. of room door keys:
                                         </td>
                                         <td className="text-lg text-gray-900 pb-3">
                                             <button
                                                 className="text-gray-600"
-                                                onClick={() => handleNumberChange('no_room', 'decrease')}
+                                                onClick={() => handleKeyNumberChange('no_room', 'decrease')}
                                             >
                                                 <i className="ki-solid ki-minus-squared"></i>
                                             </button>
@@ -400,7 +321,7 @@ function UpdateKeyManagement() {
                                             </span>
                                             <button
                                                 className="text-gray-600"
-                                                onClick={() => handleNumberChange('no_room', 'increase')}
+                                                onClick={() => handleKeyNumberChange('no_room', 'increase')}
                                             >
                                                 <i className="ki-solid ki-plus-squared"></i>
                                             </button>
@@ -442,9 +363,12 @@ function UpdateKeyManagement() {
                                     <KeyManagementCategoryItem
                                         key={index}
                                         renoProgressId={renoProgressId}
+                                        keyManagementId={Number(keyManagementDetail.id)}
+                                        categoryQty={item.quantity}
                                         title={getLabelForName(item.name)}
                                         id={item.name}
                                         items={item.value}
+                                        handleUpdateMetadata={setMetadataItems}
                                     />
                                 ))}
                             </div>
