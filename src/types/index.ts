@@ -1206,7 +1206,16 @@ export interface KeyManagement {
     no_main_door?: number,
     no_room?: number,
     status?: string,
-    metadata?: [],
+    metadata?: Array<{
+        name: string,
+        value: Array<{
+            name?: string,
+            remark?: string,
+            attachment?: [],
+        }>
+        remark?: string,
+        quantity?: number  // Added quantity field
+    }>,
     created_by?: string,
     updated_by?: string,
     created_at?: User,

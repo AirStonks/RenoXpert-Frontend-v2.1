@@ -1780,6 +1780,20 @@ export const updateKeyManagementInfo = async (keyManagementId: number, keyManage
     }
 }
 
+export const updateKeyCategoryQuantity = async (keyManagementId: number, category: string, quantity: number) => {
+    try {
+        const data = { category, quantity };
+
+        const response = await axios.post(API_URL + `key-management/${keyManagementId}/quantity/update`, data, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const createPurchaseOrder = async (purchaseOrderData: PurchaseOrder) => {
     try {
         const response = await axios.post(API_URL + 'purchase-orders', purchaseOrderData, {

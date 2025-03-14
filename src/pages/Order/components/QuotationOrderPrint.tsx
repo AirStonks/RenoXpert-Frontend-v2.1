@@ -418,7 +418,7 @@ const QuotationOrderPDF = ({ orderDetail }) => {
                     <View style={styles.tncItem}>
                         <Text style={styles.tncBullet}>•</Text>
                         <Text style={styles.tncText}>
-                            Payment verification: Kindly WhatsApp us at +6011-5899 6291 with the bank-in slip or online payment receipt, along with the client’s name, development name, and unit number.
+                            Payment verification: Kindly WhatsApp us at +6011-5698 5313 with the bank-in slip or online payment receipt, along with the client’s name, development name, and unit number.
                         </Text>
                     </View>
                     <View style={styles.tncItem}>
