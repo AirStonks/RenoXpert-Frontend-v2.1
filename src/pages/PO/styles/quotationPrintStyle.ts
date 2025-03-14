@@ -48,6 +48,12 @@ export const styles = StyleSheet.create({
         marginBottom: 2,
         textAlign: 'right', // Explicitly set to right
     },
+    companyReg: {
+        fontSize: 8,
+        color: '#787878',
+        lineHeight: 1.2,
+        textAlign: 'right',
+    },
     companyDetails: {
         fontSize: 8,
         color: '#4b5563',

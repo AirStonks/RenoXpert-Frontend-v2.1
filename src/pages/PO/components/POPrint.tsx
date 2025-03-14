@@ -14,6 +14,7 @@ const getCurrentDate = () => {
 // Separate the PDF content into its own component
 const PoPDF = ({ poDetail }) => {
     const COMPANY_NAME = "RenoXpert Sdn Bhd";
+    const COMPANY_REG = "202401032588 (1578437-W)";
     const COMPANY_ADDRESS = "No. 42-46, Ground Floor, Jalan SS 19/1D";
     const COMPANY_CITY_STATE = "Subang Jaya, Selangor, 46500";
     const COMPANY_MOBILE = "03-58789831";
@@ -64,6 +65,9 @@ const PoPDF = ({ poDetail }) => {
                 <View style={styles.companyInfo}>
                     <View style={{ alignItems: 'flex-end' }}>
                         <Text style={styles.companyTitle}>{COMPANY_NAME}</Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={styles.companyReg}>Reg No: {COMPANY_REG}</Text>
                     </View>
                     <Text style={styles.companyDetails}>
                         {COMPANY_ADDRESS}{'\n'}
@@ -233,7 +237,7 @@ function POPrint() {
 
     return (
         <div className="w-full min-h-screen bg-gray-100">
-            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6 flex flex-col h-screen">
+            <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-6 flex flex-col h-screen">
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-6">
                     {/* Back */}

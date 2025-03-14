@@ -47,6 +47,12 @@ export const styles = StyleSheet.create({
         color: '#272f48',
         marginBottom: 2, // Reduced from 4
     },
+    companyReg: {
+        fontSize: 8,
+        color: '#787878',
+        lineHeight: 1.2,
+        textAlign: 'right',
+    },
     companyDetails: {
         fontSize: 8, // Reduced from 10
         color: '#4b5563',
