@@ -1,8 +1,9 @@
-import { Document, Page, PDFViewer, Text, View, Image, pdf, PDFDownloadLink } from '@react-pdf/renderer';
+import { Document, Page, PDFViewer, Text, View, Image, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import React, { useEffect, useState } from 'react'
 import useFetchOrder from '../../../hook/useFetchOrder';
 import { styles } from '../styles/quotationPrintStyle';
 import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const getCurrentDate = () => {
     const date = new Date();
@@ -42,10 +43,7 @@ const categoryOptions = [
     { value: "others", label: "Others" },
 ];
 
-function QuotationOrderPrint() {
-    const { id } = useParams<{ id: string }>();
-    const orderId = id ? parseInt(id, 10) : null;
-    const { orderDetail, loading, error, refetch } = useFetchOrder(orderId);
+const QuotationOrderPDF = ({ orderDetail }) => {
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; quantity: number }[]>([]);
 
     useEffect(() => {
@@ -94,14 +92,6 @@ function QuotationOrderPrint() {
         );
 
     }, [orderDetail?.latest_quotation?.packages]);
-
-    if (loading) return (
-        <div className="min-h-screen flex items-center justify-center w-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-        </div>
-    );
-    if (error) return <p>Error fetching order.</p>;
-    if (!orderDetail) return <p>No order found.</p>;
 
     const COMPANY_NAME = "RenoXpert Sdn Bhd";
     const COMPANY_ADDRESS = "No. 42-46, Ground Floor, Jalan SS 19/1D";
@@ -724,38 +714,101 @@ function QuotationOrderPrint() {
         </Page>
     );
 
+    return (
+        <>
+            <QuotationPDF />
+            <TncPDF />
+            <RenoAgreementPDF />
+        </>
+    )
+};
 
-    const fileName = `Quotation_${orderDetail.order_no}.pdf`;
+// Custom styles to hide PDFViewer toolbar
+const viewerStyles = StyleSheet.create({
+    viewer: {
+        width: '100%',
+        height: '100%',
+        border: 'none',
+    },
+});
+
+function QuotationOrderPrint() {
+    const { id } = useParams<{ id: string }>();
+    const orderId = id ? parseInt(id, 10) : null;
+    const { orderDetail, loading, error, refetch } = useFetchOrder(orderId);
+
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center w-full bg-gray-100">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600" />
+        </div>
+    );
+    if (error) return (
+        <div className="min-h-screen flex items-center justify-center w-full bg-gray-100">
+            <p className="text-red-600 text-lg font-semibold">Error fetching quotation.</p>
+        </div>
+    );
+    if (!orderDetail) return (
+        <div className="min-h-screen flex items-center justify-center w-full bg-gray-100">
+            <p className="text-gray-600 text-lg font-semibold">No quotation found.</p>
+        </div>
+    );
+
+    const fileName = `QUOTATION_${orderDetail.order_no}.pdf`;
+
+    const pdfDocument = (
+        <Document>
+            <QuotationOrderPDF orderDetail={orderDetail} />
+        </Document>
+    );
 
     return (
-        <div className='w-full h-full'>
-            <PDFDownloadLink
-                document={
-                    <Document>
-                        <QuotationPDF />
-                        <TncPDF />
-                        <RenoAgreementPDF />
-                    </Document>
-                }
-                fileName={fileName}
-            >
-                {({ blob, url, loading, error }) => {
-                    if (!loading && url) {
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = fileName;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        setTimeout(() => {
-                            window.history.back();
-                        }, 1000);
-                    }
-                    return loading ? 'Generating PDF...' : 'Download ready';
-                }}
-            </PDFDownloadLink>
+        <div className="w-full min-h-screen bg-gray-100">
+            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6 flex flex-col h-screen">
+                {/* Header */}
+                <div className="flex items-center gap-4 mb-6">
+                    {/* Back */}
+                    <Link
+                        to={'/orders/' + orderDetail.id}
+                        className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                    >
+                        <i className="ki-solid ki-arrow-left text-2xl"></i>
+                    </Link>
+
+                    <h1 className="text-2xl font-bold text-gray-800">Quotation Preview</h1>
+                </div>
+
+                {/* Download Button */}
+                <div className="mb-6">
+                    <PDFDownloadLink
+                        document={pdfDocument}
+                        fileName={fileName}
+                    >
+                        {({ loading }) => (
+                            <button
+                                className={`w-full sm:w-auto px-6 py-3 rounded-lg text-white font-semibold transition-colors duration-200 ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                                    }`}
+                                disabled={loading}
+                            >
+                                {loading ? 'Generating PDF...' : 'Download PDF'}
+                            </button>
+                        )}
+                    </PDFDownloadLink>
+                </div>
+
+                {/* PDF Preview (Always Visible, Fills Remaining Space) */}
+                <div className="w-full flex-1 bg-white border border-gray-300 rounded-lg overflow-hidden shadow-md">
+                    <PDFViewer
+                        width="100%"
+                        height="100%"
+                        style={viewerStyles.viewer}
+                        showToolbar={false} // Hides the default toolbar with download button
+                    >
+                        {pdfDocument}
+                    </PDFViewer>
+                </div>
+            </div>
         </div>
-    )
+    );
 }
 
 export default QuotationOrderPrint

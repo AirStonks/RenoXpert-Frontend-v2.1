@@ -986,7 +986,7 @@ function EditPO() {
                             className="btn btn-lg btn-primary"
                             onClick={handleSubmit}
                         >
-                            Edit
+                            Update
                         </button>
                     </div>
                 </div>
