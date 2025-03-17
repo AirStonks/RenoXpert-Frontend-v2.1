@@ -165,13 +165,13 @@ function SalesOrderPO() {
                             {sales.map((sale, index) => {
                                 const invoiceCount = sale.invoices.length;
                                 const poCount = sale.purchase_orders.length;
-                                const totalRows = Math.max(invoiceCount, poCount) || 1;
+                                const totalRows = Math.max(invoiceCount, poCount) || 0;
                                 let cumulativePaidAmount = 0;
 
-                                return totalRows > 1 ? (
+                                return totalRows > 0 ? (
                                     Array.from({ length: totalRows }).map((_, rowIdx) => {
                                         if (rowIdx < invoiceCount) {
-                                            cumulativePaidAmount += sale.invoices[rowIdx].amount || 0;
+                                            cumulativePaidAmount += (sale.invoices[rowIdx].amount) || 0;
                                         }
 
                                         return (
