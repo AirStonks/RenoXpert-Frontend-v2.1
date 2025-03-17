@@ -93,6 +93,7 @@ import QuotationOrderPrint from './pages/Order/components/QuotationOrderPrint';
 import POPrint from './pages/PO/components/POPrint';
 import EditPO from './pages/PO/EditPO';
 import VendorLogin from './pages/VendorLogin';
+import SalesOrderPO from './pages/Finance/SalesOrderPO';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -254,6 +255,10 @@ const routes = [
 
   /*--- INVENTORY ---*/
   { path: '/inventory', element: <InventoryMain />, layout: ProtectedLayout },
+
+  
+  /*--- FINANCE ---*/
+  { path: '/finance/sales-order-po', element: <SalesOrderPO />, layout: ProtectedLayout },
 
 
   /*--- DEVELOPER TOOLS ---*/

@@ -315,7 +315,8 @@ function SaleDetail() {
                                             </div>
                                         </div>
                                         <div className="status">
-                                            <span className={`badge badge-pill badge-outline gap-1 items-center ${invoice.status === 'paid' ? 'badge-success' : ''} ${invoice.status === 'overdue' ? 'badge-danger' : ''}`}>
+                                            <span className={`badge badge-pill badge-outline gap-1 items-center
+                                                ${invoice.status === 'paid' ? 'badge-success' : ''} ${invoice.status === 'overdue' ? 'badge-danger' : ''}`}>
                                                 <span className={`badge badge-dot size-1.5 ${invoice.status === 'unpaid' ? 'badge-dark' : ''} ${invoice.status === 'paid' ? 'badge-success' : ''} ${invoice.status === 'overdue' ? 'badge-danger' : ''}`}></span>
                                                 {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
                                             </span>

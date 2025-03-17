@@ -978,7 +978,6 @@ export const salesIndex = async (
     filters: FilterParams = {},
     isHead: boolean = true
 ) => {
-    console.log('Filters received in salesIndex:', filters); // Debug log
     try {
         const params: any = {
             size: size,
@@ -997,7 +996,6 @@ export const salesIndex = async (
             });
         }
 
-        console.log('API params:', params); // Debug log
         const response = await axios.get(API_URL + 'sales', {
             headers: getAuthHeaders(),
             params: params
