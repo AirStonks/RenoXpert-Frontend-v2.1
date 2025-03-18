@@ -939,6 +939,21 @@ export const releaseOrder = async (orderId: number) => {
     }
 };
 
+export const reReleaseOrder = async (orderId: number) => {
+    try {
+        const response = await axios.get(API_URL + `orders/${orderId}/re-release`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
 export const removeOrder = async (orderId: number) => {
     try {
         const response = await axios.delete(API_URL + `orders/${orderId}`, {
@@ -957,6 +972,25 @@ export const removeOrder = async (orderId: number) => {
 export const confirmOrder = async (orderId: number) => {
     try {
         const response = await axios.get(API_URL + `orders/${orderId}/confirm`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const updateOrderInternalRemark = async (orderId: number, internal_remark: string) => {
+    try {
+        const data = {
+            internal_remark
+        }
+
+        const response = await axios.post(API_URL + `orders/${orderId}/internal-remark/update`, data, {
             headers: {
                 ...getAuthHeaders(),
                 'Content-Type': 'application/json',

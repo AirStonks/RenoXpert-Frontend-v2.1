@@ -104,7 +104,7 @@ const QuotationOrderPDF = ({ orderDetail }) => {
     // Define constants for quotationHeader
     const QUOTATION_TITLE = "Quotation";
     const QUOTATION_NUMBER = orderDetail.order_no;
-    const QUOTATION_DATE = getCurrentDate();
+    const QUOTATION_DATE = orderDetail.status === 'confirmed' ? formatDate(orderDetail.updated_at) : getCurrentDate();
 
 
     const ATTN_NAME = orderDetail.user.name;

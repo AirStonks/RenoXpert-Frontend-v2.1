@@ -158,6 +158,12 @@ function POMain() {
 
     const totalPages = Math.ceil(totalItems / size);
 
+    if (currentUser) {
+        console.log(currentUser);
+    }
+
+
+
     return (
         <>
             {/* Loading Overlay */}

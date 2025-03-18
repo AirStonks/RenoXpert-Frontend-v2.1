@@ -216,6 +216,7 @@ export interface Order {
         value?: number | string,
     },
     status?: string,
+    released_at?: string;
     confirmed_at?: string;
     metadata?: JSON,
     created_by?: User;

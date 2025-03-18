@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
 import useFetchOrder from "../../hook/useFetchOrder";
-import { KTAccordion, KTTooltip } from "../../metronic/core";
+import { KTAccordion, KTModal, KTTooltip } from "../../metronic/core";
 import { OrderQuotation, Package, Product } from "../../types";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
-import { releaseOrder } from "../../services/api";
+import { releaseOrder, reReleaseOrder, updateOrderInternalRemark } from "../../services/api";
 import ConfirmOrderModal from "./components/ConfirmOrderModal";
+import ReReleaseOrderModal from "./components/ReReleaseOrderModal";
 
 const APP_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -72,6 +73,8 @@ function OrderDetail() {
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; quantity: number }[]>([]);
 
     const [activeTab, setActiveTab] = useState('tab_1_1');
+    const [isEditingInternalRemark, setIsEditingInternalRemark] = useState(false);
+    const [editableInternalRemark, setEditableInternalRemark] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -188,6 +191,59 @@ function OrderDetail() {
         setIsLoading(false);
     };
 
+    const handleEditInternalRemark = () => {
+        setEditableInternalRemark(orderDetail.internal_remark || '');
+        setIsEditingInternalRemark(true);
+    }
+
+    const handleChangeInternalRemark = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setEditableInternalRemark(event.target.value);
+    }
+
+    const handleSaveInternalRemark = async () => {
+        setIsLoading(true);
+
+        try {
+            const response = await updateOrderInternalRemark(orderId, editableInternalRemark);
+
+            if (response?.success) {
+                setIsEditingInternalRemark(false);
+                refetch();
+                notify('success', 'Internal remark updated!');
+            }
+
+        } catch (error) {
+            console.error(error);
+            notify('error', 'Error occurred while saving internal remark.');
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const handleReReleaseOrder = async () => {
+
+        setIsLoading(true);
+
+        try {
+            const response = await reReleaseOrder(orderId);
+
+            if (response?.success) {
+
+                const modalEl = document.querySelector('#re_release_order_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+                modal.hide();
+
+                notify('success', 'Order re-released successfully!');
+                refetch();
+            }
+
+        } catch (error) {
+            notify('error', 'Failed to re-release order.');
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!orderDetail) return <div>Order not found</div>;
@@ -298,7 +354,7 @@ function OrderDetail() {
     const renoAgreement = (
         <div className='flex flex-col w-full text-sm text-justify'>
             <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
-                <span>THIS AGREEMENT is made this day of <strong>{orderDetail.status === 'confirmed' ? formatDate(orderDetail.updated_at) : getCurrentDate()}</strong></span>
+                <span>THIS AGREEMENT is made this day of <strong>{orderDetail.status === 'confirmed' ? formatDate(orderDetail.confirmed_at) : getCurrentDate()}</strong></span>
                 <span>BETWEEN</span>
                 <span><strong>RENOXPERT SDN. BHD. [Registration No.202401032588 (1578437-W)]</strong> of <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 46500 Subang Jaya, Selangor</strong> (“the Contractor”) of the one part;</span>
                 <span>AND</span>
@@ -481,6 +537,8 @@ function OrderDetail() {
 
     return (
         <>
+            {isLoading && <Loading />}
+
             <div className="flex justify-between items-center flex-wrap mb-6">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
@@ -505,6 +563,15 @@ function OrderDetail() {
                             data-modal-toggle="#confirm_order_modal"
                         >
                             Confirm Order
+                        </button>
+                    }
+                    {
+                        orderDetail?.status === 'voided' &&
+                        <button
+                            className="btn btn-primary btn-sm"
+                            data-modal-toggle="#re_release_order_modal"
+                        >
+                            Re-release Order
                         </button>
                     }
                     {orderDetail?.status !== 'confirmed' &&
@@ -683,7 +750,7 @@ function OrderDetail() {
                                             <span className={`badge badge-sm p-2 cursor-default capitalize
                                                 ${orderDetail.status === 'released' ? 'badge-primary' : ''} 
                                                 ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
-                                                ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
+                                                ${orderDetail.status === 'revoked' || orderDetail.status === 'voided' ? 'badge-danger' : ''} 
                                                 ${orderDetail.status === 'draft' ? 'badge-warning' : ''} 
                                                 badge-outline`}
                                             >
@@ -691,16 +758,6 @@ function OrderDetail() {
                                             </span>
                                         </td>
                                     </tr>
-                                    {/* <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Preview Link:</td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <button
-                                                className="btn btn-outline btn-sm btn-primary disabled"
-                                            >
-                                                View Order Overview
-                                            </button>
-                                        </td>
-                                    </tr> */}
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Version:</td>
                                         <td className="text-sm text-gray-900 pb-3">
@@ -709,6 +766,24 @@ function OrderDetail() {
                                                 : "N/A"}
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Quotation Released Date:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {orderDetail.released_at ? formatDate(orderDetail.released_at) : 'N/A'}
+                                        </td>
+                                    </tr>
+                                    {orderDetail.status === 'confirmed' &&
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                Quotation Agreed Date:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                {formatDate(orderDetail.confirmed_at)}
+                                            </td>
+                                        </tr>
+                                    }
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated Date:</td>
                                         <td className="text-sm text-gray-900 pb-3">
@@ -731,9 +806,46 @@ function OrderDetail() {
                             <h3 className="card-title">
                                 Internal Remark
                             </h3>
+                            <div className="flex">
+                                {isEditingInternalRemark === false &&
+                                    <button
+                                        className="btn btn-primary btn-sm"
+                                        onClick={handleEditInternalRemark}
+                                    >
+                                        Edit
+                                    </button>
+                                }
+                            </div>
                         </div>
                         <div className="card-body pt-3.5 pb-3.5">
-                            <span className="text-gray-900">{orderDetail.internal_remark ? orderDetail.internal_remark : "N/A"}</span>
+                            {isEditingInternalRemark ?
+                                <div className="flex flex-col gap-4">
+                                    <textarea
+                                        className="textarea textarea-bordered w-full h-32"
+                                        value={editableInternalRemark || ''}
+                                        onChange={(e) => handleChangeInternalRemark(e)}
+                                    />
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            className="btn btn-secondary btn-sm"
+                                            onClick={() => setIsEditingInternalRemark(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            className="btn btn-success btn-sm"
+                                            onClick={handleSaveInternalRemark}
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                </div>
+                                :
+                                orderDetail.internal_remark ?
+                                    <span className="text-gray-900">{orderDetail.internal_remark}</span>
+                                    :
+                                    <span className="text-gray-600">N/A</span>
+                            }
                         </div>
                     </div>
                     <div className="card bg-info-light">
@@ -1933,6 +2045,10 @@ function OrderDetail() {
             <ConfirmOrderModal
                 order={{ id: orderDetail.id, name: orderDetail.order_no }}
                 onSubmit={refetch}
+            />
+
+            <ReReleaseOrderModal
+                handleConfirm={handleReReleaseOrder}
             />
 
             <div className="tooltip" id="final_pricing_tooltip">

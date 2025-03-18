@@ -31,7 +31,7 @@ function SalesMain() {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filter, setFilter] = useState<FilterOption[]>([]);
     const [sortField, setSortField] = useState<string>('');
-    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+    const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
     const [properties, setProperties] = useState<Property[]>([]);
 
@@ -63,7 +63,6 @@ function SalesMain() {
                 return acc;
             }, {} as Record<string, string>);
 
-            console.log('FilterParams in initSalesTable:', filterParams);
             const response = await salesIndex(size, page, searchTerm, order, field, filterParams);
 
             const data = response?.data || [];
@@ -91,8 +90,6 @@ function SalesMain() {
 
             const data = response?.data || [];
             setProperties(data);
-
-            setTotalItems(response?.totalCount || 0);
         } catch (error) {
             console.error('Error fetching properties:', error);
             setError('Failed to load properties');
