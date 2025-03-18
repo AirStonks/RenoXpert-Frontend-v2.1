@@ -18,8 +18,9 @@ const getLabelForName = (name) => {
         'ori_acc_card': 'Original Access Card',
         'dup_acc_card': 'Duplicate Access Card',
         'car_acc_card': 'Car Park Access Card',
+        'guest_acc_card': 'Guest Access Card',
         'main_door_key': 'Main Door Key',
-        'room_door_key': 'Guest Access Card',
+        'room_door_key': 'Room Door Key',
         'yard_door_key': 'Yard Key',
         'grill_door_key': 'Grill Door key',
         'mailbox_key': 'Mailbox Key',
@@ -238,22 +239,6 @@ function KeyManagementOverview() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             {renoProgressDetail.key_management.pic_name}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            No. of main door keys:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {renoProgressDetail.key_management.no_main_door}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            No. of room door keys:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {renoProgressDetail.key_management.no_room}
                                         </td>
                                     </tr>
                                 </tbody>

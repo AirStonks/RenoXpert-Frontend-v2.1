@@ -104,21 +104,6 @@ function UpdateKeyManagement() {
         });
     };
 
-    // Add handlers for number inputs
-    const handleKeyNumberChange = (field: 'no_main_door' | 'no_room', action: 'increase' | 'decrease') => {
-        setFormData(prevData => {
-            const newData = {
-                ...prevData,
-                [field]: action === 'increase' ? prevData[field] + 1 : Math.max(0, prevData[field] - 1)
-            };
-
-            // Check if form has changed and update isFormAmended
-            setIsFormAmend(hasFormChanged(newData, keyManagementDetail));
-
-            return newData;
-        });
-    };
-
     // Add handler for date changes
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
         const { value } = e.target;
@@ -179,8 +164,9 @@ function UpdateKeyManagement() {
             'ori_acc_card': 'Original Access Card',
             'dup_acc_card': 'Duplicate Access Card',
             'car_acc_card': 'Car Park Access Card',
+            'guest_acc_card': 'Guest Access Card',
             'main_door_key': 'Main Door Key',
-            'room_door_key': 'Guest Access Card',
+            'room_door_key': 'Room Door Key',
             'yard_door_key': 'Yard Key',
             'grill_door_key': 'Grill Door key',
             'mailbox_key': 'Mailbox Key',
@@ -281,50 +267,6 @@ function UpdateKeyManagement() {
                                                 value={formData.pic_name || ''}
                                                 onChange={handleChange}
                                             />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            No. of main door keys:
-                                        </td>
-                                        <td className="text-lg text-gray-900 pb-3">
-                                            <button
-                                                className="text-gray-600"
-                                                onClick={() => handleKeyNumberChange('no_main_door', 'decrease')}
-                                            >
-                                                <i className="ki-solid ki-minus-squared"></i>
-                                            </button>
-                                            <span className="mx-2 text-base">
-                                                {formData.no_main_door}
-                                            </span>
-                                            <button
-                                                className="text-gray-600"
-                                                onClick={() => handleKeyNumberChange('no_main_door', 'increase')}
-                                            >
-                                                <i className="ki-solid ki-plus-squared"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            No. of room door keys:
-                                        </td>
-                                        <td className="text-lg text-gray-900 pb-3">
-                                            <button
-                                                className="text-gray-600"
-                                                onClick={() => handleKeyNumberChange('no_room', 'decrease')}
-                                            >
-                                                <i className="ki-solid ki-minus-squared"></i>
-                                            </button>
-                                            <span className="mx-2 text-base">
-                                                {formData.no_room}
-                                            </span>
-                                            <button
-                                                className="text-gray-600"
-                                                onClick={() => handleKeyNumberChange('no_room', 'increase')}
-                                            >
-                                                <i className="ki-solid ki-plus-squared"></i>
-                                            </button>
                                         </td>
                                     </tr>
                                 </tbody>

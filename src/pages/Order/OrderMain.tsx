@@ -283,6 +283,16 @@ function OrderMain() {
                                 <i className="ki-filled ki-cross"></i>
                             }
                         </button>
+                        <button
+                            className={`btn btn-sm rounded-full btn-light ${filter === 'voided' ? 'btn-success btn-outline' : 'btn-light'}`}
+                            onClick={() => handleFilterTable('voided')}
+                        >
+                            Voided
+                            {
+                                filter === 'voided' &&
+                                <i className="ki-filled ki-cross"></i>
+                            }
+                        </button>
                     </div>
                 </div>
 
@@ -369,7 +379,7 @@ function OrderMain() {
                                     orders.map((order, orderIndex) => (
                                         <tr
                                             key={orderIndex}
-                                            className={`${orderIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
+                                            className={orderIndex % 2 === 1 ? 'bg-gray-100' : ''}
                                         >
                                             <td>
                                                 <div className="flex flex-col gap-1">
@@ -385,7 +395,7 @@ function OrderMain() {
                                                 <span className={`badge badge-pill p-2 cursor-default capitalize
                                                     ${order.status === 'released' ? 'badge-primary' : ''} 
                                                     ${order.status === 'confirmed' ? 'badge-success' : ''} 
-                                                    ${order.status === 'revoked' ? 'badge-danger' : ''} 
+                                                    ${order.status === 'revoked' || order.status === 'voided' ? 'badge-danger' : ''} 
                                                     ${order.status === 'draft' ? 'badge-warning' : ''} 
                                                     badge-outline`}
                                                 >

@@ -12,6 +12,12 @@ interface FilterOption {
     label?: string;
 }
 
+const formatDate = (dateStr: string) => {
+    const [day, month, year] = dateStr.split("/");
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${day} ${monthNames[parseInt(month) - 1]} ${year}`;
+};
+
 function SalesOrderPO() {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -154,7 +160,7 @@ function SalesOrderPO() {
                                 <th className="w-[100px]">Sales Order #</th>
                                 <th className="w-[110px]">Invoice #</th>
                                 <th className="w-[100px]">Invoice Amount</th>
-                                <th className="w-[100px]">Invoice Status</th>
+                                <th className="w-[100px] text-center">Invoice Status</th>
                                 <th className="w-[100px]">Invoice Paid Amount</th>
                                 <th className="w-[100px]">Invoice Paid %</th>
                                 <th className="w-[100px]">PO #</th>
@@ -193,7 +199,7 @@ function SalesOrderPO() {
                                                             RM {sale.order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                                         </td>
                                                         <td className="align-top">
-                                                            {sale.order.confirmed_at}
+                                                            {sale.order.confirmed_at ? formatDate(sale.order.confirmed_at) : ''}
                                                         </td>
                                                         <td className="align-top">
                                                             <Link
@@ -286,7 +292,7 @@ function SalesOrderPO() {
                                             </Link>
                                         </td>
                                         <td>RM {sale.order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                        <td>{sale.order.confirmed_at}</td>
+                                        <td>{sale.order.confirmed_at ? formatDate(sale.order.confirmed_at) : ''}</td>
                                         <td>
                                             <Link
                                                 to={'/sales/' + sale.id}

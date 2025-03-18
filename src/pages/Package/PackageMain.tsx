@@ -49,7 +49,7 @@ function PackageMain() {
             size: 10,
             searchTerm: '',
             sortField: '',
-            sortOrder: 'asc' as SortOrder,
+            sortOrder: 'desc' as SortOrder,
             expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 1 day from now
         };
 
