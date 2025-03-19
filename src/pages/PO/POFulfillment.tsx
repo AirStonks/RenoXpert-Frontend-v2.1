@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
 import useFetchPO from "../../hook/useFetchPO";
 import Loading from "../../components/Loading";
 import { POItem, PurchaseOrder, POPackage } from "../../types";
@@ -8,6 +8,7 @@ import { Slide, toast } from "react-toastify";
 
 function POFulfillment() {
     const navigate = useNavigate();
+    const { state } = useLocation();
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
     const { poDetail, loading, error } = useFetchPO(poId);
@@ -28,7 +29,11 @@ function POFulfillment() {
     };
 
     const handleBackClick = () => {
-        navigate('/purchase-orders');
+        if (state) {
+            navigate(state.fromUrl);
+        } else {
+            navigate('/purchase-orders');
+        }
     };
 
     useEffect(() => {

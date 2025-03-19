@@ -43,10 +43,6 @@ function SalesMain() {
         initProperties(1, 10, '', null, '');
     }, []);
 
-    useEffect(() => {
-        console.log(filter);
-    }, [filter]);
-
     const initSalesTable = async (
         page: number,
         size: number,
@@ -138,7 +134,6 @@ function SalesMain() {
             ? filter.map(f => f.column === field ? { column: field, value: value, ...(label && { label }) } : f)
             : [...filter, { column: field, value: value, ...(label && { label }) }];
 
-        console.log('Updated filters before API call:', updatedFilters);
         await initSalesTable(1, size, searchTerm, sortOrder, sortField, updatedFilters);
     };
 
@@ -250,7 +245,46 @@ function SalesMain() {
                     </div>
                 </div>
 
-
+                {/* <div className="card">
+                    <div className="card-body p-3">
+                        <div className="flex gap-4">
+                            <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-start" data-dropdown-trigger="click">
+                                <button
+                                    className="dropdown-toggle btn btn-sm rounded-md btn-clear items-center gap-2 text-gray-900 hover:bg-gray-200"
+                                >
+                                    <i className="ki-filled ki-filter"></i>
+                                    <span className='font-semibold'>Filter</span>
+                                </button>
+                                <div className="dropdown-content w-full max-w-2xl py-4 px-6">
+                                    <div className="flex flex-col gap-4">
+                                        <div className="flex justify-between items-center">
+                                            <h2 className='font-medium'>Advanced filters</h2>
+                                            <button className="btn btn-sm btn-light">
+                                                Clear all
+                                            </button>
+                                        </div>
+                                        <div className="flex flex-col gap-4">
+                                            <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-start" data-dropdown-trigger="click">
+                                                <button
+                                                    className="dropdown-toggle btn btn-sm rounded-md btn-light items-center gap-2 text-gray-900 hover:bg-gray-200"
+                                                >
+                                                    <span className='font-semibold'>Field</span>
+                                                    <i className="ki-outline ki-down"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="flex">
+                                            <button className="btn btn-sm rounded-md btn-clear items-center gap-2 text-gray-900 hover:bg-gray-200">
+                                                <i className="ki-filled ki-plus"></i>
+                                                <span className=''>Add new filter</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> */}
 
                 <div className="flex items-center">
                     <span className='font-semibold mr-4'>Quick Filter: </span>

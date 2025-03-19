@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { RenoProgress } from '../../../types';
 import { toast } from 'react-toastify';
 import { renoProgressIndex } from '../../../services/api';
@@ -10,6 +10,7 @@ type SortOrder = 'asc' | 'desc' | null;
 
 function PMTable() {
     const navigate = useNavigate();
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [renoProgress, setRenoProgress] = useState<RenoProgress[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -72,19 +73,28 @@ function PMTable() {
         const value = event.target.value;
         setSearchTerm(value);
 
-        try {
-            setIsLoading(true);
-            const response = await renoProgressIndex(size, page, value);
-
-            const data = response?.data || [];
-            setRenoProgress(data);
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error searching renoProgress:', error);
-            setError('Failed to search renoProgress');
-        } finally {
-            setIsLoading(false);
+        // Debounce logic remains the same
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+            try {
+                setIsLoading(true);
+                const response = await renoProgressIndex(size, 1, value, sortOrder, sortField);
+
+                const data = response?.data || [];
+                setRenoProgress(data);
+                setTotalItems(response?.totalCount || 0);
+            } catch (error) {
+                console.error('Error searching renoProgress:', error);
+                setError('Failed to search renoProgress');
+            } finally {
+                setIsLoading(false);
+            }
+        }, 500);
+
     };
 
     const handlePageChange = (newPage: number) => {
