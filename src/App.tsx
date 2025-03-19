@@ -95,6 +95,7 @@ import EditPO from './pages/PO/EditPO';
 import VendorLogin from './pages/VendorLogin';
 import SalesOrderPO from './pages/Finance/SalesOrderPO';
 import POPaymentVoucher from './pages/PO/components/POPaymentVoucher';
+import POPropertyOverview from './pages/PO/POPropertyOverview';
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -227,6 +228,7 @@ const routes = [
 
   /*--- PO---*/
   { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
+  { path: '/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
   { path: '/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
   { path: '/purchase-orders/:id', element: <PODetail />, layout: ProtectedLayout },
   { path: '/purchase-orders/edit/:id', element: <EditPO />, layout: ProtectedLayout },
