@@ -43,10 +43,6 @@ function SalesMain() {
         initProperties(1, 10, '', null, '');
     }, []);
 
-    useEffect(() => {
-        console.log(filter);
-    }, [filter]);
-
     const initSalesTable = async (
         page: number,
         size: number,
@@ -138,7 +134,6 @@ function SalesMain() {
             ? filter.map(f => f.column === field ? { column: field, value: value, ...(label && { label }) } : f)
             : [...filter, { column: field, value: value, ...(label && { label }) }];
 
-        console.log('Updated filters before API call:', updatedFilters);
         await initSalesTable(1, size, searchTerm, sortOrder, sortField, updatedFilters);
     };
 
