@@ -613,7 +613,7 @@ function OperationHome() {
                                                     )
                                                     .map((diForm: DefectInspectionForm, index: number) => (
                                                         <Link
-                                                            to={`/reno/defect-inspection-form?progressId=${diForm.id}`}
+                                                            to={`/reno/defect-inspection-form?progressId=${diForm.reno_progress_id}`}
                                                             className="card shadow-none rounded-lg" key={index}
                                                         >
                                                             <div className="card-body flex justify-between items-center p-4">
