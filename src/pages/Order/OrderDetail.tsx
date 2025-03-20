@@ -290,7 +290,7 @@ function OrderDetail() {
 
         // Calculate margin in percentage
         const marginInPercentage = totalRetailPrice > 0
-            ? (marginInAmount / totalRetailPrice) * 100
+            ? (marginInAmount / (totalRetailPrice - totalDiscountPrice)) * 100
             : 0;
 
         return {
