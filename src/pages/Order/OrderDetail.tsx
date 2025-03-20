@@ -785,7 +785,7 @@ function OrderDetail() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Margin Amount:
+                                            Nett Margin:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             RM {marginInAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
