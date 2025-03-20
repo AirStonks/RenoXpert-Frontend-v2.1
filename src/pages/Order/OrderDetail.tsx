@@ -661,6 +661,51 @@ function OrderDetail() {
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
+                                Owner
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    {orderDetail.user ?
+                                        <>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Name:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.user.name}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Email:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.user.email}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Phone No.:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    +{orderDetail.user.country_code} {orderDetail.user.phone_no}
+                                                </td>
+                                            </tr>
+                                        </>
+                                        :
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            N/A
+                                        </td>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
                                 General Info
                             </h3>
                         </div>
@@ -892,51 +937,6 @@ function OrderDetail() {
                                         </tr>
                                     }
 
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Owner
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    {orderDetail.user ?
-                                        <>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Name:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.user.name}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Email:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.user.email}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Phone No.:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    +{orderDetail.user.country_code} {orderDetail.user.phone_no}
-                                                </td>
-                                            </tr>
-                                        </>
-                                        :
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            N/A
-                                        </td>
-                                    }
                                 </tbody>
                             </table>
                         </div>
