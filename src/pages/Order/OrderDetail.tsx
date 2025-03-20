@@ -256,7 +256,7 @@ function OrderDetail() {
 
     const calculateQuotationMargin = () => {
         // Calculate total retail price
-        const totalRetailPrice = selectedPackages.reduce((total, pkg) => {
+        const totalRetailPrice = orderDetail.final_amount ? orderDetail.final_amount :selectedPackages.reduce((total, pkg) => {
             const packageRetail = pkg.products.reduce((pkgTotal, product) => {
                 let supplyPrice = product.pivot.includeSupply
                     ? product.provisioning.supply.retail_price * product.pivot.quantity
@@ -268,6 +268,8 @@ function OrderDetail() {
             }, 0);
             return total + (packageRetail * (pkg.quantity || 1));
         }, 0);
+
+        const totalDiscountPrice = Number(selectedQuotation.bonus?.value || 0);
 
         // Calculate total COGS (Cost of Goods Sold)
         const totalCogs = selectedPackages.reduce((total, pkg) => {
@@ -282,9 +284,9 @@ function OrderDetail() {
             }, 0);
             return total + (packageCogs * (pkg.quantity || 1));
         }, 0);
-
+        
         // Calculate margin in amount
-        const marginInAmount = totalRetailPrice - totalCogs;
+        const marginInAmount = (totalRetailPrice - totalDiscountPrice) - totalCogs;
 
         // Calculate margin in percentage
         const marginInPercentage = totalRetailPrice > 0
@@ -728,28 +730,27 @@ function OrderDetail() {
                                             {`RM ${orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                         </td>
                                     </tr>
+                                    {orderDetail.final_amount &&
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                Final Amount:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                RM {(orderDetail.final_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                        </tr>
+                                    }
                                     {selectedQuotation.bonus &&
-                                        <>
+                                        <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                                 Discount Amount:
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 - RM {selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
-                                        </>
+                                        </tr>
                                     }
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Nett Amount:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <span className="text-sm text-gray-900 pb-3">
-                                                RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </span>
-
-                                        </td>
-                                    </tr>
-                                    {orderDetail.final_amount &&
+                                    {orderDetail.final_amount ?
                                         <tr>
                                             <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 flex items-center gap-1">
                                                 <i data-tooltip="#final_pricing_tooltip" className="ki-filled ki-information-2 textlg text-warning mt-[1.5px]"></i>
@@ -757,7 +758,18 @@ function OrderDetail() {
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <span className="text-sm text-gray-900 pb-3">
-                                                    RM {(orderDetail.final_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {selectedQuotation.bonus && ` (Discount: RM${Number(selectedQuotation.bonus?.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
+                                                    RM {(orderDetail.final_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        :
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                Nett Amount:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                <span className="text-sm text-gray-900 pb-3">
+                                                    RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </span>
 
                                             </td>
