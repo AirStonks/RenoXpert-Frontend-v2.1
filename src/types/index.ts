@@ -282,8 +282,10 @@ export interface DiscountFee {
 
 export interface Invoice {
     id?: string,
-    sale_id?: string,
+    item_id?: string,
+    item_type?: string,
     sale?: Sale,
+    po?: PurchaseOrder,
     payments?: Payment[],
     invoice_no?: string,
     percentage?: number,
@@ -1141,7 +1143,10 @@ export interface PurchaseOrder {
     vendor?: User,
     items?: POItem[],
     po_packages?: POPackage[],
+    invoices?: Invoice[],
     total_amount?: number,
+    remaining_amount?: number,
+    remaining_percentage?: number,
     shipping_date?: string,
     shipped_date?: string,
     delivery_date?: string,

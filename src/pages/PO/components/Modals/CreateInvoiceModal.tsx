@@ -1,20 +1,18 @@
 // src\components\Modals\GenerateInvoiceModal.tsx
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { DiscountFee, Invoice, Sale } from "../../../../types";
-import { createInvoice, fetchDiscountFees } from "../../../../services/api";
-import { Slide, toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
-import { KTDropdown, KTModal } from "../../../../metronic/core";
-import Loading from "../../../../components/Loading";
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { DiscountFee, Invoice, PurchaseOrder } from '../../../../types';
+import { Slide, toast } from 'react-toastify';
+import { KTDropdown, KTModal } from '../../../../metronic/core';
+import { createPOInvoice, fetchDiscountFees } from '../../../../services/api';
+import Loading from '../../../../components/Loading';
 
-interface GenerateInvoiceModalProps {
-    saleDetail: Sale;
-    handleUpdateSale: (sale: Sale) => void;
+interface CreateInvoiceModalProps {
+    poDetail: PurchaseOrder;
+    handleUpdatePO: (po: PurchaseOrder) => void;
 }
 
-function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceModalProps) {
-    const navigate = useNavigate();
+function CreateInvoiceModal({ poDetail, handleUpdatePO }: CreateInvoiceModalProps) {
     const [fees, setFees] = useState([]);
     const [discounts, setDiscounts] = useState([]);
     const [availableDiscountFees, setAvailableDiscountFees] = useState([]);
@@ -29,7 +27,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
     const [isCustomeValueExceed, setIsCustomeValueExceed] = useState(false);
 
     const [formData, setFormData] = useState({
-        saleId: '',
+        poId: '',
         percentage: null,
         amount: null,
         invoiceDiscounts: [],
@@ -52,12 +50,11 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
     useEffect(() => {
         setFormData((prev) => ({
             ...prev,
-            saleId: saleDetail.id,
+            poId: poDetail.id,
         }));
 
         initDropdown();
-
-    }, [saleDetail]);
+    }, [poDetail]);
 
     const initDropdown = async () => {
         const discountFeeDropdownEl = document.querySelector('#discount_fee_dropdown') as HTMLElement;
@@ -112,7 +109,6 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
 
     const handleChangeType = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const dataType = event.target.dataset.type;
-        console.log(dataType); // You can use this value as needed
 
         setSelectedType(dataType);
         setSearchDiscountFeeTerm('');
@@ -159,8 +155,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
     const handleCustomPercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const percentage = Number(e.target.value);
 
-        if (percentage > (saleDetail.remaining_percentage * 100)) {
-            console.log('exceed percentage');
+        if (percentage > (poDetail.remaining_percentage * 100)) {
             setIsCustomeValueExceed(true);
         } else {
             setIsCustomeValueExceed(false);
@@ -176,8 +171,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
         const amount = Number(e.target.value);
         const percentage = calculatePercentageByAmount(amount);
 
-        if ((percentage * 100) > (saleDetail.remaining_percentage * 100)) {
-            console.log('exceed amount');
+        if ((percentage * 100) > (poDetail.remaining_percentage * 100)) {
             setIsCustomeValueExceed(true);
         } else {
             setIsCustomeValueExceed(false);
@@ -210,18 +204,18 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
         const appliedFees = [...fees]; // Assuming fees is already an array
 
         const newInvoice: Invoice = {
-            item_id: saleDetail.id,
+            item_id: poDetail.id,
             percentage: formData.percentage,
             discountsData: JSON.stringify(appliedDiscounts),
             feesData: JSON.stringify(appliedFees),
         };
 
-        const response = await createInvoice(newInvoice);
+        const response = await createPOInvoice(newInvoice);
 
         if (response?.success) {
             notify('success', "Payment Invoice Generated Successfully!");
 
-            handleUpdateSale(response.data.sale);
+            handleUpdatePO(response.data.sale);
 
             // Close Modal
             const modalEl = document.querySelector('#generate_invoice_modal') as HTMLElement;
@@ -235,9 +229,6 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                 ...prev,
                 percentage: null
             }));
-
-
-            navigate('/sales/' + saleDetail.id);
         } else {
             console.log(response);
             notify('error', response.message);
@@ -249,7 +240,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
 
     const calculatePercentageByAmount = (amount: number) => {
 
-        const totalAmount = saleDetail.total_amount;
+        const totalAmount = poDetail.total_amount;
         const calculatedPercentage = (amount / totalAmount);
 
         return calculatedPercentage;
@@ -257,15 +248,16 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
 
     // Calculate total fees and discounts
     const totalFees = fees.reduce((total, fee) => {
-        return total + (fee.valueType === 'percentage' ? fee.value * (saleDetail.total_amount * formData.percentage) : fee.value);
+        return total + (fee.valueType === 'percentage' ? fee.value * (poDetail.total_amount * formData.percentage) : fee.value);
     }, 0);
     const totalDiscounts = discounts.reduce((total, discount) => {
-        return total + (discount.valueType === 'percentage' ? discount.value * (saleDetail.total_amount * formData.percentage) : discount.value);
+        return total + (discount.valueType === 'percentage' ? discount.value * (poDetail.total_amount * formData.percentage) : discount.value);
     }, 0);
 
     return (
         <>
             {isLoading && <Loading />}
+
 
             <div className="modal p-14" data-modal="true" id="generate_invoice_modal">
                 <div className="modal-content modal-center-y max-w-4xl max-h-[95%]">
@@ -286,10 +278,10 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                         <tbody>
                                             <tr>
                                                 <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                    Sale No:
+                                                    PO No:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {saleDetail.sales_no}
+                                                    {poDetail.po_no}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -297,7 +289,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Total Amount:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    RM {saleDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    RM {poDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -305,7 +297,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Balance (Amount):
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    RM {saleDetail.remaining_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    RM {poDetail.remaining_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -313,7 +305,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Balance (%):
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {(saleDetail.remaining_percentage * 100).toFixed(2)}%
+                                                    {(poDetail.remaining_percentage * 100).toFixed(2)}%
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -323,10 +315,10 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                             <div className="card flex-auto">
                                 <div className="card-body">
                                     <div className="flex flex-col">
-                                        <span className="text-base text-gray-900 mb-1 font-semibold">{(100 - (saleDetail.remaining_percentage * 100)).toFixed(2)}% Complete</span>
+                                        <span className="text-base text-gray-900 mb-1 font-semibold">{(100 - (poDetail.remaining_percentage * 100)).toFixed(2)}% Complete</span>
                                         <div className="progress progress-success mb-4">
                                             <div className="progress-bar" style={{
-                                                width: `${100 - (saleDetail.remaining_percentage * 100)}%`,
+                                                width: `${100 - (poDetail.remaining_percentage * 100)}%`,
                                                 height: '12px'
                                             }}></div>
                                         </div>
@@ -338,7 +330,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     data-value={value}
                                                     data-action='percentage'
                                                     onClick={handlePercentageSelect}
-                                                    disabled={value > saleDetail.remaining_percentage}
+                                                    disabled={value > poDetail.remaining_percentage}
                                                 >
                                                     {value * 100}%
                                                 </button>
@@ -418,14 +410,14 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                             </div>
                         </div>
                         {/* <div className="flex mb-4">
-                            <div className="card w-full">
-                                <div className="card-body">
-                                    <span className="text-md text-gray-600 font-semibold">
-                                        Due date policies (4 generation): [ 14 days, 21 days, 1 Month (and Subsequence) ]
-                                    </span>
-                                </div>
+                        <div className="card w-full">
+                            <div className="card-body">
+                                <span className="text-md text-gray-600 font-semibold">
+                                    Due date policies (4 generation): [ 14 days, 21 days, 1 Month (and Subsequence) ]
+                                </span>
                             </div>
-                        </div> */}
+                        </div>
+                    </div> */}
                         <div className="flex flex-col mb-8">
                             <div className="flex flex-col mb-4">
                                 <div className="flex">
@@ -513,7 +505,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                         Fee Name: {fee.name}
                                                     </span>
                                                     <span className="text-base text-gray-900 mb-1">
-                                                        Fee Charge: {fee.valueType === 'percentage' ? `${(fee.value * 100).toFixed(2)}% (RM ${((saleDetail.total_amount * formData.percentage) * fee.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})` : `RM ${fee.value}`}
+                                                        Fee Charge: {fee.valueType === 'percentage' ? `${(fee.value * 100).toFixed(2)}% (RM ${((poDetail.total_amount * formData.percentage) * fee.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})` : `RM ${fee.value}`}
                                                     </span>
                                                 </div>
                                                 <div className="flex">
@@ -542,7 +534,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                         Discount Type: {discount.valueType}
                                                     </span>
                                                     <span className="text-base text-gray-900 mb-1">
-                                                        Discount Value: {discount.valueType === 'percentage' ? `${discount.value * 100}% (RM ${((saleDetail.total_amount * formData.percentage) * discount.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})` : `RM ${discount.value}`}
+                                                        Discount Value: {discount.valueType === 'percentage' ? `${discount.value * 100}% (RM ${((poDetail.total_amount * formData.percentage) * discount.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})` : `RM ${discount.value}`}
                                                     </span>
                                                 </div>
                                                 <div className="flex">
@@ -573,7 +565,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Bill amount (Before Fee and Discount):
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    RM {(saleDetail.total_amount * formData.percentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    RM {(poDetail.total_amount * formData.percentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -606,9 +598,9 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
                                                     RM {
-                                                        (saleDetail.total_amount - (saleDetail.total_amount - saleDetail.remaining_amount) - (saleDetail.total_amount * formData.percentage) - totalDiscounts) < 0
+                                                        (poDetail.total_amount - (poDetail.total_amount - poDetail.remaining_amount) - (poDetail.total_amount * formData.percentage) - totalDiscounts) < 0
                                                             ? 0
-                                                            : (saleDetail.total_amount - (saleDetail.total_amount - saleDetail.remaining_amount) - (saleDetail.total_amount * formData.percentage) - totalDiscounts).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                            : (poDetail.total_amount - (poDetail.total_amount - poDetail.remaining_amount) - (poDetail.total_amount * formData.percentage) - totalDiscounts).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                                     }
                                                 </td>
                                             </tr>
@@ -617,7 +609,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Balance (%) after generated:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {((saleDetail.remaining_percentage * 100) - (formData.percentage * 100)).toFixed(2)}%
+                                                    {((poDetail.remaining_percentage * 100) - (formData.percentage * 100)).toFixed(2)}%
                                                 </td>
                                             </tr>
                                             <tr>
@@ -625,7 +617,7 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                                                     Bill amount:
                                                 </td>
                                                 <td className="text-lg text-gray-900 pb-3 font-semibold">
-                                                    RM {((saleDetail.total_amount * formData.percentage) + totalFees - totalDiscounts).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    RM {((poDetail.total_amount * formData.percentage) + totalFees - totalDiscounts).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -648,25 +640,8 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
                     </div>
                 </div>
             </div>
-
-            <div className="modal p-14" data-modal="true" id="percentage_modal">
-                <div className="modal-content modal-center-y max-w-[1024px] h-[580px] max-h-[580px]">
-                    <div className="modal-header py-4 px-5">
-                        <span className="text-lg text-gray-900 font-bold">Percentage Detail</span>
-                        <button
-                            className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
-                            data-modal-dismiss="true"
-                        >
-                            <i className="ki-filled ki-cross"></i>
-                        </button>
-                    </div>
-                    <div className="modal-body">
-
-                    </div>
-                </div>
-            </div>
         </>
     )
 }
 
-export default GenerateInvoiceModal;
+export default CreateInvoiceModal

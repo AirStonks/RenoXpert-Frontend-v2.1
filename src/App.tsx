@@ -96,6 +96,8 @@ import VendorLogin from './pages/VendorLogin';
 import SalesOrderPO from './pages/Finance/SalesOrderPO';
 import POPaymentVoucher from './pages/PO/components/POPaymentVoucher';
 import POPropertyOverview from './pages/PO/POPropertyOverview';
+import POInvoice from './pages/PO/POInvoice';
+
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -233,8 +235,9 @@ const routes = [
   { path: '/purchase-orders/:id', element: <PODetail />, layout: ProtectedLayout },
   { path: '/purchase-orders/edit/:id', element: <EditPO />, layout: ProtectedLayout },
   { path: '/purchase-orders/fulfillment/:id', element: <POFulfillment />, layout: ProtectedLayout },
-  { path: '/purchase-orders/print/:id', element: <POPrint/>, layout: null },
-  { path: '/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher/>, layout: null },
+  { path: '/purchase-orders/print/:id', element: <POPrint />, layout: null },
+  { path: '/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
+  { path: '/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
 
   /*--- DISCOUNT AND FEE ---*/
   { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
@@ -260,7 +263,7 @@ const routes = [
   /*--- INVENTORY ---*/
   { path: '/inventory', element: <InventoryMain />, layout: ProtectedLayout },
 
-  
+
   /*--- FINANCE ---*/
   { path: '/finance/sales-order-po', element: <SalesOrderPO />, layout: ProtectedLayout },
 
