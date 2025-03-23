@@ -86,6 +86,7 @@ function AddInternalUser() {
                 email: formData.email.trim() + '@belive.asia',
                 type: formData.type,
                 phone_no: formData.phone,
+                country_code: '60'
             };
 
             const response = await addUser(userData);
