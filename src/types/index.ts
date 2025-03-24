@@ -1147,6 +1147,7 @@ export interface PurchaseOrder {
     total_amount?: number,
     remaining_amount?: number,
     remaining_percentage?: number,
+    paid_percentage?: number,
     shipping_date?: string,
     shipped_date?: string,
     delivery_date?: string,

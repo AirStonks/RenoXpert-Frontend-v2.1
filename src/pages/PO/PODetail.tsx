@@ -138,7 +138,14 @@ function PODetail() {
                 <div className="flex gap-3">
                     {currentUser.type !== 'backend-vendor' ?
                         <>
-                            {poDetail.order_status === 'unreleased' &&
+                            {poDetail.order_status === 'released' ?
+                                <Link
+                                    to={'/purchase-orders/' + poId + '/invoices'}
+                                    className="btn btn-primary btn-sm"
+                                >
+                                    Invoices
+                                </Link>
+                                :
                                 <>
                                     <Link
                                         to={'/purchase-orders/edit/' + poId}
@@ -154,12 +161,6 @@ function PODetail() {
                                     </button>
                                 </>
                             }
-                            <Link
-                                to={'/purchase-orders/' + poId + '/invoices'}
-                                className="btn btn-primary btn-sm"
-                            >
-                                Invoices
-                            </Link>
                         </>
                         :
                         poDetail.order_status === 'released' &&
@@ -176,6 +177,12 @@ function PODetail() {
                             >
                                 Reject Order
                             </button>
+                            <Link
+                                to={'/purchase-orders/' + poId + '/invoices'}
+                                className="btn btn-primary btn-sm"
+                            >
+                                Invoices
+                            </Link>
                         </>
                     }
                     <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">

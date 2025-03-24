@@ -216,35 +216,37 @@ function GenerateInvoiceModal({ saleDetail, handleUpdateSale }: GenerateInvoiceM
             feesData: JSON.stringify(appliedFees),
         };
 
-        const response = await createInvoice(newInvoice);
+        try {
+            const response = await createInvoice(newInvoice);
 
-        if (response?.success) {
-            notify('success', "Payment Invoice Generated Successfully!");
+            if (response?.success) {
+                notify('success', "Payment Invoice Generated Successfully!");
 
-            handleUpdateSale(response.data.sale);
+                handleUpdateSale(response.data.sale);
 
-            // Close Modal
-            const modalEl = document.querySelector('#generate_invoice_modal') as HTMLElement;
-            const modal = KTModal.getInstance(modalEl);
+                // Close Modal
+                const modalEl = document.querySelector('#generate_invoice_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
 
-            modal.hide();
+                modal.hide();
 
-            setFees([]);
-            setDiscounts([]);
-            setFormData((prev) => ({
-                ...prev,
-                percentage: null
-            }));
-
-
-            navigate('/sales/' + saleDetail.id);
-        } else {
-            console.log(response);
-            notify('error', response.message);
+                setFees([]);
+                setDiscounts([]);
+                setFormData((prev) => ({
+                    ...prev,
+                    percentage: null
+                }));
+            } else {
+                console.log(response);
+                notify('error', response.message);
+                setIsLoading(false);
+            }
+        } catch (error) {
+            console.log(error.message);
+            notify('error', 'Error occurred during invoice generation.');
+        } finally {
             setIsLoading(false);
         }
-
-        setIsLoading(false);
     }
 
     const calculatePercentageByAmount = (amount: number) => {

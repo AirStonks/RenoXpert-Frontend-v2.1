@@ -210,32 +210,34 @@ function CreateInvoiceModal({ poDetail, handleUpdatePO }: CreateInvoiceModalProp
             feesData: JSON.stringify(appliedFees),
         };
 
-        const response = await createPOInvoice(newInvoice);
+        try {
 
-        if (response?.success) {
-            notify('success', "Payment Invoice Generated Successfully!");
+            const response = await createPOInvoice(newInvoice);
 
-            handleUpdatePO(response.data.sale);
+            if (response?.success) {
+                notify('success', "Payment Invoice Generated Successfully!");
 
-            // Close Modal
-            const modalEl = document.querySelector('#generate_invoice_modal') as HTMLElement;
-            const modal = KTModal.getInstance(modalEl);
+                handleUpdatePO(response.data.sale);
 
-            modal.hide();
+                // Close Modal
+                const modalEl = document.querySelector('#generate_invoice_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
 
-            setFees([]);
-            setDiscounts([]);
-            setFormData((prev) => ({
-                ...prev,
-                percentage: null
-            }));
-        } else {
-            console.log(response);
-            notify('error', response.message);
+                modal.hide();
+
+                setFees([]);
+                setDiscounts([]);
+                setFormData((prev) => ({
+                    ...prev,
+                    percentage: null
+                }));
+            }
+        } catch (error) {
+            console.log(error.message);
+            notify('error', 'Error occurred during invoice generation.');
+        } finally {
             setIsLoading(false);
         }
-
-        setIsLoading(false);
     }
 
     const calculatePercentageByAmount = (amount: number) => {

@@ -5,6 +5,7 @@ import { POIndex } from '../../../services/api';
 import Loading from '../../../components/Loading';
 import { PurchaseOrder } from '../../../types';
 import { Link } from 'react-router-dom';
+import { useUser } from '../../../context/UserContext';
 
 interface TableColumn {
     field: string;
@@ -17,6 +18,8 @@ type GroupBy = string | null;
 
 const POPropertyView = () => {
     const navigate = useNavigate();
+    const { currentUser, loading } = useUser();
+
     const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -31,7 +34,7 @@ const POPropertyView = () => {
     const [expandedPropertyGroups, setExpandedPropertyGroups] = useState<Set<string>>(new Set());
     const [expandedUnitGroups, setExpandedUnitGroups] = useState<Set<string>>(new Set());
 
-    const columns: TableColumn[] = [
+    let columns: TableColumn[] = [
         { field: 'po_no', header: 'PO No.', sortable: true },
         { field: 'sales_no', header: 'Sales No.', sortable: true },
         { field: 'owner', header: 'Owner', sortable: true },
@@ -43,6 +46,10 @@ const POPropertyView = () => {
         { field: 'payment_status', header: 'Payment Status', sortable: true },
         { field: 'delivery_status', header: 'Delivery/Fulfillment', sortable: true },
     ];
+
+    if (currentUser && currentUser.type === 'backend-vendor') {
+        columns = columns.filter(column => column.field !== 'sales_no');
+    }
 
     const groupableColumns = columns.filter(col => col.groupable);
 
@@ -189,19 +196,21 @@ const POPropertyView = () => {
                             {item.po_no}
                         </Link>
                     </div>
-                    <div>
-                        {item.sale ?
-                            <Link
-                                to={`/sales/${item.sale_id}`}
-                                state={{ fromUrl: '/purchase-orders/property/view' }}
-                                className="font-semibold cursor-pointer text-orange-500"
-                            >
-                                {item.sale.sales_no}
-                            </Link>
-                            :
-                            '-'
-                        }
-                    </div>
+                    {currentUser?.type !== 'backend-vendor' &&
+                        <div>
+                            {item.sale ?
+                                <Link
+                                    to={`/sales/${item.sale_id}`}
+                                    state={{ fromUrl: '/purchase-orders/property/view' }}
+                                    className="font-semibold cursor-pointer text-orange-500"
+                                >
+                                    {item.sale.sales_no}
+                                </Link>
+                                :
+                                '-'
+                            }
+                        </div>
+                    }
                     <div>
                         <div className="flex flex-col gap-1">
                             {item.sale ? (
@@ -268,7 +277,7 @@ const POPropertyView = () => {
         );
     };
 
-    if (isLoading) {
+    if (isLoading || loading) {
         return (
             <div className="min-h-screen flex items-center justify-center w-full">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />

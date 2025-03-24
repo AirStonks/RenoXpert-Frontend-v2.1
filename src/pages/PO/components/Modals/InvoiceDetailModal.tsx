@@ -3,16 +3,17 @@ import { useEffect, useState } from "react";
 import ClipboardJS from "clipboard";
 import useFetchInvoice from "../../../../hook/useFetchInvoice";
 import Loading from "../../../../components/Loading";
-import { changeInvoiceLinkStatus, markInvoiceAsPaid } from "../../../../services/api";
 import { Slide, toast } from "react-toastify";
 import { Invoice } from "../../../../types";
-import PaymentDetailModal from "./PaymentDetailModal";
-import NewPaymentDetailModal from "./NewPaymentDetailModal";
 import DeleteInvoiceModal from "./DeleteInvoiceModal";
+import { markInvoiceAsPaid } from "../../../../services/api";
+import React from "react";
+import { useUser } from "../../../../context/UserContext";
 
 interface InvoiceDetailModalProps {
     invoiceId: number | null;
-    refetchSale: () => void;
+    refetchPo: () => void
+    handleResetPoId: () => void
 }
 
 const APP_URL =
@@ -24,10 +25,11 @@ const APP_URL =
                 ? import.meta.env.VITE_LOCAL_APP_URL
                 : null;
 
-function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps) {
+function InvoiceDetailModal({ invoiceId, refetchPo, handleResetPoId }: InvoiceDetailModalProps) {
     const { invoiceDetail, loading, error, refetch } = useFetchInvoice(invoiceId);
     const [invoice, setInvoice] = useState<Invoice | null>(null);
     const [linkStatusLoading, setLinkStatusLoading] = useState(false);
+    const { currentUser, loading: userLoading } = useUser();
 
     const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
 
@@ -52,8 +54,8 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
 
     useEffect(() => {
         if (!loading && invoice) {
-            const target = document.getElementById('clipboard_1_target');
-            const button = document.getElementById('clipboard_1_button');
+            const target = document.getElementById('clipboard_1_target') as HTMLInputElement;
+            const button = document.getElementById('clipboard_1_button') as HTMLInputElement;
 
             if (!target || !button) {
                 return;
@@ -98,37 +100,31 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
     //     }
     // };
 
-    // const handleMarkAsPaid = async (invoiceId: number) => {
-    //     setLinkStatusLoading(true);
+    const handleMarkAsPaid = async (invoiceId: number) => {
+        try {
+            const response = await markInvoiceAsPaid(invoiceId);
 
-    //     try {
-    //         const response = await markInvoiceAsPaid(invoiceId);
+            if (response?.success) {
+                notify('success', "Invoice marked as paid.");
+                refetch();
+            }
 
-    //         if (response?.success) {
-    //             notify('success', "Invoice marked as paid.");
-    //             refetch();
-    //         }
+        } catch (error) {
+            console.error('Error changing invoice link status:', error);
+        }
 
-    //     } catch (error) {
-    //         console.error('Error changing invoice link status:', error);
-    //     }
-
-    //     setLinkStatusLoading(false);
-    // };
+        setLinkStatusLoading(false);
+    };
 
     let content;
 
-    if (loading || linkStatusLoading) {
+    if (loading || linkStatusLoading || userLoading) {
         content = <Loading />;
     } else if (error) {
         content = <div className="text-red-600">Something went wrong: {error}</div>;
     } else if (!invoice) {
         content = <div>Invoice not found</div>;
     } else {
-        // const discounts = JSON.parse(JSON.parse(JSON.stringify(invoiceDetail.discountsData)));
-        console.log(invoiceDetail);
-
-
         content = (
             <div className="flex flex-wrap gap-4">
                 <div className="flex flex-col flex-[1] gap-4">
@@ -141,40 +137,44 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
                                 </button>
 
                                 <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
-                                    {invoice.status === "unpaid" && (
-                                        <div className="menu-item">
-                                            <button
-                                                className="menu-link copy-link"
-                                                data-modal-toggle="#new_payment_detail_modal"
-                                            // onClick={() => handleMarkAsPaid(Number(invoice.id))}
-                                            >
-                                                <span className="menu-title">
-                                                    <div className="flex gap-2 items-center">
-                                                        <i className="ki-outline ki-copy"></i>
-                                                        <span className="text-gray-900">
-                                                            Mark as Paid
+                                    {currentUser.type !== 'backend-vendor' && (
+                                        <>
+                                            {invoice.status === "unpaid" && (
+                                                <div className="menu-item">
+                                                    <button
+                                                        className="menu-link copy-link"
+                                                        data-modal-toggle="#new_payment_detail_modal"
+                                                        onClick={() => handleMarkAsPaid(Number(invoice.id))}
+                                                    >
+                                                        <span className="menu-title">
+                                                            <div className="flex gap-2 items-center">
+                                                                <i className="ki-outline ki-copy"></i>
+                                                                <span className="text-gray-900">
+                                                                    Mark as Paid
+                                                                </span>
+                                                            </div>
                                                         </span>
-                                                    </div>
-                                                </span>
-                                            </button>
-                                        </div>
-                                    )}
-                                    <div className="menu-item">
-                                        <button
-                                            className="menu-link copy-link"
-                                            data-modal-toggle="#delete_invoice_modal"
-                                        // onClick={() => handleMarkAsPaid(Number(invoice.id))}
-                                        >
-                                            <span className="menu-title">
-                                                <div className="flex gap-2 items-center text-danger">
-                                                    <i className="ki-outline ki-trash"></i>
-                                                    <span className="">
-                                                        Delete Invoice
-                                                    </span>
+                                                    </button>
                                                 </div>
-                                            </span>
-                                        </button>
-                                    </div>
+                                            )}
+                                            <div className="menu-item">
+                                                <button
+                                                    className="menu-link copy-link"
+                                                    data-modal-toggle="#delete_invoice_modal"
+                                                // onClick={() => handleMarkAsPaid(Number(invoice.id))}
+                                                >
+                                                    <span className="menu-title">
+                                                        <div className="flex gap-2 items-center text-danger">
+                                                            <i className="ki-outline ki-trash"></i>
+                                                            <span className="">
+                                                                Delete Invoice
+                                                            </span>
+                                                        </div>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -188,7 +188,7 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Initial Bill Amount:</td>
                                         <td className="text-sm text-gray-900 font-medium pb-3">
-                                            {`RM ${(invoice.sale.total_amount * invoice.percentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            {`RM ${(invoice.po.total_amount * invoice.percentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                         </td>
                                     </tr>
                                     <tr>
@@ -292,7 +292,7 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
                                                 }
                                                 <tr>
                                                     <td className="text-sm text-gray-600 pb-3 pe-2 lg:pe-4">Discount Amount:</td>
-                                                    <td className="text-sm text-gray-900 font-medium pb-3">RM {discount.valueType === "percentage" ? ((invoice.sale.total_amount * invoice.percentage) * discount.value).toFixed(2) : discount.value.toFixed(2)}</td>
+                                                    <td className="text-sm text-gray-900 font-medium pb-3">RM {discount.valueType === "percentage" ? ((invoice.po.total_amount * invoice.percentage) * discount.value).toFixed(2) : discount.value.toFixed(2)}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -325,7 +325,7 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
                                                 }
                                                 <tr>
                                                     <td className="text-sm text-gray-600 pb-3 pe-2 lg:pe-4">Fee Amount:</td>
-                                                    <td className="text-sm text-gray-900 font-medium pb-3">RM {fee.valueType === "percentage" ? ((invoice.sale.total_amount * invoice.percentage) * fee.value).toFixed(2) : fee.value.toFixed(2)}</td>
+                                                    <td className="text-sm text-gray-900 font-medium pb-3">RM {fee.valueType === "percentage" ? ((invoice.po.total_amount * invoice.percentage) * fee.value).toFixed(2) : fee.value.toFixed(2)}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -381,7 +381,7 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
         );
     }
 
@@ -404,7 +404,7 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
                 </div>
             </div>
 
-            <NewPaymentDetailModal
+            {/* <NewPaymentDetailModal
                 invoiceId={invoiceId}
                 refetchInvoice={() => refetch()}
                 refetchSale={refetchSale}
@@ -413,11 +413,12 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
             <PaymentDetailModal
                 invoiceId={invoiceId}
                 paymentId={selectedPaymentId}
-            />
+            /> */}
 
             <DeleteInvoiceModal
                 invoice={invoice}
-                refetchSale={refetchSale}
+                refetchPo={refetchPo}
+                handleResetPoId={handleResetPoId}
             />
         </>
     );
