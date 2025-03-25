@@ -55,9 +55,6 @@ function PODetail() {
                 const modalEl = document.querySelector('#po_release_modal') as HTMLElement;
                 const modal = KTModal.getInstance(modalEl);
 
-                console.log(modal);
-
-
                 modal.hide();
 
                 notify('success', "PO Released Successfully!");
@@ -140,24 +137,33 @@ function PODetail() {
                 </div>
                 <div className="flex gap-3">
                     {currentUser.type !== 'backend-vendor' ?
-                        poDetail.order_status === 'unreleased' &&
                         <>
-                            <Link
-                                to={'/purchase-orders/edit/' + poId}
-                                className="btn btn-info btn-sm"
-                            >
-                                Edit PO
-                            </Link>
-                            <button
-                                className="btn btn-success btn-sm"
-                                data-modal-toggle="#po_release_modal"
-                            >
-                                Release Order
-                            </button>
+                            {poDetail.order_status === 'released' ?
+                                <Link
+                                    to={'/purchase-orders/' + poId + '/invoices'}
+                                    className="btn btn-primary btn-sm"
+                                >
+                                    Invoices
+                                </Link>
+                                :
+                                <>
+                                    <Link
+                                        to={'/purchase-orders/edit/' + poId}
+                                        className="btn btn-info btn-sm"
+                                    >
+                                        Edit PO
+                                    </Link>
+                                    <button
+                                        className="btn btn-success btn-sm"
+                                        data-modal-toggle="#po_release_modal"
+                                    >
+                                        Release Order
+                                    </button>
+                                </>
+                            }
                         </>
                         :
                         poDetail.order_status === 'released' &&
-
                         <>
                             <button
                                 className="btn btn-success btn-sm"
@@ -171,6 +177,12 @@ function PODetail() {
                             >
                                 Reject Order
                             </button>
+                            <Link
+                                to={'/purchase-orders/' + poId + '/invoices'}
+                                className="btn btn-primary btn-sm"
+                            >
+                                Invoices
+                            </Link>
                         </>
                     }
                     <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
@@ -194,7 +206,7 @@ function PODetail() {
                             </div>
                             <div className="menu-item">
                                 {/* <Link
-                                    to={`/purchase-orders/print/payment-voucher/${poId}`}
+                                    to={/purchase-orders/print/payment-voucher/${poId}}
                                     className="menu-link"
                                 >
                                     <span className="menu-title">

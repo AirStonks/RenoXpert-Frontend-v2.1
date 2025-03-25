@@ -72,7 +72,7 @@ function SaleDetail() {
 
             <div className="flex flex-col mb-4">
                 <div className="flex flex-wrap gap-8 mb-8">
-                    <div className="left-column flex flex-col flex-[3] gap-8">
+                    <div className="flex flex-col flex-[3] gap-8">
                         <div className="card">
                             <div className="card-body pt-3.5 pb-3.5">
                                 <table className="table-auto">
@@ -155,7 +155,7 @@ function SaleDetail() {
                             </div>
                         </div>
                     </div>
-                    <div className='flex flex-col right-column flex-[6] gap-8'>
+                    <div className='flex flex-col flex-[6] gap-8'>
                         <div className="card">
                             <div className="card-body">
                                 <div className="flex flex-col">
@@ -415,7 +415,6 @@ function SaleDetail() {
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <GenerateInvoiceModal
