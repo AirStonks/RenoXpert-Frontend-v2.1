@@ -13,6 +13,12 @@ const getCurrentDate = () => {
     return date.toLocaleDateString('en-GB', options);
 };
 
+const formatDate = (dateStr: string) => {
+    const [day, month, year] = dateStr.split("/");
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${day} ${monthNames[parseInt(month) - 1]} ${year}`;
+};
+
 // Separate the PDF content into its own component
 const PoPDF = ({ invoiceDetail, poDetail }) => {
     const COMPANY_NAME = "RenoXpert Sdn Bhd";
@@ -23,9 +29,10 @@ const PoPDF = ({ invoiceDetail, poDetail }) => {
     const COMPANY_EMAIL = "sales@renoxpert.my";
     const COMPANY_LOGO_URL = "/public/app/RenoExpert_logo-01.jpg";
 
-    const ITEM_TITLE = "Invoice";
+    const ITEM_TITLE = invoiceDetail.status === 'paid' ? "Receipt" : "Invoice";
     const ITEM_NUMBER = invoiceDetail.invoice_no;
-    const ITEM_DATE = getCurrentDate();
+    const ITEM_DATE_LABEL = invoiceDetail.status === 'paid' ? 'Receipt Date' : 'Date';
+    const ITEM_DATE = invoiceDetail.status === 'paid' ? formatDate(invoiceDetail.updated_at) : getCurrentDate();
 
     const ATTN_NAME = poDetail.vendor.name;
     const ATTN_ADDRESS = `-`;
@@ -84,7 +91,7 @@ const PoPDF = ({ invoiceDetail, poDetail }) => {
                 <Text style={styles.quotationTitle}>{ITEM_TITLE}</Text>
                 <View style={styles.quotationDetails}>
                     <Text style={styles.quotationText}>Number: {ITEM_NUMBER}</Text>
-                    <Text style={styles.quotationText}>Created Date: {ITEM_DATE}</Text>
+                    <Text style={styles.quotationText}>{ITEM_DATE_LABEL}: {ITEM_DATE}</Text>
                 </View>
             </View>
 

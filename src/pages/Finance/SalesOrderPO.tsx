@@ -121,16 +121,22 @@ function SalesOrderPO() {
 
     const totalPages = Math.ceil(totalItems / size);
 
-    const renderSaleCard = (sale: Sale) => {
+    const renderSaleCard = (sale: Sale, index: number) => {
         const invoiceCount = sale.invoices.length;
         const poCount = sale.purchase_orders.length;
         const totalRows = Math.max(invoiceCount, poCount) || 0;
         let cumulativePaidAmount = 0;
-        const isExpanded = expandedCards[sale.id] ?? true; // Default to true if undefined
+        const isExpanded = expandedCards[sale.id] ?? true;
+
+        // Determine if the card is at an odd index (0-based index, so odd indices are 1, 3, 5, etc.)
+        const isOdd = index % 2 === 1;
 
         return (
             <div className="card mb-4" key={sale.id}>
-                <div className="card-header flex justify-between items-center cursor-pointer" onClick={() => toggleCard(sale.id)}>
+                <div
+                    className={`card-header flex justify-between items-center cursor-pointer ${isOdd ? 'bg-gray-200' : ''}`}
+                    onClick={() => toggleCard(sale.id)}
+                >
                     <div className="card-title">
                         QUO #{sale.order.order_no} - RM {sale.order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </div>
@@ -140,15 +146,12 @@ function SalesOrderPO() {
                 </div>
                 {isExpanded && (
                     <div className="card-table">
+                        {/* Rest of the table content remains unchanged */}
                         <table className="table align-middle text-gray-700 font-medium text-sm">
                             <thead>
                                 <tr>
-                                    <th className='w-[100px] text-center'>Owner</th>
-                                    <th className='w-[60px] text-center'>Unit</th>
-                                    <th className='w-[60px] text-center'>Property</th>
-                                    <th className="w-[100px]">QUO #</th>
-                                    <th className="w-[100px]">QUO Amount</th>
                                     <th className="w-[100px]">Date (Owner Approved)</th>
+                                    <th className='w-[100px] text-center'>Owner/Unit/Property</th>
                                     <th className="w-[100px]">Sales Order #</th>
                                     <th className="w-[110px]">Invoice #</th>
                                     <th className="w-[100px]">Invoice Amount</th>
@@ -160,6 +163,7 @@ function SalesOrderPO() {
                                 </tr>
                             </thead>
                             <tbody>
+                                {/* Table body content remains unchanged */}
                                 {totalRows > 0 ? (
                                     Array.from({ length: totalRows }).map((_, rowIdx) => {
                                         if (rowIdx < invoiceCount) {
@@ -168,32 +172,35 @@ function SalesOrderPO() {
 
                                         return (
                                             <tr key={`${sale.id}-${rowIdx}`} className="odd:bg-gray-100">
-                                                {rowIdx === 0 && (
+                                                {/* Row content remains unchanged */}
+                                                {rowIdx === 0 ? (
                                                     <>
                                                         <td className="align-top">
-                                                            <div className="flex flex-col gap-1">
-                                                                {sale.order.user ?
-                                                                    <>
-                                                                        <span>{sale.order.user.name}</span>
-                                                                        <span className="text-xs text-slate-400">{sale.order.user.email}</span>
-                                                                        <span className="text-xs text-slate-700">+{sale.order.user.country_code} {sale.order.user.phone_no}</span>
-                                                                    </>
-                                                                    :
-                                                                    '-'
-                                                                }
-                                                            </div>
+                                                            {sale.order.confirmed_at ? formatDate(sale.order.confirmed_at) : ''}
                                                         </td>
-                                                        <td className="align-top text-center">
-                                                            <div className="flex flex-col gap-1">
-                                                                <span>{sale.order.block}-{sale.order.floor}-{sale.order.unit_no}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="align-top text-center">
-                                                            <div className="flex flex-col gap-1">
-                                                                <span>{sale.order.property ? sale.order.property.name : '-'}</span>
-                                                                <div className="badge">
-                                                                    <span className="text-xs text-gray-900">{sale.order.unit_type}</span>
-                                                                </div>
+                                                        <td className="align-top">
+                                                            <div className="flex flex-col gap-2">
+                                                                {sale.order.user ? (
+                                                                    <div className="space-y-2">
+                                                                        <div className="text-base font-semibold text-gray-800">
+                                                                            {sale.order.user.name}
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-sm text-gray-600 font-medium">Unit:</span>
+                                                                            <span className="text-sm text-gray-700">
+                                                                                {sale.order.block}-{sale.order.floor}-{sale.order.unit_no}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-sm text-gray-600 font-medium">Property:</span>
+                                                                            <span className="text-sm text-gray-700">
+                                                                                {sale.order.property ? sale.order.property.name : 'Not specified'} - Type  {sale.order.unit_type || 'N/A'}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm text-gray-400 italic">No owner information available</span>
+                                                                )}
                                                             </div>
                                                         </td>
                                                         <td className="align-top">
@@ -201,107 +208,82 @@ function SalesOrderPO() {
                                                                 {sale.order.order_no}
                                                             </Link>
                                                         </td>
-                                                        <td className="align-top">
-                                                            RM {sale.order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                                        </td>
-                                                        <td className="align-top">
-                                                            {sale.order.confirmed_at ? formatDate(sale.order.confirmed_at) : ''}
-                                                        </td>
-                                                        <td className="align-top">
-                                                            <Link to={`/sales/${sale.id}`} className="link text-orange-500">
-                                                                {sale.sales_no}
-                                                            </Link>
-                                                        </td>
-                                                    </>
-                                                )}
-                                                {rowIdx > 0 && (
-                                                    <>
-                                                        <td></td>
-                                                        <td></td>
-                                                        <td></td>
-                                                        <td></td>
-                                                        <td></td>
-                                                        <td></td>
-                                                        <td></td>
-                                                    </>
-                                                )}
-                                                {rowIdx < invoiceCount ? (
-                                                    <>
-                                                        <td style={{ paddingLeft: '1rem' }}>{sale.invoices[rowIdx].invoice_no}</td>
-                                                        <td>RM {sale.invoices[rowIdx].amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                                        <td className="text-center">
-                                                            <span className={`badge badge-pill p-2 cursor-default capitalize
-                                                                ${sale.invoices[rowIdx].status === 'issued' ? 'badge-primary' : ''} 
-                                                                ${sale.invoices[rowIdx].status === 'paid' ? 'badge-success' : ''} 
-                                                                ${sale.invoices[rowIdx].status === 'overdue' ? 'badge-danger' : ''} 
-                                                                badge-outline`}>
-                                                                {sale.invoices[rowIdx].status.replace(/-/g, ' ')}
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            RM {cumulativePaidAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                                        </td>
-                                                        <td>
-                                                            {sale.order.total_amount > 0
-                                                                ? ((cumulativePaidAmount / sale.order.total_amount) * 100).toFixed(2) + '%'
-                                                                : '0%'}
-                                                        </td>
                                                     </>
                                                 ) : (
                                                     <>
                                                         <td></td>
                                                         <td></td>
                                                         <td></td>
-                                                        <td></td>
-                                                        <td></td>
                                                     </>
                                                 )}
-                                                {rowIdx < poCount ? (
-                                                    <>
-                                                        <td style={{ paddingLeft: '1rem' }}>
-                                                            <Link to={`/purchase-orders/${sale.purchase_orders[rowIdx].id}`} className="link text-orange-500">
-                                                                {sale.purchase_orders[rowIdx].po_no}
-                                                            </Link>
-                                                        </td>
-                                                        <td>
-                                                            RM {sale.purchase_orders[rowIdx].total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                                        </td>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <td></td>
-                                                        <td></td>
-                                                    </>
-                                                )}
+                                                <td className="align-top">
+                                                    {rowIdx < invoiceCount ? sale.invoices[rowIdx].invoice_no : ''}
+                                                </td>
+                                                <td className="align-top">
+                                                    {rowIdx < invoiceCount ?
+                                                        `RM ${sale.invoices[rowIdx].amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : ''}
+                                                </td>
+                                                <td className="text-center align-top">
+                                                    {rowIdx < invoiceCount && (
+                                                        <span className={`badge badge-pill p-2 cursor-default capitalize
+                                                            ${sale.invoices[rowIdx].status === 'issued' ? 'badge-primary' : ''} 
+                                                            ${sale.invoices[rowIdx].status === 'paid' ? 'badge-success' : ''} 
+                                                            ${sale.invoices[rowIdx].status === 'overdue' ? 'badge-danger' : ''} 
+                                                            badge-outline`}>
+                                                            {sale.invoices[rowIdx].status.replace(/-/g, ' ')}
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="align-top">
+                                                    {rowIdx < invoiceCount ?
+                                                        `RM ${cumulativePaidAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : ''}
+                                                </td>
+                                                <td className="align-top">
+                                                    {rowIdx < invoiceCount ?
+                                                        (sale.order.total_amount > 0
+                                                            ? ((cumulativePaidAmount / sale.order.total_amount) * 100).toFixed(2) + '%'
+                                                            : '0%') : ''}
+                                                </td>
+                                                <td className="align-top">
+                                                    {rowIdx < poCount && (
+                                                        <Link to={`/purchase-orders/${sale.purchase_orders[rowIdx].id}`} className="link text-orange-500">
+                                                            {sale.purchase_orders[rowIdx].po_no}
+                                                        </Link>
+                                                    )}
+                                                </td>
+                                                <td className="align-top">
+                                                    {rowIdx < poCount ?
+                                                        `RM ${sale.purchase_orders[rowIdx].total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : ''}
+                                                </td>
                                             </tr>
                                         );
                                     })
                                 ) : (
                                     <tr className="odd:bg-gray-100">
+                                        <td>{sale.order.confirmed_at ? formatDate(sale.order.confirmed_at) : ''}</td>
                                         <td>
                                             <div className="flex flex-col gap-1">
-                                                {sale.order.user ?
-                                                    <>
-                                                        <span>{sale.order.user.name}</span>
-                                                        <span className="text-xs text-slate-400">{sale.order.user.email}</span>
-                                                        <span className="text-xs text-slate-700">+{sale.order.user.country_code} {sale.order.user.phone_no}</span>
-                                                    </>
-                                                    :
-                                                    '-'
-                                                }
-                                            </div>
-                                        </td>
-                                        <td className="text-center">
-                                            <div className="flex flex-col gap-1">
-                                                <span>{sale.order.block}-{sale.order.floor}-{sale.order.unit_no}</span>
-                                            </div>
-                                        </td>
-                                        <td className="text-center">
-                                            <div className="flex flex-col gap-1">
-                                                <span>{sale.order.property ? sale.order.property.name : '-'}</span>
-                                                <div className="badge">
-                                                    <span className="text-xs text-gray-900">{sale.order.unit_type}</span>
-                                                </div>
+                                                {sale.order.user ? (
+                                                    <div className="space-y-2">
+                                                        <div className="text-base font-semibold text-gray-800">
+                                                            {sale.order.user.name}
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-sm text-gray-600 font-medium">Unit:</span>
+                                                            <span className="text-sm text-gray-700">
+                                                                {sale.order.block}-{sale.order.floor}-{sale.order.unit_no}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-sm text-gray-600 font-medium">Property:</span>
+                                                            <span className="text-sm text-gray-700">
+                                                                {sale.order.property ? sale.order.property.name : 'Not specified'} - Type  {sale.order.unit_type || 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-sm text-gray-400 italic">No owner information available</span>
+                                                )}
                                             </div>
                                         </td>
                                         <td>
@@ -309,15 +291,13 @@ function SalesOrderPO() {
                                                 {sale.order.order_no}
                                             </Link>
                                         </td>
+                                        <td>-</td>
                                         <td>RM {sale.order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                        <td>{sale.order.confirmed_at ? formatDate(sale.order.confirmed_at) : ''}</td>
-                                        <td>
-                                            <Link to={`/sales/${sale.id}`} className="link text-orange-500">
-                                                {sale.sales_no}
-                                            </Link>
-                                        </td>
-                                        <td colSpan={5}>-</td>
-                                        <td colSpan={2}>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -358,7 +338,7 @@ function SalesOrderPO() {
                     </div>
 
                     <div className="card-body">
-                        {sales.map((sale) => renderSaleCard(sale))}
+                        {sales.map((sale, index) => renderSaleCard(sale, index))}
                     </div>
 
                     <div className="card-footer justify-center md:justify-between flex-col md:flex-row gap-3 text-gray-600 text-2sm font-medium">

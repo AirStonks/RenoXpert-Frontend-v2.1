@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { KTSticky } from '../../../metronic/core';
-import { POIndex } from '../../../services/api';
+import { POAdvanceTable } from '../../../services/api';
 import Loading from '../../../components/Loading';
-import { PurchaseOrder } from '../../../types';
+import { Invoice, PurchaseOrder } from '../../../types';
 import { Link } from 'react-router-dom';
 import { useUser } from '../../../context/UserContext';
 
@@ -38,13 +38,12 @@ const POPropertyView = () => {
         { field: 'po_no', header: 'PO No.', sortable: true },
         { field: 'sales_no', header: 'Sales No.', sortable: true },
         { field: 'owner', header: 'Owner', sortable: true },
-        { field: 'unit', header: 'Unit', sortable: true, groupable: true },
-        { field: 'property', header: 'Property', sortable: true, groupable: true },
         { field: 'vendor', header: 'Vendor', sortable: true },
         { field: 'total_amount', header: 'Total Amount', sortable: true },
         { field: 'order_status', header: 'Order Status', sortable: true },
         { field: 'payment_status', header: 'Payment Status', sortable: true },
         { field: 'delivery_status', header: 'Delivery/Fulfillment', sortable: true },
+        { field: 'invoices', header: 'Invoices', sortable: false },
     ];
 
     if (currentUser && currentUser.type === 'backend-vendor') {
@@ -73,7 +72,7 @@ const POPropertyView = () => {
     ) => {
         setIsLoading(true);
         try {
-            const response = await POIndex(size, page, searchTerm, order, field);
+            const response = await POAdvanceTable('property');
             const data = response?.data || [];
             setPurchaseOrders(data);
             setTotalItems(response?.totalCount || 0);
@@ -139,7 +138,6 @@ const POPropertyView = () => {
                 const next = new Set(prev);
                 if (next.has(groupValue)) {
                     next.delete(groupValue);
-                    // Collapse all unit groups within this property when property is collapsed
                     setExpandedUnitGroups(prevUnits => {
                         const nextUnits = new Set(prevUnits);
                         groupedData?.find(g => g.key === groupValue)?.units.forEach(u => nextUnits.delete(`${groupValue}-${u.key}`));
@@ -184,9 +182,12 @@ const POPropertyView = () => {
                     ${isPropertyExpanded && isUnitExpanded
                         ? 'hover:shadow-md dark:hover:bg-slate-900'
                         : 'opacity-50 cursor-default'}`}
-            // onClick={handleRowClick}
             >
-                <div className="grid grid-cols-[repeat(10,minmax(0,1fr))] gap-4">
+                <div className="grid gap-4" style={{
+                    gridTemplateColumns: currentUser?.type === 'backend-vendor' 
+                        ? '1fr 1.5fr 1.5fr 1fr 1fr 1fr 3fr'
+                        : '0.8fr 0.8fr 1.5fr 1.5fr 0.8fr 1fr 1fr 1fr 3fr'
+                }}>
                     <div>
                         <Link
                             to={`/purchase-orders/${item.id}`}
@@ -214,39 +215,21 @@ const POPropertyView = () => {
                     <div>
                         <div className="flex flex-col gap-1">
                             {item.sale ? (
-                                <>
-                                    <span>{item.sale.order.user.name}</span>
-                                    <span className="text-xs text-slate-400">{item.sale.order.user.email}</span>
-                                    <span className="text-xs text-slate-700">
-                                        +{item.sale.order.user.country_code} {item.sale.order.user.phone_no}
-                                    </span>
-                                </>
+                                <span>{item.sale.order.user.name}</span>
                             ) : '-'}
                         </div>
-                    </div>
-                    <div className="text-center">
-                        {item.sale ? `${item.sale.order.block}-${item.sale.order.floor}-${item.sale.order.unit_no}` : '-'}
-                    </div>
-                    <div className="text-center">
-                        {item.sale?.order.property?.name || '-'}
                     </div>
                     <div>
                         <div className="flex flex-col gap-1">
                             {item.vendor ? (
-                                <>
-                                    <span>{item.vendor.name}</span>
-                                    <span className="text-xs text-slate-400">{item.vendor.email}</span>
-                                    <span className="text-xs text-slate-700">
-                                        +{item.vendor.country_code} {item.vendor.phone_no}
-                                    </span>
-                                </>
+                                <span>{item.vendor.name}</span>
                             ) : '-'}
                         </div>
                     </div>
                     <div>
                         <span>RM {item.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="text-center">
+                    <div className="">
                         <span className={`badge badge-pill p-2 cursor-default capitalize
                             ${item.order_status === 'released' ? 'badge-primary' : ''} 
                             ${item.order_status === 'accepted' ? 'badge-success' : ''} 
@@ -255,7 +238,7 @@ const POPropertyView = () => {
                             {item.order_status}
                         </span>
                     </div>
-                    <div className="text-center">
+                    <div className="">
                         <span className={`badge badge-pill p-2 cursor-default capitalize
                             ${item.payment_status === 'confirmed' ? 'badge-success' : ''} 
                             ${item.payment_status === 'revoked' ? 'badge-danger' : ''} 
@@ -263,7 +246,7 @@ const POPropertyView = () => {
                             {item.payment_status}
                         </span>
                     </div>
-                    <div className="text-center">
+                    <div className="">
                         <Link
                             to={`/purchase-orders/fulfillment/${item.id}`}
                             state={{ fromUrl: '/purchase-orders/property/view' }}
@@ -271,6 +254,25 @@ const POPropertyView = () => {
                         >
                             View Status
                         </Link>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        {item.invoices.length > 0 ? (
+                            <ul className="list-disc list-inside text-sm">
+                                {item.invoices.map((invoice: Invoice, index) => (
+                                    <li key={index} className="text-gray-700 dark:text-gray-200">
+                                        <span className="font-medium">{invoice.invoice_no}</span>
+                                        <span className="mx-2">|</span>
+                                        <span>RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span className="mx-2">|</span>
+                                        <span className={`capitalize ${invoice.status === 'paid' ? 'text-green-600' : 'text-gray-500'}`}>
+                                            {invoice.status}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <span className="text-gray-500 italic">No invoices</span>
+                        )}
                     </div>
                 </div>
             </div>
@@ -296,52 +298,13 @@ const POPropertyView = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-coal-500 p-6 w-full rounded-md">
             <div className="relative">
-                {/* <div className="bg-white dark:bg-coal-100 rounded-xl shadow-sm p-6 mb-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <div className="relative">
-                                <select
-                                    value={groupByProperty || ''}
-                                    onChange={(e) => setGroupByProperty(e.target.value)}
-                                    className="pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 
-                                    focus:ring-blue-500 focus:border-transparent appearance-none bg-white text-gray-700 shadow-sm"
-                                >
-                                    <option value="">No Property Grouping</option>
-                                    {groupableColumns.filter(col => col.field === 'property').map(col => (
-                                        <option key={col.field} value={col.field}>{col.header}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="relative">
-                                <select
-                                    value={groupByUnit || ''}
-                                    onChange={(e) => setGroupByUnit(e.target.value)}
-                                    className="pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 
-                                    focus:ring-blue-500 focus:border-transparent appearance-none bg-white text-gray-700 shadow-sm"
-                                >
-                                    <option value="">No Unit Grouping</option>
-                                    {groupableColumns.filter(col => col.field === 'unit').map(col => (
-                                        <option key={col.field} value={col.field}>{col.header}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Search purchase orders..."
-                                className="pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 
-                                focus:ring-blue-500 focus:border-transparent shadow-sm"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                </div> */}
-
                 <div className="relative">
                     <div className="sticky top-0 z-10 mb-4 bg-white dark:bg-coal-100 rounded-xl shadow-sm">
-                        <div className="grid grid-cols-[repeat(10,minmax(0,1fr))] gap-4 px-6 py-4">
+                        <div className="grid gap-4 px-6 py-4" style={{
+                            gridTemplateColumns: currentUser?.type === 'backend-vendor' 
+                                ? '1fr 1.5fr 1.5fr 1fr 1fr 1fr 3fr'
+                                : '0.8fr 0.8fr 1.5fr 1.5fr 0.8fr 1fr 1fr 0.8fr 3fr'
+                        }}>
                             {columns.map((column) => (
                                 <div
                                     key={column.field}
@@ -379,7 +342,7 @@ const POPropertyView = () => {
                                                 <div key={unitGroup.key} className="relative">
                                                     <div className="sticky top-[calc(6rem+0.8rem)] z-5">
                                                         <button
-                                                            className="w-full px-4 py-3 flex items-center justify-between bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors duration-200 rounded-lg"
+                                                            className="w-full px-4 py-3 flex items-center justify-between bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700 transition-colors duration-200 rounded-lg"
                                                             onClick={() => toggleGroup('unit', unitGroup.key, propertyGroup.key)}
                                                         >
                                                             <div className="flex items-center space-x-3">

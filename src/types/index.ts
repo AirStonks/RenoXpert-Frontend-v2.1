@@ -197,6 +197,7 @@ export interface Order {
     bedroom_count?: number,
     bathroom_count?: number,
     include_partition?: boolean,
+    is_progressive_payment?: boolean,
     sale?: Sale,
     quotation_id?: string,
     order_quotations?: OrderQuotation[],

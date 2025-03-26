@@ -1894,6 +1894,25 @@ export const POIndex = async (size: number = 5, page: number = 1, searchTerm?: s
     }
 };
 
+export const POAdvanceTable = async (groubBy?: string, groupOp?: string, groupValue?: string, filterBy?: string, filterOp?: string, filterValue?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'purchase-orders/table/advance', {
+            headers: getAuthHeaders(),
+            params: {
+                groubBy: groubBy,
+                groupOp: groupOp,
+                groupValue: groupValue,
+                filterBy: filterBy,
+                filterOp: filterOp,
+                filterValue: filterValue
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
 export const fetchPO = async (poId: number) => {
     try {
         const response = await axios.get(API_URL + `purchase-orders/${poId}`, {
