@@ -9,6 +9,8 @@ import DeleteInvoiceModal from "./DeleteInvoiceModal";
 import { markInvoiceAsPaid } from "../../../../services/api";
 import React from "react";
 import { useUser } from "../../../../context/UserContext";
+import { Link } from "react-router-dom";
+import { KTModal } from "../../../../metronic/core";
 
 interface InvoiceDetailModalProps {
     invoiceId: number | null;
@@ -82,24 +84,6 @@ function InvoiceDetailModal({ invoiceId, refetchPo, handleResetPoId }: InvoiceDe
         }
     }, [loading, invoice]);
 
-    // const handleChangeLinkStatus = async (newStatus: string) => {
-    //     if (!invoice) return;
-
-    //     setLinkStatusLoading(true); // Set loading state
-
-    //     const response = await changeInvoiceLinkStatus(Number(invoice.id), newStatus);
-
-    //     setLinkStatusLoading(false); // Reset loading state
-
-    //     if (response?.success) {
-    //         const updatedInvoice = { ...invoice, link_status: newStatus };
-    //         setInvoice(updatedInvoice);
-    //         notify('success', "Link Status Changed.");
-    //     } else {
-    //         notify('error', "Failed to change link status.");
-    //     }
-    // };
-
     const handleMarkAsPaid = async (invoiceId: number) => {
         try {
             const response = await markInvoiceAsPaid(invoiceId);
@@ -114,6 +98,13 @@ function InvoiceDetailModal({ invoiceId, refetchPo, handleResetPoId }: InvoiceDe
         }
 
         setLinkStatusLoading(false);
+    };
+
+    const handlePrint = () => {
+        const modalEl = document.getElementById('invoice_detail_modal') as HTMLElement;
+        const modal = KTModal.getInstance(modalEl);
+
+        modal.hide();
     };
 
     let content;
@@ -175,6 +166,20 @@ function InvoiceDetailModal({ invoiceId, refetchPo, handleResetPoId }: InvoiceDe
                                             </div>
                                         </>
                                     )}
+                                    <div className="menu-item">
+                                        <Link
+                                            to={`${invoice.id}/print`}
+                                            className="menu-link"
+                                            onClick={handlePrint}
+                                        >
+                                            <span className="menu-title">
+                                                <div className="flex gap-2 items-center">
+                                                    <i className="ki-outline ki-file-down"></i>
+                                                    <span>Print Invoice</span>
+                                                </div>
+                                            </span>
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -1826,6 +1826,27 @@ export const updateKeyCategoryQuantity = async (keyManagementId: number, categor
     }
 }
 
+export const fetchDIForms = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, status?: string, isHead: boolean = true) => {
+    try {
+        const response = await axios.get(API_URL + `defect-inspection-forms`, {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field,
+                status: status,
+                head: isHead
+            }
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const createPurchaseOrder = async (purchaseOrderData: PurchaseOrder) => {
     try {
         const response = await axios.post(API_URL + 'purchase-orders', purchaseOrderData, {
@@ -1955,6 +1976,24 @@ export const inventoryIndex = async (size: number = 5, page: number = 1, searchT
                 search: searchTerm,
                 sortOrder: order,
                 sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const otpRequestsIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'otp-requests', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field,
             }
         });
         return response.data;

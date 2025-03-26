@@ -97,6 +97,9 @@ import SalesOrderPO from './pages/Finance/SalesOrderPO';
 import POPaymentVoucher from './pages/PO/components/POPaymentVoucher';
 import POPropertyOverview from './pages/PO/POPropertyOverview';
 import POInvoice from './pages/PO/POInvoice';
+import OTPRequestList from './pages/OTPRequestList';
+import POInvoicePrint from './pages/PO/components/POInvoicePrint';
+import DIFormMain from './pages/ProjectManagement/DIFormMain';
 
 
 interface ProtectedLayoutProps {
@@ -238,6 +241,7 @@ const routes = [
   { path: '/purchase-orders/print/:id', element: <POPrint />, layout: null },
   { path: '/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
   { path: '/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
+  { path: '/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
 
   /*--- DISCOUNT AND FEE ---*/
   { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
@@ -250,6 +254,7 @@ const routes = [
   { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
   { path: '/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
   { path: '/reno-progress/:id/key-management/update', element: <UpdateKeyManagement />, layout: ProtectedLayout },
+  { path: '/di-forms', element: <DIFormMain />, layout: ProtectedLayout },
 
 
   /*--- USERS ---*/
@@ -266,6 +271,10 @@ const routes = [
 
   /*--- FINANCE ---*/
   { path: '/finance/sales-order-po', element: <SalesOrderPO />, layout: ProtectedLayout },
+
+
+  /*--- OTP REQUEST ---*/
+  { path: '/otp-requests', element: <OTPRequestList />, layout: ProtectedLayout },
 
 
   /*--- DEVELOPER TOOLS ---*/

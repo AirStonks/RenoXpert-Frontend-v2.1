@@ -10,7 +10,7 @@ import { propertyIndex, salesIndex } from '../../services/api';
 // import CreatePropertyModal from '../../components/Modals/CreatePropertyModal';
 // import PropertyTable from '../../components/Tables/PropertyTable';
 
-type SortOrder = 'asc' | 'desc' | null;
+export type SortOrder = 'asc' | 'desc' | null;
 
 interface FilterOption {
     column: string;
@@ -97,12 +97,6 @@ function SalesMain() {
     const handleRefreshTable = async () => {
         initSalesTable(page, size, searchTerm, sortOrder, sortField);
     };
-
-    interface FilterOption {
-        column: string;
-        value: string;
-        label?: string;
-    }
 
     const handleFilterTable = async (field: string, value: string, label?: string) => {
         const filterIndex = filter.findIndex(f => f.column === field);

@@ -55,7 +55,7 @@ const POPropertyView = () => {
 
     useEffect(() => {
         document.title = "Purchase Orders Property View | RenoXpert";
-        initPOTable(1, 10, '', null, '');
+        initPOTable(1, 100, '', null, '');
     }, []);
 
     useEffect(() => {
