@@ -476,6 +476,7 @@ export interface DefectInspectionForm {
         level?: string,
         unit?: string,
     },
+    reno_progress?: RenoProgress,
     contractor_name?: string,
     contractor_email?: string,
     bedroom_count?: string | number,
@@ -1228,4 +1229,16 @@ export interface KeyManagement {
     updated_by?: string,
     created_at?: User,
     updated_at?: User,
+}
+
+export interface OTPRequest {
+    id?: string,
+    mobile?: string,
+    code?: string,
+    status?: string,
+    uuid?: string,
+    sms_id?: string,
+    expires_at?: number,
+    created_at?: number,
+    updated_at?: number,
 }
