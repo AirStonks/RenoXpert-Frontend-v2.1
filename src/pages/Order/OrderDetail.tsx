@@ -1093,6 +1093,14 @@ function OrderDetail() {
                                             {orderDetail.completion_day} Working Days
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Payment Schedule:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {orderDetail.is_progressive_payment ? 'Progressive Payment' : 'Full Payment'}
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
 
