@@ -73,6 +73,7 @@ function EditOrder() {
         bedroom_count: 1,
         bathroom_count: 1,
         include_partition: false,
+        is_progressive_payment: true,
         internal_remark: "",
         bonus: { description: "", value: "" },
     });
@@ -120,6 +121,7 @@ function EditOrder() {
                     completion_day: orderDetail.completion_day || 1,
                     internal_remark: orderDetail.internal_remark || "",
                     include_partition: !!orderDetail.include_partition,
+                    is_progressive_payment: !!orderDetail.is_progressive_payment,
                     bonus: {
                         description: orderDetail.latest_quotation.bonus?.description || "",
                         value: orderDetail.latest_quotation.bonus?.value?.toString() || "",
@@ -140,7 +142,7 @@ function EditOrder() {
     useEffect(() => {
         if (selectedPackages.length > 0) recalculateTotalAmount();
         else setFormData((prev) => ({ ...prev, totalAmount: 0 }));
-        
+
     }, [selectedPackages]);
 
     const handleOpenOwnerDropdown = async () => {
@@ -358,6 +360,7 @@ function EditOrder() {
             bedroom_count: formData.bedroom_count,
             bathroom_count: formData.bathroom_count,
             include_partition: formData.include_partition,
+            is_progressive_payment: formData.is_progressive_payment,
             description: "",
             internal_remark: formData.internal_remark,
             completion_day: formData.completion_day,
@@ -902,7 +905,7 @@ function EditOrder() {
                                             onChange={handleChange}
                                         />
                                     </div>
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex flex-col gap-2 mb-8">
                                         <label className="text-sm font-medium text-gray-900">Final Pricing</label>
                                         <span className="text-xs text-gray-600 tracking-wide mb-2">
                                             The final price that will be billed and displayed to the owner at the end (excluding bonuses)
@@ -910,12 +913,14 @@ function EditOrder() {
                                         <label className="switch switch-lg">
                                             <input
                                                 className="checkbox"
-                                                name="isFinalAmountEnable"
+                                                name="is_ready"
                                                 type="checkbox"
-                                                checked={formData.isFinalAmountEnable}
+                                                checked={!!formData.isFinalAmountEnable}
                                                 onChange={toggleEnableFinalAmount}
                                             />
-                                            <span className="switch-label">{formData.isFinalAmountEnable ? "Enable" : "Disable"}</span>
+                                            <span className="switch-label">
+                                                {formData.isFinalAmountEnable ? "Enable" : "Disable"}
+                                            </span>
                                         </label>
                                         {formData.isFinalAmountEnable && (
                                             <input
@@ -927,6 +932,29 @@ function EditOrder() {
                                                 onChange={handleChange}
                                             />
                                         )}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-semibold text-gray-900 mb-2">Progressive Payment</span>
+                                        <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                            Set the payment schedule for the renovation work
+                                        </span>
+                                        <label className="switch switch-lg">
+                                            <input
+                                                className="checkbox"
+                                                name="is_progressive_payment"
+                                                type="checkbox"
+                                                checked={!!formData.is_progressive_payment}
+                                                onChange={() =>
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        is_progressive_payment: !prev.is_progressive_payment,
+                                                    }))
+                                                }
+                                            />
+                                            <span className="switch-label">
+                                                {formData.is_progressive_payment ? "Progressive Payment" : "Full Payment"}
+                                            </span>
+                                        </label>
                                     </div>
                                 </div>
                                 <div className="flex flex-col flex-1 gap-2">

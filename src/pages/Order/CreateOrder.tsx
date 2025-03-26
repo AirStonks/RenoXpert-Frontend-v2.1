@@ -66,6 +66,7 @@ function CreateOrder() {
         bedroom_count: 1,
         bathroom_count: 1,
         include_partition: false,
+        is_progressive_payment: true,
         internal_remark: "",
         bonus: { description: "", value: "" },
     });
@@ -189,6 +190,7 @@ function CreateOrder() {
                     isDraftMode: response.data.user ? false : true,
                     completion_day: response.data.completion_day || 1,
                     include_partition: response.data.include_partition ? true : false,
+                    is_progressive_payment: response.data.is_progressive_payment ? true : false,
                     internal_remark: response.data.internal_remark || "",
                     bedroom_count: response.data.bedroom_count,
                     bathroom_count: response.data.bathroom_count,
@@ -359,6 +361,7 @@ function CreateOrder() {
             bedroom_count: formData.bedroom_count,
             bathroom_count: formData.bathroom_count,
             include_partition: formData.include_partition,
+            is_progressive_payment: formData.is_progressive_payment,
             description: "",
             internal_remark: formData.internal_remark,
             completion_day: formData.completion_day,
@@ -911,7 +914,7 @@ function CreateOrder() {
                                             onChange={handleChange}
                                         />
                                     </div>
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex flex-col gap-2 mb-8">
                                         <label className="text-sm font-medium text-gray-900">Final Pricing</label>
                                         <span className="text-xs text-gray-600 tracking-wide mb-2">
                                             The final price that will be billed and displayed to the owner at the end (excluding bonuses)
@@ -938,6 +941,29 @@ function CreateOrder() {
                                                 onChange={handleChange}
                                             />
                                         )}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-semibold text-gray-900 mb-2">Progressive Payment</span>
+                                        <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                            Set the payment schedule for the renovation work
+                                        </span>
+                                        <label className="switch switch-lg">
+                                            <input
+                                                className="checkbox"
+                                                name="is_progressive_payment"
+                                                type="checkbox"
+                                                checked={!!formData.is_progressive_payment}
+                                                onChange={() =>
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        is_progressive_payment: !prev.is_progressive_payment,
+                                                    }))
+                                                }
+                                            />
+                                            <span className="switch-label">
+                                                {formData.is_progressive_payment ? "Progressive Payment" : "Full Payment"}
+                                            </span>
+                                        </label>
                                     </div>
                                 </div>
                                 <div className="flex flex-col flex-1 gap-2">

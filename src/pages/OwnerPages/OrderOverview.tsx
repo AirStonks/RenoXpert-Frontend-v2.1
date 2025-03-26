@@ -306,46 +306,77 @@ function OrderOverview() {
                     <span><strong>13. BINDING EFFECTS</strong></span>
                     <span>13.1 This Agreement shall be binding on the respective heirs, personal representatives, successors in title and assigns of the parties hereto.</span>
                 </div>
-            </div>
-            <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
+            </div><div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
                 <div className="flex flex-col">
                     <span className='font-bold underline'>FIRST SCHEDULE</span>
                     <span>(to be taken read and construed as an essential part of this Agreement)</span>
                 </div>
                 <span className='font-bold'>-</span>
                 <span className='font-bold'>PROGRESSIVE PAYMENT OF THE CONTRACT SUM</span>
-                <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
-                    <thead>
-                        <tr>
-                            <th>
-                                Description
-                            </th>
-                            <th className='text-center'>
-                                %
-                            </th>
-                            <th className='text-center'>
-                                Amount (RM)
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Upon Confirmation and before Commencement of Phase 1</td>
-                            <td className='text-center'>50</td>
-                            <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        </tr>
-                        <tr>
-                            <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
-                            <td className='text-center'>50</td>
-                            <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        </tr>
-                        <tr className='font-bold'>
-                            <td>Total:</td>
-                            <td className='text-center'>100</td>
-                            <td className='text-center'>{orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                {orderDetail && orderDetail.is_progressive_payment ? (
+                    <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th className='text-center'>%</th>
+                                <th className='text-center'>Amount (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Upon Confirmation and before Commencement of Phase 1</td>
+                                <td className='text-center'>50</td>
+                                <td className='text-center'>
+                                    {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
+                                <td className='text-center'>50</td>
+                                <td className='text-center'>
+                                    {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </td>
+                            </tr>
+                            <tr className='font-bold'>
+                                <td>Total:</td>
+                                <td className='text-center'>100</td>
+                                <td className='text-center'>
+                                    {orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                ) : (
+                    <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th className='text-center'>%</th>
+                                <th className='text-center'>Amount (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Upon Confirmation of Agreement</td>
+                                <td className='text-center'>100</td>
+                                <td className='text-center'>
+                                    {orderDetail
+                                        ? orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                        : '0.00'}
+                                </td>
+                            </tr>
+                            <tr className='font-bold'>
+                                <td>Total:</td>
+                                <td className='text-center'>100</td>
+                                <td className='text-center'>
+                                    {orderDetail
+                                        ? orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                        : '0.00'}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                )}
                 <span>In the event of a default by the Owner of the payment hereunder when due, the Owner shall be liable to pay interest at the rate of eight per centum (8%) per annum on the outstanding sum from the date due for payment until the date of actual payment.</span>
             </div>
         </div>
@@ -864,38 +895,70 @@ function OrderOverview() {
 
                                         <div className="flex flex-col mb-8 justify-center items-center">
                                             <span className='font-bold'>PROGRESSIVE PAYMENT OF THE CONTRACT SUM</span>
-                                            <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
-                                                <thead>
-                                                    <tr>
-                                                        <th>
-                                                            Description
-                                                        </th>
-                                                        <th className='text-center'>
-                                                            %
-                                                        </th>
-                                                        <th className='text-center'>
-                                                            Amount (RM)
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Upon Confirmation and before Commencement of Phase 1</td>
-                                                        <td className='text-center'>50</td>
-                                                        <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
-                                                        <td className='text-center'>50</td>
-                                                        <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                                    </tr>
-                                                    <tr className='font-bold'>
-                                                        <td>Total:</td>
-                                                        <td className='text-center'>100</td>
-                                                        <td className='text-center'>{orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                            {orderDetail && orderDetail.is_progressive_payment ? (
+                                                <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Description</th>
+                                                            <th className='text-center'>%</th>
+                                                            <th className='text-center'>Amount (RM)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Upon Confirmation and before Commencement of Phase 1</td>
+                                                            <td className='text-center'>50</td>
+                                                            <td className='text-center'>
+                                                                {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
+                                                            <td className='text-center'>50</td>
+                                                            <td className='text-center'>
+                                                                {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                        </tr>
+                                                        <tr className='font-bold'>
+                                                            <td>Total:</td>
+                                                            <td className='text-center'>100</td>
+                                                            <td className='text-center'>
+                                                                {orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            ) : (
+                                                <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Description</th>
+                                                            <th className='text-center'>%</th>
+                                                            <th className='text-center'>Amount (RM)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Upon Confirmation of Agreement</td>
+                                                            <td className='text-center'>100</td>
+                                                            <td className='text-center'>
+                                                                {orderDetail
+                                                                    ? orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                    : '0.00'}
+                                                            </td>
+                                                        </tr>
+                                                        <tr className='font-bold'>
+                                                            <td>Total:</td>
+                                                            <td className='text-center'>100</td>
+                                                            <td className='text-center'>
+                                                                {orderDetail
+                                                                    ? orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                    : '0.00'}
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            )}
                                         </div>
 
                                         <div className="flex flex-col items-start gap-4">
@@ -999,38 +1062,70 @@ function OrderOverview() {
 
                                     <div className="flex flex-col mb-8 justify-center items-center">
                                         <span className='font-bold'>PROGRESSIVE PAYMENT OF THE CONTRACT SUM</span>
-                                        <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
-                                            <thead>
-                                                <tr>
-                                                    <th>
-                                                        Description
-                                                    </th>
-                                                    <th className='text-center'>
-                                                        %
-                                                    </th>
-                                                    <th className='text-center'>
-                                                        Amount (RM)
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Upon Confirmation and before Commencement of Phase 1</td>
-                                                    <td className='text-center'>50</td>
-                                                    <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
-                                                    <td className='text-center'>50</td>
-                                                    <td className='text-center'>{(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                                </tr>
-                                                <tr className='font-bold'>
-                                                    <td>Total:</td>
-                                                    <td className='text-center'>100</td>
-                                                    <td className='text-center'>{orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                        {orderDetail && orderDetail.is_progressive_payment ? (
+                                            <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Description</th>
+                                                        <th className='text-center'>%</th>
+                                                        <th className='text-center'>Amount (RM)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Upon Confirmation and before Commencement of Phase 1</td>
+                                                        <td className='text-center'>50</td>
+                                                        <td className='text-center'>
+                                                            {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
+                                                        <td className='text-center'>50</td>
+                                                        <td className='text-center'>
+                                                            {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                    </tr>
+                                                    <tr className='font-bold'>
+                                                        <td>Total:</td>
+                                                        <td className='text-center'>100</td>
+                                                        <td className='text-center'>
+                                                            {orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        ) : (
+                                            <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Description</th>
+                                                        <th className='text-center'>%</th>
+                                                        <th className='text-center'>Amount (RM)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Upon Confirmation of Agreement</td>
+                                                        <td className='text-center'>100</td>
+                                                        <td className='text-center'>
+                                                            {orderDetail
+                                                                ? orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                : '0.00'}
+                                                        </td>
+                                                    </tr>
+                                                    <tr className='font-bold'>
+                                                        <td>Total:</td>
+                                                        <td className='text-center'>100</td>
+                                                        <td className='text-center'>
+                                                            {orderDetail
+                                                                ? orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                : '0.00'}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        )}
                                     </div>
                                 </>
                                 :
