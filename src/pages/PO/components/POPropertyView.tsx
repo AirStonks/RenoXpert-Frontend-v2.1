@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { KTSticky } from '../../../metronic/core';
 import { POAdvanceTable } from '../../../services/api';
-import Loading from '../../../components/Loading';
 import { Invoice, PurchaseOrder } from '../../../types';
 import { Link } from 'react-router-dom';
 import { useUser } from '../../../context/UserContext';
@@ -15,6 +14,15 @@ interface TableColumn {
 }
 
 type GroupBy = string | null;
+
+const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr); // Parse the ISO date string
+    const day = date.getUTCDate().toString().padStart(2, "0"); // Get day and pad with leading zero if needed
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = monthNames[date.getUTCMonth()]; // Get month name
+    const year = date.getUTCFullYear(); // Get full year
+    return `${day} ${month} ${year}`;
+};
 
 const POPropertyView = () => {
     const navigate = useNavigate();
@@ -35,6 +43,7 @@ const POPropertyView = () => {
     const [expandedUnitGroups, setExpandedUnitGroups] = useState<Set<string>>(new Set());
 
     let columns: TableColumn[] = [
+        { field: 'created_at', header: 'Date', sortable: true }, // Added Date column
         { field: 'po_no', header: 'PO No.', sortable: true },
         { field: 'sales_no', header: 'Sales No.', sortable: true },
         { field: 'owner', header: 'Owner', sortable: true },
@@ -184,10 +193,17 @@ const POPropertyView = () => {
                         : 'opacity-50 cursor-default'}`}
             >
                 <div className="grid gap-4" style={{
-                    gridTemplateColumns: currentUser?.type === 'backend-vendor' 
-                        ? '1fr 1.5fr 1.5fr 1fr 1fr 1fr 3fr'
-                        : '0.8fr 0.8fr 1.5fr 1.5fr 0.8fr 1fr 1fr 1fr 3fr'
+                    gridTemplateColumns: currentUser?.type === 'backend-vendor'
+                        ? '1fr 1fr 1.5fr 1.5fr 1fr 1fr 1fr 3fr'  // 8 columns
+                        : '1fr 0.8fr 0.8fr 1.5fr 1.5fr 0.8fr 1fr 1fr 1fr 3fr'  // 10 columns
                 }}>
+                    <div>
+                        <span>
+                            {item.created_at
+                                ? formatDate(item.created_at)
+                                : '-'}
+                        </span>
+                    </div>
                     <div>
                         <Link
                             to={`/purchase-orders/${item.id}`}
@@ -260,7 +276,12 @@ const POPropertyView = () => {
                             <ul className="list-disc list-inside text-sm">
                                 {item.invoices.map((invoice: Invoice, index) => (
                                     <li key={index} className="text-gray-700 dark:text-gray-200">
-                                        <span className="font-medium">{invoice.invoice_no}</span>
+                                        <Link
+                                            to={'/purchase-orders/' + item.id + '/invoices?inv=' + invoice.id}
+                                            state={{ fromUrl: '/purchase-orders/property/view' }}
+                                            className="font-semibold cursor-pointer text-orange-500">
+                                            {invoice.invoice_no}
+                                        </Link>
                                         <span className="mx-2">|</span>
                                         <span>RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                         <span className="mx-2">|</span>
@@ -301,9 +322,9 @@ const POPropertyView = () => {
                 <div className="relative">
                     <div className="sticky top-0 z-10 mb-4 bg-white dark:bg-coal-100 rounded-xl shadow-sm">
                         <div className="grid gap-4 px-6 py-4" style={{
-                            gridTemplateColumns: currentUser?.type === 'backend-vendor' 
-                                ? '1fr 1.5fr 1.5fr 1fr 1fr 1fr 3fr'
-                                : '0.8fr 0.8fr 1.5fr 1.5fr 0.8fr 1fr 1fr 0.8fr 3fr'
+                            gridTemplateColumns: currentUser?.type === 'backend-vendor'
+                                ? '1fr 1fr 1.5fr 1.5fr 1fr 1fr 1fr 3fr'  // 8 columns
+                                : '1fr 0.8fr 0.8fr 1.5fr 1.5fr 0.8fr 1fr 1fr 1fr 3fr'  // 10 columns
                         }}>
                             {columns.map((column) => (
                                 <div

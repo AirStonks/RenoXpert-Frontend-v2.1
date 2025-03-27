@@ -8,12 +8,15 @@ import CreateInvoiceModal from './components/Modals/CreateInvoiceModal';
 import { PurchaseOrder } from '../../types';
 import InvoiceDetailModal from './components/Modals/InvoiceDetailModal';
 import { Link } from 'react-router-dom';
+import { KTModal } from '../../metronic/core';
 
 function POInvoice() {
     const navigate = useNavigate();
     const { state } = useLocation();
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
+    const queryParams = new URLSearchParams(location.search);
+    const queryInvId = queryParams.get("inv");
     const { poDetail, loading, error, refetch } = useFetchPO(poId);
     const { currentUser, loading: userLoading } = useUser();
 
@@ -47,7 +50,19 @@ function POInvoice() {
         if (poDetail) {
             setPO(poDetail);
         }
+
     }, [poDetail]);
+
+    useEffect(() => {
+        if (po && queryInvId) {
+            setSelectedInvoiceId(parseInt(queryInvId, 10));
+
+            const modalEl = document.getElementById('payment_invoice_modal') as HTMLElement;
+            const modal = KTModal.getInstance(modalEl);
+
+            modal.show();
+        }
+    }, [po, queryInvId]);
 
     const handleUpdatePO = (updatedPO: PurchaseOrder) => {
         refetch();
