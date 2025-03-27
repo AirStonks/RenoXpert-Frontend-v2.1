@@ -103,223 +103,234 @@ import DIFormMain from './pages/ProjectManagement/DIFormMain';
 
 
 interface ProtectedLayoutProps {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }
 
 const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
-  <ProtectedRoute>
-    <MasterLayout>{children}</MasterLayout>
-  </ProtectedRoute>
+    <ProtectedRoute>
+        <MasterLayout>{children}</MasterLayout>
+    </ProtectedRoute>
 );
 
 const OwnerProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
-  <OwnerProtectedRoute>
-    <OwnerMasterLayout>{children}</OwnerMasterLayout>
-  </OwnerProtectedRoute>
+    <OwnerProtectedRoute>
+        <OwnerMasterLayout>{children}</OwnerMasterLayout>
+    </OwnerProtectedRoute>
 );
 
 
 const OperationProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
-  <OperationProtectedRoute>
-    <OperationMasterLayout>{children}</OperationMasterLayout>
-  </OperationProtectedRoute>
+    <OperationProtectedRoute>
+        <OperationMasterLayout>{children}</OperationMasterLayout>
+    </OperationProtectedRoute>
 );
 
-const routes = [
-  { path: '/login', element: <Login />, layout: null },
-  { path: '/vendor-login', element: <VendorLogin />, layout: null },
-  { path: '/dashboard', element: <Dashboard />, layout: ProtectedLayout },
+const routeCat = [
+    // Staff/Admin
+    [
+        { path: '/login', element: <Login />, layout: null },
+        { path: '/dashboard', element: <Dashboard />, layout: ProtectedLayout },
+
+        /*--- PROFILE ---*/
+        { path: '/profile/change-password', element: <ChangePassword />, layout: ProtectedLayout },
 
 
-  { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
+        /*--- PRODUCT ---*/
+        { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
+        { path: '/products/create', element: <CreateProduct />, layout: ProtectedLayout },
+        { path: '/products/:id', element: <ProductDetail />, layout: ProtectedLayout },
+        { path: '/products/edit/:id', element: <EditProduct />, layout: ProtectedLayout },
+        { path: '/products/category', element: <ProductCategory />, layout: ProtectedLayout },
+        { path: '/products/archives', element: <ProductArchive />, layout: ProtectedLayout },
+
+        /*--- PACKAGES ---*/
+        { path: '/packages', element: <PackageMain />, layout: ProtectedLayout },
+        { path: '/packages/create', element: <CreatePackage />, layout: ProtectedLayout },
+        { path: '/packages/:id', element: <PackageDetail />, layout: ProtectedLayout },
+        { path: '/packages/edit/:id', element: <EditPackage />, layout: ProtectedLayout },
+        { path: '/packages/archives', element: <PackageArchive />, layout: ProtectedLayout },
+
+        /*--- QUOTATION TEMPLATE ---*/
+        { path: '/quotations', element: <QuotationMain />, layout: ProtectedLayout },
+        { path: '/quotations/create', element: <CreateQuotation />, layout: ProtectedLayout },
+        { path: '/quotations/edit/:id', element: <EditQuotation />, layout: ProtectedLayout },
+        { path: '/quotations/:id', element: <QuotationDetail />, layout: ProtectedLayout },
+        { path: '/quotations/archives', element: <QuotationArchive />, layout: ProtectedLayout },
+
+        /*--- PROPERTY ---*/
+        { path: '/properties', element: <PropertyMain />, layout: ProtectedLayout },
 
 
-  /*--- OPERATION SITE ---*/
-  { path: '/op/login', element: <OperationLogin />, layout: null },
-  { path: '/op/home', element: <OperationHome />, layout: OperationProtectedLayout },
-  { path: '/op', element: <OperationHome />, layout: OperationProtectedLayout },
-  { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
-  { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
-  { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
-  { path: '/op/form/submit/success', element: <OpFormSubmitSuccess />, layout: OperationProtectedLayout },
-  { path: '/op/reno/progress/:id', element: <RenoProgressManagement />, layout: OperationProtectedLayout },
+        /*--- REGISTRATION FORM ---*/
+        { path: '/registration-forms', element: <RegistrationFormMain />, layout: ProtectedLayout },
+        { path: '/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
+        { path: '/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
 
 
-  /*--- OWNER SITE ---*/
-  { path: '/owner/login', element: <OwnerLogin />, layout: null },
-  { path: '/', element: <OwnerHome />, layout: OwnerProtectedLayout },
-  { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
-  { path: '/owner', element: <OwnerHome />, layout: OwnerProtectedLayout },
-  { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
-  { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
-  { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
-  { path: '/owner/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
-  { path: '/owner/reno-registration-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
-  { path: '/owner/reno/progress/:id', element: <RenoProgressDetail />, layout: OwnerProtectedLayout },
-  { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
-  { path: '/owner/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },
-  { path: '/owner/reno/progress/:id/phase/:phase/attachments', element: <RenoProgressPhaseAttachments />, layout: OwnerProtectedLayout },
+        /*--- QUOTATION ORDER ---*/
+        { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },
+        { path: '/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
+        { path: '/orders/:id/ver/:verId', element: <PreviousOrderDetail />, layout: ProtectedLayout },
+        { path: '/orders/create', element: <CreateOrder />, layout: ProtectedLayout },
+        { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation />, layout: ProtectedLayout },
+        { path: '/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },
+        { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation />, layout: ProtectedLayout },
+        { path: '/preview/owner/order/overview/id/:id', element: <OrderPreview />, layout: null },
+        { path: '/orders/print/:id', element: <QuotationOrderPrint />, layout: null },
+
+        /*--- SALES ---*/
+        { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },
+        { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
 
 
-  /*--- TEST ---*/
-  { path: '/test', element: <Test />, layout: null },
-  { path: '/test2', element: <Test2 />, layout: null },
+        /*--- PO---*/
+        { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
+        { path: '/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
+        { path: '/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
+        { path: '/purchase-orders/:id', element: <PODetail />, layout: ProtectedLayout },
+        { path: '/purchase-orders/edit/:id', element: <EditPO />, layout: ProtectedLayout },
+        { path: '/purchase-orders/fulfillment/:id', element: <POFulfillment />, layout: ProtectedLayout },
+        { path: '/purchase-orders/print/:id', element: <POPrint />, layout: null },
+        { path: '/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
+        { path: '/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
+        { path: '/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
+
+        /*--- DISCOUNT AND FEE ---*/
+        { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
 
 
-
-  /*--- QUOTATION VIEW ---*/
-  { path: '/invoice/:id/view', element: <ViewQuotation />, layout: OwnerProtectedLayout },
-  { path: '/invoice/:id/payment/success', element: <PaymentSuccess />, layout: OwnerProtectedLayout },
-  { path: '/invoice/:id/payment/error', element: <PaymentError />, layout: OwnerProtectedLayout },
-
-  { path: '/success/test', element: <PaymentSuccess />, layout: null },
-
-
-  /*--- REGISTRATION FORM ---*/
-  { path: '/owner/form/reno-registration-forms/:id', element: <RenoRegistrationFormDetail />, layout: OwnerProtectedLayout },
+        /*--- PROGRESS MANAGEMENT ---*/
+        { path: '/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
+        { path: '/reno-progress/progress-tracker', element: <PMProgressTrack />, layout: ProtectedLayout },
+        { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
+        { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
+        { path: '/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
+        { path: '/reno-progress/:id/key-management/update', element: <UpdateKeyManagement />, layout: ProtectedLayout },
+        { path: '/di-forms', element: <DIFormMain />, layout: ProtectedLayout },
 
 
-  /*--- PROFILE ---*/
-  { path: '/profile/change-password', element: <ChangePassword />, layout: ProtectedLayout },
+        /*--- USERS ---*/
+        { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
+        { path: '/users/:id', element: <UserDetail />, layout: ProtectedLayout },
+        { path: '/users/internal/add', element: <AddInternalUser />, layout: ProtectedLayout },
+        { path: '/users/add', element: <AddUser />, layout: ProtectedLayout },
+        { path: '/users/add/owner', element: <AddOwner />, layout: ProtectedLayout },
 
 
-  /*--- PRODUCT ---*/
-  { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
-  { path: '/products/create', element: <CreateProduct />, layout: ProtectedLayout },
-  { path: '/products/:id', element: <ProductDetail />, layout: ProtectedLayout },
-  { path: '/products/edit/:id', element: <EditProduct />, layout: ProtectedLayout },
-  { path: '/products/category', element: <ProductCategory />, layout: ProtectedLayout },
-  { path: '/products/archives', element: <ProductArchive />, layout: ProtectedLayout },
-
-  /*--- PACKAGES ---*/
-  { path: '/packages', element: <PackageMain />, layout: ProtectedLayout },
-  { path: '/packages/create', element: <CreatePackage />, layout: ProtectedLayout },
-  { path: '/packages/:id', element: <PackageDetail />, layout: ProtectedLayout },
-  { path: '/packages/edit/:id', element: <EditPackage />, layout: ProtectedLayout },
-  { path: '/packages/archives', element: <PackageArchive />, layout: ProtectedLayout },
-
-  /*--- QUOTATION TEMPLATE ---*/
-  { path: '/quotations', element: <QuotationMain />, layout: ProtectedLayout },
-  { path: '/quotations/create', element: <CreateQuotation />, layout: ProtectedLayout },
-  { path: '/quotations/edit/:id', element: <EditQuotation />, layout: ProtectedLayout },
-  { path: '/quotations/:id', element: <QuotationDetail />, layout: ProtectedLayout },
-  { path: '/quotations/archives', element: <QuotationArchive />, layout: ProtectedLayout },
-
-  /*--- PROPERTY ---*/
-  { path: '/properties', element: <PropertyMain />, layout: ProtectedLayout },
+        /*--- INVENTORY ---*/
+        { path: '/inventory', element: <InventoryMain />, layout: ProtectedLayout },
 
 
-  /*--- REGISTRATION FORM ---*/
-  { path: '/registration-forms', element: <RegistrationFormMain />, layout: ProtectedLayout },
-  { path: '/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
-  { path: '/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
+        /*--- FINANCE ---*/
+        { path: '/finance/sales-order-po', element: <SalesOrderPO />, layout: ProtectedLayout },
 
 
-  /*--- QUOTATION ORDER ---*/
-  { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },
-  { path: '/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
-  { path: '/orders/:id/ver/:verId', element: <PreviousOrderDetail />, layout: ProtectedLayout },
-  { path: '/orders/create', element: <CreateOrder />, layout: ProtectedLayout },
-  { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation />, layout: ProtectedLayout },
-  { path: '/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },
-  { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation />, layout: ProtectedLayout },
-  { path: '/preview/owner/order/overview/id/:id', element: <OrderPreview />, layout: null },
-  { path: '/orders/print/:id', element: <QuotationOrderPrint />, layout: null },
-
-  /*--- SALES ---*/
-  { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },
-  { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
+        /*--- OTP REQUEST ---*/
+        { path: '/otp-requests', element: <OTPRequestList />, layout: ProtectedLayout },
 
 
-  /*--- PO---*/
-  { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
-  { path: '/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
-  { path: '/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
-  { path: '/purchase-orders/:id', element: <PODetail />, layout: ProtectedLayout },
-  { path: '/purchase-orders/edit/:id', element: <EditPO />, layout: ProtectedLayout },
-  { path: '/purchase-orders/fulfillment/:id', element: <POFulfillment />, layout: ProtectedLayout },
-  { path: '/purchase-orders/print/:id', element: <POPrint />, layout: null },
-  { path: '/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
-  { path: '/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
-  { path: '/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
+        /*--- DEVELOPER TOOLS ---*/
+        { path: '/developer-tools', element: <DeveloperTool />, layout: ProtectedLayout },
+    ],
 
-  /*--- DISCOUNT AND FEE ---*/
-  { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
+    // Owner
+    [
 
+        /*--- QUOTATION VIEW ---*/
+        { path: '/invoice/:id/view', element: <ViewQuotation />, layout: OwnerProtectedLayout },
+        { path: '/invoice/:id/payment/success', element: <PaymentSuccess />, layout: OwnerProtectedLayout },
+        { path: '/invoice/:id/payment/error', element: <PaymentError />, layout: OwnerProtectedLayout },
 
-  /*--- PROGRESS MANAGEMENT ---*/
-  { path: '/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
-  { path: '/reno-progress/progress-tracker', element: <PMProgressTrack />, layout: ProtectedLayout },
-  { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
-  { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
-  { path: '/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
-  { path: '/reno-progress/:id/key-management/update', element: <UpdateKeyManagement />, layout: ProtectedLayout },
-  { path: '/di-forms', element: <DIFormMain />, layout: ProtectedLayout },
+        { path: '/success/test', element: <PaymentSuccess />, layout: null },
 
 
-  /*--- USERS ---*/
-  { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
-  { path: '/users/:id', element: <UserDetail />, layout: ProtectedLayout },
-  { path: '/users/internal/add', element: <AddInternalUser />, layout: ProtectedLayout },
-  { path: '/users/add', element: <AddUser />, layout: ProtectedLayout },
-  { path: '/users/add/owner', element: <AddOwner />, layout: ProtectedLayout },
+        /*--- REGISTRATION FORM ---*/
+        { path: '/owner/form/reno-registration-forms/:id', element: <RenoRegistrationFormDetail />, layout: OwnerProtectedLayout },
 
 
-  /*--- INVENTORY ---*/
-  { path: '/inventory', element: <InventoryMain />, layout: ProtectedLayout },
+        { path: '/owner/login', element: <OwnerLogin />, layout: null },
+        { path: '/', element: <OwnerHome />, layout: OwnerProtectedLayout },
+        { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
+        { path: '/owner', element: <OwnerHome />, layout: OwnerProtectedLayout },
+        { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
+        { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
+        { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
+        { path: '/owner/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
+        { path: '/owner/reno-registration-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
+        { path: '/owner/reno/progress/:id', element: <RenoProgressDetail />, layout: OwnerProtectedLayout },
+        { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
+        { path: '/owner/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },
+        { path: '/owner/reno/progress/:id/phase/:phase/attachments', element: <RenoProgressPhaseAttachments />, layout: OwnerProtectedLayout },
 
+    ],
 
-  /*--- FINANCE ---*/
-  { path: '/finance/sales-order-po', element: <SalesOrderPO />, layout: ProtectedLayout },
+    // Operation
+    [
+        { path: '/op/login', element: <OperationLogin />, layout: null },
+        { path: '/op/home', element: <OperationHome />, layout: OperationProtectedLayout },
+        { path: '/op', element: <OperationHome />, layout: OperationProtectedLayout },
+        { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
+        { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
+        { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
+        { path: '/op/form/submit/success', element: <OpFormSubmitSuccess />, layout: OperationProtectedLayout },
+        { path: '/op/reno/progress/:id', element: <RenoProgressManagement />, layout: OperationProtectedLayout },
+    ],
 
+    // Vendor
+    [
+        { path: '/vendor-login', element: <VendorLogin />, layout: null },
+    ],
 
-  /*--- OTP REQUEST ---*/
-  { path: '/otp-requests', element: <OTPRequestList />, layout: ProtectedLayout },
-
-
-  /*--- DEVELOPER TOOLS ---*/
-  { path: '/developer-tools', element: <DeveloperTool />, layout: ProtectedLayout },
+    // General
+    [
+        /*--- TEST ---*/
+        { path: '/test', element: <Test />, layout: null },
+        { path: '/test2', element: <Test2 />, layout: null },
+        { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
+    ]
 ];
 
 function App() {
-  return (
-    <Router>
-      <AppRoutes />
-    </Router>
-  );
+    return (
+        <Router>
+            <AppRoutes />
+        </Router>
+    );
 }
 
 function AppRoutes() {
-  const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+    const location = useLocation();
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    KTComponent.init();
-    KTLayout.init();
+    useEffect(() => {
+        KTComponent.init();
+        KTLayout.init();
 
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-  }, [location]);
+        const token = localStorage.getItem('token');
+        setIsAuthenticated(!!token);
+    }, [location]);
 
-  if (isAuthenticated === null) {
-    return <Loading />; // Show a loading indicator
-  }
+    if (isAuthenticated === null) {
+        return <Loading />; // Show a loading indicator
+    }
 
-  return (
-    <Routes>
-      {routes.map(({ path, element, layout: Layout = ProtectedLayout }) => (
-        <Route
-          key={path}
-          path={path}
-          element={
-            path === '/login' || Layout === null
-              ? element
-              : <Layout>{element}</Layout>
-          }
-        />
-      ))}
-    </Routes>
-  );
+    return (
+        <Routes>
+            {routeCat.map((routes) => (
+                routes.map(({ path, element, layout: Layout = ProtectedLayout }) => (
+                    <Route
+                        key={path}
+                        path={path}
+                        element={
+                            path === '/login' || Layout === null
+                                ? element
+                                : <Layout>{element}</Layout>
+                        }
+                    />
+                ))
+            ))}
+        </Routes>
+    );
 }
 
 export default App;
