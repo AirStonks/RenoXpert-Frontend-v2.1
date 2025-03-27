@@ -685,12 +685,20 @@ function ProgressMgnt() {
                 <div className="card flex-1">
                     <div className="card-header">
                         <div className="card-title">
-                            Property
+                            Owner & Property
                         </div>
                     </div>
                     <div className="card-body">
                         <table className="table-auto">
                             <tbody>
+                                <tr>
+                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                        Owner:
+                                    </td>
+                                    <td className="text-sm text-gray-900 pb-3">
+                                        {renoProgress.sale.order.user.name}
+                                    </td>
+                                </tr>
                                 <tr>
                                     <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
                                         Property:

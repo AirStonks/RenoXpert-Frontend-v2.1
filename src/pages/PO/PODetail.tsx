@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { POItem, POPackage } from "../../types";
 import { useUser } from "../../context/UserContext";
 import ConfirmationModal from "./components/ConfirmationModal";
-import { acceptPO, rejectPO, releasePO } from "../../services/api";
+import { acceptPO, rejectPO, releasePO, revertPO } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
 
@@ -107,6 +107,25 @@ function PODetail() {
         }
     }
 
+    const handleRevertPo = async () => {
+        try {
+            const response = await revertPO(Number(poDetail.id));
+
+            if (response?.success) {
+                refetch();
+
+                const modalEl = document.querySelector('#po_revert_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+                modal.hide();
+
+                notify('success', "PO Reverted Successfully!");
+            }
+
+        } catch (error) {
+            notify('error', 'Error occurred during PO revert.');
+        }
+    }
+
     if (!poId) return null;
 
     if (loading || userLoading) {
@@ -192,6 +211,19 @@ function PODetail() {
 
                         <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
                             <div className="menu-item">
+                                {currentUser.type !== 'backend-vendor' && poDetail.order_status !== 'unreleased' && poDetail.invoices.length < 1 &&
+                                    <button
+                                        className="menu-link"
+                                        data-modal-toggle="#po_revert_modal"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <i className="ki-filled ki-arrows-loop text-lg"></i>
+                                                <span>Revert PO</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                }
                                 <Link
                                     to={`/purchase-orders/print/${poId}`}
                                     className="menu-link"
@@ -664,6 +696,16 @@ function PODetail() {
                 submitBtnClass="btn-danger"
                 submitBtnText="Reject"
                 handleSubmit={handleRejectPo}
+            />
+
+            <ConfirmationModal
+                modalId="po_revert_modal"
+                modalTitle="Revert PO"
+                modalPrompt="Are you sure you want to revert this PO to unreleased?"
+                modalItemName={poDetail.po_no}
+                submitBtnClass="btn-success"
+                submitBtnText="Confirm"
+                handleSubmit={handleRevertPo}
             />
         </>
     )

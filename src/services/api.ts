@@ -1973,6 +1973,18 @@ export const rejectPO = async (poId: number) => {
     }
 }
 
+export const revertPO = async (poId: number) => {
+    try {
+        const response = await axios.get(API_URL + `purchase-orders/${poId}/order/status/unreleased`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const createPOInvoice = async (poData: PurchaseOrder) => {
     try {
         const response = await axios.post(API_URL + `purchase-orders/invoice/create`, poData, {

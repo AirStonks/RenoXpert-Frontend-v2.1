@@ -151,7 +151,7 @@ function SalesOrderPO() {
                             <thead>
                                 <tr>
                                     <th className="w-[100px]">Date (Owner Approved)</th>
-                                    <th className='w-[100px] text-center'>Owner/Unit/Property</th>
+                                    <th className='w-[100px]'>Owner/Unit/Property</th>
                                     <th className="w-[100px]">Sales Order #</th>
                                     <th className="w-[110px]">Invoice #</th>
                                     <th className="w-[100px]">Invoice Amount</th>
