@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Loading from '../../components/Loading';
 import { salesIndex } from '../../services/api';
-import { Sale } from '../../types';
+import { Invoice, Sale } from '../../types';
 import { Link } from 'react-router-dom';
 
 type SortOrder = 'asc' | 'desc' | null;
@@ -55,7 +55,6 @@ function SalesOrderPO() {
             const newSales = response?.data || [];
             setSales(newSales);
             setTotalItems(response?.totalCount || 0);
-            // Initialize all cards as expanded
             setExpandedCards(newSales.reduce((acc, sale) => ({
                 ...acc,
                 [sale.id]: true
@@ -87,7 +86,6 @@ function SalesOrderPO() {
                 const newSales = response?.data || [];
                 setSales(newSales);
                 setTotalItems(response?.totalCount || 0);
-                // Initialize all cards as expanded
                 setExpandedCards(newSales.reduce((acc, sale) => ({
                     ...acc,
                     [sale.id]: true
@@ -122,186 +120,184 @@ function SalesOrderPO() {
     const totalPages = Math.ceil(totalItems / size);
 
     const renderSaleCard = (sale: Sale, index: number) => {
-        const invoiceCount = sale.invoices.length;
-        const poCount = sale.purchase_orders.length;
-        const totalRows = Math.max(invoiceCount, poCount) || 0;
-        let cumulativePaidAmount = 0;
         const isExpanded = expandedCards[sale.id] ?? true;
-
-        // Determine if the card is at an odd index (0-based index, so odd indices are 1, 3, 5, etc.)
         const isOdd = index % 2 === 1;
 
         return (
-            <div className="card mb-4" key={sale.id}>
+            <div className="card mb-4 shadow-sm" key={sale.id}>
                 <div
-                    className={`card-header flex justify-between items-center cursor-pointer ${isOdd ? 'bg-gray-200' : ''}`}
+                    className={`card-header flex justify-between items-center cursor-pointer p-4 ${isOdd ? 'bg-gray-100' : 'bg-white'}`}
                     onClick={() => toggleCard(sale.id)}
                 >
-                    <div className="card-title">
-                        QUO #{sale.order.order_no} - RM {sale.order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    <div className="card-title flex items-center gap-2">
+                        <Link
+                            to={'/sales/' + sale.id}
+                            state={{ fromUrl: '/finance/sales-order-po' }}
+                            className="text-orange-500 font-semibold hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            #{sale.sales_no}
+                        </Link>
+                        <span className="text-gray-700">
+                            - RM {sale.order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </span>
                     </div>
-                    <button className="btn btn-sm btn-icon">
-                        <i className={`ki-outline ${isExpanded ? 'ki-up' : 'ki-down'}`}></i>
+                    <button className="btn btn-sm btn-icon text-gray-500 hover:text-gray-700">
+                        <i className={`ki-outline ${isExpanded ? 'ki-up' : 'ki-down'} text-lg`}></i>
                     </button>
                 </div>
                 {isExpanded && (
-                    <div className="card-table">
-                        {/* Rest of the table content remains unchanged */}
-                        <table className="table align-middle text-gray-700 font-medium text-sm">
-                            <thead>
-                                <tr>
-                                    <th className="w-[100px]">Date (Owner Approved)</th>
-                                    <th className='w-[100px]'>Owner/Unit/Property</th>
-                                    <th className="w-[100px]">Sales Order #</th>
-                                    <th className="w-[110px]">Invoice #</th>
-                                    <th className="w-[100px]">Invoice Amount</th>
-                                    <th className="w-[100px] text-center">Invoice Status</th>
-                                    <th className="w-[100px]">Invoice Paid Amount</th>
-                                    <th className="w-[100px]">Invoice Paid %</th>
-                                    <th className="w-[100px]">PO #</th>
-                                    <th className="w-[100px]">Total PO Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {/* Table body content remains unchanged */}
-                                {totalRows > 0 ? (
-                                    Array.from({ length: totalRows }).map((_, rowIdx) => {
-                                        if (rowIdx < invoiceCount) {
-                                            cumulativePaidAmount += (sale.invoices[rowIdx].amount) || 0;
-                                        }
+                    <div className="card-body p-4">
+                        {/* Sale Details Section */}
+                        <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Sale Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <span className="text-sm text-gray-600 font-medium">Date (Owner Approved):</span>
+                                    <p className="text-sm text-gray-700">
+                                        {sale.order.confirmed_at ? formatDate(sale.order.confirmed_at) : 'N/A'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <span className="text-sm text-gray-600 font-medium">Quotation Order #:</span>
+                                    <p className="text-sm text-gray-700">
+                                        <Link to={`/orders/${sale.order.id}`} className="text-orange-500 hover:underline">
+                                            {sale.order.order_no}
+                                        </Link>
+                                    </p>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <span className="text-sm text-gray-600 font-medium">Owner/Unit/Property:</span>
+                                    {sale.order.user ? (
+                                        <div className="text-sm text-gray-700 space-y-1">
+                                            <p className="font-semibold">{sale.order.user.name}</p>
+                                            <p>Unit: {sale.order.block}-{sale.order.floor}-{sale.order.unit_no}</p>
+                                            <p>Property: {sale.order.property ? sale.order.property.name : 'Not specified'} - Type {sale.order.unit_type || 'N/A'}</p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-400 italic">No owner information available</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
 
-                                        return (
-                                            <tr key={`${sale.id}-${rowIdx}`} className="odd:bg-gray-100">
-                                                {/* Row content remains unchanged */}
-                                                {rowIdx === 0 ? (
-                                                    <>
-                                                        <td className="align-top">
-                                                            {sale.order.confirmed_at ? formatDate(sale.order.confirmed_at) : ''}
-                                                        </td>
-                                                        <td className="align-top">
-                                                            <div className="flex flex-col gap-2">
-                                                                {sale.order.user ? (
-                                                                    <div className="space-y-2">
-                                                                        <div className="text-base font-semibold text-gray-800">
-                                                                            {sale.order.user.name}
-                                                                        </div>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className="text-sm text-gray-600 font-medium">Unit:</span>
-                                                                            <span className="text-sm text-gray-700">
-                                                                                {sale.order.block}-{sale.order.floor}-{sale.order.unit_no}
-                                                                            </span>
-                                                                        </div>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className="text-sm text-gray-600 font-medium">Property:</span>
-                                                                            <span className="text-sm text-gray-700">
-                                                                                {sale.order.property ? sale.order.property.name : 'Not specified'} - Type  {sale.order.unit_type || 'N/A'}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                ) : (
-                                                                    <span className="text-sm text-gray-400 italic">No owner information available</span>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                        <td className="align-top">
-                                                            <Link to={`/orders/${sale.order.id}`} className="link text-orange-500">
-                                                                {sale.order.order_no}
-                                                            </Link>
-                                                        </td>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <td></td>
-                                                        <td></td>
-                                                        <td></td>
-                                                    </>
-                                                )}
-                                                <td className="align-top">
-                                                    {rowIdx < invoiceCount ? sale.invoices[rowIdx].invoice_no : ''}
-                                                </td>
-                                                <td className="align-top">
-                                                    {rowIdx < invoiceCount ?
-                                                        `RM ${sale.invoices[rowIdx].amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : ''}
-                                                </td>
-                                                <td className="text-center align-top">
-                                                    {rowIdx < invoiceCount && (
-                                                        <span className={`badge badge-pill p-2 cursor-default capitalize
-                                                            ${sale.invoices[rowIdx].status === 'issued' ? 'badge-primary' : ''} 
-                                                            ${sale.invoices[rowIdx].status === 'paid' ? 'badge-success' : ''} 
-                                                            ${sale.invoices[rowIdx].status === 'overdue' ? 'badge-danger' : ''} 
-                                                            badge-outline`}>
-                                                            {sale.invoices[rowIdx].status.replace(/-/g, ' ')}
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="align-top">
-                                                    {rowIdx < invoiceCount ?
-                                                        `RM ${cumulativePaidAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : ''}
-                                                </td>
-                                                <td className="align-top">
-                                                    {rowIdx < invoiceCount ?
-                                                        (sale.order.total_amount > 0
-                                                            ? ((cumulativePaidAmount / sale.order.total_amount) * 100).toFixed(2) + '%'
-                                                            : '0%') : ''}
-                                                </td>
-                                                <td className="align-top">
-                                                    {rowIdx < poCount && (
-                                                        <Link to={`/purchase-orders/${sale.purchase_orders[rowIdx].id}`} className="link text-orange-500">
-                                                            {sale.purchase_orders[rowIdx].po_no}
-                                                        </Link>
-                                                    )}
-                                                </td>
-                                                <td className="align-top">
-                                                    {rowIdx < poCount ?
-                                                        `RM ${sale.purchase_orders[rowIdx].total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : ''}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                ) : (
-                                    <tr className="odd:bg-gray-100">
-                                        <td>{sale.order.confirmed_at ? formatDate(sale.order.confirmed_at) : ''}</td>
-                                        <td>
-                                            <div className="flex flex-col gap-1">
-                                                {sale.order.user ? (
-                                                    <div className="space-y-2">
-                                                        <div className="text-base font-semibold text-gray-800">
-                                                            {sale.order.user.name}
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-sm text-gray-600 font-medium">Unit:</span>
-                                                            <span className="text-sm text-gray-700">
-                                                                {sale.order.block}-{sale.order.floor}-{sale.order.unit_no}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-sm text-gray-600 font-medium">Property:</span>
-                                                            <span className="text-sm text-gray-700">
-                                                                {sale.order.property ? sale.order.property.name : 'Not specified'} - Type  {sale.order.unit_type || 'N/A'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-sm text-gray-400 italic">No owner information available</span>
-                                                )}
+                        {/* Invoices Section */}
+                        <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Invoices</h3>
+                            {sale.invoices.length > 0 ? (
+                                <div className="space-y-3">
+                                    {sale.invoices.map((invoice: Invoice, index) => (
+                                        <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                            <div className="flex-1">
+                                                <Link
+                                                    to={'/sales/' + sale.id + '?inv=' + invoice.id}
+                                                    state={{ fromUrl: '/finance/sales-order-po' }}
+                                                    className="text-orange-500 font-semibold hover:underline"
+                                                >
+                                                    {invoice.invoice_no}
+                                                </Link>
                                             </div>
-                                        </td>
-                                        <td>
-                                            <Link to={`/orders/${sale.order.id}`} className="link text-orange-500">
-                                                {sale.order.order_no}
-                                            </Link>
-                                        </td>
-                                        <td>-</td>
-                                        <td>RM {sale.order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                        <td>-</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                            <div className="flex-1 text-sm">
+                                                <span className="text-gray-600">Amount:</span> RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            </div>
+                                            <div className="flex-1 text-sm">
+                                                <span className="text-gray-600">Status:</span>{' '}
+                                                <span className={`capitalize ${invoice.status === 'paid' ? 'text-green-600' : 'text-gray-500'}`}>
+                                                    {invoice.status}
+                                                </span>
+                                            </div>
+                                            <div className="flex-1 text-sm">
+                                                <span className="text-gray-600">Paid Amount:</span>{' '}
+                                                RM {(sale.invoices.slice(0, index + 1).reduce((sum, inv) => sum + (inv.amount || 0), 0)).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            </div>
+                                            <div className="flex-1 text-sm">
+                                                <span className="text-gray-600">Paid %:</span>{' '}
+                                                {sale.order.total_amount > 0
+                                                    ? ((sale.invoices.slice(0, index + 1).reduce((sum, inv) => sum + (inv.amount || 0), 0) / sale.order.total_amount) * 100).toFixed(2) + '%'
+                                                    : '0%'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-500 italic">No invoices available</p>
+                            )}
+                        </div>
+
+                        {/* Purchase Orders Section */}
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Purchase Orders</h3>
+                            {sale.purchase_orders.length > 0 ? (
+                                <div className="space-y-4">
+                                    {sale.purchase_orders.map((po, idx) => (
+                                        <div key={idx} className="bg-gray-100 rounded-lg">
+                                            {/* PO Header */}
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 border-b border-gray-200">
+                                                <div className="flex-1">
+                                                    <span className="text-sm text-gray-600 font-medium">PO #:</span>{' '}
+                                                    <Link
+                                                        to={`/purchase-orders/${po.id}`}
+                                                        className="text-orange-500 font-semibold text-base hover:underline"
+                                                    >
+                                                        {po.po_no}
+                                                    </Link>
+                                                </div>
+                                                <div className="flex-1 text-sm">
+                                                    <span className="text-gray-600 font-medium">Total Amount:</span>{' '}
+                                                    <span className="font-semibold text-gray-800">
+                                                        RM {po.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {/* PO Invoices */}
+                                            {po.invoices.length > 0 ? (
+                                                <div className="p-4 bg-white rounded-b-lg">
+                                                    <div className="space-y-3">
+                                                        {po.invoices.map((invoice: Invoice, index) => (
+                                                            <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-2 bg-gray-50 rounded-md">
+                                                                <div className="flex-1">
+                                                                    <Link
+                                                                        to={'/purchase-orders/' + po.id + '/invoices?inv=' + invoice.id}
+                                                                        state={{ fromUrl: '/purchase-orders/property/view' }}
+                                                                        className="text-orange-500 hover:underline"
+                                                                    >
+                                                                        {invoice.invoice_no}
+                                                                    </Link>
+                                                                </div>
+                                                                <div className="flex-1 text-sm">
+                                                                    <span className="text-gray-600">Amount:</span>{' '}
+                                                                    RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                                </div>
+                                                                <div className="flex-1 text-sm">
+                                                                    <span className="text-gray-600">Status:</span>{' '}
+                                                                    <span className={`capitalize ${invoice.status === 'paid' ? 'text-green-600' : 'text-gray-500'}`}>
+                                                                        {invoice.status}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex-1 text-sm">
+                                                                    <span className="text-gray-600">Paid Amount:</span>{' '}
+                                                                    RM {(po.invoices.slice(0, index + 1).reduce((sum, inv) => sum + (inv.amount || 0), 0)).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                                </div>
+                                                                <div className="flex-1 text-sm">
+                                                                    <span className="text-gray-600">Paid %:</span>{' '}
+                                                                    {po.total_amount > 0
+                                                                        ? ((po.invoices.slice(0, index + 1).reduce((sum, inv) => sum + (inv.amount || 0), 0) / po.total_amount) * 100).toFixed(2) + '%'
+                                                                        : '0%'}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-gray-500 italic p-4 bg-white rounded-b-lg">No invoices for this PO</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-500 italic">No purchase orders available</p>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

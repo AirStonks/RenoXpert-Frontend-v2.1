@@ -219,7 +219,9 @@ function InvoiceDetailModal({ invoiceId, refetchPo, handleResetPoId }: InvoiceDe
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Status:</td>
                                         <td className="text-sm text-gray-900 font-medium pb-3">
-                                            <span className={`badge badge-pill badge-outline gap-1 items-center ${invoice.status === 'paid' ? 'badge-success' : ''}`}>
+                                            <span className={`badge badge-pill badge-outline gap-1 items-center 
+                                                ${invoice.status === 'paid' ? 'badge-success' : ''}
+                                                ${invoice.status === 'overdue' ? 'badge-danger' : ''}`}>
                                                 {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
                                             </span>
                                         </td>

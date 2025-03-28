@@ -334,6 +334,14 @@ function ProductMain() {
                                     </th>
                                     <th
                                         className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('cogs')}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            COGS {getSortIcon('cogs')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[100px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('price')}
                                     >
                                         <div className="flex items-center justify-center gap-2">
@@ -401,6 +409,11 @@ function ProductMain() {
                                                         <span className="text-xs font-semibold badge badge-outline badge-xs my-1">SKU: {product.SKU || '-'}</span>
                                                     </div>
                                                     <span className="text-xs text-slate-400">{product.description || ''}</span>
+                                                </div>
+                                            </td>
+                                            <td className='text-center'>
+                                                <div className="flex flex-col justify-center items-center">
+                                                    <span>RM {product.provisioning.supply.cogs + product.provisioning.install.cogs}</span>
                                                 </div>
                                             </td>
                                             <td className='text-center'>

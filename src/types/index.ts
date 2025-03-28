@@ -1213,8 +1213,6 @@ export interface KeyManagement {
     date_received_key?: string,
     date_posted?: string,
     pic_name?: string,
-    no_main_door?: number,
-    no_room?: number,
     status?: string,
     metadata?: Array<{
         name: string,
