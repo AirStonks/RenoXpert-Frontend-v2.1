@@ -519,17 +519,15 @@ function EditPO() {
     };
 
     const calculatePackageTotal = (poPackage: POPackage): number => {
-        const packageTotal = poPackage.po_items.reduce((packageTotal, product) => {
-            const productTotal = product.qty * (
-                (product.supply ? product.supply_price : 0) +
-                (product.install ? product.install_price : 0)
+        return poPackage.po_items.reduce((total, item) => {
+
+            const itemTotal = item.qty * (
+                (item.supply ? item.supply_price : 0) +
+                (item.install ? item.install_price : 0)
             );
-            return packageTotal + productTotal;
+            return total + itemTotal;
         }, 0);
-        return packageTotal * (poPackage.quantity || 1);
     };
-
-
 
     const toggleAccordion = (packageId) => {
         setOpenAccordions(prev => ({

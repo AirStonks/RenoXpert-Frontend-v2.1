@@ -17,6 +17,7 @@ function PODetail() {
     const poId = id ? parseInt(id, 10) : null;
     const { poDetail, loading, error, refetch } = useFetchPO(poId);
     const { currentUser, loading: userLoading } = useUser();
+    const [isLoading, setIsLoading] = useState(false);
 
     const [openAccordions, setOpenAccordions] = useState({});
 
@@ -108,6 +109,7 @@ function PODetail() {
     }
 
     const handleRevertPo = async () => {
+        setIsLoading(true);
         try {
             const response = await revertPO(Number(poDetail.id));
 
@@ -123,6 +125,8 @@ function PODetail() {
 
         } catch (error) {
             notify('error', 'Error occurred during PO revert.');
+        } finally {
+            setIsLoading(false);
         }
     }
 
