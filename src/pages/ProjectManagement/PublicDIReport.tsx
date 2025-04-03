@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { fetchDIFormWithHashedString } from '../../services/api';
 import { Slide, toast } from 'react-toastify';
 import Loading from '../../components/Loading';
+import { fetchDIFormWithHashedString } from '../../services/publicApi';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -235,9 +235,19 @@ function PublicDIReport() {
 
     if (isLoading) return <Loading />;
     if (!diForm) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <p className="text-gray-500 text-base">No data available</p>
-        </div>
+        <main className="grow pt-5 flex items-center min-h-screen bg-gray-50" id="content" role="main">
+            <div className="flex flex-col items-center w-full">
+                <div className="container relative flex flex-col items-center justify-center py-8 px-4 sm:px-6 lg:px-8 max-w-2xl" id="content_container">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 text-center">
+                        <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p className="text-gray-600 text-base font-medium">No data available yet</p>
+                        <p className="text-gray-500 text-sm mt-1">Check back later or refresh the page</p>
+                    </div>
+                </div>
+            </div>
+        </main>
     );
 
     return (

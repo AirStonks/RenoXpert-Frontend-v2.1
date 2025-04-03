@@ -40,3 +40,14 @@ export const getProperties = async () => {
         console.log(error);
     }
 };
+
+
+export const fetchDIFormWithHashedString = async (hashedString: string) => {
+    try {
+        const response = await axios.get(API_URL + `defect-inspection-forms/public/${hashedString}`);
+        return response.data; // Return product data
+    } catch (error) {
+        console.log(error);
+        throw error; // Ensure to throw the error if needed
+    }
+}
