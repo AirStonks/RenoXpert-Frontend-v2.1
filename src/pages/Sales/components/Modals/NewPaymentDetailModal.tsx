@@ -225,10 +225,10 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                 const modal = KTModal.getInstance(modalEl);
                 modal.hide();
 
-                // Display back invoiceDetail modal
-                const invoiceModalEl = document.querySelector('#payment_invoice_modal') as HTMLElement;
-                const invoiceModal = KTModal.getInstance(invoiceModalEl);
-                invoiceModal.show();
+                // // Display back invoiceDetail modal
+                // const invoiceModalEl = document.querySelector('#payment_invoice_modal') as HTMLElement;
+                // const invoiceModal = KTModal.getInstance(invoiceModalEl);
+                // invoiceModal.show();
 
                 // Refetch the invoice
                 refetchInvoice();
