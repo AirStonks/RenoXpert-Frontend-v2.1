@@ -560,6 +560,8 @@ export interface DefectInspectionForm {
         }
     }
     status?: string,
+    report_hash?: string,
+    link_status?: 'unactive' | 'active',
     created_by?: User,
     updated_by?: User,
     created_at?: string,

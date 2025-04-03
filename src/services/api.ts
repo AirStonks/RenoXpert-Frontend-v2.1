@@ -1690,6 +1690,18 @@ export const fetchProgressKeyManagement = async (keyManagementId: number) => {
     }
 }
 
+export const fetchDIFormWithHashedString = async (hashedString: string) => {
+    try {
+        const response = await axios.get(API_URL + `defect-inspection-forms/public/${hashedString}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const markDIFormAsCompleted = async (diFormId: number) => {
     try {
         const response = await axios.get(API_URL + `defect-inspection-forms/${diFormId}/completed`, {
@@ -1699,6 +1711,19 @@ export const markDIFormAsCompleted = async (diFormId: number) => {
     } catch (error) {
         handle401Error(error as AxiosError);
         throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const toggleDIFormReportLinkStatus = async (diFormId: number) => {
+    try {
+        const response = await axios.get(API_URL + `defect-inspection-forms/${diFormId}/report-link/toggle`, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
     }
 }
 

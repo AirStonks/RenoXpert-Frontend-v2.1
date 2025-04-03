@@ -100,6 +100,7 @@ import POInvoice from './pages/PO/POInvoice';
 import OTPRequestList from './pages/OTPRequestList';
 import POInvoicePrint from './pages/PO/components/POInvoicePrint';
 import DIFormMain from './pages/ProjectManagement/DIFormMain';
+import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
 
 
 interface ProtectedLayoutProps {
@@ -287,6 +288,7 @@ const routeCat = [
         { path: '/test', element: <Test />, layout: null },
         { path: '/test2', element: <Test2 />, layout: null },
         { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
+        { path: '/di-form/report', element: <PublicDIReport />, layout: null },
     ]
 ];
 

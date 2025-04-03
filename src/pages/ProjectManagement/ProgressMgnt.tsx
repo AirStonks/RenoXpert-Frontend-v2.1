@@ -3,13 +3,14 @@ import useFetchRenoProgress from "../../hook/useFetchRenoProgress";
 import Loading from "../../components/Loading";
 import { useEffect, useRef, useState } from "react";
 import KTComponents, { KTDropdown } from "../../metronic/core";
-import { Permission, PhaseJob, RenoProgress, User } from "../../types";
+import { DefectInspectionForm, Permission, PhaseJob, RenoProgress, User } from "../../types";
 import { addUserItemPermission, changeInternalComment, changeOwnerComment, changeRenoProgressGeneralPermission, changeTaskStatus, changeUserItemPermission, fetchRenoProgress, fetchTaskDocuments, liveUploadTaskAttachment, permissionIndex, removeTaskDocument, removeUserItemPermission, toggleTaskVisibility, uploadTaskDocuments, userIndex } from "../../services/api";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import imageCompression from 'browser-image-compression';
 import ProjectDateManagementModal from "./components/Modals/ProjectDateManagementModal";
+import DIRLinkManagementModal from "./components/Modals/DIRLinkManagementModal";
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -589,6 +590,16 @@ function ProgressMgnt() {
         return totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0;
     };
 
+    const handleUpdateDIForm = (newFormData: DefectInspectionForm) => {
+        if (renoProgress) {
+            setRenoProgress({
+                ...renoProgress,
+                defect_inspection_form: newFormData
+            });
+        }
+    };
+
+
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!renoProgress) return <div>An unexpected error occured</div>;
@@ -606,6 +617,42 @@ function ProgressMgnt() {
                     <span className="text-2xl font-bold text-gray-900">
                         Reno Progress Detail
                     </span>
+                </div>
+                <div className="flex gap-3">
+                    <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                            <i className="ki-filled ki-dots-vertical"></i>
+                        </button>
+
+                        <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
+                            <div className="menu-item">
+                                <button
+                                    className="menu-link"
+                                    data-modal-toggle="#dir_link_mgnt_modal"
+                                >
+                                    <span className="menu-title">
+                                        <div className="flex gap-2 items-center">
+                                            <i className="ki-filled ki-compass text-lg"></i>
+                                            <span>DIR MO Access Management</span>
+                                        </div>
+                                    </span>
+                                </button>
+                            </div>
+                            <div className="menu-item">
+                                {/* <Link
+                                    to={/purchase-orders/print/payment-voucher/${poId}}
+                                    className="menu-link"
+                                >
+                                    <span className="menu-title">
+                                        <div className="flex gap-2 items-center">
+                                            <i className="ki-filled ki-file-down text-lg"></i>
+                                            <span>Print Payment Voucher</span>
+                                        </div>
+                                    </span>
+                                </Link> */}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -2067,6 +2114,11 @@ function ProgressMgnt() {
             <ProjectDateManagementModal
                 renoProgress={renoProgress}
                 setRenoProgress={setRenoProgress}
+            />
+
+            <DIRLinkManagementModal
+                diForm={renoProgress.defect_inspection_form}
+                setDiForm={handleUpdateDIForm}
             />
         </>
     )

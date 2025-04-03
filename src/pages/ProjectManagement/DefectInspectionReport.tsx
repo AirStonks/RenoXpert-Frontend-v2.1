@@ -7,6 +7,7 @@ import Loading from "../../components/Loading";
 import { DefectInspectionForm, RenoProgress } from "../../types";
 import { changeTaskStatus, fetchRenoProgress, markDIFormAsCompleted } from "../../services/api";
 import React from 'react';
+import DIRLinkManagementModal from "./components/Modals/DIRLinkManagementModal";
 
 const APP_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -99,6 +100,37 @@ function DefectInspectionReport() {
 
     }, [renoProgressId]);
 
+    useEffect(() => {
+        if (diForm) {
+            const target = document.getElementById('clipboard_1_target') as HTMLInputElement;
+            const button = document.getElementById('clipboard_1_button') as HTMLButtonElement;
+
+            if (!target || !button) {
+                return;
+            }
+
+            const clipboard = new ClipboardJS(button, {
+                target: () => target,
+                text: () => target.value,
+            });
+
+            clipboard.on('success', function (e) {
+                notify('success', 'Copied to clipboard!');
+                e.clearSelection();
+            });
+
+            clipboard.on('error', function () {
+                notify('error', 'Failed to copy to clipboard.');
+            });
+
+            // Cleanup to avoid memory leaks
+            return () => {
+                clipboard.destroy();
+            };
+        }
+
+    }, [diForm]);
+
     const handleMarkAsComplete = async () => {
         setIsLoading(true);
         try {
@@ -131,12 +163,48 @@ function DefectInspectionReport() {
                     </span>
                 </div>
 
-                <button
-                    className="btn btn-success btn-sm"
-                    onClick={handleMarkAsComplete}
-                >
-                    Mark as Complete
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        className="btn btn-success btn-sm"
+                        onClick={handleMarkAsComplete}
+                    >
+                        Mark as Complete
+                    </button>
+                    <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm">
+                            <i className="ki-filled ki-dots-vertical"></i>
+                        </button>
+
+                        <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
+                            <div className="menu-item">
+                                <button
+                                    className="menu-link"
+                                    data-modal-toggle="#dir_link_mgnt_modal"
+                                >
+                                    <span className="menu-title">
+                                        <div className="flex gap-2 items-center">
+                                            <i className="ki-filled ki-compass text-lg"></i>
+                                            <span>MO Access Management</span>
+                                        </div>
+                                    </span>
+                                </button>
+                            </div>
+                            <div className="menu-item">
+                                {/* <Link
+                                    to={/purchase-orders/print/payment-voucher/${poId}}
+                                    className="menu-link"
+                                >
+                                    <span className="menu-title">
+                                        <div className="flex gap-2 items-center">
+                                            <i className="ki-filled ki-file-down text-lg"></i>
+                                            <span>Print Payment Voucher</span>
+                                        </div>
+                                    </span>
+                                </Link> */}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className="flex flex-wrap gap-4 mb-4">
@@ -188,7 +256,7 @@ function DefectInspectionReport() {
                                                 : 'N/A'}
                                         </td>
                                     </tr> */}
-                                    <tr>
+                                    {/* <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Form Link:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <button
@@ -198,7 +266,7 @@ function DefectInspectionReport() {
                                                 Defect Inspection Form
                                             </button>
                                         </td>
-                                    </tr>
+                                    </tr> */}
                                 </tbody>
                             </table>
                         </div>
@@ -252,6 +320,61 @@ function DefectInspectionReport() {
                                         <td className="text-sm text-gray-900 pb-3">
                                             {diForm?.contractor_email}
                                         </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="card-header">
+                            <div className="card-title">
+                                Link Management
+                            </div>
+                        </div>
+                        <div className="card-body">
+                            <table className="table-auto">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            MO Access Link:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            <div className="input w-auto">
+                                                <input
+                                                    className="w-auto cursor-pointer"
+                                                    id="clipboard_1_target"
+                                                    placeholder="Copy to clipboard"
+                                                    type="text"
+                                                    value={`${APP_URL}di-form/report?id=${diForm?.report_hash}`}
+                                                    onClick={() => { window.open(`${APP_URL}di-form/report?id=${diForm?.report_hash}`, '_blank'); }}
+                                                    readOnly
+                                                />
+                                                <button className="btn btn-icon" id="clipboard_1_button">
+                                                    <i className="ki-outline ki-copy"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Link Status:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            <span className={`badge badge-sm badge-pill p-2 cursor-default
+                                                ${diForm?.link_status === 'unactive' ? 'badge-danger' : ''} 
+                                                ${diForm?.link_status === 'active' ? 'badge-success' : ''} 
+                                                badge-outline`}
+                                            >
+                                                {diForm?.link_status.charAt(0).toUpperCase() + diForm?.link_status.slice(1)}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                    </tr>
+                                    <tr>
+                                    </tr>
+                                    <tr>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1178,6 +1301,11 @@ function DefectInspectionReport() {
                     </div>
                 </div>
             </div>
+
+            <DIRLinkManagementModal
+                diForm={diForm}
+                setDiForm={setDiForm}
+            />
         </>
     )
 }
