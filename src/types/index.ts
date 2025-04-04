@@ -149,6 +149,8 @@ export interface Package {
     products?: Product[];
     description_internal?: string;
     category?: string;
+    is_addon?: boolean;
+    is_addon_included?: boolean;
     status?: string;
     created_by?: User;
     updated_by?: User;

@@ -49,8 +49,18 @@ const QuotationOrderPDF = ({ orderDetail }) => {
     useEffect(() => {
         if (!orderDetail?.latest_quotation?.packages) return;
 
+        let addonCounter = 0; // To number each add-on uniquely
+
         const categoryTotals = orderDetail.latest_quotation.packages.reduce((acc, quotationPackage) => {
-            const category = quotationPackage.category;
+            // Determine category with addon condition
+            let category;
+            if (quotationPackage.is_addon === true && quotationPackage.is_addon_included === true) {
+                addonCounter += 1;
+                category = `Add-on Option ${addonCounter}`; // Unique category for each add-on
+            } else {
+                category = quotationPackage.category;
+            }
+
             const categoryTotal = quotationPackage.products.reduce((total, product) => {
                 // Calculate supply price
                 let supplyPrice = 0;
@@ -83,13 +93,21 @@ const QuotationOrderPDF = ({ orderDetail }) => {
             return acc;
         }, {} as Record<string, { total_price: number, quantity: number }>);
 
-        setPackageCategories(
-            Object.entries(categoryTotals).map(([category, { total_price, quantity }]) => ({
-                category: categoryOptions.find(option => option.value === category)?.label || category,
-                total_price,
-                quantity
-            }))
-        );
+        const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, quantity }]) => ({
+            category: category.startsWith('Add-on Option')
+                ? category // Keep the Add-on numbering
+                : categoryOptions.find(option => option.value === category)?.label || category,
+            total_price,
+            quantity
+        }));
+
+        // Sort array to ensure all Add-ons are last
+        const sortedCategories = [
+            ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')), // Non-addon items first
+            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option'))   // All addon items last
+        ];
+
+        setPackageCategories(sortedCategories);
 
     }, [orderDetail?.latest_quotation?.packages]);
 
@@ -205,55 +223,71 @@ const QuotationOrderPDF = ({ orderDetail }) => {
             {/* Quotation Body */}
             <View>
                 {/* Package Table */}
-                {orderDetail.latest_quotation.packages.map((pkg, pkgIndex) => (
-                    <View style={styles.packageCard} key={pkgIndex} wrap={false}>
-                        <View style={styles.packageHeader}>
-                            <Text style={styles.packageTitle}>Package {pkgIndex + 1}: {pkg.name}</Text>
-                            <View style={styles.quantityBadge}>
-                                <Text style={styles.quantityBadgeText}>Quantity: {pkg.quantity || 1}</Text>
-                            </View>
-                        </View>
-                        <View style={styles.itemTable}>
-                            <View style={styles.itemHeader}>
-                                <View style={{ flex: 2 }}>
-                                    <Text style={styles.itemTh}>S.o.W</Text>
+                {(() => {
+                    let packageCounter = 0;
+                    let addonCounter = 0;
+
+                    return orderDetail.latest_quotation.packages.map((pkg, pkgIndex) => {
+                        const isAddon = pkg.is_addon;
+                        const counter = isAddon ? addonCounter++ : packageCounter++;
+
+                        return (
+                            <View style={styles.packageCard} key={pkgIndex} wrap={false}>
+                                <View style={styles.packageHeader}>
+                                    {isAddon ? (
+                                        <Text style={styles.packageLabel}>{`ADD-ON OPTIONAL ${counter + 1}:`}</Text>
+                                    ) :
+                                        ''
+                                    }
+                                    <Text style={styles.packageTitle}>{pkg.name}</Text>
+                                    <Text style={styles.packageDesc}>{pkg.description}</Text>
+                                    <View style={styles.quantityBadge}>
+                                        <Text style={styles.quantityBadgeText}>Quantity: {pkg.quantity || 1}</Text>
+                                    </View>
                                 </View>
-                                <View style={{ flex: 6 }}>
-                                    <Text style={styles.itemTh}>Description</Text>
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.itemTh}>QTY</Text>
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.itemTh}>UOM</Text>
-                                </View>
-                            </View>
-                            {pkg.products.map((product) => (
-                                (product.pivot.visibility == true && product.pivot.includeInstall == true && product.pivot.includeSupply == true) && (
-                                    <View style={styles.itemRow} key={product.id}>
+                                <View style={styles.itemTable}>
+                                    <View style={styles.itemHeader}>
                                         <View style={{ flex: 2 }}>
-                                            <Text style={styles.itemTd}>
-                                                {(product.pivot.includeSupply && product.pivot.includeInstall) ? 'Supply and Install' :
-                                                    (!product.pivot.includeSupply && !product.pivot.includeInstall) ? '-' :
-                                                        (product.pivot.includeSupply && !product.pivot.includeInstall) ? 'Supply Only' :
-                                                            (!product.pivot.includeSupply && product.pivot.includeInstall) ? 'Install Only' : '-'}
-                                            </Text>
+                                            <Text style={styles.itemTh}>S.o.W</Text>
                                         </View>
                                         <View style={{ flex: 6 }}>
-                                            <Text style={styles.itemTd}>{product.name}</Text>
-                                            <Text style={styles.itemTdSecondary}>{product.description}</Text>
+                                            <Text style={styles.itemTh}>Description</Text>
                                         </View>
                                         <View style={{ flex: 1 }}>
-                                            <Text style={styles.itemTd}>{product.pivot.quantity}</Text>
+                                            <Text style={styles.itemTh}>QTY</Text>
                                         </View>
                                         <View style={{ flex: 1 }}>
-                                            <Text style={styles.itemTd}>{product.uom}</Text>
+                                            <Text style={styles.itemTh}>UOM</Text>
                                         </View>
                                     </View>
-                                )))}
-                        </View>
-                    </View>
-                ))}
+                                    {pkg.products.map((product) => (
+                                        (product.pivot.visibility == true && product.pivot.includeInstall == true && product.pivot.includeSupply == true) && (
+                                            <View style={styles.itemRow} key={product.id}>
+                                                <View style={{ flex: 2 }}>
+                                                    <Text style={styles.itemTd}>
+                                                        {(product.pivot.includeSupply && product.pivot.includeInstall) ? 'Supply and Install' :
+                                                            (!product.pivot.includeSupply && !product.pivot.includeInstall) ? '-' :
+                                                                (product.pivot.includeSupply && !product.pivot.includeInstall) ? 'Supply Only' :
+                                                                    (!product.pivot.includeSupply && product.pivot.includeInstall) ? 'Install Only' : '-'}
+                                                    </Text>
+                                                </View>
+                                                <View style={{ flex: 6 }}>
+                                                    <Text style={styles.itemTd}>{product.name}</Text>
+                                                    <Text style={styles.itemTdSecondary}>{product.description}</Text>
+                                                </View>
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={styles.itemTd}>{product.pivot.quantity}</Text>
+                                                </View>
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={styles.itemTd}>{product.uom}</Text>
+                                                </View>
+                                            </View>
+                                        )))}
+                                </View>
+                            </View>
+                        );
+                    });
+                })()}
 
                 {/* Category Summary Table */}
                 <View wrap={false}>

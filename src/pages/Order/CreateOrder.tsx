@@ -568,8 +568,28 @@ function CreateOrder() {
         recalculateTotalAmount();
     };
 
+    const toggleIsAddonIncluded = (packId: number) => {
+        console.log(packId);
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage: Package) => {
+                if (prodPackage.id === packId) {
+                    return { ...prodPackage, is_addon_included: !prodPackage.is_addon_included };
+                }
+                return prodPackage;
+            })
+
+            return updatedPackages
+        })
+    }
+
     const recalculateTotalAmount = () => {
         const newTotal = selectedPackages.reduce((sum, pkg) => {
+            // Skip adding to sum if package is an addon and not included
+            if (pkg.is_addon && !pkg.is_addon_included) {
+                return sum; // Return the current sum unchanged
+            }
+
+            // Otherwise, calculate the package total as before
             sum +=
                 pkg.products.reduce((prodSum, product) => {
                     if (!product.pivot.includeSupply) {
@@ -588,8 +608,10 @@ function CreateOrder() {
                     }
                     return prodSum;
                 }, 0) * (pkg.quantity || 1);
+
             return sum;
         }, 0);
+
         setFormData((prev) => ({ ...prev, totalAmount: newTotal }));
         return newTotal;
     };
@@ -634,6 +656,7 @@ function CreateOrder() {
     return (
         <>
             {loading && <Loading />}
+            
             <div className="flex justify-between items-center flex-wrap mb-6 lg:mr-[400px] lg:pr-6">
                 <div className="flex gap-4 items-center">
                     <button className="text-gray-800 dark:text-gray-400" onClick={handleBackClick}>
@@ -1052,6 +1075,7 @@ function CreateOrder() {
                                                             toggleProperty={toggleProperty}
                                                             adjustQuantity={adjustQuantity}
                                                             handleRemoveProduct={handleRemoveProduct}
+                                                            toggleIsAddonIncluded={toggleIsAddonIncluded}
                                                         />
                                                     ))}
                                             </div>
