@@ -101,6 +101,7 @@ import OTPRequestList from './pages/OTPRequestList';
 import POInvoicePrint from './pages/PO/components/POInvoicePrint';
 import DIFormMain from './pages/ProjectManagement/DIFormMain';
 import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
+import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
 
 
 interface ProtectedLayoutProps {
@@ -262,6 +263,7 @@ const routeCat = [
         { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
         { path: '/owner/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },
         { path: '/owner/reno/progress/:id/phase/:phase/attachments', element: <RenoProgressPhaseAttachments />, layout: OwnerProtectedLayout },
+        { path: '/owner/order/:id/customize-addons', element: <CustomAddonPackage />, layout: OwnerProtectedLayout },
 
     ],
 

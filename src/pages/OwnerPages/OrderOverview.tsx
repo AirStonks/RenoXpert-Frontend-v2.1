@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Package, Product } from '../../types/index';
+import { Order, Package, Product } from '../../types/index';
 import Loading from '../../components/Loading';
 import { Slide, toast } from 'react-toastify';
 import KTComponent from '../../metronic/core';
@@ -38,8 +38,9 @@ function OrderOverview() {
     const { id } = useParams<{ id: string }>();
     const orderId = id ? parseInt(id, 10) : null;
 
-    const { orderDetail, loading, error } = useFetchOwnerOrder(orderId);
+    const { orderDetail: order, loading, error } = useFetchOwnerOrder(orderId);
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number }[]>([]);
+    const [orderDetail, setOrderDetail] = useState<Order>(null);
 
     const [activeTab, setActiveTab] = useState('tab_1_1');
 
@@ -60,7 +61,12 @@ function OrderOverview() {
     };
 
     useEffect(() => {
+        if (order) {
+            setOrderDetail(order);
+        }
+    }, [order]);
 
+    useEffect(() => {
         if (!orderDetail?.latest_quotation?.metadata) return;
 
         let addonCounter = 0; // To number each add-on uniquely
@@ -69,19 +75,16 @@ function OrderOverview() {
 
         console.log(packages);
 
-
         const categoryTotals = packages.reduce((acc, quotationPackage) => {
-            // Determine category with addon condition
             let category;
-            if (quotationPackage.is_addon === true && quotationPackage.is_addon_included === true) {
+            if (quotationPackage.is_addon === true) {
                 addonCounter += 1;
-                category = `Add-on Option ${addonCounter}`; // Unique category for each add-on
+                category = `Add-on Option ${addonCounter}`;
             } else {
                 category = quotationPackage.category;
             }
 
             const categoryTotal = quotationPackage.products.reduce((total, product) => {
-                // Calculate supply price
                 let supplyPrice = 0;
                 if (product.pivot.includeSupply) {
                     supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
@@ -89,7 +92,6 @@ function OrderOverview() {
                     supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
                 }
 
-                // Calculate install price
                 let installPrice = 0;
                 if (product.pivot.includeInstall) {
                     installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
@@ -100,37 +102,42 @@ function OrderOverview() {
                 return total + supplyPrice + installPrice;
             }, 0) * (quotationPackage.quantity || 1);
 
-            // Initialize the category if it doesn't exist
-            if (!acc[category]) {
-                acc[category] = { total_price: 0, quantity: 0 };
+            if (!(quotationPackage.is_addon === true && quotationPackage.is_addon_included === false)) {
+                if (!acc[category]) {
+                    acc[category] = { total_price: 0, quantity: 0 };
+                }
+                acc[category].total_price += categoryTotal;
+                acc[category].quantity += quotationPackage.quantity;
             }
-
-            // Add to the category total
-            acc[category].total_price += categoryTotal;
-            acc[category].quantity += quotationPackage.quantity;
 
             return acc;
         }, {} as Record<string, { total_price: number, quantity: number }>);
 
+        // Calculate filtered total_amount
+        const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0);
+
         const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, quantity }]) => ({
             category: category.startsWith('Add-on Option')
-                ? category // Keep the Add-on numbering
+                ? category
                 : categoryOptions.find(option => option.value === category)?.label || category,
             total_price,
             quantity
         }));
 
-        // Sort array to ensure all Add-ons are last
         const sortedCategories = [
-            ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')), // Non-addon items first
-            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option'))   // All addon items last
+            ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')),
+            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option'))
         ];
 
         setPackageCategories(sortedCategories);
 
+        // Update orderDetail with filtered total_amount (assuming you can modify it)
+        setOrderDetail(prev => ({
+            ...prev,
+            total_amount: filteredTotalAmount
+        }));
+
         console.log(sortedCategories);
-
-
     }, [orderDetail?.latest_quotation]);
 
     const getCurrentDate = () => {
@@ -717,53 +724,68 @@ function OrderOverview() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage, index) => (
-                                                    <React.Fragment key={index}>
-                                                        <tr className="bg-slate-50 border-b">
-                                                            <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
-                                                            <td className="p-2 font-semibold">
-                                                                <div className="flex flex-col">
-                                                                    {quotationPackage.is_addon && <span className="text-gray-900">ADD-ON OPTIONAL {index + 1}: </span>}
-                                                                    <span>{quotationPackage.name}</span>
-                                                                    <span className="text-gray-700 text-xs">{quotationPackage.description}</span>
-                                                                </div>
-                                                            </td>
-                                                            <td className="p-2 text-center"></td>
-                                                            <td className="p-2 text-center font-semibold">{quotationPackage.quantity || 1}</td>
-                                                            <td className="p-2 text-center hidden md:table-cell"></td>
-                                                        </tr>
-                                                        {quotationPackage.products.map((product, prodIndex) => (
-                                                            (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
-                                                                <tr key={prodIndex} className="border-b">
-                                                                    <td className="p-2 hidden md:table-cell"></td>
-                                                                    <td className="p-2">
+                                                {(() => {
+                                                    let packageCounter = 0;
+                                                    let addonCounter = 0;
+                                                    return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage, index) => {
+                                                        const isAddon = quotationPackage.is_addon;
+                                                        const counter = isAddon ? addonCounter++ : packageCounter++;
+
+                                                        return (
+                                                            <React.Fragment key={index}>
+                                                                <tr className="bg-slate-50 border-b">
+                                                                    <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
+                                                                    <td className="p-2 font-semibold">
                                                                         <div className="flex flex-col">
-                                                                            <span className="text-gray-900">{product.name}</span>
-                                                                            <span className="text-gray-500 text-xs">
-                                                                                {product.description
-                                                                                    ? product.description.startsWith('Supply & installation of')
-                                                                                        ? !product.pivot.includeSupply && !product.pivot.includeInstall
-                                                                                            ? product.description.replace('Supply & installation of', '').trim()
-                                                                                            : !product.pivot.includeSupply
-                                                                                                ? `Installation of ${product.description.replace('Supply & installation of', '').trim()}`
-                                                                                                : !product.pivot.includeInstall
-                                                                                                    ? `Supply of ${product.description.replace('Supply & installation of', '').trim()}`
-                                                                                                    : product.description
-                                                                                        : product.description
-                                                                                    : ''}
-                                                                            </span>
+                                                                            {quotationPackage.is_addon && <span className="text-gray-900">ADD-ON OPTIONAL {counter + 1}: </span>}
+                                                                            <span>{quotationPackage.name}</span>
+                                                                            <span className="text-gray-700 text-xs">{quotationPackage.description}</span>
                                                                         </div>
                                                                     </td>
-                                                                    <td className="p-2 text-center text-gray-900">{product.uom}</td>
-                                                                    <td className="p-2 text-center text-gray-900">{product.pivot.included ? product.pivot.quantity : 0}</td>
-                                                                    <td className="p-2 text-center hidden md:table-cell text-gray-900">
-                                                                        {!product.pivot.included && `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    <td className="p-2 text-center"></td>
+                                                                    <td className="p-2 text-center font-semibold">
+                                                                        {quotationPackage.is_addon && !quotationPackage.is_addon_included ?
+                                                                            <i className="ki-filled ki-cross-circle text-danger"></i>
+                                                                            :
+                                                                            quotationPackage.quantity || 1
+                                                                        }
                                                                     </td>
+                                                                    <td className="p-2 text-center hidden md:table-cell"></td>
                                                                 </tr>
-                                                            ) : null
-                                                        ))}
-                                                    </React.Fragment>
-                                                ))}
+                                                                {quotationPackage.products.map((product, prodIndex) => (
+                                                                    (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
+                                                                        <tr key={prodIndex} className="border-b">
+                                                                            <td className="p-2 hidden md:table-cell"></td>
+                                                                            <td className="p-2">
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-gray-900">{product.name}</span>
+                                                                                    <span className="text-gray-500 text-xs">
+                                                                                        {product.description
+                                                                                            ? product.description.startsWith('Supply & installation of')
+                                                                                                ? !product.pivot.includeSupply && !product.pivot.includeInstall
+                                                                                                    ? product.description.replace('Supply & installation of', '').trim()
+                                                                                                    : !product.pivot.includeSupply
+                                                                                                        ? `Installation of ${product.description.replace('Supply & installation of', '').trim()}`
+                                                                                                        : !product.pivot.includeInstall
+                                                                                                            ? `Supply of ${product.description.replace('Supply & installation of', '').trim()}`
+                                                                                                            : product.description
+                                                                                                : product.description
+                                                                                            : ''}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="p-2 text-center text-gray-900">{product.uom}</td>
+                                                                            <td className="p-2 text-center text-gray-900">{product.pivot.included ? product.pivot.quantity : 0}</td>
+                                                                            <td className="p-2 text-center hidden md:table-cell text-gray-900">
+                                                                                {!product.pivot.included && `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                            </td>
+                                                                        </tr>
+                                                                    ) : null
+                                                                ))}
+                                                            </React.Fragment>
+                                                        )
+                                                    });
+                                                })()}
                                             </tbody>
                                         </table>
                                         {/* Summary, Bonus, Total Amount, and Progressive Payment sections */}
