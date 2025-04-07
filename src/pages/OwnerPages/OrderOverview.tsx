@@ -41,6 +41,7 @@ function OrderOverview() {
     const { orderDetail: order, loading, error } = useFetchOwnerOrder(orderId);
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number }[]>([]);
     const [orderDetail, setOrderDetail] = useState<Order>(null);
+    const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
 
     const [activeTab, setActiveTab] = useState('tab_1_1');
 
@@ -72,8 +73,6 @@ function OrderOverview() {
         let addonCounter = 0; // To number each add-on uniquely
 
         const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(orderDetail?.latest_quotation?.metadata)));
-
-        console.log(packages);
 
         const categoryTotals = packages.reduce((acc, quotationPackage) => {
             let category;
@@ -137,8 +136,25 @@ function OrderOverview() {
             total_amount: filteredTotalAmount
         }));
 
-        console.log(sortedCategories);
     }, [orderDetail?.latest_quotation]);
+
+    useEffect(() => {
+        if (orderDetail) {
+            const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(orderDetail?.latest_quotation?.metadata)));
+
+            const totalAmount = orderDetail.final_amount > 0 ? orderDetail.final_amount : packages.reduce((total, pkg) => {
+                // Skip if package is not an addon or not included
+                if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                    return total;
+                }
+
+                // Use final_amount if available, otherwise use total_price
+                return total + pkg.total_price;
+            }, 0);
+
+            setTotalExcludedAddonAmount(totalAmount);
+        }
+    }, [orderDetail])
 
     const getCurrentDate = () => {
         const date = new Date();
@@ -597,12 +613,17 @@ function OrderOverview() {
                                                     )}
                                                     <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
                                                         <h3 className="text-lg text-blue-600 font-bold">Total Amount:</h3>
-                                                        <p className="text-xl text-gray-900 font-semibold">
-                                                            RM {orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        <p className='text-xl text-gray-900 font-semibold'>
+                                                            {orderDetail.final_amount > 0
+                                                                ? `RM ${(
+                                                                    orderDetail.final_amount -
+                                                                    (bonus ? Number(bonus.value) : 0)
+                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                : `RM ${(totalExcludedAddonAmount - (Number(bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                         </p>
                                                         {bonus && (
-                                                            <p className="text-sm text-gray-900">
-                                                                Original Price: RM {orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            <p className='text-gray-900 text-sm'>
+                                                                Original Price: RM {orderDetail.final_amount > 0 ? totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </p>
                                                         )}
                                                     </div>
@@ -831,12 +852,17 @@ function OrderOverview() {
                                         )}
                                         <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
                                             <h3 className="text-lg text-blue-600 font-bold">Total Amount:</h3>
-                                            <p className="text-xl text-gray-900 font-semibold">
-                                                RM {orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            <p className='text-xl text-gray-900 font-semibold'>
+                                                {orderDetail.final_amount > 0
+                                                    ? `RM ${(
+                                                        orderDetail.final_amount -
+                                                        (bonus ? Number(bonus.value) : 0)
+                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                    : `RM ${(totalExcludedAddonAmount - (Number(bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                             </p>
                                             {bonus && (
-                                                <p className="text-sm text-gray-900">
-                                                    Original Price: RM {orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                <p className='text-gray-900 text-sm'>
+                                                    Original Price: RM {orderDetail.final_amount > 0 ? totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </p>
                                             )}
                                         </div>

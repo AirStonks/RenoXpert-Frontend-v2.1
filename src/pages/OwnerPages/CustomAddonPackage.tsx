@@ -271,29 +271,31 @@ function CustomAddonPackage() {
 
             {/* Custom Bottom Drawer */}
             <div
-                className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] transition-all duration-300 ease-in-out ${isDrawerOpen ? 'h-72' : 'h-16'} overflow-y-auto z-10`}
+                className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] transition-all duration-300 ease-in-out ${isDrawerOpen ? 'h-72' : 'h-24'} overflow-y-auto z-10`}
             >
-                <div className="p-4 pb-6">
-                    {/* Drawer Handle */}
-                    <div
-                        className="flex justify-center items-center cursor-pointer mb-2"
-                        onClick={toggleDrawer}
-                    >
-                        <div className="flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1 hover:bg-gray-200 transition-colors duration-200">
-                            <span className="text-sm font-medium text-gray-700">
-                                {isDrawerOpen ? 'Hide Summary' : 'Show Summary'}
-                            </span>
-                            <i
-                                className={`ki-solid ki-arrow-${isDrawerOpen ? 'down' : 'up'} text-gray-500 text-lg transition-transform duration-300`}
-                            ></i>
+                <div className="relative min-h-full">
+                    {/* Drawer Handle - Fixed at top */}
+                    <div className="sticky top-0 z-20 bg-white border-b border-gray-100">
+                        <div
+                            className="flex justify-center items-center cursor-pointer py-3" // Increased vertical padding
+                            onClick={toggleDrawer}
+                        >
+                            <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 hover:bg-gray-200 transition-colors duration-200 shadow-sm">
+                                <span className="text-sm font-medium text-gray-700">
+                                    {isDrawerOpen ? 'Hide Summary' : 'Show Summary'}
+                                </span>
+                                <i
+                                    className={`ki-solid ki-arrow-${isDrawerOpen ? 'down' : 'up'} text-gray-500 text-lg transition-transform duration-300`}
+                                ></i>
+                            </div>
                         </div>
                     </div>
 
                     {/* Summary Content (visible only when drawer is open) */}
                     {isDrawerOpen && (
-                        <div className="mt-2">
+                        <div className="p-4 pb-6">
                             <h3 className="text-xl font-bold text-gray-900 mb-4 tracking-tight">Quotation Summary</h3>
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 <p className="text-sm text-gray-600 flex justify-between items-center">
                                     <span className="font-medium">Base Packages Cost</span>
                                     <span className="text-gray-800 font-semibold">
@@ -306,7 +308,7 @@ function CustomAddonPackage() {
                                         RM {totalAddonCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </p>
-                                <div className="border-t border-gray-200 pt-3">
+                                <div className="border-t border-gray-200 pt-4">
                                     <p className="text-lg text-gray-900 flex justify-between items-center">
                                         <span className="font-semibold">Total Cost</span>
                                         <span className="font-bold text-blue-600">
@@ -316,13 +318,13 @@ function CustomAddonPackage() {
                                 </div>
                             </div>
                             {selectedAddons.length > 0 && (
-                                <div className="mt-5">
-                                    <p className="text-sm font-medium text-gray-700 mb-2">Selected Add-on Packages</p>
+                                <div className="mt-6">
+                                    <p className="text-sm font-medium text-gray-700 mb-3">Selected Add-on Packages</p>
                                     <ul className="space-y-2">
                                         {selectedAddons.map((addon) => (
                                             <li
                                                 key={addon.id}
-                                                className="text-sm text-gray-800 bg-gray-50 rounded-md p-2 flex justify-between items-center"
+                                                className="text-sm text-gray-800 bg-gray-50 rounded-md p-3 flex justify-between items-center shadow-sm"
                                             >
                                                 <span>{addon.name}</span>
                                                 <span className="font-medium text-gray-900">
@@ -340,7 +342,7 @@ function CustomAddonPackage() {
 
             {/* Save and Cancel Buttons */}
             <div
-                className={`fixed left-1/2 transform -translate-x-1/2 flex gap-4 z-20 transition-all duration-300 ease-in-out ${isDrawerOpen ? 'bottom-80' : 'bottom-20'
+                className={`fixed left-1/2 transform -translate-x-1/2 flex gap-4 z-20 transition-all duration-300 ease-in-out ${isDrawerOpen ? 'bottom-80' : 'bottom-28'
                     }`}
             >
                 <button

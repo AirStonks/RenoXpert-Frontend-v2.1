@@ -803,7 +803,7 @@ export const fetchProperty = async (propertyId: number) => {
     }
 };
 
-export const fetchProperties = async (searchTerm = '', length = 5) => {
+export const fetchProperties = async (searchTerm = '', length = 50) => {
     try {
         const response = await axios.get(API_URL + `properties`, {
             headers: getAuthHeaders(),

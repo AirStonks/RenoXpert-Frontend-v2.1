@@ -71,6 +71,7 @@ function OrderDetail() {
 
     const { orderDetail, loading, error, refetch } = useFetchOrder(orderId);
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; quantity: number }[]>([]);
+    const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
 
     const [activeTab, setActiveTab] = useState('tab_1_1');
     const [isEditingInternalRemark, setIsEditingInternalRemark] = useState(false);
@@ -118,18 +119,18 @@ function OrderDetail() {
 
         let addonCounter = 0; // To number each add-on uniquely
 
-        const categoryTotals = orderDetail.latest_quotation.packages.reduce((acc, quotationPackage) => {
-            // Determine category with addon condition
+        const packages: Package[] = orderDetail.latest_quotation.packages;
+
+        const categoryTotals = packages.reduce((acc, quotationPackage) => {
             let category;
-            if (quotationPackage.is_addon === true && quotationPackage.is_addon_included === true) {
+            if (quotationPackage.is_addon === true) {
                 addonCounter += 1;
-                category = `Add-on Option ${addonCounter}`; // Unique category for each add-on
+                category = `Add-on Option ${addonCounter}`;
             } else {
                 category = quotationPackage.category;
             }
 
             const categoryTotal = quotationPackage.products.reduce((total, product) => {
-                // Calculate supply price
                 let supplyPrice = 0;
                 if (product.pivot.includeSupply) {
                     supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
@@ -137,7 +138,6 @@ function OrderDetail() {
                     supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
                 }
 
-                // Calculate install price
                 let installPrice = 0;
                 if (product.pivot.includeInstall) {
                     installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
@@ -148,30 +148,31 @@ function OrderDetail() {
                 return total + supplyPrice + installPrice;
             }, 0) * (quotationPackage.quantity || 1);
 
-            // Initialize the category if it doesn't exist
-            if (!acc[category]) {
-                acc[category] = { total_price: 0, quantity: 0 };
+            if (!(quotationPackage.is_addon === true && quotationPackage.is_addon_included === false)) {
+                if (!acc[category]) {
+                    acc[category] = { total_price: 0, quantity: 0 };
+                }
+                acc[category].total_price += categoryTotal;
+                acc[category].quantity += quotationPackage.quantity;
             }
-
-            // Add to the category total
-            acc[category].total_price += categoryTotal;
-            acc[category].quantity += quotationPackage.quantity;
 
             return acc;
         }, {} as Record<string, { total_price: number, quantity: number }>);
 
+        // Calculate filtered total_amount
+        const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0);
+
         const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, quantity }]) => ({
             category: category.startsWith('Add-on Option')
-                ? category // Keep the Add-on numbering
+                ? category
                 : categoryOptions.find(option => option.value === category)?.label || category,
             total_price,
             quantity
         }));
 
-        // Sort array to ensure all Add-ons are last
         const sortedCategories = [
-            ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')), // Non-addon items first
-            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option'))   // All addon items last
+            ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')),
+            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option'))
         ];
 
         setPackageCategories(sortedCategories);
@@ -181,6 +182,22 @@ function OrderDetail() {
         }
 
     }, [orderDetail?.latest_quotation?.packages]);
+
+    useEffect(() => {
+        if (orderDetail) {
+            const totalAmount = orderDetail.final_amount > 0 ? orderDetail.final_amount : orderDetail.latest_quotation.packages.reduce((total, pkg) => {
+                // Skip if package is not an addon or not included
+                if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                    return total;
+                }
+
+                // Use final_amount if available, otherwise use total_price
+                return total + pkg.total_price;
+            }, 0);
+
+            setTotalExcludedAddonAmount(totalAmount);
+        }
+    }, [orderDetail]);
 
     if (!orderId) return null; // Early return for null orderId
 
@@ -1627,11 +1644,11 @@ function OrderDetail() {
                                                                             orderDetail.final_amount -
                                                                             (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                                         ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                        : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                        : `RM ${(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </span>
                                                                 {selectedQuotation.bonus && (
                                                                     <span className='text-gray-900 text-sm'>
-                                                                        Original Price: RM {orderDetail.final_amount > 0 ? orderDetail.final_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        Original Price: RM {orderDetail.final_amount > 0 ? totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </span>
                                                                 )}
                                                             </div>
@@ -1808,48 +1825,54 @@ function OrderDetail() {
 
                                                         return (
                                                             <React.Fragment key={index}>
-                                                                <tr className="bg-slate-50 border-b text-xs font-semibold">
+                                                                <tr className="bg-slate-50 border-b">
                                                                     <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
-                                                                    <td className="p-2">
+                                                                    <td className="p-2 font-semibold">
                                                                         <div className="flex flex-col">
-                                                                            {quotationPackage.is_addon ?
-                                                                                <span>{`ADD-ON OPTIONAL ${counter + 1}: `}</span>
-                                                                                : ''
-                                                                            }
+                                                                            {quotationPackage.is_addon && <span className="text-gray-900">ADD-ON OPTIONAL {counter + 1}: </span>}
                                                                             <span>{quotationPackage.name}</span>
-                                                                            <span className='text-gray-700 text-2xs'>{quotationPackage.description}</span>
+                                                                            <span className="text-gray-700 text-xs">{quotationPackage.description}</span>
                                                                         </div>
                                                                     </td>
                                                                     <td className="p-2 text-center"></td>
-                                                                    <td className="p-2 text-center">{(quotationPackage.quantity ? quotationPackage.quantity : 1)}</td>
-                                                                    <td className="p-2 text-center"></td>
+                                                                    <td className="p-2 text-center font-semibold">
+                                                                        {quotationPackage.is_addon && !quotationPackage.is_addon_included ?
+                                                                            <i className="ki-filled ki-cross-circle text-danger"></i>
+                                                                            :
+                                                                            quotationPackage.quantity || 1
+                                                                        }
+                                                                    </td>
+                                                                    <td className="p-2 text-center hidden md:table-cell"></td>
                                                                 </tr>
-                                                                {quotationPackage.products.map((product: Product, prodIndex: number) => (
-                                                                    // Check if product.pivot.visibility is true
+                                                                {quotationPackage.products.map((product, prodIndex) => (
                                                                     (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
-                                                                        <tr key={prodIndex} className="border-b text-xs">
+                                                                        <tr key={prodIndex} className="border-b">
                                                                             <td className="p-2 hidden md:table-cell"></td>
-                                                                            <td className="p-2 flex flex-col">
-                                                                                <span className='text-gray-900'>{product.name}</span>
-                                                                                <span className='text-gray-500 text-2xs'>
-                                                                                    {(!product.description || product.description === "")
-                                                                                        ? ""
-                                                                                        : getProductDescription(product)}
-                                                                                </span>
+                                                                            <td className="p-2">
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-gray-900">{product.name}</span>
+                                                                                    <span className="text-gray-500 text-xs">
+                                                                                        {product.description
+                                                                                            ? product.description.startsWith('Supply & installation of')
+                                                                                                ? !product.pivot.includeSupply && !product.pivot.includeInstall
+                                                                                                    ? product.description.replace('Supply & installation of', '').trim()
+                                                                                                    : !product.pivot.includeSupply
+                                                                                                        ? `Installation of ${product.description.replace('Supply & installation of', '').trim()}`
+                                                                                                        : !product.pivot.includeInstall
+                                                                                                            ? `Supply of ${product.description.replace('Supply & installation of', '').trim()}`
+                                                                                                            : product.description
+                                                                                                : product.description
+                                                                                            : ''}
+                                                                                    </span>
+                                                                                </div>
                                                                             </td>
-                                                                            <td className="p-2 text-center text-gray-900">
-                                                                                {product.uom}
+                                                                            <td className="p-2 text-center text-gray-900">{product.uom}</td>
+                                                                            <td className="p-2 text-center text-gray-900">{product.pivot.included ? product.pivot.quantity : 0}</td>
+                                                                            <td className="p-2 text-center hidden md:table-cell text-gray-900">
+                                                                                {!product.pivot.included && `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                             </td>
-                                                                            <td className="p-2 text-center text-gray-900">
-                                                                                {!product.pivot.included
-                                                                                    ? 0
-                                                                                    : product.pivot.quantity}
-                                                                            </td>
-                                                                            <td className="p-2 text-center hidden md:table-cell text-gray-900"></td>
                                                                         </tr>
-                                                                    ) : (
-                                                                        ""
-                                                                    )
+                                                                    ) : null
                                                                 ))}
                                                             </React.Fragment>
                                                         )
@@ -1927,14 +1950,14 @@ function OrderDetail() {
                                                     <span className='text-xl text-gray-900 font-semibold'>
                                                         {orderDetail.final_amount > 0
                                                             ? `RM ${(
-                                                                orderDetail.final_amount -
+                                                                totalExcludedAddonAmount -
                                                                 (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                             ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                            : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                            : `RM ${(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                     </span>
                                                     {selectedQuotation.bonus && (
                                                         <span className='text-gray-900 text-sm'>
-                                                            Original Price: RM {(orderDetail.final_amount > 0 ? orderDetail.final_amount : orderDetail.latest_quotation.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            Original Price: RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </span>
                                                     )}
                                                 </div>
@@ -1962,7 +1985,7 @@ function OrderDetail() {
                                                                         (orderDetail.final_amount -
                                                                             (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
                                                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    : `RM ${(totalExcludedAddonAmount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                             </td>
                                                         </tr>
                                                         <tr>
@@ -1974,7 +1997,7 @@ function OrderDetail() {
                                                                         (orderDetail.final_amount -
                                                                             (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
                                                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    : `RM ${(totalExcludedAddonAmount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                             </td>
                                                         </tr>
                                                         <tr className='font-bold'>
@@ -1986,7 +2009,7 @@ function OrderDetail() {
                                                                         orderDetail.final_amount -
                                                                         (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    : `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -2011,7 +2034,7 @@ function OrderDetail() {
                                                                         (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                     : orderDetail
-                                                                        ? `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                        ? `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                         : 'RM 0.00'}
                                                             </td>
                                                         </tr>
@@ -2021,11 +2044,11 @@ function OrderDetail() {
                                                             <td className='text-center'>
                                                                 {orderDetail && orderDetail.final_amount > 0
                                                                     ? `RM ${(
-                                                                        orderDetail.final_amount -
+                                                                        totalExcludedAddonAmount -
                                                                         (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                     : orderDetail
-                                                                        ? `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                        ? `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                         : 'RM 0.00'}
                                                             </td>
                                                         </tr>
@@ -2150,7 +2173,7 @@ function OrderDetail() {
                                                                     (orderDetail.final_amount -
                                                                         (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
                                                                 ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                : `RM ${(totalExcludedAddonAmount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -2162,7 +2185,7 @@ function OrderDetail() {
                                                                     (orderDetail.final_amount -
                                                                         (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
                                                                 ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                : `RM ${(totalExcludedAddonAmount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                         </td>
                                                     </tr>
                                                     <tr className='font-bold'>
@@ -2174,7 +2197,7 @@ function OrderDetail() {
                                                                     orderDetail.final_amount -
                                                                     (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                                 ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                : `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                         </td>
                                                     </tr>
                                                 </tbody>
@@ -2199,7 +2222,7 @@ function OrderDetail() {
                                                                     (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                                 ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                 : orderDetail
-                                                                    ? `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                    ? `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                     : 'RM 0.00'}
                                                         </td>
                                                     </tr>
@@ -2213,7 +2236,7 @@ function OrderDetail() {
                                                                     (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                                 ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                 : orderDetail
-                                                                    ? `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                    ? `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                     : 'RM 0.00'}
                                                         </td>
                                                     </tr>
