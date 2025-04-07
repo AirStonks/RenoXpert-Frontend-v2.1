@@ -787,6 +787,7 @@ const viewerStyles = StyleSheet.create({
         width: '100%',
         height: '100%',
         border: 'none',
+        overflow: 'hidden', // Prevent scrolling issues
     },
 });
 

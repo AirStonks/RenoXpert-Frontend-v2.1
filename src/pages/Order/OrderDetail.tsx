@@ -1297,7 +1297,7 @@ function OrderDetail() {
                                                     <div className="accordion-item active border rounded-xl w-full" data-accordion-item="true" id={"package_item_" + prodPackage.id.toString()}>
                                                         <button className="accordion-toggle flex justify-between p-4" data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}>
                                                             <div className="flex flex-col items-start">
-                                                                <span className="text-base text-gray-900 font-medium">
+                                                                <span className="text-base text-gray-900 font-medium text-start">
                                                                     {label}
                                                                 </span>
                                                                 <span className='text-sm text-gray-600 text-start'>

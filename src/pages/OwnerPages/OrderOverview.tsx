@@ -375,21 +375,21 @@ function OrderOverview() {
                                 <td>Upon Confirmation and before Commencement of Phase 1</td>
                                 <td className='text-center'>50</td>
                                 <td className='text-center'>
-                                    {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
                             <tr>
                                 <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
                                 <td className='text-center'>50</td>
                                 <td className='text-center'>
-                                    {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
                             <tr className='font-bold'>
                                 <td>Total:</td>
                                 <td className='text-center'>100</td>
                                 <td className='text-center'>
-                                    {(totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
                         </tbody>
@@ -409,7 +409,7 @@ function OrderOverview() {
                                 <td className='text-center'>100</td>
                                 <td className='text-center'>
                                     {orderDetail
-                                        ? (totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                        ? (totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                         : '0.00'}
                                 </td>
                             </tr>
@@ -418,7 +418,7 @@ function OrderOverview() {
                                 <td className='text-center'>100</td>
                                 <td className='text-center'>
                                     {orderDetail
-                                        ? (totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                        ? (totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                         : '0.00'}
                                 </td>
                             </tr>
@@ -606,7 +606,7 @@ function OrderOverview() {
                                                             <div className="mt-2">
                                                                 <span className="text-sm text-gray-600 font-semibold">Discount:</span>
                                                                 <p className="text-xl text-teal-600 font-bold">
-                                                                    RM {bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    RM {bonus?.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -617,9 +617,9 @@ function OrderOverview() {
                                                             {orderDetail.final_amount > 0
                                                                 ? `RM ${(
                                                                     orderDetail.final_amount -
-                                                                    (bonus ? Number(bonus.value) : 0)
+                                                                    (bonus ? Number(bonus?.value) : 0)
                                                                 ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${(totalExcludedAddonAmount - (Number(bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                : `RM ${(totalExcludedAddonAmount - (Number(bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                         </p>
                                                         {bonus && (
                                                             <p className='text-gray-900 text-sm'>
@@ -845,7 +845,7 @@ function OrderOverview() {
                                                 <div className="mt-2">
                                                     <span className="text-sm text-gray-600 font-semibold">Discount:</span>
                                                     <p className="text-xl text-teal-600 font-bold">
-                                                        RM {bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        RM {bonus?.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </p>
                                                 </div>
                                             </div>
@@ -856,9 +856,9 @@ function OrderOverview() {
                                                 {orderDetail.final_amount > 0
                                                     ? `RM ${(
                                                         orderDetail.final_amount -
-                                                        (bonus ? Number(bonus.value) : 0)
+                                                        (bonus ? Number(bonus?.value) : 0)
                                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                    : `RM ${(totalExcludedAddonAmount - (Number(bonus.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    : `RM ${(totalExcludedAddonAmount - (Number(bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                             </p>
                                             {bonus && (
                                                 <p className='text-gray-900 text-sm'>
@@ -884,14 +884,14 @@ function OrderOverview() {
                                                                     <td className="p-2">Upon Confirmation and before Commencement of Phase 1</td>
                                                                     <td className="p-2 text-center">50</td>
                                                                     <td className="p-2 text-center">
-                                                                        {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td className="p-2">Upon Completion of Phase 1 and before Commencement of Phase 2</td>
                                                                     <td className="p-2 text-center">50</td>
                                                                     <td className="p-2 text-center">
-                                                                        {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </td>
                                                                 </tr>
                                                             </>
@@ -900,7 +900,7 @@ function OrderOverview() {
                                                                 <td className="p-2">Upon Confirmation of Agreement</td>
                                                                 <td className="p-2 text-center">100</td>
                                                                 <td className="p-2 text-center">
-                                                                    {(totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </td>
                                                             </tr>
                                                         )}
@@ -908,7 +908,7 @@ function OrderOverview() {
                                                             <td className="p-2">Total:</td>
                                                             <td className="p-2 text-center">100</td>
                                                             <td className="p-2 text-center">
-                                                                {(totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -1055,14 +1055,14 @@ function OrderOverview() {
                                                             <td className="p-2">Upon Confirmation and before Commencement of Phase 1</td>
                                                             <td className="p-2 text-center">50</td>
                                                             <td className="p-2 text-center">
-                                                                {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </td>
                                                         </tr>
                                                         <tr>
                                                             <td className="p-2">Upon Completion of Phase 1 and before Commencement of Phase 2</td>
                                                             <td className="p-2 text-center">50</td>
                                                             <td className="p-2 text-center">
-                                                                {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </td>
                                                         </tr>
                                                     </>
@@ -1071,7 +1071,7 @@ function OrderOverview() {
                                                         <td className="p-2">Upon Confirmation of Agreement</td>
                                                         <td className="p-2 text-center">100</td>
                                                         <td className="p-2 text-center">
-                                                            {(totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </td>
                                                     </tr>
                                                 )}
@@ -1079,7 +1079,7 @@ function OrderOverview() {
                                                     <td className="p-2">Total:</td>
                                                     <td className="p-2 text-center">100</td>
                                                     <td className="p-2 text-center">
-                                                        {(totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </td>
                                                 </tr>
                                             </tbody>
