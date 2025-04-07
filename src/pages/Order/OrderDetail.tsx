@@ -292,6 +292,10 @@ function OrderDetail() {
     const calculateQuotationMargin = () => {
         // Calculate total retail price
         const totalRetailPrice = orderDetail.final_amount ? orderDetail.final_amount : selectedPackages.reduce((total, pkg) => {
+            if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                return total;
+            }
+
             const packageRetail = pkg.products.reduce((pkgTotal, product) => {
                 let supplyPrice = product.pivot.includeSupply
                     ? product.provisioning.supply.retail_price * product.pivot.quantity
@@ -308,6 +312,10 @@ function OrderDetail() {
 
         // Calculate total COGS (Cost of Goods Sold)
         const totalCogs = selectedPackages.reduce((total, pkg) => {
+            if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                return total;
+            }
+
             const packageCogs = pkg.products.reduce((pkgTotal, product) => {
                 let supplyCogs = product.pivot.includeSupply
                     ? product.provisioning.supply.cogs * product.pivot.quantity
@@ -512,7 +520,7 @@ function OrderDetail() {
                                             (orderDetail.final_amount -
                                                 (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
                                         ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                        : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                        : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                 </td>
                             </tr>
                             <tr>
@@ -524,7 +532,7 @@ function OrderDetail() {
                                             (orderDetail.final_amount -
                                                 (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
                                         ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                        : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                        : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                 </td>
                             </tr>
                             <tr className='font-bold'>
@@ -536,7 +544,7 @@ function OrderDetail() {
                                             orderDetail.final_amount -
                                             (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                         ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                        : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                        : `RM ${(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                 </td>
                             </tr>
                         </tbody>
@@ -561,7 +569,7 @@ function OrderDetail() {
                                             (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                         ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                         : orderDetail
-                                            ? `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                            ? `RM ${(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                             : 'RM 0.00'}
                                 </td>
                             </tr>
@@ -575,7 +583,7 @@ function OrderDetail() {
                                             (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                         ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                         : orderDetail
-                                            ? `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                            ? `RM ${(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                             : 'RM 0.00'}
                                 </td>
                             </tr>
@@ -798,7 +806,7 @@ function OrderDetail() {
                                             Original Amount:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {`RM ${orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            {`RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                         </td>
                                     </tr>
                                     {orderDetail.final_amount &&
@@ -840,7 +848,7 @@ function OrderDetail() {
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <span className="text-sm text-gray-900 pb-3">
-                                                    RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    RM {(totalExcludedAddonAmount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </span>
 
                                             </td>
@@ -1212,7 +1220,7 @@ function OrderDetail() {
                                                     Original Amount:
                                                 </td>
                                                 <td className="text-sm text-gray-700 font-medium pb-3">
-                                                    RM {orderDetail.latest_quotation.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1230,7 +1238,7 @@ function OrderDetail() {
                                             Nett Amount:
                                         </td>
                                         <td className="text-sm text-gray-700 font-medium pb-3">
-                                            RM {(selectedQuotation.total_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            RM {(totalExcludedAddonAmount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </td>
                                     </tr>
 
@@ -1837,7 +1845,7 @@ function OrderDetail() {
                                                                     <td className="p-2 text-center"></td>
                                                                     <td className="p-2 text-center font-semibold">
                                                                         {quotationPackage.is_addon && !quotationPackage.is_addon_included ?
-                                                                            <i className="ki-filled ki-cross-circle text-danger"></i>
+                                                                            <i className="ki-filled ki-cross-circle text-danger text-xl"></i>
                                                                             :
                                                                             quotationPackage.quantity || 1
                                                                         }
@@ -1985,7 +1993,7 @@ function OrderDetail() {
                                                                         (orderDetail.final_amount -
                                                                             (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
                                                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : `RM ${(totalExcludedAddonAmount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                             </td>
                                                         </tr>
                                                         <tr>
@@ -1997,7 +2005,7 @@ function OrderDetail() {
                                                                         (orderDetail.final_amount -
                                                                             (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
                                                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : `RM ${(totalExcludedAddonAmount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                             </td>
                                                         </tr>
                                                         <tr className='font-bold'>
@@ -2009,7 +2017,7 @@ function OrderDetail() {
                                                                         orderDetail.final_amount -
                                                                         (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    : `RM ${(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -2173,7 +2181,7 @@ function OrderDetail() {
                                                                     (orderDetail.final_amount -
                                                                         (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
                                                                 ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${(totalExcludedAddonAmount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -2185,7 +2193,7 @@ function OrderDetail() {
                                                                     (orderDetail.final_amount -
                                                                         (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
                                                                 ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${(totalExcludedAddonAmount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                         </td>
                                                     </tr>
                                                     <tr className='font-bold'>
@@ -2197,7 +2205,7 @@ function OrderDetail() {
                                                                     orderDetail.final_amount -
                                                                     (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
                                                                 ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                : `RM ${(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                         </td>
                                                     </tr>
                                                 </tbody>

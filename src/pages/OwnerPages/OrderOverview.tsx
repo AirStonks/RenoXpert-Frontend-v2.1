@@ -375,21 +375,21 @@ function OrderOverview() {
                                 <td>Upon Confirmation and before Commencement of Phase 1</td>
                                 <td className='text-center'>50</td>
                                 <td className='text-center'>
-                                    {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
                             <tr>
                                 <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
                                 <td className='text-center'>50</td>
                                 <td className='text-center'>
-                                    {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
                             <tr className='font-bold'>
                                 <td>Total:</td>
                                 <td className='text-center'>100</td>
                                 <td className='text-center'>
-                                    {orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {(totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
                         </tbody>
@@ -409,7 +409,7 @@ function OrderOverview() {
                                 <td className='text-center'>100</td>
                                 <td className='text-center'>
                                     {orderDetail
-                                        ? orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                        ? (totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                         : '0.00'}
                                 </td>
                             </tr>
@@ -418,7 +418,7 @@ function OrderOverview() {
                                 <td className='text-center'>100</td>
                                 <td className='text-center'>
                                     {orderDetail
-                                        ? orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                        ? (totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                         : '0.00'}
                                 </td>
                             </tr>
@@ -592,7 +592,7 @@ function OrderOverview() {
                                                         </div>
                                                     )}
                                                     {bonus && (
-                                                        <div className=" engineeringmt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
+                                                        <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
                                                             <h3 className="text-lg text-teal-600 font-bold">Bonus:</h3>
                                                             <ul className="text-sm text-gray-900 font-semibold mt-2 space-y-1">
                                                                 {bonus.description ? (
@@ -766,7 +766,7 @@ function OrderOverview() {
                                                                     <td className="p-2 text-center"></td>
                                                                     <td className="p-2 text-center font-semibold">
                                                                         {quotationPackage.is_addon && !quotationPackage.is_addon_included ?
-                                                                            <i className="ki-filled ki-cross-circle text-danger"></i>
+                                                                            <i className="ki-filled ki-cross-circle text-danger text-xl"></i>
                                                                             :
                                                                             quotationPackage.quantity || 1
                                                                         }
@@ -884,14 +884,14 @@ function OrderOverview() {
                                                                     <td className="p-2">Upon Confirmation and before Commencement of Phase 1</td>
                                                                     <td className="p-2 text-center">50</td>
                                                                     <td className="p-2 text-center">
-                                                                        {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td className="p-2">Upon Completion of Phase 1 and before Commencement of Phase 2</td>
                                                                     <td className="p-2 text-center">50</td>
                                                                     <td className="p-2 text-center">
-                                                                        {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </td>
                                                                 </tr>
                                                             </>
@@ -900,7 +900,7 @@ function OrderOverview() {
                                                                 <td className="p-2">Upon Confirmation of Agreement</td>
                                                                 <td className="p-2 text-center">100</td>
                                                                 <td className="p-2 text-center">
-                                                                    {orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    {(totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </td>
                                                             </tr>
                                                         )}
@@ -908,7 +908,7 @@ function OrderOverview() {
                                                             <td className="p-2">Total:</td>
                                                             <td className="p-2 text-center">100</td>
                                                             <td className="p-2 text-center">
-                                                                {orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                {(totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -972,53 +972,69 @@ function OrderOverview() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage, index) => (
-                                            <React.Fragment key={index}>
-                                                <tr className="bg-slate-50 border-b">
-                                                    <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
-                                                    <td className="p-2 font-semibold">
-                                                        <div className="flex flex-col">
-                                                            {quotationPackage.is_addon && <span className="text-gray-900">ADD-ON OPTIONAL {index + 1}: </span>}
-                                                            <span>{quotationPackage.name}</span>
-                                                            <span className="text-gray-700 text-xs">{quotationPackage.description}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-2 text-center"></td>
-                                                    <td className="p-2 text-center font-semibold">{quotationPackage.quantity || 1}</td>
-                                                    <td className="p-2 text-center hidden md:table-cell"></td>
-                                                </tr>
-                                                {quotationPackage.products.map((product, prodIndex) => (
-                                                    (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
-                                                        <tr key={prodIndex} className="border-b">
-                                                            <td className="p-2 hidden md:table-cell"></td>
-                                                            <td className="p-2">
+
+                                        {(() => {
+                                            let packageCounter = 0;
+                                            let addonCounter = 0;
+                                            return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage, index) => {
+                                                const isAddon = quotationPackage.is_addon;
+                                                const counter = isAddon ? addonCounter++ : packageCounter++;
+
+                                                return (
+                                                    <React.Fragment key={index}>
+                                                        <tr className="bg-slate-50 border-b">
+                                                            <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
+                                                            <td className="p-2 font-semibold">
                                                                 <div className="flex flex-col">
-                                                                    <span className="text-gray-900">{product.name}</span>
-                                                                    <span className="text-gray-500 text-xs">
-                                                                        {product.description
-                                                                            ? product.description.startsWith('Supply & installation of')
-                                                                                ? !product.pivot.includeSupply && !product.pivot.includeInstall
-                                                                                    ? product.description.replace('Supply & installation of', '').trim()
-                                                                                    : !product.pivot.includeSupply
-                                                                                        ? `Installation of ${product.description.replace('Supply & installation of', '').trim()}`
-                                                                                        : !product.pivot.includeInstall
-                                                                                            ? `Supply of ${product.description.replace('Supply & installation of', '').trim()}`
-                                                                                            : product.description
-                                                                                : product.description
-                                                                            : ''}
-                                                                    </span>
+                                                                    {quotationPackage.is_addon && <span className="text-gray-900">ADD-ON OPTIONAL {counter + 1}: </span>}
+                                                                    <span>{quotationPackage.name}</span>
+                                                                    <span className="text-gray-700 text-xs">{quotationPackage.description}</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="p-2 text-center text-gray-900">{product.uom}</td>
-                                                            <td className="p-2 text-center text-gray-900">{product.pivot.included ? product.pivot.quantity : 0}</td>
-                                                            <td className="p-2 text-center hidden md:table-cell text-gray-900">
-                                                                {!product.pivot.included && `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                            <td className="p-2 text-center"></td>
+                                                            <td className="p-2 text-center font-semibold">
+                                                                {quotationPackage.is_addon && !quotationPackage.is_addon_included ?
+                                                                    <i className="ki-filled ki-cross-circle text-danger text-xl"></i>
+                                                                    :
+                                                                    quotationPackage.quantity || 1
+                                                                }
                                                             </td>
+                                                            <td className="p-2 text-center hidden md:table-cell"></td>
                                                         </tr>
-                                                    ) : null
-                                                ))}
-                                            </React.Fragment>
-                                        ))}
+                                                        {quotationPackage.products.map((product, prodIndex) => (
+                                                            (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
+                                                                <tr key={prodIndex} className="border-b">
+                                                                    <td className="p-2 hidden md:table-cell"></td>
+                                                                    <td className="p-2">
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-gray-900">{product.name}</span>
+                                                                            <span className="text-gray-500 text-xs">
+                                                                                {product.description
+                                                                                    ? product.description.startsWith('Supply & installation of')
+                                                                                        ? !product.pivot.includeSupply && !product.pivot.includeInstall
+                                                                                            ? product.description.replace('Supply & installation of', '').trim()
+                                                                                            : !product.pivot.includeSupply
+                                                                                                ? `Installation of ${product.description.replace('Supply & installation of', '').trim()}`
+                                                                                                : !product.pivot.includeInstall
+                                                                                                    ? `Supply of ${product.description.replace('Supply & installation of', '').trim()}`
+                                                                                                    : product.description
+                                                                                        : product.description
+                                                                                    : ''}
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="p-2 text-center text-gray-900">{product.uom}</td>
+                                                                    <td className="p-2 text-center text-gray-900">{product.pivot.included ? product.pivot.quantity : 0}</td>
+                                                                    <td className="p-2 text-center hidden md:table-cell text-gray-900">
+                                                                        {!product.pivot.included && `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                    </td>
+                                                                </tr>
+                                                            ) : null
+                                                        ))}
+                                                    </React.Fragment>
+                                                )
+                                            });
+                                        })()}
                                     </tbody>
                                 </table>
                                 <div className="flex flex-col items-center">
@@ -1039,14 +1055,14 @@ function OrderOverview() {
                                                             <td className="p-2">Upon Confirmation and before Commencement of Phase 1</td>
                                                             <td className="p-2 text-center">50</td>
                                                             <td className="p-2 text-center">
-                                                                {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </td>
                                                         </tr>
                                                         <tr>
                                                             <td className="p-2">Upon Completion of Phase 1 and before Commencement of Phase 2</td>
                                                             <td className="p-2 text-center">50</td>
                                                             <td className="p-2 text-center">
-                                                                {(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                {((totalExcludedAddonAmount - Number(bonus.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </td>
                                                         </tr>
                                                     </>
@@ -1055,7 +1071,7 @@ function OrderOverview() {
                                                         <td className="p-2">Upon Confirmation of Agreement</td>
                                                         <td className="p-2 text-center">100</td>
                                                         <td className="p-2 text-center">
-                                                            {orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            {(totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </td>
                                                     </tr>
                                                 )}
@@ -1063,7 +1079,7 @@ function OrderOverview() {
                                                     <td className="p-2">Total:</td>
                                                     <td className="p-2 text-center">100</td>
                                                     <td className="p-2 text-center">
-                                                        {orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        {(totalExcludedAddonAmount - Number(bonus.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </td>
                                                 </tr>
                                             </tbody>
