@@ -13,6 +13,7 @@ interface SortablePackageProps {
     toggleProperty: (id: number, packId: number, property: "supply" | "install") => void;
     adjustQuantity: (prodId: number, packId: number, action: "increase" | "decrease") => void;
     handleRemoveProduct: (packId: number, prodId: number) => void;
+    toggleIsAddonIncluded: (packId: number) => void;
 }
 
 export const SortablePackage: React.FC<SortablePackageProps> = ({
@@ -24,6 +25,7 @@ export const SortablePackage: React.FC<SortablePackageProps> = ({
     toggleProperty,
     adjustQuantity,
     handleRemoveProduct,
+    toggleIsAddonIncluded,
 }) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: `package-${prodPackage.id}`,
@@ -62,14 +64,22 @@ export const SortablePackage: React.FC<SortablePackageProps> = ({
                                     {categoryOptions.find((option) => option.value === prodPackage.category)?.label}
                                 </div>
                             )}
-                            <span className="text-sm text-slate-400">{prodPackage.description}</span>
+                            <span className="text-sm text-slate-400 text-start">{prodPackage.description}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-8">
-                        <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md">
-                            Quantity: {prodPackage.quantity || 1}
+                        {prodPackage.is_addon && (
+                            <span className="text-gray-700 font-semibold py-2 px-4 bg-slate-200 rounded-md whitespace-nowrap">
+                                {`Add-on Included: ${prodPackage.is_addon_included ? 'Yes' : 'No'}`}
+                            </span>
+                        )}
+                        <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md whitespace-nowrap">
+                            {`Quantity: ${prodPackage.quantity || 1}`}
                         </span>
-                        <button className="btn btn-sm btn-danger" onClick={() => handleRemovePackage(prodPackage.id)}>
+                        <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => handleRemovePackage(prodPackage.id)}
+                        >
                             Remove
                         </button>
                         <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
@@ -96,14 +106,31 @@ export const SortablePackage: React.FC<SortablePackageProps> = ({
                                 </button>
                             </div>
                         </div>
-                        <button
-                            className="btn btn-primary"
-                            data-id={prodPackage.id}
-                            data-modal-toggle="#include_pack_prod_modal"
-                            onClick={openAddProductModal}
-                        >
-                            Add Product
-                        </button>
+                        <div className="flex gap-8">
+                            {prodPackage.is_addon && (
+                                <label className="switch switch-lg">
+                                    <span className="switch-label">
+                                        Add-on Included
+                                    </span>
+                                    <input
+                                        className="checkbox"
+                                        name="is_ready"
+                                        type="checkbox"
+                                        checked={!!prodPackage.is_addon_included}
+                                        onChange={() => toggleIsAddonIncluded(prodPackage.id)}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                </label>
+                            )}
+                            <button
+                                className="btn btn-primary"
+                                data-id={prodPackage.id}
+                                data-modal-toggle="#include_pack_prod_modal"
+                                onClick={openAddProductModal}
+                            >
+                                Add Product
+                            </button>
+                        </div>
                     </div>
                     <div className="product-list flex flex-col">
                         <table className="table align-middle text-gray-700 font-medium text-sm">

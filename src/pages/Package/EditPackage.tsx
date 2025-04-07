@@ -25,6 +25,7 @@ function EditPackage() {
         description: '',
         description_internal: '',
         category: '',
+        is_addon: false,
         products: [],
     });
 
@@ -58,6 +59,7 @@ function EditPackage() {
                 description: packageDetail.description,
                 description_internal: packageDetail.description_internal,
                 category: packageDetail.category,
+                is_addon: packageDetail.is_addon,
                 packagePrice: 0,
                 products: [],
             });
@@ -127,6 +129,7 @@ function EditPackage() {
                 description: formData.description,
                 description_internal: formData.description_internal,
                 category: formData.category,
+                is_addon: formData.is_addon,
                 products: newProducts,
             };
 
@@ -209,6 +212,10 @@ function EditPackage() {
             });
         }
     };
+
+    const toggleIsAddon = () => {
+        setFormData((prev) => ({ ...prev, is_addon: !prev.is_addon }));
+    }
 
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
@@ -293,6 +300,24 @@ function EditPackage() {
                                     value={formData.category}
                                     onChange={handleChange}
                                 />
+                            </div>
+                            <div className="flex flex-col gap-2 mb-8">
+                                <label className="text-sm font-medium text-gray-900">Package Type</label>
+                                <span className="text-xs text-gray-600 tracking-wide mb-2">
+                                    Package Type impacts Quotation Order availability: Fixed types can't be toggled during creation/editing, while Add-on types can.
+                                </span>
+                                <label className="switch switch-lg">
+                                    <input
+                                        className="checkbox"
+                                        name="is_ready"
+                                        type="checkbox"
+                                        checked={!!formData.is_addon}
+                                        onChange={toggleIsAddon}
+                                    />
+                                    <span className="switch-label">
+                                        {formData.is_addon ? "Add-on" : "Fixed"}
+                                    </span>
+                                </label>
                             </div>
                         </div>
                     </div>

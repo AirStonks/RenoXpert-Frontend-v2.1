@@ -472,10 +472,20 @@ export const styles = StyleSheet.create({
         flexDirection: 'column',    // Keep vertical stacking
         alignItems: 'flex-start',   // Align items to the left
     },
+    packageLabel: {
+        fontSize: 8,
+        fontWeight: 'bold',
+        color: '#333',
+    },
     packageTitle: {
         fontSize: 10,
         fontWeight: 'bold',
         color: '#333',
+    },
+    packageDesc: {
+        fontSize: 8,
+        color: '#888',
+        paddingVertical: 2,
     },
     packageDetail: {
         fontSize: 8,

@@ -2,6 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handleOwner401Error } from '../utils/error401';
+import { Order } from '../types';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -88,6 +89,18 @@ export const fetchOwnerOrders = async () => {
         throw error; // Ensure to throw the error if needed
     }
 };
+
+export const updateOwnerOrderAddon = async (orderDetail: Order) => {
+    try {
+        const response = await axios.put(API_URL + `owner/orders/${orderDetail.id}/addon-packages/update`, orderDetail, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOwner401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
 
 export const fetchOwnerRenoProgresses = async () => {
     try {

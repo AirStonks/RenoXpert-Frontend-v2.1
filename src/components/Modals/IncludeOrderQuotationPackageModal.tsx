@@ -141,6 +141,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
             const packagePrice = parseFloat(selectBtn.dataset.price);
             const packageDescription = selectBtn.dataset.desc;
             const packageCategory = selectBtn.dataset.cat;
+            const packageIsAddon = selectBtn.dataset.addon;
             const packageInternalDesc = selectBtn.dataset.intdesc;
 
             // Check if the package is already selected
@@ -159,16 +160,21 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                 // Add the package immutably
                 const selectedPackage = packages.find((pkg) => pkg.id === Number(id));
                 if (selectedPackage) {
-                    const newPackage = {
+                    const newPackage: Package = {
                         id: Number(id),
                         name: packageName,
                         description: packageDescription,
                         quantity: 1,
                         total_price: packagePrice,
                         category: packageCategory,
+                        is_addon: packageIsAddon === '1',
+                        is_addon_included: true,
                         description_internal: packageInternalDesc,
                         products: selectedPackage.products || [], // Ensure products is included
                     };
+
+                    console.log(packageIsAddon);
+                    
                     
                     const updatedPackages = [...selectedPackages, newPackage];
                     setSelectedPackages(updatedPackages);
@@ -287,6 +293,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                                                                 data-desc={pkg.description}
                                                                 data-intdesc={pkg.description_internal}
                                                                 data-cat={pkg.category}
+                                                                data-addon={pkg.is_addon}
                                                                 onClick={(e) => handleSelectPackage(e.target)}
                                                             >
                                                                 {buttonText}

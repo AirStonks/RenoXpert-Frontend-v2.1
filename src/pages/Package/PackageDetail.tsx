@@ -291,14 +291,6 @@ function PackageDetail() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Internal Description:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {packageDetail.description_internal}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                             Category:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
@@ -307,6 +299,32 @@ function PackageDetail() {
                                                 :
                                                 '-'
                                             }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Package Type:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {packageDetail.is_addon ? 'Add-on' : 'Fixed'}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                Internal Description
+                            </h3>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            {packageDetail.description_internal}
                                         </td>
                                     </tr>
                                 </tbody>

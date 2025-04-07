@@ -45,14 +45,23 @@ const categoryOptions = [
 
 const QuotationOrderPDF = ({ orderDetail }) => {
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; quantity: number }[]>([]);
+    const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
 
     useEffect(() => {
         if (!orderDetail?.latest_quotation?.packages) return;
 
+        let addonCounter = 0; // To number each add-on uniquely
+
         const categoryTotals = orderDetail.latest_quotation.packages.reduce((acc, quotationPackage) => {
-            const category = quotationPackage.category;
+            let category;
+            if (quotationPackage.is_addon === true) {
+                addonCounter += 1;
+                category = `Add-on Option ${addonCounter}`;
+            } else {
+                category = quotationPackage.category;
+            }
+
             const categoryTotal = quotationPackage.products.reduce((total, product) => {
-                // Calculate supply price
                 let supplyPrice = 0;
                 if (product.pivot.includeSupply) {
                     supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
@@ -60,7 +69,6 @@ const QuotationOrderPDF = ({ orderDetail }) => {
                     supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
                 }
 
-                // Calculate install price
                 let installPrice = 0;
                 if (product.pivot.includeInstall) {
                     installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
@@ -71,27 +79,52 @@ const QuotationOrderPDF = ({ orderDetail }) => {
                 return total + supplyPrice + installPrice;
             }, 0) * (quotationPackage.quantity || 1);
 
-            // Initialize the category if it doesn't exist
-            if (!acc[category]) {
-                acc[category] = { total_price: 0, quantity: 0 };
+            if (!(quotationPackage.is_addon === true && quotationPackage.is_addon_included === false)) {
+                if (!acc[category]) {
+                    acc[category] = { total_price: 0, quantity: 0 };
+                }
+                acc[category].total_price += categoryTotal;
+                acc[category].quantity += quotationPackage.quantity;
             }
-
-            // Add to the category total
-            acc[category].total_price += categoryTotal;
-            acc[category].quantity += quotationPackage.quantity;
 
             return acc;
         }, {} as Record<string, { total_price: number, quantity: number }>);
 
-        setPackageCategories(
-            Object.entries(categoryTotals).map(([category, { total_price, quantity }]) => ({
-                category: categoryOptions.find(option => option.value === category)?.label || category,
-                total_price,
-                quantity
-            }))
-        );
+        // Calculate filtered total_amount
+        const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0);
+
+        const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, quantity }]) => ({
+            category: category.startsWith('Add-on Option')
+                ? category
+                : categoryOptions.find(option => option.value === category)?.label || category,
+            total_price,
+            quantity
+        }));
+
+        const sortedCategories = [
+            ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')),
+            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option'))
+        ];
+
+        setPackageCategories(sortedCategories);
 
     }, [orderDetail?.latest_quotation?.packages]);
+
+    useEffect(() => {
+        if (orderDetail) {
+            const totalAmount = orderDetail.final_amount > 0 ? orderDetail.final_amount : orderDetail.latest_quotation.packages.reduce((total, pkg) => {
+                // Skip if package is not an addon or not included
+                if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                    return total;
+                }
+
+                // Use final_amount if available, otherwise use total_price
+                return total + pkg.total_price;
+            }, 0);
+
+            setTotalExcludedAddonAmount(totalAmount);
+        }
+    }, [orderDetail]);
 
     const COMPANY_NAME = "RenoXpert Sdn Bhd";
     const COMPANY_REG = "202401032588 (1578437-W)";
@@ -205,55 +238,76 @@ const QuotationOrderPDF = ({ orderDetail }) => {
             {/* Quotation Body */}
             <View>
                 {/* Package Table */}
-                {orderDetail.latest_quotation.packages.map((pkg, pkgIndex) => (
-                    <View style={styles.packageCard} key={pkgIndex} wrap={false}>
-                        <View style={styles.packageHeader}>
-                            <Text style={styles.packageTitle}>Package {pkgIndex + 1}: {pkg.name}</Text>
-                            <View style={styles.quantityBadge}>
-                                <Text style={styles.quantityBadgeText}>Quantity: {pkg.quantity || 1}</Text>
-                            </View>
-                        </View>
-                        <View style={styles.itemTable}>
-                            <View style={styles.itemHeader}>
-                                <View style={{ flex: 2 }}>
-                                    <Text style={styles.itemTh}>S.o.W</Text>
+                {(() => {
+                    let packageCounter = 0;
+                    let addonCounter = 0;
+
+                    return orderDetail.latest_quotation.packages.map((pkg, pkgIndex) => {
+                        const isAddon = pkg.is_addon;
+                        const counter = isAddon ? addonCounter++ : packageCounter++;
+
+                        return (
+                            <View style={styles.packageCard} key={pkgIndex} wrap={false}>
+                                <View style={styles.packageHeader}>
+                                    {isAddon ? (
+                                        <Text style={styles.packageLabel}>{`ADD-ON OPTIONAL ${counter + 1}:`}</Text>
+                                    ) :
+                                        ''
+                                    }
+                                    <Text style={styles.packageTitle}>{pkg.name}</Text>
+                                    <Text style={styles.packageDesc}>{pkg.description}</Text>
+                                    <View style={styles.quantityBadge}>
+                                        {pkg.is_addon && !pkg.is_addon_included ? (
+                                            <Text style={styles.quantityBadgeText}>Not Included</Text>
+                                        )
+                                            :
+                                            <Text style={styles.quantityBadgeText}>Quantity: {pkg.quantity || 1}</Text>
+                                        }
+                                    </View>
                                 </View>
-                                <View style={{ flex: 6 }}>
-                                    <Text style={styles.itemTh}>Description</Text>
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.itemTh}>QTY</Text>
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.itemTh}>UOM</Text>
-                                </View>
-                            </View>
-                            {pkg.products.map((product) => (
-                                (product.pivot.visibility == true && product.pivot.includeInstall == true && product.pivot.includeSupply == true) && (
-                                    <View style={styles.itemRow} key={product.id}>
+                                <View style={styles.itemTable}>
+                                    <View style={styles.itemHeader}>
                                         <View style={{ flex: 2 }}>
-                                            <Text style={styles.itemTd}>
-                                                {(product.pivot.includeSupply && product.pivot.includeInstall) ? 'Supply and Install' :
-                                                    (!product.pivot.includeSupply && !product.pivot.includeInstall) ? '-' :
-                                                        (product.pivot.includeSupply && !product.pivot.includeInstall) ? 'Supply Only' :
-                                                            (!product.pivot.includeSupply && product.pivot.includeInstall) ? 'Install Only' : '-'}
-                                            </Text>
+                                            <Text style={styles.itemTh}>S.o.W</Text>
                                         </View>
                                         <View style={{ flex: 6 }}>
-                                            <Text style={styles.itemTd}>{product.name}</Text>
-                                            <Text style={styles.itemTdSecondary}>{product.description}</Text>
+                                            <Text style={styles.itemTh}>Description</Text>
                                         </View>
                                         <View style={{ flex: 1 }}>
-                                            <Text style={styles.itemTd}>{product.pivot.quantity}</Text>
+                                            <Text style={styles.itemTh}>QTY</Text>
                                         </View>
                                         <View style={{ flex: 1 }}>
-                                            <Text style={styles.itemTd}>{product.uom}</Text>
+                                            <Text style={styles.itemTh}>UOM</Text>
                                         </View>
                                     </View>
-                                )))}
-                        </View>
-                    </View>
-                ))}
+                                    {pkg.products.map((product) => (
+                                        (product.pivot.visibility == true && product.pivot.includeInstall == true && product.pivot.includeSupply == true) && (
+                                            <View style={styles.itemRow} key={product.id}>
+                                                <View style={{ flex: 2 }}>
+                                                    <Text style={styles.itemTd}>
+                                                        {(product.pivot.includeSupply && product.pivot.includeInstall) ? 'Supply and Install' :
+                                                            (!product.pivot.includeSupply && !product.pivot.includeInstall) ? '-' :
+                                                                (product.pivot.includeSupply && !product.pivot.includeInstall) ? 'Supply Only' :
+                                                                    (!product.pivot.includeSupply && product.pivot.includeInstall) ? 'Install Only' : '-'}
+                                                    </Text>
+                                                </View>
+                                                <View style={{ flex: 6 }}>
+                                                    <Text style={styles.itemTd}>{product.name}</Text>
+                                                    <Text style={styles.itemTdSecondary}>{product.description}</Text>
+                                                </View>
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={styles.itemTd}>{product.pivot.quantity}</Text>
+                                                </View>
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={styles.itemTd}>{product.uom}</Text>
+                                                </View>
+                                            </View>
+                                        )))}
+                                </View>
+                            </View>
+                        );
+                    });
+                })()}
 
                 {/* Category Summary Table */}
                 <View wrap={false}>
@@ -291,10 +345,10 @@ const QuotationOrderPDF = ({ orderDetail }) => {
                 <View wrap={false}>
                     <View style={styles.totalTable}>
                         <Text style={styles.totalTitle}>Total Amount:</Text>
-                        <Text style={styles.totalValue}>RM {totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                        <Text style={styles.totalValue}>RM {(totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                         {orderDetail.latest_quotation?.bonus && (
                             <Text style={styles.originalPrice}>
-                                Original Price: RM {Number(totalPriceBeforeDiscount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                Original Price: RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </Text>
                         )}
                     </View>
@@ -305,7 +359,7 @@ const QuotationOrderPDF = ({ orderDetail }) => {
                 render={({ pageNumber, totalPages }) => `${pageNumber}`}
                 fixed
             />
-        </Page>
+        </Page >
     );
 
     const TncPDF = () => (
@@ -677,7 +731,7 @@ const QuotationOrderPDF = ({ orderDetail }) => {
                                         (orderDetail.final_amount -
                                             (orderDetail.latest_quotation?.bonus ? Number(orderDetail.latest_quotation?.bonus?.value) : 0)) / 2
                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                    : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                    : `RM ${((totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                             </Text>
                         </View>
                         <View style={styles.tableRow}>
@@ -689,7 +743,7 @@ const QuotationOrderPDF = ({ orderDetail }) => {
                                         (orderDetail.final_amount -
                                             (orderDetail.latest_quotation?.bonus ? Number(orderDetail.latest_quotation?.bonus?.value) : 0)) / 2
                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                    : `RM ${(orderDetail.total_amount / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                    : `RM ${((totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                             </Text>
                         </View>
                         <View style={styles.tableRow}>
@@ -701,7 +755,7 @@ const QuotationOrderPDF = ({ orderDetail }) => {
                                         orderDetail.final_amount -
                                         (orderDetail.latest_quotation?.bonus ? Number(orderDetail.latest_quotation?.bonus?.value) : 0)
                                     ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                    : `RM ${orderDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                    : `RM ${(totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                             </Text>
                         </View>
                     </View>
@@ -733,6 +787,7 @@ const viewerStyles = StyleSheet.create({
         width: '100%',
         height: '100%',
         border: 'none',
+        overflow: 'hidden', // Prevent scrolling issues
     },
 });
 
