@@ -213,7 +213,7 @@ function CustomAddonPackage() {
                                                     </div>
                                                 </button>
                                                 <div
-                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96' : 'max-h-0'}`}
+                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-screen' : 'max-h-0'}`}
                                                 >
                                                     <div className="p-4">
                                                         <h2 className="text-sm font-semibold text-gray-800 mb-3">
