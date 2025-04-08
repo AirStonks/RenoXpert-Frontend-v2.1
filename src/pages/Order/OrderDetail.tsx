@@ -192,7 +192,7 @@ function OrderDetail() {
                 }
 
                 // Use final_amount if available, otherwise use total_price
-                return total + pkg.total_price;
+                return total + (pkg.total_price * (pkg.quantity || 1));
             }, 0);
 
             setTotalExcludedAddonAmount(totalAmount);
