@@ -136,8 +136,8 @@ function CustomAddonPackage() {
     const basePackages = packages.filter((pkg) => !pkg.is_addon);
     const addonPackages = packages.filter((pkg) => pkg.is_addon);
     const selectedAddons = addonPackages.filter((pkg) => pkg.is_addon_included);
-    const baseCost = basePackages.reduce((sum, pkg) => sum + pkg.total_price, 0);
-    const totalAddonCost = selectedAddons.reduce((sum, pkg) => sum + pkg.total_price, 0);
+    const baseCost = basePackages.reduce((sum, pkg) => sum + (pkg.total_price * (pkg.quantity || 1)), 0);
+    const totalAddonCost = selectedAddons.reduce((sum, pkg) => sum + (pkg.total_price * (pkg.quantity || 1)), 0);
     const totalCost = baseCost + totalAddonCost;
 
     return (
