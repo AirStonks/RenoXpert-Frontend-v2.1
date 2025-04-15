@@ -695,6 +695,7 @@ function OrderDetail() {
                                 <Link
                                     to={`/orders/create?dp=${orderId}`}
                                     className="menu-link"
+                                    target="_blank"
                                 >
                                     <span className="menu-title">
                                         <div className="flex gap-2 items-center">

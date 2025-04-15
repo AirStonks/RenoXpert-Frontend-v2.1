@@ -102,6 +102,18 @@ export const updateOwnerOrderAddon = async (orderDetail: Order) => {
     }
 }
 
+export const toggleOwnerOrderAddon = async (order_id: number, package_id: number) => {
+    try {
+        const response = await axios.get(API_URL + `owner/orders/${order_id}/addon-packages/${package_id}/toggle`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOwner401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const fetchOwnerRenoProgresses = async () => {
     try {
         const response = await axios.get(API_URL + `owner/reno-progresses`, {

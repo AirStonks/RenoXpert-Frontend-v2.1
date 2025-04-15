@@ -3,9 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Order, Package, Product } from '../../types/index';
 import Loading from '../../components/Loading';
 import { Slide, toast } from 'react-toastify';
-import KTComponent from '../../metronic/core';
+import KTComponent, { KTModal } from '../../metronic/core';
 import useFetchOwnerOrder from '../../hook/useFetchOwnerOrder';
 import { Link } from 'react-router-dom';
+import { toggleOwnerOrderAddon } from '../../services/ownerApi';
+import ConfirmUnincludeAddon from './components/Modals/ConfirmUnincludeAddon';
 
 const convertToWords = (num: number) => {
     const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
@@ -43,7 +45,17 @@ function OrderOverview() {
     const [orderDetail, setOrderDetail] = useState<Order>(null);
     const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
 
+
     const [activeTab, setActiveTab] = useState('tab_1_1');
+    const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>(() => {
+        const initialState: { [key: string]: boolean } = {};
+        if (orderDetail) {
+            JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).forEach((_, index) => {
+                initialState[`content_${index}`] = true;
+            });
+        }
+        return initialState;
+    });
 
     const [agreeTnc, setAgreeTnc] = useState(false);
     const [agreeRenoAgreement, setAgreeRenoAgreement] = useState(false);
@@ -64,6 +76,7 @@ function OrderOverview() {
     useEffect(() => {
         if (order) {
             setOrderDetail(order);
+            KTModal.init();
         }
     }, [order]);
 
@@ -168,10 +181,44 @@ function OrderOverview() {
         return `${day} ${monthNames[parseInt(month) - 1]} ${year}`;
     };
 
+    const toggleAccordion = (id: string) => {
+        setOpenAccordions((prev) => ({
+            ...prev,
+            [id]: prev[id] == null ? false : !prev[id],
+        }));
+    };
+
     useEffect(() => {
         document.title = "Order Overview | RenoXpert";
         KTComponent.init();
     }, []);
+
+    const handleToggleAddonPackage = async (packageId: number) => {
+        try {
+            const response = await toggleOwnerOrderAddon(Number(orderDetail.id), packageId);
+
+            if (response?.success) {
+
+
+                notify('success', 'Congrats! You saved RM[amount]!');
+                setOrderDetail(response.data);
+            }
+        } catch (error) {
+            console.log(error.message);
+            notify('error', 'Failed to save changes.');
+        }
+    };
+
+    const handleConfirmationAddonPackage = (packageId: number, isTurningOff: boolean) => {
+        if (isTurningOff) {
+            const modalEl = document.querySelector('#confirm_uninclude_modal') as HTMLElement;
+            const modal = KTModal.getInstance(modalEl);
+
+            modal.show();
+        } else {
+            handleToggleAddonPackage(packageId);
+        }
+    }
 
     const handleAgreeTncChange = (event) => {
         setAgreeTnc(event.target.checked);
@@ -505,24 +552,12 @@ function OrderOverview() {
                                                 {(100 - orderDetail.sale.remaining_percentage * 100).toFixed(2)}% Invoice Issued
                                             </span>
                                             <div className="badge badge-success badge-outline text-md mt-2 sm:mt-0">
-                                                {(orderDetail.sale.invoices.reduce((sum, invoice) => {
-                                                    return invoice.status === 'paid' ? sum + invoice.percentage : sum;
-                                                }, 0) * 100).toFixed(2)}% Paid
+                                                {(orderDetail.sale.invoices.reduce((sum, invoice) => invoice.status === 'paid' ? sum + invoice.percentage : sum, 0) * 100).toFixed(2)}% Paid
                                             </div>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden">
-                                            <div
-                                                className="absolute top-0 left-0 h-full bg-blue-200"
-                                                style={{ width: `${100 - orderDetail.sale.remaining_percentage * 100}%` }}
-                                            />
-                                            <div
-                                                className="absolute top-0 left-0 h-full bg-green-500"
-                                                style={{
-                                                    width: `${orderDetail.sale.invoices.reduce((sum, invoice) => {
-                                                        return invoice.status === 'paid' ? sum + invoice.percentage : sum;
-                                                    }, 0) * 100}%`,
-                                                }}
-                                            />
+                                            <div className="absolute top-0 left-0 h-full bg-blue-200" style={{ width: `${100 - orderDetail.sale.remaining_percentage * 100}%` }} />
+                                            <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${orderDetail.sale.invoices.reduce((sum, invoice) => invoice.status === 'paid' ? sum + invoice.percentage : sum, 0) * 100}%` }} />
                                         </div>
                                         <div className="flex gap-2 mt-2">
                                             <span className="badge badge-outline bg-blue-50 border-blue-200 text-blue-300 flex items-center gap-1">
@@ -535,20 +570,17 @@ function OrderOverview() {
                                     </div>
                                 )}
 
-                                {/* Cards */}
                                 <div className="flex flex-col md:flex-row gap-4 mb-6">
+                                    {/* Quotation Detail */}
                                     <div className="card flex-1 bg-white shadow-sm rounded-lg">
                                         <div className="card-header p-4 flex justify-between items-center">
                                             <h2 className="card-title text-lg font-semibold">Quotation Order Detail</h2>
-                                            <span
-                                                className={`badge badge-sm p-2 capitalize badge-outline ${orderDetail.status === 'confirmed' ? 'badge-success' : orderDetail.status === 'revoked' ? 'badge-danger' : ''
-                                                    }`}
-                                            >
+                                            <span className={`badge badge-sm p-2 capitalize badge-outline ${orderDetail.status === 'confirmed' ? 'badge-success' : orderDetail.status === 'revoked' ? 'badge-danger' : ''}`}>
                                                 {orderDetail.status === 'confirmed' ? 'Sale' : orderDetail.status}
                                             </span>
                                         </div>
                                         <div className="card-body p-4">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <span className="text-sm text-gray-600">QUO Number:</span>
                                                     <p className="text-sm text-gray-900 font-semibold">{orderDetail.order_no}</p>
@@ -558,34 +590,16 @@ function OrderOverview() {
                                                     <p className="text-sm text-gray-900 font-semibold">{formatDate(orderDetail.created_at)}</p>
                                                 </div>
                                             </div>
-                                            {/* Add-On Customization Button (Visible only when not confirmed) */}
-                                            {orderDetail.status !== 'confirmed' && (
-                                                <div className="mt-4">
-                                                    <Link
-                                                        to={`/owner/order/${orderDetail.id}/customize-addons`}
-                                                        className="inline-block bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600 transition-colors"
-                                                    >
-                                                        Customize Add-On Packages
-                                                    </Link>
-                                                </div>
-                                            )}
                                             {orderDetail.status === 'confirmed' && (
                                                 <>
                                                     {!orderDetail.f_1 && (
                                                         <div className="mt-4 p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg">
-                                                            <h3 className="text-lg text-purple-600 font-bold flex items-center gap-2">
-                                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                                                </svg>
-                                                                Summary
-                                                            </h3>
+                                                            <h3 className="text-lg text-purple-600 font-bold flex items-center gap-2">Summary</h3>
                                                             <div className="mt-2 space-y-2">
                                                                 {packageCategories.map((category, index) => (
                                                                     <div key={index} className="flex justify-between p-2 bg-white rounded shadow-sm">
                                                                         <span className="text-sm text-gray-600">Total {category.category} Cost</span>
-                                                                        <span className="text-sm text-gray-700 font-semibold">
-                                                                            RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                        </span>
+                                                                        <span className="text-sm text-gray-700 font-semibold">RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -595,35 +609,24 @@ function OrderOverview() {
                                                         <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
                                                             <h3 className="text-lg text-teal-600 font-bold">Bonus:</h3>
                                                             <ul className="text-sm text-gray-900 font-semibold mt-2 space-y-1">
-                                                                {bonus.description ? (
-                                                                    bonus.description.split('\n').map((item, index) => (
-                                                                        <li key={index} className="p-2 bg-teal-50 rounded">{item}</li>
-                                                                    ))
-                                                                ) : (
-                                                                    <li className="p-2 bg-teal-50 rounded">No Details</li>
-                                                                )}
+                                                                {(bonus.description?.split('\n') || ['No Details']).map((item, index) => (
+                                                                    <li key={index} className="p-2 bg-teal-50 rounded">{item}</li>
+                                                                ))}
                                                             </ul>
                                                             <div className="mt-2">
                                                                 <span className="text-sm text-gray-600 font-semibold">Discount:</span>
-                                                                <p className="text-xl text-teal-600 font-bold">
-                                                                    RM {bonus?.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                </p>
+                                                                <p className="text-xl text-teal-600 font-bold">RM {bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                                             </div>
                                                         </div>
                                                     )}
                                                     <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
                                                         <h3 className="text-lg text-blue-600 font-bold">Total Amount:</h3>
-                                                        <p className='text-xl text-gray-900 font-semibold'>
-                                                            {orderDetail.final_amount > 0
-                                                                ? `RM ${(
-                                                                    orderDetail.final_amount -
-                                                                    (bonus ? Number(bonus?.value) : 0)
-                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${(totalExcludedAddonAmount - (Number(bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                        <p className="text-xl text-gray-900 font-semibold">
+                                                            RM {(orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) - (bonus?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </p>
                                                         {bonus && (
-                                                            <p className='text-gray-900 text-sm'>
-                                                                Original Price: RM {orderDetail.final_amount > 0 ? totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            <p className="text-gray-900 text-sm">
+                                                                Original Price: RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </p>
                                                         )}
                                                     </div>
@@ -631,48 +634,41 @@ function OrderOverview() {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="card flex-1 bg-white shadow-sm rounded-lg">
-                                        <div className="card-header p-4">
-                                            <h2 className="card-title text-lg font-semibold">Property</h2>
-                                        </div>
-                                        <div className="card-body p-4">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <div>
-                                                    <span className="text-sm text-gray-600">Name:</span>
-                                                    <p className="text-sm text-gray-900 font-semibold">{orderDetail.property.name}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-sm text-gray-600">Unit:</span>
-                                                    <p className="text-sm text-gray-900 font-semibold">
-                                                        {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-sm text-gray-600">Unit Type:</span>
-                                                    <p className="text-sm text-gray-900 font-semibold">{orderDetail.unit_type || '-'}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-sm text-gray-600">Partition:</span>
-                                                    <p className="text-sm text-gray-900 font-semibold">{orderDetail.include_partition ? 'Yes' : 'No'}</p>
-                                                </div>
-                                            </div>
-                                            <div className="mt-4">
-                                                <span className="text-sm text-gray-600">Address:</span>
-                                                <p className="text-sm text-gray-900">
+
+                                    {/* Property */}
+                                    <div className="accordion-item flex-1 border rounded-xl shadow-sm">
+                                        <button
+                                            className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl md:cursor-default md:hover:bg-transparent transition duration-200 focus:outline-none"
+                                            onClick={() => window.innerWidth < 768 && toggleAccordion('property')}
+                                        >
+                                            <h2 className="text-lg font-semibold">Property</h2>
+                                            <i className={`ki-outline ${openAccordions['property'] !== false ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300 md:hidden`}></i>
+                                        </button>
+                                        <div className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${openAccordions['property'] !== false ? 'max-h-screen' : 'max-h-0 md:max-h-screen'}`}>
+                                            <div className="p-4">
+                                                <div className="grid grid-cols-2 gap-4">
                                                     {[
-                                                        orderDetail.property.address,
-                                                        orderDetail.property.street,
-                                                        orderDetail.property.postcode,
-                                                        orderDetail.property.city,
-                                                        orderDetail.property.state,
-                                                    ]
-                                                        .filter(Boolean)
-                                                        .join(', ')}
-                                                </p>
+                                                        { label: 'Name', value: orderDetail.property.name },
+                                                        { label: 'Unit', value: `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}` },
+                                                        { label: 'Unit Type', value: orderDetail.unit_type || '-' },
+                                                        { label: 'Partition', value: orderDetail.include_partition ? 'Yes' : 'No' },
+                                                    ].map(({ label, value }) => (
+                                                        <div key={label}>
+                                                            <span className="text-sm text-gray-600">{label}:</span>
+                                                            <p className="text-sm text-gray-900 font-semibold">{value}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="mt-4">
+                                                    <span className="text-sm text-gray-600">Address:</span>
+                                                    <p className="text-sm text-gray-900">{[orderDetail.property.address, orderDetail.property.street, orderDetail.property.postcode, orderDetail.property.city, orderDetail.property.state].filter(Boolean).join(', ')}</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <hr className="my-4" />
 
                                 {/* Payment Invoices */}
                                 {orderDetail.status === 'confirmed' && (
@@ -680,8 +676,7 @@ function OrderOverview() {
                                         <h2 className="text-lg text-gray-900 font-semibold mb-4">Payment Invoices</h2>
                                         {orderDetail.sale.invoices.length === 0 ? (
                                             <div className="flex flex-col items-center">
-                                                <img alt="No invoices" className="dark:hidden max-h-[160px] mb-4" src="/public/media/illustrations/3.svg" />
-                                                <img alt="No invoices" className="light:hidden max-h-[160px] mb-4" src="/public/media/illustrations/3-dark.svg" />
+                                                <img alt="No invoices" className="max-h-[160px] mb-4" src={`/public/media/illustrations/3${document.documentElement.classList.contains('dark') ? '-dark' : ''}.svg`} />
                                                 <h3 className="text-xl font-semibold text-gray-900">No Payment Invoices Available</h3>
                                             </div>
                                         ) : (
@@ -697,31 +692,18 @@ function OrderOverview() {
                                                                 </div>
                                                                 <div>
                                                                     <h3 className="text-sm text-gray-900 font-medium">{invoice.invoice_no}</h3>
-                                                                    <span
-                                                                        className={`badge badge-outline ${invoice.status === 'paid' ? 'badge-success' : invoice.status === 'overdue' ? 'badge-danger' : ''
-                                                                            }`}
-                                                                    >
+                                                                    <span className={`badge badge-outline ${invoice.status === 'paid' ? 'badge-success' : invoice.status === 'overdue' ? 'badge-danger' : ''}`}>
                                                                         {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
                                                                     </span>
                                                                 </div>
                                                             </div>
                                                             <div className="mt-2">
                                                                 <span className="text-xs text-gray-600">Amount:</span>
-                                                                <p className="text-sm text-gray-900 font-medium">
-                                                                    RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                </p>
+                                                                <p className="text-sm text-gray-900 font-medium">RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                                             </div>
                                                             <div className="mt-2">
                                                                 <span className="text-xs text-gray-600">Due Date:</span>
-                                                                <p className="text-sm text-gray-900 font-medium">
-                                                                    {invoice.due_date
-                                                                        ? new Date(invoice.due_date).toLocaleDateString('en-GB', {
-                                                                            day: 'numeric',
-                                                                            month: 'long',
-                                                                            year: 'numeric',
-                                                                        })
-                                                                        : 'N/A'}
-                                                                </p>
+                                                                <p className="text-sm text-gray-900 font-medium">{invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A'}</p>
                                                             </div>
                                                         </div>
                                                     </Link>
@@ -731,145 +713,147 @@ function OrderOverview() {
                                     </div>
                                 )}
 
-                                {/* Quotation Order Table (when not confirmed) */}
+                                {/* Packages and Summary */}
                                 {orderDetail.status !== 'confirmed' && (
-                                    <div className="overflow-x-auto mb-6">
-                                        <table className="w-full border-collapse text-sm">
-                                            <thead className="bg-gray-100">
-                                                <tr>
-                                                    <th className="p-2 text-center hidden md:table-cell">No.</th>
-                                                    <th className="p-2 text-left">Description</th>
-                                                    <th className="p-2 text-center">UOM</th>
-                                                    <th className="p-2 text-center">QTY</th>
-                                                    <th className="p-2 text-center hidden md:table-cell"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {(() => {
-                                                    let packageCounter = 0;
-                                                    let addonCounter = 0;
-                                                    return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage, index) => {
-                                                        const isAddon = quotationPackage.is_addon;
-                                                        const counter = isAddon ? addonCounter++ : packageCounter++;
-
-                                                        return (
-                                                            <React.Fragment key={index}>
-                                                                <tr className="bg-slate-50 border-b">
-                                                                    <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
-                                                                    <td className="p-2 font-semibold">
-                                                                        <div className="flex flex-col">
-                                                                            {quotationPackage.is_addon && <span className="text-gray-900">ADD-ON OPTIONAL {counter + 1}: </span>}
-                                                                            <span>{quotationPackage.name}</span>
-                                                                            <span className="text-gray-700 text-xs">{quotationPackage.description}</span>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="p-2 text-center"></td>
-                                                                    <td className="p-2 text-center font-semibold">
-                                                                        {quotationPackage.is_addon && !quotationPackage.is_addon_included ?
-                                                                            <i className="ki-filled ki-cross-circle text-danger text-xl"></i>
-                                                                            :
-                                                                            quotationPackage.quantity || 1
-                                                                        }
-                                                                    </td>
-                                                                    <td className="p-2 text-center hidden md:table-cell"></td>
-                                                                </tr>
-                                                                {quotationPackage.products.map((product, prodIndex) => (
-                                                                    (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
-                                                                        <tr key={prodIndex} className="border-b">
-                                                                            <td className="p-2 hidden md:table-cell"></td>
-                                                                            <td className="p-2">
-                                                                                <div className="flex flex-col">
-                                                                                    <span className="text-gray-900">{product.name}</span>
-                                                                                    <span className="text-gray-500 text-xs">
-                                                                                        {product.description
-                                                                                            ? product.description.startsWith('Supply & installation of')
-                                                                                                ? !product.pivot.includeSupply && !product.pivot.includeInstall
-                                                                                                    ? product.description.replace('Supply & installation of', '').trim()
-                                                                                                    : !product.pivot.includeSupply
-                                                                                                        ? `Installation of ${product.description.replace('Supply & installation of', '').trim()}`
-                                                                                                        : !product.pivot.includeInstall
-                                                                                                            ? `Supply of ${product.description.replace('Supply & installation of', '').trim()}`
-                                                                                                            : product.description
-                                                                                                : product.description
-                                                                                            : ''}
-                                                                                    </span>
-                                                                                </div>
-                                                                            </td>
-                                                                            <td className="p-2 text-center text-gray-900">{product.uom}</td>
-                                                                            <td className="p-2 text-center text-gray-900">{product.pivot.included ? product.pivot.quantity : 0}</td>
-                                                                            <td className="p-2 text-center hidden md:table-cell text-gray-900">
-                                                                                {!product.pivot.included && `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                            </td>
-                                                                        </tr>
-                                                                    ) : null
-                                                                ))}
-                                                            </React.Fragment>
-                                                        )
-                                                    });
-                                                })()}
-                                            </tbody>
-                                        </table>
-                                        {/* Summary, Bonus, Total Amount, and Progressive Payment sections */}
-                                        {!orderDetail.f_1 && (
-                                            <div className="mt-4 p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg">
-                                                <h3 className="text-lg text-purple-600 font-bold flex items-center gap-2">
-                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                                    </svg>
-                                                    Summary
-                                                </h3>
-                                                <div className="mt-2 space-y-2">
-                                                    {packageCategories.map((category, index) => (
-                                                        <div key={index} className="flex justify-between p-2 bg-white rounded shadow-sm">
-                                                            <span className="text-sm text-gray-600">Total {category.category} Cost</span>
-                                                            <span className="text-sm text-gray-700 font-semibold">
-                                                                RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center justify-between bg-gray-50 py-3 px-4 rounded-t-lg border-b border-gray-200 mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <svg
+                                                    className="w-6 h-6 text-blue-600"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M20 12H4m16-4H4m16 8H4m-2-6h20a2 2 0 012 2v6a2 2 0 01-2 2H2a2 2 0 01-2-2v-6a2 2 0 012-2z"
+                                                    />
+                                                </svg>
+                                                <h2 className="text-xl sm:text-2xl text-blue-600 font-bold tracking-tight">
+                                                    Packages
+                                                </h2>
                                             </div>
-                                        )}
-                                        {bonus && (
-                                            <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
-                                                <h3 className="text-lg text-teal-600 font-bold">Bonus:</h3>
-                                                <ul className="text-sm text-gray-900 font-semibold mt-2 space-y-1">
-                                                    {bonus.description ? (
-                                                        bonus.description.split('\n').map((item, index) => (
-                                                            <li key={index} className="p-2 bg-teal-50 rounded">{item}</li>
-                                                        ))
-                                                    ) : (
-                                                        <li className="p-2 bg-teal-50 rounded">No Details</li>
-                                                    )}
-                                                </ul>
-                                                <div className="mt-2">
-                                                    <span className="text-sm text-gray-600 font-semibold">Discount:</span>
-                                                    <p className="text-xl text-teal-600 font-bold">
-                                                        RM {bonus?.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
-                                        <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
-                                            <h3 className="text-lg text-blue-600 font-bold">Total Amount:</h3>
-                                            <p className='text-xl text-gray-900 font-semibold'>
-                                                {orderDetail.final_amount > 0
-                                                    ? `RM ${(
-                                                        orderDetail.final_amount -
-                                                        (bonus ? Number(bonus?.value) : 0)
-                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                    : `RM ${(totalExcludedAddonAmount - (Number(bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                            </p>
-                                            {bonus && (
-                                                <p className='text-gray-900 text-sm'>
-                                                    Original Price: RM {orderDetail.final_amount > 0 ? totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </p>
-                                            )}
                                         </div>
-                                        <div className="mt-6 flex flex-col items-center">
-                                            <span className="font-bold text-lg mb-2">Progressive Payment of the Contract Sum</span>
-                                            <div className="overflow-x-auto w-full max-w-lg">
-                                                <table className="table w-full text-sm text-gray-700 font-medium">
+                                        <div className="flex flex-col gap-4">
+                                            {JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((prodPackage, index) => {
+                                                const isOpen = openAccordions[`content_${index}`] !== false;
+                                                return (
+                                                    <div className="accordion-item border rounded-xl w-full shadow-sm" key={index}>
+                                                        <button
+                                                            className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl hover:bg-gray-50 transition duration-200 focus:outline-none"
+                                                            onClick={() => toggleAccordion(`content_${index}`)}
+                                                        >
+                                                            <div className="flex items-center flex-grow text-left">
+                                                                <div className="flex flex-col">
+                                                                    {prodPackage.is_addon && (
+                                                                        <span className="font-medium text-gray-700 text-xs">
+                                                                            Add-on Option {index + 1}:
+                                                                        </span>
+                                                                    )}
+                                                                    <span className="text-base font-semibold text-gray-900">{prodPackage.name}</span>
+                                                                    <span className="text-gray-500 mt-1 max-w-md">{prodPackage.description}</span>
+                                                                    <span className="mt-2 text-base font-bold text-gray-900">
+                                                                        RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center space-x-4">
+                                                                {prodPackage.is_addon && (
+                                                                    <label className="switch switch-lg">
+                                                                        <input
+                                                                            className="checkbox"
+                                                                            type="checkbox"
+                                                                            checked={!!prodPackage.is_addon_included}
+                                                                            onChange={() => handleConfirmationAddonPackage(prodPackage.id, prodPackage.is_addon_included)}
+                                                                            onClick={(e) => e.stopPropagation()}
+                                                                        />
+                                                                    </label>
+                                                                )}
+                                                                <i
+                                                                    className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300`}
+                                                                ></i>
+                                                            </div>
+                                                        </button>
+                                                        <div
+                                                            className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-screen' : 'max-h-0'
+                                                                }`}
+                                                        >
+                                                            <div className="p-4">
+                                                                <h2 className="text-sm font-semibold text-gray-800 mb-3">Products</h2>
+                                                                <table className="w-full text-xs text-left border-collapse">
+                                                                    <thead>
+                                                                        <tr className="bg-gray-100 border-b">
+                                                                            <th className="p-3 font-medium text-gray-700">Product</th>
+                                                                            <th className="p-3 font-medium text-gray-700">Quantity</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {prodPackage.products.map((product, idx) => (
+                                                                            <tr key={idx} className="border-b hover:bg-gray-100 transition duration-150">
+                                                                                <td className="p-3">
+                                                                                    <div className="flex flex-col">
+                                                                                        <span className="font-medium text-gray-900">{product.name}</span>
+                                                                                        <span className="text-gray-600 text-xs mt-1">{product.description || '-'}</span>
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td className="p-3 text-gray-700">
+                                                                                    {product.pivot.quantity} {product.uom}
+                                                                                    {product.pivot.quantity > 1 ? 's' : ''}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+
+                                            <hr className="my-4" />
+
+                                            {!orderDetail.f_1 && (
+                                                <div className="p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg">
+                                                    <h3 className="text-lg text-purple-600 font-bold flex items-center gap-2">Summary</h3>
+                                                    <div className="mt-2 space-y-2">
+                                                        {packageCategories.map((category, index) => (
+                                                            <div key={index} className="flex justify-between p-2 bg-white rounded shadow-sm">
+                                                                <span className="text-sm text-gray-600">Total {category.category} Cost</span>
+                                                                <span className="text-sm text-gray-700 font-semibold">RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {bonus && (
+                                                <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
+                                                    <h3 className="text-lg text-teal-600 font-bold">Bonus:</h3>
+                                                    <ul className="text-sm text-gray-900 font-semibold mt-2 space-y-1">
+                                                        {(bonus.description?.split('\n') || ['No Details']).map((item, index) => (
+                                                            <li key={index} className="p-2 bg-teal-50 rounded">{item}</li>
+                                                        ))}
+                                                    </ul>
+                                                    <div className="mt-2">
+                                                        <span className="text-sm text-gray-600 font-semibold">Discount:</span>
+                                                        <p className="text-xl text-teal-600 font-bold">RM {bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
+                                                <h3 className="text-lg text-blue-600 font-bold">Total Amount:</h3>
+                                                <p className="text-xl text-gray-900 font-semibold">
+                                                    RM {((orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) - (bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </p>
+                                                {bonus && (
+                                                    <p className="text-gray-900 text-sm">Original Price: RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                )}
+                                            </div>
+                                            <div className="mt-6 flex flex-col items-center">
+                                                <span className="font-bold text-lg mb-2">Progressive Payment of the Contract Sum</span>
+                                                <table className="table w-full max-w-lg text-sm text-gray-700 font-medium">
                                                     <thead>
                                                         <tr>
                                                             <th className="p-2">Description</th>
@@ -879,37 +863,27 @@ function OrderOverview() {
                                                     </thead>
                                                     <tbody>
                                                         {orderDetail.is_progressive_payment ? (
-                                                            <>
-                                                                <tr>
-                                                                    <td className="p-2">Upon Confirmation and before Commencement of Phase 1</td>
-                                                                    <td className="p-2 text-center">50</td>
-                                                                    <td className="p-2 text-center">
-                                                                        {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                    </td>
+                                                            [
+                                                                { desc: 'Upon Confirmation and before Commencement of Phase 1', percent: 50 },
+                                                                { desc: 'Upon Completion of Phase 1 and before Commencement of Phase 2', percent: 50 },
+                                                            ].map((row, idx) => (
+                                                                <tr key={idx}>
+                                                                    <td className="p-2">{row.desc}</td>
+                                                                    <td className="p-2 text-center">{row.percent}</td>
+                                                                    <td className="p-2 text-center">{((totalExcludedAddonAmount - (bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                                                 </tr>
-                                                                <tr>
-                                                                    <td className="p-2">Upon Completion of Phase 1 and before Commencement of Phase 2</td>
-                                                                    <td className="p-2 text-center">50</td>
-                                                                    <td className="p-2 text-center">
-                                                                        {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                    </td>
-                                                                </tr>
-                                                            </>
+                                                            ))
                                                         ) : (
                                                             <tr>
                                                                 <td className="p-2">Upon Confirmation of Agreement</td>
                                                                 <td className="p-2 text-center">100</td>
-                                                                <td className="p-2 text-center">
-                                                                    {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                </td>
+                                                                <td className="p-2 text-center">{(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                                             </tr>
                                                         )}
                                                         <tr className="font-bold">
                                                             <td className="p-2">Total:</td>
                                                             <td className="p-2 text-center">100</td>
-                                                            <td className="p-2 text-center">
-                                                                {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </td>
+                                                            <td className="p-2 text-center">{(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -921,38 +895,20 @@ function OrderOverview() {
                                 {/* Checkboxes */}
                                 {orderDetail.status !== 'confirmed' && (
                                     <div className="flex flex-col gap-4 mt-6">
-                                        <label className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                className="checkbox"
-                                                name="agree_tnc"
-                                                checked={agreeTnc || orderDetail.status === 'confirmed'}
-                                                onChange={handleAgreeTncChange}
-                                                disabled={orderDetail.status === 'confirmed'}
-                                            />
-                                            <span className="text-sm">
-                                                I have read and accept the{' '}
-                                                <a href="#" className="text-blue-500 hover:underline" onClick={() => setActiveTab('tab_1_2')}>
-                                                    Terms and Conditions
-                                                </a>
-                                            </span>
-                                        </label>
-                                        <label className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                className="checkbox"
-                                                name="agree_reno_agreement"
-                                                checked={agreeRenoAgreement || orderDetail.status === 'confirmed'}
-                                                onChange={handleAgreeRenoAgreementChange}
-                                                disabled={orderDetail.status === 'confirmed'}
-                                            />
-                                            <span className="text-sm">
-                                                I acknowledge I have agreed with the{' '}
-                                                <a href="#" className="text-blue-500 hover:underline" onClick={() => setActiveTab('tab_1_3')}>
-                                                    Reno Agreement
-                                                </a>
-                                            </span>
-                                        </label>
+                                        {[
+                                            { name: 'agree_tnc', label: 'Terms and Conditions', checked: agreeTnc, onChange: handleAgreeTncChange, tab: 'tab_1_2' },
+                                            { name: 'agree_reno_agreement', label: 'Reno Agreement', checked: agreeRenoAgreement, onChange: handleAgreeRenoAgreementChange, tab: 'tab_1_3' },
+                                        ].map(({ name, label, checked, onChange, tab }) => (
+                                            <label key={name} className="flex items-center gap-2">
+                                                <input type="checkbox" className="checkbox" name={name} checked={checked || orderDetail.status === 'confirmed'} onChange={onChange} disabled={orderDetail.status === 'confirmed'} />
+                                                <span className="text-sm">
+                                                    I have read and accept the{' '}
+                                                    <a href="#" className="text-blue-500 hover:underline" onClick={() => setActiveTab(tab)}>
+                                                        {label}
+                                                    </a>
+                                                </span>
+                                            </label>
+                                        ))}
                                     </div>
                                 )}
                             </div>
@@ -960,83 +916,119 @@ function OrderOverview() {
 
                         {/* Quotation Order Tab (confirmed status) */}
                         <div className={activeTab === 'tab_1_4' ? 'block' : 'hidden'} id="tab_1_4">
-                            <div className="overflow-x-auto">
-                                <table className="w-full border-collapse text-sm mb-6">
-                                    <thead className="bg-gray-100">
-                                        <tr>
-                                            <th className="p-2 text-center hidden md:table-cell">No.</th>
-                                            <th className="p-2 text-left">Description</th>
-                                            <th className="p-2 text-center">UOM</th>
-                                            <th className="p-2 text-center">QTY</th>
-                                            <th className="p-2 text-center hidden md:table-cell"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                            <div className="flex flex-col gap-4">
+                                {orderDetail
+                                    ? (() => {
+                                        let packageCounter = 0;
+                                        let addonCounter = 0;
+                                        return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((prodPackage, index) => {
+                                            const isAddon = prodPackage.is_addon;
+                                            const counter = isAddon ? addonCounter++ : packageCounter++;
+                                            const accordionId = `content_${index}`;
+                                            const isOpen = openAccordions[accordionId] !== false;
 
-                                        {(() => {
-                                            let packageCounter = 0;
-                                            let addonCounter = 0;
-                                            return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((quotationPackage, index) => {
-                                                const isAddon = quotationPackage.is_addon;
-                                                const counter = isAddon ? addonCounter++ : packageCounter++;
+                                            return (
+                                                <div className="accordion-item border rounded-xl w-full shadow-sm" key={index}>
+                                                    <button
+                                                        className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl hover:bg-gray-50 transition duration-200 focus:outline-none"
+                                                        onClick={() => toggleAccordion(accordionId)}
+                                                    >
+                                                        <div className="flex items-center flex-grow">
+                                                            <div className="flex flex-col text-left">
+                                                                {prodPackage.is_addon && (
+                                                                    <span className="font-medium text-gray-700 text-xs">
+                                                                        Add-on Option {counter + 1}:
+                                                                    </span>
+                                                                )}
+                                                                <span className="text-base font-semibold text-gray-900">
+                                                                    {prodPackage.name}
+                                                                </span>
+                                                                <span className="text-gray-500 mt-1 max-w-md">
+                                                                    {prodPackage.description}
+                                                                </span>
+                                                                <span className="mt-2 text-base font-bold text-gray-900">
+                                                                    RM {prodPackage.total_price.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                    })}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center space-x-4">
 
-                                                return (
-                                                    <React.Fragment key={index}>
-                                                        <tr className="bg-slate-50 border-b">
-                                                            <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
-                                                            <td className="p-2 font-semibold">
-                                                                <div className="flex flex-col">
-                                                                    {quotationPackage.is_addon && <span className="text-gray-900">ADD-ON OPTIONAL {counter + 1}: </span>}
-                                                                    <span>{quotationPackage.name}</span>
-                                                                    <span className="text-gray-700 text-xs">{quotationPackage.description}</span>
-                                                                </div>
-                                                            </td>
-                                                            <td className="p-2 text-center"></td>
-                                                            <td className="p-2 text-center font-semibold">
-                                                                {quotationPackage.is_addon && !quotationPackage.is_addon_included ?
-                                                                    <i className="ki-filled ki-cross-circle text-danger text-xl"></i>
-                                                                    :
-                                                                    quotationPackage.quantity || 1
-                                                                }
-                                                            </td>
-                                                            <td className="p-2 text-center hidden md:table-cell"></td>
-                                                        </tr>
-                                                        {quotationPackage.products.map((product, prodIndex) => (
-                                                            (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
-                                                                <tr key={prodIndex} className="border-b">
-                                                                    <td className="p-2 hidden md:table-cell"></td>
-                                                                    <td className="p-2">
-                                                                        <div className="flex flex-col">
-                                                                            <span className="text-gray-900">{product.name}</span>
-                                                                            <span className="text-gray-500 text-xs">
-                                                                                {product.description
-                                                                                    ? product.description.startsWith('Supply & installation of')
-                                                                                        ? !product.pivot.includeSupply && !product.pivot.includeInstall
-                                                                                            ? product.description.replace('Supply & installation of', '').trim()
-                                                                                            : !product.pivot.includeSupply
-                                                                                                ? `Installation of ${product.description.replace('Supply & installation of', '').trim()}`
-                                                                                                : !product.pivot.includeInstall
-                                                                                                    ? `Supply of ${product.description.replace('Supply & installation of', '').trim()}`
-                                                                                                    : product.description
-                                                                                        : product.description
-                                                                                    : ''}
-                                                                            </span>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="p-2 text-center text-gray-900">{product.uom}</td>
-                                                                    <td className="p-2 text-center text-gray-900">{product.pivot.included ? product.pivot.quantity : 0}</td>
-                                                                    <td className="p-2 text-center hidden md:table-cell text-gray-900">
-                                                                        {!product.pivot.included && `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                    </td>
-                                                                </tr>
-                                                            ) : null
-                                                        ))}
-                                                    </React.Fragment>
-                                                )
-                                            });
-                                        })()}
-                                    </tbody>
-                                </table>
+                                                            {prodPackage.is_addon && (
+                                                                <label className="switch switch-lg">
+                                                                    <input
+                                                                        className="checkbox"
+                                                                        name="isDraftMode"
+                                                                        type="checkbox"
+                                                                        checked={!!prodPackage.is_addon_included}
+                                                                        // onChange={() => handleConfirmationAddonPackage(prodPackage.id, prodPackage.is_addon_included)}
+                                                                        // onClick={(e) => e.stopPropagation()}
+                                                                        readOnly
+                                                                    />
+                                                                </label>
+                                                            )}
+                                                            <div className="flex items-center space-x-1">
+                                                                <i
+                                                                    className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300 ${isOpen ? 'rotate-180' : 'rotate-0'}`}
+                                                                ></i>
+                                                            </div>
+                                                        </div>
+                                                    </button>
+                                                    <div
+                                                        className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ?
+                                                            'max-h-screen' : 'max-h-0'}`}
+                                                    >
+                                                        <div className="p-4">
+                                                            <h2 className="text-sm font-semibold text-gray-800 mb-3">
+                                                                Products
+                                                            </h2>
+                                                            <div className="overflow-x-auto">
+                                                                <table className="w-full text-xs text-left border-collapse">
+                                                                    <thead>
+                                                                        <tr className="bg-gray-100 border-b">
+                                                                            <th className="p-3 font-medium text-gray-700">
+                                                                                Product
+                                                                            </th>
+                                                                            <th className="p-3 font-medium text-gray-700">
+                                                                                Quantity
+                                                                            </th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {prodPackage.products.map((product, index) => (
+                                                                            <tr
+                                                                                key={index}
+                                                                                className="border-b hover:bg-gray-100 transition duration-150"
+                                                                            >
+                                                                                <td className="p-3">
+                                                                                    <div className="flex flex-col">
+                                                                                        <span className="font-medium text-gray-900">
+                                                                                            {product.name}
+                                                                                        </span>
+                                                                                        <span className="text-gray-600 text-xs mt-1">
+                                                                                            {product.description || '-'}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td className="p-3 text-gray-700">
+                                                                                    {product.pivot.quantity} {product.uom}
+                                                                                    {product.pivot.quantity > 1 ? 's' : ''}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                            return null;
+                                        });
+                                    })()
+                                    : null
+                                }
                                 <div className="flex flex-col items-center">
                                     <span className="font-bold text-lg mb-2">Progressive Payment of the Contract Sum</span>
                                     <div className="overflow-x-auto w-full max-w-lg">
@@ -1116,6 +1108,11 @@ function OrderOverview() {
                 :
                 ''
             }
+
+            <ConfirmUnincludeAddon 
+                order={orderDetail}
+                onSubmit={handleToggleAddonPackage}
+            />
 
             {/* <div className="fixed bottom-10 right-6">
                 <button className="btn btn-outline btn-primary rounded-full" data-scrollto="#footer">

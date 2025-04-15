@@ -518,6 +518,7 @@ function OrderMain() {
                                                                 <Link
                                                                     to={`/orders/create?dp=${order.id}`}
                                                                     className="menu-link"
+                                                                    target="_blank"
                                                                 >
                                                                     <span className="menu-title">
                                                                         <div className="flex gap-2 items-center">
