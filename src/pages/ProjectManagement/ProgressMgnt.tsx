@@ -4,7 +4,7 @@ import Loading from "../../components/Loading";
 import { useEffect, useRef, useState } from "react";
 import KTComponents, { KTDropdown } from "../../metronic/core";
 import { DefectInspectionForm, Permission, PhaseJob, RenoProgress, User } from "../../types";
-import { addUserItemPermission, changeInternalComment, changeOwnerComment, changeRenoProgressGeneralPermission, changeTaskStatus, changeUserItemPermission, fetchRenoProgress, fetchTaskDocuments, liveUploadTaskAttachment, permissionIndex, removeTaskDocument, removeUserItemPermission, toggleTaskVisibility, uploadTaskDocuments, userIndex } from "../../services/api";
+import { addUserItemPermission, changeInternalComment, changeOwnerComment, changeRenoProgressGeneralPermission, changeTaskStatus, changeUserItemPermission, fetchRenoProgress, fetchTaskDocuments, liveUploadTaskAttachment, permissionIndex, removeTaskDocument, removeUserItemPermission, toggleTaskVisibility, uploadTaskDocuments, uploadTaskExternalDocuments, userIndex } from "../../services/api";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -35,9 +35,14 @@ function ProgressMgnt() {
 
     const [pendingUploadItems, setPendingUploadItems] = useState<File[]>(null);
     const [dragging, setDragging] = useState(false);
-    const [documentItems, setDocumentItems] = useState<[]>(null);
+    const [draggingExternal, setDraggingExternal] = useState(false);
+    const [documentItems, setDocumentItems] = useState<any[]>(null);
     const [selectedDocumentTaskId, setSelectedDocumentTaskId] = useState<number>(null);
     const [documentManageMode, setDocumentManageMode] = useState(false);
+    const [externalDocumentManageMode, setExternalDocumentManageMode] = useState(false);
+
+    const [externalDocumentItems, setExternalDocumentItems] = useState<any[]>(null);
+    const [pendingExternalUploadItems, setPendingExternalUploadItems] = useState<File[]>([]);
 
     const maxFiles = 10; // Maximum number of files allowed
 
@@ -436,6 +441,30 @@ function ProgressMgnt() {
         setDragging(false); // Reset dragging state when drop occurs
     };
 
+    // Add these handlers
+    const handleExternalDragOver = (event) => {
+        event.preventDefault();
+        setDraggingExternal(true);
+    };
+
+    const handleExternalDragLeave = () => {
+        setDraggingExternal(false);
+    };
+
+    const handleExternalDrop = (event) => {
+        event.preventDefault();
+        const droppedFiles = event.dataTransfer.files;
+        if (pendingExternalUploadItems.length + droppedFiles.length + externalDocumentItems.length <= maxFiles) {
+            setPendingExternalUploadItems((prevItems) => [
+                ...prevItems,
+                ...Array.from(droppedFiles),
+            ]);
+        } else {
+            notify('error', `You can only upload up to ${maxFiles} external files.`);
+        }
+        setDraggingExternal(false);
+    };
+
     // Handle file removal
     const removeFile = (index) => {
         setPendingUploadItems((prevItems) => prevItems.filter((_, i) => i !== index));
@@ -508,6 +537,27 @@ function ProgressMgnt() {
         setIsLoading(false);
     }
 
+    const handleExternalFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFiles = Array.from(event.target.files ?? []);
+        const newPendingExternalItems = [...pendingExternalUploadItems, ...selectedFiles];
+
+        if (newPendingExternalItems.length + externalDocumentItems.length > maxFiles) {
+            notify('error', `You can only upload up to ${maxFiles} external files.`);
+            return;
+        }
+        setPendingExternalUploadItems(newPendingExternalItems);
+    };
+
+    // Add clear handler for external pending items
+    const clearAllExternalFiles = () => {
+        setPendingExternalUploadItems([]);
+    };
+
+    // Add remove handler for external pending items
+    const removeExternalFile = (index: number) => {
+        setPendingExternalUploadItems(prev => prev.filter((_, i) => i !== index));
+    };
+
     // Upload files (placeholder function)
     const uploadFiles = async (taskId: number) => {
         setIsLoading(true);
@@ -518,6 +568,27 @@ function ProgressMgnt() {
             if (response?.success) {
                 setDocumentItems(response.data);
                 setPendingUploadItems([]);
+
+                notify('success', 'Files uploaded successfully.');
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+
+        setIsLoading(false);
+    };
+
+    // Upload files (placeholder function)
+    const uploadExternalFiles = async (taskId: number) => {
+        setIsLoading(true);
+
+        try {
+            const response = await uploadTaskExternalDocuments(renoProgressId, taskId, pendingExternalUploadItems);
+
+            if (response?.success) {
+                setExternalDocumentItems(response.data);
+                setPendingExternalUploadItems([]);
 
                 notify('success', 'Files uploaded successfully.');
             }
@@ -540,25 +611,24 @@ function ProgressMgnt() {
 
     const handleOpenDocumentModal = async (taskId: number) => {
         setSelectedDocumentTaskId(taskId);
-
         setPendingUploadItems([]);
+        setPendingExternalUploadItems([]);
 
         try {
             const response = await fetchTaskDocuments(renoProgressId, taskId);
-
             if (response?.success) {
-
                 if (response?.data === null) {
                     setDocumentItems([]);
+                    setExternalDocumentItems([]);
                 } else {
-                    setDocumentItems(response?.data);
+                    setDocumentItems(response.data.attachments || []);
+                    setExternalDocumentItems(response.data.external_attachment || []);
                 }
             }
-
         } catch (error) {
             console.log(error);
         }
-    }
+    };
 
     const handleCloseDocumentModal = () => {
         setPendingUploadItems(null);
@@ -1890,221 +1960,351 @@ function ProgressMgnt() {
             </div>
 
             <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="document_modal">
-                <div className="modal-content h-full max-w-[800px]">
-                    <div className="modal-header py-4 px-5">
-                        <span className="text-lg text-gray-900 font-bold">Document Overview</span>
+                <div className="modal-content h-full max-w-[1000px] bg-gray-50 rounded-xl shadow-lg">
+                    {/* Modal Header */}
+                    <div className="modal-header py-5 px-6 border-b border-gray-200 relative">
+                        <span className="text-xl text-gray-900 font-semibold">Document Overview</span>
                         <button
-                            className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
+                            className="btn btn-sm btn-icon btn-light btn-clear absolute top-4 right-4 transition-colors duration-200 hover:bg-gray-200"
                             data-modal-dismiss="true"
                             onClick={handleCloseDocumentModal}
+                            aria-label="Close modal"
                         >
-                            <i className="ki-filled ki-cross"></i>
+                            <i className="ki-filled ki-cross text-gray-600"></i>
                         </button>
                     </div>
-                    <div className="modal-body overflow-y-auto scrollable-y">
-                        <div className="flex flex-col">
-                            <label
-                                className={`flex bg-center w-full p-5 lg:p-7 bg-no-repeat bg-[length:550px] border border-gray-300 rounded-xl border-dashed branding-bg mb-8 
-                                    ${dragging ? 'border-primary border-1 bg-gray-100' : ''}`} // Add custom styles when dragging
-                                onDragOver={handleDragOver}
-                                onDragLeave={handleDragLeave}
-                                onDrop={handleDrop}
-                                htmlFor="file-upload"
-                            >
-                                <div className="flex flex-col place-items-center place-content-center text-center rounded-xl w-full">
-                                    <div className="flex items-center mb-2.5">
-                                        <div className="relative size-11 shrink-0">
-                                            <svg
-                                                className="w-full h-full stroke-brand-clarity fill-light"
-                                                fill="none"
-                                                height="48"
-                                                viewBox="0 0 44 48"
-                                                width="44"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill=""></path>
-                                                <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke="" strokeOpacity="0.2"></path>
-                                            </svg>
-                                            <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
-                                                <i className="ki-filled ki-picture text-xl ps-px text-brand"></i>
+
+                    {/* Modal Body */}
+                    <div className="modal-body overflow-y-auto scrollable-y p-6">
+                        <div className="flex flex-row gap-8 h-full max-md:flex-col">
+                            {/* Left Column: Internal Attachments */}
+                            <div className="flex-1 flex flex-col gap-8">
+                                {/* Internal Attachments Upload */}
+                                <label
+                                    className={`flex w-full p-6 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-300 rounded-xl border-dashed transition-all duration-200 ${dragging ? 'border-blue-500 bg-blue-50' : 'hover:border-blue-400 hover:bg-blue-50'
+                                        }`}
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
+                                    htmlFor="file-upload-regular"
+                                >
+                                    <div className="flex flex-col place-items-center place-content-center text-center rounded-xl w-full">
+                                        <div className="flex items-center mb-2.5">
+                                            <div className="relative size-9 shrink-0">
+                                                <svg
+                                                    className="w-full h-full stroke-blue-200 fill-gray-50"
+                                                    fill="none"
+                                                    height="48"
+                                                    viewBox="0 0 44 48"
+                                                    width="44"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z"
+                                                        fill=""
+                                                    ></path>
+                                                    <path
+                                                        d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z"
+                                                        stroke=""
+                                                        strokeOpacity="0.2"
+                                                    ></path>
+                                                </svg>
+                                                <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
+                                                    <i className="ki-filled ki-picture text-xl text-blue-500"></i>
+                                                </div>
                                             </div>
                                         </div>
+                                        <input
+                                            type="file"
+                                            id="file-upload-regular"
+                                            multiple
+                                            onChange={handleFileSelect}
+                                            className="hidden"
+                                        />
+                                        <span className="text-gray-900 text-sm font-medium hover:text-blue-600 mb-px cursor-pointer">
+                                            Click or Drag & Drop
+                                        </span>
+                                        <span className="text-xs text-gray-600">max size: 50MB | max files: {maxFiles}</span>
                                     </div>
+                                </label>
 
-                                    {/* Input for file selection */}
-                                    <input
-                                        type="file"
-                                        id="file-upload"
-                                        multiple
-                                        onChange={e => handleFileUpload(e, selectedDocumentTaskId)}
-                                        className="hidden"
-                                    />
-                                    <span
-                                        className="text-gray-900 text-xs font-medium hover:text-primary-active mb-px cursor-pointer"
-                                    >
-                                        Click or Drag & Drop
-                                    </span>
-
-                                    <span className="text-2xs text-gray-700 text-nowrap">
-                                        max size: 50MB | max files: {maxFiles}
-                                    </span>
-                                </div>
-                            </label>
-
-                            {pendingUploadItems !== null ?
-                                pendingUploadItems.length > 0 && (
-                                    <div className="flex flex-col flex-wrap border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5 mb-8">
+                                {/* Pending Regular Upload Items */}
+                                {pendingUploadItems?.length > 0 && (
+                                    <div className="flex flex-col border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5 shadow-sm">
                                         <div className="flex justify-between items-center">
-                                            <div className="modal-title">Pending Upload Items</div>
-                                            <div className="flex gap-4">
+                                            <div className="font-semibold text-gray-900">Pending Uploads</div>
+                                            <div className="flex gap-2">
                                                 <button
-                                                    className="btn btn-xs btn-secondary btn-outline"
+                                                    className="btn btn-sm btn-secondary btn-outline transition-colors duration-200 hover:bg-gray-100"
                                                     onClick={clearAllFiles}
                                                 >
-                                                    Clear All
+                                                    Clear
                                                 </button>
                                                 <button
-                                                    className="btn btn-xs btn-success btn-outline"
+                                                    className="btn btn-sm btn-success transition-colors duration-200 hover:bg-green-600"
                                                     onClick={() => uploadFiles(selectedDocumentTaskId)}
                                                 >
-                                                    Upload Items
+                                                    Upload
                                                 </button>
                                             </div>
                                         </div>
-
-                                        <div className="flex flex-col gap-4">
+                                        <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto">
                                             {pendingUploadItems.map((file, index) => (
                                                 <div
                                                     key={index}
-                                                    className="flex items-center justify-between flex-wrap grow border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5"
+                                                    className="flex items-center justify-between border border-gray-200 rounded-lg p-2 even:bg-gray-50 hover:bg-gray-100 transition-all"
                                                 >
-                                                    <div className="flex items-center flex-wrap gap-3.5">
-                                                        <div className="relative size-[50px] shrink-0">
-                                                            <svg
-                                                                className="w-full h-full stroke-gray-300 fill-gray-100"
-                                                                fill="none"
-                                                                height="48"
-                                                                viewBox="0 0 44 48"
-                                                                width="44"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill=""></path>
-                                                                <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke=""></path>
-                                                            </svg>
-                                                            <div className="absolute leading-none start-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4 rtl:translate-x-2/4">
-                                                                <i className="ki-filled ki-sms text-xl text-gray-500"></i>
-                                                            </div>
-                                                        </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <i className="ki-filled ki-sms text-lg text-gray-500"></i>
                                                         <div className="flex flex-col">
-                                                            <a
-                                                                className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px"
-                                                                href={URL.createObjectURL(file)}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                            >
-                                                                {file.name}
-                                                            </a>
-                                                            <span className="text-2sm text-gray-700">
-                                                                {formatFileSize(file.size)}
-                                                            </span>
+                                                            <span className="text-sm text-gray-900">{file.name}</span>
+                                                            <span className="text-xs text-gray-600">{formatFileSize(file.size)}</span>
                                                         </div>
                                                     </div>
                                                     <button
-                                                        className="btn btn-danger btn-sm"
+                                                        className="btn btn-xs btn-danger btn-icon transition-colors duration-200 hover:bg-red-600"
                                                         onClick={() => removeFile(index)}
+                                                        aria-label={`Remove ${file.name}`}
                                                     >
-                                                        Remove
+                                                        <i className="ki-filled ki-trash"></i>
                                                     </button>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
-                                )
-                                :
-                                ''
-                            }
+                                )}
 
-                            <div className="flex flex-col flex-wrap border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5">
-                                <div className="flex justify-between items-center">
-                                    <div className="modal-title">
-                                        Document Items
-                                    </div>
-                                    <div className="flex gap-4">
-                                        {documentItems !== null ? documentItems && documentItems.length > 0 ?
-                                            documentManageMode === false ?
+                                {/* Internal Attachments Display */}
+                                <div className="flex flex-col border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5 flex-1 shadow-sm">
+                                    <div className="flex justify-between items-center">
+                                        <div className="font-semibold text-gray-900">Internal Attachments</div>
+                                        {documentItems?.length > 0 && (
+                                            documentManageMode ? (
                                                 <button
-                                                    className="btn btn-xs btn-primary btn-outline"
-                                                    onClick={() => setDocumentManageMode(true)}
-                                                >
-                                                    Manage
-                                                </button>
-                                                :
-                                                <button
-                                                    className="btn btn-xs btn-secondary btn-outline"
+                                                    className="btn btn-sm btn-secondary btn-outline transition-colors duration-200 hover:bg-gray-100"
                                                     onClick={() => setDocumentManageMode(false)}
                                                 >
                                                     Cancel
                                                 </button>
-                                            :
-                                            ''
-                                            :
-                                            ''
-                                        }
-
+                                            ) : (
+                                                <button
+                                                    className="btn btn-sm btn-primary btn-outline transition-colors duration-200 hover:bg-blue-100"
+                                                    onClick={() => setDocumentManageMode(true)}
+                                                >
+                                                    Manage
+                                                </button>
+                                            )
+                                        )}
                                     </div>
-                                </div>
-                                {documentItems !== null ?
-                                    documentItems && documentItems.length > 0 ?
-                                        documentItems.map((item: any, index: number) => (
-                                            <div className="flex flex-col gap-4" key={index}>
-                                                <div className="flex items-center justify-between flex-wrap grow border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5">
-                                                    <div className="flex items-center flex-wrap gap-3.5">
-                                                        <div className="relative size-[50px] shrink-0">
-                                                            <svg className="w-full h-full stroke-gray-300 fill-gray-100" fill="none" height="48" viewBox="0 0 44 48" width="44" xmlns="http://www.w3.org/2000/svg">
-                                                                <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 
-                                                                18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 
-                                                                39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill="">
-                                                                </path>
-                                                                <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 
-                                                                18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 
-                                                                39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke="">
-                                                                </path>
-                                                            </svg>
-                                                            <div className="absolute leading-none start-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4 rtl:translate-x-2/4">
-                                                                <i className="ki-filled ki-sms text-xl text-gray-500">
-                                                                </i>
+                                    <div className="flex-1 overflow-y-auto">
+                                        {documentItems === null ? (
+                                            <div className="flex items-center justify-center h-full">
+                                                <span className="text-gray-600 text-sm">Loading attachments...</span>
+                                            </div>
+                                        ) : documentItems.length > 0 ? (
+                                            <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto">
+                                                {documentItems.map((item, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex items-center justify-between border border-gray-200 rounded-lg p-3 hover:bg-gray-50 hover:shadow-sm transition-all"
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <i className="ki-filled ki-sms text-lg text-gray-500"></i>
+                                                            <div className="flex flex-col">
+                                                                <a
+                                                                    className="flex items-center gap-2 text-sm text-gray-900 hover:text-blue-600 transition-colors duration-200"
+                                                                    href={AWS_S3_URL + item.file_url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                >
+                                                                    {item.original_name}
+                                                                </a>
+                                                                <span className="text-xs text-gray-600">{formatFileSize(item.size)}</span>
                                                             </div>
                                                         </div>
-                                                        <div className="flex flex-col">
-                                                            <a
-                                                                className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px"
-                                                                href={AWS_S3_URL + (item.file_url)}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
+                                                        {documentManageMode && (
+                                                            <button
+                                                                className="btn btn-xs btn-danger btn-icon transition-colors duration-200 hover:bg-red-600"
+                                                                onClick={() => removeServerFile(selectedDocumentTaskId, index)}
+                                                                aria-label={`Remove ${item.original_name}`}
                                                             >
-                                                                {item.original_name}
-                                                            </a>
-                                                            <span className="text-2sm text-gray-700">
-                                                                {formatFileSize(item.size)}
-                                                            </span>
-                                                        </div>
+                                                                <i className="ki-filled ki-trash"></i>
+                                                            </button>
+                                                        )}
                                                     </div>
-                                                    {documentManageMode === true &&
-                                                        <button
-                                                            className="btn btn-danger btn-sm"
-                                                            onClick={() => removeServerFile(selectedDocumentTaskId, index)}
-                                                        >
-                                                            Remove
-                                                        </button>
-                                                    }
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-600 text-sm">No Internal Attachments</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Column: External Attachments */}
+                            <div className="flex-1 flex flex-col gap-8">
+                                {/* External Attachments Upload */}
+                                <label
+                                    className={`flex w-full p-6 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-300 rounded-xl border-dashed transition-all duration-200 ${draggingExternal ? 'border-green-500 bg-green-50' : 'hover:border-green-400 hover:bg-green-50'
+                                        }`}
+                                    onDragOver={handleExternalDragOver}
+                                    onDragLeave={handleExternalDragLeave}
+                                    onDrop={handleExternalDrop}
+                                    htmlFor="file-upload-external"
+                                >
+                                    <div className="flex flex-col place-items-center place-content-center text-center rounded-xl w-full">
+                                        <div className="flex items-center mb-2.5">
+                                            <div className="relative size-9 shrink-0">
+                                                <svg
+                                                    className="w-full h-full stroke-green-200 fill-gray-50"
+                                                    fill="none"
+                                                    height="48"
+                                                    viewBox="0 0 44 48"
+                                                    width="44"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z"
+                                                        fill=""
+                                                    ></path>
+                                                    <path
+                                                        d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z"
+                                                        stroke=""
+                                                        strokeOpacity="0.2"
+                                                    ></path>
+                                                </svg>
+                                                <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
+                                                    <i className="ki-filled ki-picture text-xl text-green-500"></i>
                                                 </div>
                                             </div>
-                                        ))
-                                        :
-                                        <span>No Items</span>
-                                    :
-                                    <Loading />
-                                }
+                                        </div>
+                                        <input
+                                            type="file"
+                                            id="file-upload-external"
+                                            multiple
+                                            onChange={handleExternalFileSelect}
+                                            className="hidden"
+                                        />
+                                        <span className="text-gray-900 text-sm font-medium hover:text-green-600 mb-px cursor-pointer">
+                                            Click or Drag & Drop
+                                        </span>
+                                        <span className="text-xs text-gray-600">max size: 50MB | max files: {maxFiles}</span>
+                                    </div>
+                                </label>
+
+                                {/* Pending External Upload Items */}
+                                {pendingExternalUploadItems.length > 0 && (
+                                    <div className="flex flex-col border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5 shadow-sm">
+                                        <div className="flex justify-between items-center">
+                                            <div className="font-semibold text-gray-900">Pending Uploads</div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    className="btn btn-sm btn-secondary btn-outline transition-colors duration-200 hover:bg-gray-100"
+                                                    onClick={clearAllExternalFiles}
+                                                >
+                                                    Clear
+                                                </button>
+                                                <button
+                                                    className="btn btn-sm btn-success transition-colors duration-200 hover:bg-green-600"
+                                                    onClick={() => uploadExternalFiles(selectedDocumentTaskId)}
+                                                >
+                                                    Upload
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto">
+                                            {pendingExternalUploadItems.map((file, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center justify-between border border-gray-200 rounded-lg p-2 even:bg-gray-50 hover:bg-gray-100 transition-all"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <i className="ki-filled ki-sms text-lg text-gray-500"></i>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm text-gray-900">{file.name}</span>
+                                                            <span className="text-xs text-gray-600">{formatFileSize(file.size)}</span>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        className="btn btn-xs btn-danger btn-icon transition-colors duration-200 hover:bg-red-600"
+                                                        onClick={() => removeExternalFile(index)}
+                                                        aria-label={`Remove ${file.name}`}
+                                                    >
+                                                        <i className="ki-filled ki-trash"></i>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* External Attachments Display */}
+                                <div className="flex flex-col border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5 flex-1 shadow-sm">
+                                    <div className="flex justify-between items-center">
+                                        <div className="font-semibold text-gray-900">External Attachments</div>
+                                        {externalDocumentItems?.length > 0 && (
+                                            externalDocumentManageMode ? (
+                                                <button
+                                                    className="btn btn-sm btn-secondary btn-outline transition-colors duration-200 hover:bg-gray-100"
+                                                    onClick={() => setExternalDocumentManageMode(false)}
+                                                >
+                                                    Cancel
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className="btn btn-sm btn-primary btn-outline transition-colors duration-200 hover:bg-blue-100"
+                                                    onClick={() => setExternalDocumentManageMode(true)}
+                                                >
+                                                    Manage
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto">
+                                        {externalDocumentItems === null ? (
+                                            <div className="flex items-center justify-center h-full">
+                                                <span className="text-gray-600 text-sm">Loading attachments...</span>
+                                            </div>
+                                        ) : externalDocumentItems.length > 0 ? (
+                                            <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto">
+                                                {externalDocumentItems.map((item, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex items-center justify-between border border-gray-200 rounded-lg p-3 hover:bg-gray-50 hover:shadow-sm transition-all"
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <i className="ki-filled ki-sms text-lg text-gray-500"></i>
+                                                            <div className="flex flex-col">
+                                                                <a
+                                                                    className="flex items-center gap-2 text-sm text-gray-900 hover:text-green-600 transition-colors duration-200"
+                                                                    href={item.url || AWS_S3_URL + item.file_url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                >
+                                                                    {item.name || item.original_name}
+                                                                </a>
+                                                                {item.size && (
+                                                                    <span className="text-xs text-gray-600">{formatFileSize(item.size)}</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        {externalDocumentManageMode && (
+                                                            <button
+                                                                className="btn btn-xs btn-danger btn-icon transition-colors duration-200 hover:bg-red-600"
+                                                                onClick={() => removeServerFile(selectedDocumentTaskId, index)}
+                                                                aria-label={`Remove ${item.name || item.original_name}`}
+                                                            >
+                                                                <i className="ki-filled ki-trash"></i>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-600 text-sm">No External Attachments</span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -1519,6 +1519,37 @@ export const uploadTaskDocuments = async (renoProgressId: number, taskId: number
     }
 };
 
+export const uploadTaskExternalDocuments = async (renoProgressId: number, taskId: number, files: File[]) => {
+    try {
+        // Create a new FormData instance
+        const formData = new FormData();
+
+        // Append each file to the FormData object
+        files.forEach(file => {
+            formData.append('external_attachment[]', file);  // 'attachments[]' because your backend expects an array
+        });
+
+        // Make the API request
+        const response = await axios.post(
+            `${API_URL}reno-progress/${renoProgressId}/task/${taskId}/documents/external/upload`,
+            formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handle401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+};
+
 export const fetchTaskDocuments = async (renoProgressId: number, taskId: number) => {
     try {
         const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/documents/fetch`, {
@@ -1678,7 +1709,19 @@ export const fetchDefectInspectionForm = async (diFormId: number) => {
     }
 }
 
-export const fetchProgressKeyManagement = async (keyManagementId: number) => {
+export const fetchProgressKeyManagement = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/key-management`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const fetchKeyManagement = async (keyManagementId: number) => {
     try {
         const response = await axios.get(API_URL + `key-management/${keyManagementId}`, {
             headers: getAuthHeaders()

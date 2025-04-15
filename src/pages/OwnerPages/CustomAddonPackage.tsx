@@ -16,7 +16,7 @@ function CustomAddonPackage() {
 
     const [order, setOrder] = useState<Order | null>(null);
     const [initialPackages, setInitialPackages] = useState<Package[]>([]);
-    const [openAccordions, setOpenAccordions] = useState({});
+    const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({});
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 

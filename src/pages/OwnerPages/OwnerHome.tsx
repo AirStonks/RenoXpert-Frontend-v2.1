@@ -3,7 +3,7 @@ import KTComponent, { KTTabs } from "../../metronic/core";
 import useFetchOwnerOrders from "../../hook/useFetchOwnerOrders";
 import Loading from "../../components/Loading";
 import { user } from "../../services/ownerApi";
-import { User } from "../../types";
+import { Order, Package, User } from "../../types";
 import { Link } from "react-router-dom";
 import { logoutOwner } from "../../services/auth";
 import { toSvg } from "jdenticon/standalone";
@@ -49,6 +49,55 @@ function OwnerHome() {
             // Optionally show an error message to the user
         }
     };
+
+    const calculateTotalAmount = (order: Order) => {
+        let addonCounter = 0; // To number each add-on uniquely
+
+        const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(order?.latest_quotation?.metadata)));
+
+        const categoryTotals = packages.reduce((acc, quotationPackage) => {
+            let category;
+            if (quotationPackage.is_addon === true) {
+                addonCounter += 1;
+                category = `Add-on Option ${addonCounter}`;
+            } else {
+                category = quotationPackage.category;
+            }
+
+            const categoryTotal = quotationPackage.products.reduce((total, product) => {
+                let supplyPrice = 0;
+                if (product.pivot.includeSupply) {
+                    supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
+                } else {
+                    supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
+                }
+
+                let installPrice = 0;
+                if (product.pivot.includeInstall) {
+                    installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
+                } else {
+                    installPrice = (product.provisioning.install.retail_price - product.provisioning.install.excluded_price) || 0;
+                }
+
+                return total + supplyPrice + installPrice;
+            }, 0) * (quotationPackage.quantity || 1);
+
+            if (!(quotationPackage.is_addon === true && quotationPackage.is_addon_included === false)) {
+                if (!acc[category]) {
+                    acc[category] = { total_price: 0, quantity: 0 };
+                }
+                acc[category].total_price += categoryTotal;
+                acc[category].quantity += quotationPackage.quantity;
+            }
+
+            return acc;
+        }, {} as Record<string, { total_price: number, quantity: number }>);
+
+        // Calculate filtered total_amount
+        const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0);
+
+        return filteredTotalAmount;
+    }
 
     if (ordersLoading || formsLoading || renoProgressesLoading || loading) return <Loading />;
     if (ordersError) return <div>Error fetching orders: {ordersError}</div>;
@@ -165,7 +214,7 @@ function OwnerHome() {
                                                         Amount:
                                                     </span>
                                                     <span className="text-sm text-gray-900 font-medium">
-                                                        RM {order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        RM {calculateTotalAmount(order).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </span>
                                                 </div>
                                             </div>
