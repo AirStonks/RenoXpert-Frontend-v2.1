@@ -1,12 +1,12 @@
 import React from 'react'
-import { Order } from '../../../../types';
+import { Package } from '../../../../types';
 
 interface Props {
-    order: Order | null
-    onSubmit: () => void;
+    pkg: Package | null
+    onSubmit: (pkgId: number) => void;
 }
 
-function ConfirmUnincludeAddon({ order, onSubmit }: Props) {
+function ConfirmUnincludeAddon({ pkg, onSubmit }: Props) {
     return (
         <div className="modal p-14 text-xs" data-modal="true" id="confirm_uninclude_modal">
             <div className="modal-content modal-center-y max-w-4xl max-h-[95%] bg-white rounded-lg shadow-xl">
@@ -25,11 +25,11 @@ function ConfirmUnincludeAddon({ order, onSubmit }: Props) {
                     </div>
 
                     <div className="text-gray-800">
-                        Are you sure you want to confirm this order?
+                        Are you sure you want uninclude this add-on package?
                     </div>
 
                     <div className="font-semibold text-orange-500">
-                        {/* {order?.name} */}
+                        {pkg?.name}
                     </div>
 
                     <div className="flex gap-4">
@@ -41,7 +41,7 @@ function ConfirmUnincludeAddon({ order, onSubmit }: Props) {
                         </button>
                         <button
                             className="btn btn-success btn-sm"
-                            onClick={() => onSubmit()}
+                            onClick={() => onSubmit(pkg.id)}
                         >
                             Confirm
                         </button>

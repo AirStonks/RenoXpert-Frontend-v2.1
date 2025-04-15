@@ -1709,7 +1709,19 @@ export const fetchDefectInspectionForm = async (diFormId: number) => {
     }
 }
 
-export const fetchProgressKeyManagement = async (keyManagementId: number) => {
+export const fetchProgressKeyManagement = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/key-management`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const fetchKeyManagement = async (keyManagementId: number) => {
     try {
         const response = await axios.get(API_URL + `key-management/${keyManagementId}`, {
             headers: getAuthHeaders()

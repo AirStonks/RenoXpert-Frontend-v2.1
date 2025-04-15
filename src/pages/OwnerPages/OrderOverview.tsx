@@ -43,6 +43,7 @@ function OrderOverview() {
     const { orderDetail: order, loading, error } = useFetchOwnerOrder(orderId);
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number }[]>([]);
     const [orderDetail, setOrderDetail] = useState<Order>(null);
+    const [selectedConfirmPkg, setSelectedConfirmPkg] = useState<Package>(null);
     const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
 
 
@@ -200,8 +201,15 @@ function OrderOverview() {
             if (response?.success) {
 
 
-                notify('success', 'Congrats! You saved RM[amount]!');
+                notify('success', 'Aww! You missed the good deal.');
                 setOrderDetail(response.data);
+
+
+                const modalEl = document.querySelector('#confirm_uninclude_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+
+                modal.hide();
+                setSelectedConfirmPkg(null);
             }
         } catch (error) {
             console.log(error.message);
@@ -209,14 +217,15 @@ function OrderOverview() {
         }
     };
 
-    const handleConfirmationAddonPackage = (packageId: number, isTurningOff: boolean) => {
+    const handleConfirmationAddonPackage = (selectedPkg: Package, isTurningOff: boolean) => {
         if (isTurningOff) {
             const modalEl = document.querySelector('#confirm_uninclude_modal') as HTMLElement;
             const modal = KTModal.getInstance(modalEl);
 
             modal.show();
+            setSelectedConfirmPkg(selectedPkg);
         } else {
-            handleToggleAddonPackage(packageId);
+            handleToggleAddonPackage(selectedPkg.id);
         }
     }
 
@@ -622,7 +631,7 @@ function OrderOverview() {
                                                     <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
                                                         <h3 className="text-lg text-blue-600 font-bold">Total Amount:</h3>
                                                         <p className="text-xl text-gray-900 font-semibold">
-                                                            RM {(orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) - (bonus?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            RM {((orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) - (bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </p>
                                                         {bonus && (
                                                             <p className="text-gray-900 text-sm">
@@ -767,7 +776,7 @@ function OrderOverview() {
                                                                             className="checkbox"
                                                                             type="checkbox"
                                                                             checked={!!prodPackage.is_addon_included}
-                                                                            onChange={() => handleConfirmationAddonPackage(prodPackage.id, prodPackage.is_addon_included)}
+                                                                            onChange={() => handleConfirmationAddonPackage(prodPackage, prodPackage.is_addon_included)}
                                                                             onClick={(e) => e.stopPropagation()}
                                                                         />
                                                                     </label>
@@ -962,7 +971,7 @@ function OrderOverview() {
                                                                         name="isDraftMode"
                                                                         type="checkbox"
                                                                         checked={!!prodPackage.is_addon_included}
-                                                                        // onChange={() => handleConfirmationAddonPackage(prodPackage.id, prodPackage.is_addon_included)}
+                                                                        // onChange={() => handleConfirmationAddonPackage(prodPackage, prodPackage.is_addon_included)}
                                                                         // onClick={(e) => e.stopPropagation()}
                                                                         readOnly
                                                                     />
@@ -1109,8 +1118,8 @@ function OrderOverview() {
                 ''
             }
 
-            <ConfirmUnincludeAddon 
-                order={orderDetail}
+            <ConfirmUnincludeAddon
+                pkg={selectedConfirmPkg}
                 onSubmit={handleToggleAddonPackage}
             />
 
