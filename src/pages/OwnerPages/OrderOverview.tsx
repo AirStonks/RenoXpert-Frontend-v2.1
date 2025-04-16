@@ -200,10 +200,19 @@ function OrderOverview() {
 
             if (response?.success) {
 
+                const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(response?.data?.latest_quotation?.metadata)));
 
-                notify('success', 'Aww! You missed the good deal.');
+                const selectedPackage = packages.find(pkg => pkg.id === packageId);
+
+                const isIncluded = selectedPackage.is_addon_included;
+
+                if (!isIncluded) {
+                    notify('success', 'Aww! You missed the good deal.');
+                } else {
+                    notify('success', 'You just save your money!');
+                }
+                
                 setOrderDetail(response.data);
-
 
                 const modalEl = document.querySelector('#confirm_uninclude_modal') as HTMLElement;
                 const modal = KTModal.getInstance(modalEl);
@@ -747,80 +756,96 @@ function OrderOverview() {
                                             </div>
                                         </div>
                                         <div className="flex flex-col gap-4">
-                                            {JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((prodPackage, index) => {
-                                                const isOpen = openAccordions[`content_${index}`] !== false;
-                                                return (
-                                                    <div className="accordion-item border rounded-xl w-full shadow-sm" key={index}>
-                                                        <button
-                                                            className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl hover:bg-gray-50 transition duration-200 focus:outline-none"
-                                                            onClick={() => toggleAccordion(`content_${index}`)}
-                                                        >
-                                                            <div className="flex items-center flex-grow text-left">
-                                                                <div className="flex flex-col">
-                                                                    {prodPackage.is_addon && (
-                                                                        <span className="font-medium text-gray-700 text-xs">
-                                                                            Add-on Option {index + 1}:
-                                                                        </span>
-                                                                    )}
-                                                                    <span className="text-base font-semibold text-gray-900">{prodPackage.name}</span>
-                                                                    <span className="text-gray-500 mt-1 max-w-md">{prodPackage.description}</span>
-                                                                    <span className="mt-2 text-base font-bold text-gray-900">
-                                                                        RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                                                    </span>
+                                            {orderDetail
+                                                ? (() => {
+                                                    let packageCounter = 0;
+                                                    let addonCounter = 0;
+                                                    return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((prodPackage, index) => {
+                                                        const isAddon = prodPackage.is_addon;
+                                                        const counter = isAddon ? addonCounter++ : packageCounter++;
+                                                        const accordionId = `content_${index}`;
+                                                        const isOpen = openAccordions[accordionId] !== false;
+
+                                                        return (
+                                                            <div className="accordion-item border rounded-xl w-full shadow-sm" key={index}>
+                                                                <button
+                                                                    className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl hover:bg-gray-50 transition duration-200 focus:outline-none"
+                                                                    onClick={() => toggleAccordion(`content_${index}`)}
+                                                                >
+                                                                    <div className="flex items-center flex-grow text-left">
+                                                                        <div className="flex flex-col">
+                                                                            {prodPackage.is_addon && (
+                                                                                <span className="font-medium text-gray-700 text-xs">
+                                                                                    Add-on Option {counter + 1}:
+                                                                                </span>
+                                                                            )}
+                                                                            <span className="text-base font-semibold text-gray-900">{prodPackage.name}</span>
+                                                                            <span className="text-gray-500 mt-1 max-w-md">{prodPackage.description}</span>
+                                                                            <div className="inline-block mt-2">
+                                                                                <span className='badge'>
+                                                                                    Quantity: {prodPackage.quantity}
+                                                                                </span>
+                                                                            </div>
+                                                                            <span className="mt-2 text-base font-bold text-gray-900">
+                                                                                RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex items-center space-x-4">
+                                                                        {prodPackage.is_addon && (
+                                                                            <label className="switch switch-lg">
+                                                                                <input
+                                                                                    className="checkbox"
+                                                                                    type="checkbox"
+                                                                                    checked={!!prodPackage.is_addon_included}
+                                                                                    onChange={() => handleConfirmationAddonPackage(prodPackage, prodPackage.is_addon_included)}
+                                                                                    onClick={(e) => e.stopPropagation()}
+                                                                                />
+                                                                            </label>
+                                                                        )}
+                                                                        <i
+                                                                            className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300`}
+                                                                        ></i>
+                                                                    </div>
+                                                                </button>
+                                                                <div
+                                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-screen' : 'max-h-0'
+                                                                        }`}
+                                                                >
+                                                                    <div className="p-4">
+                                                                        <h2 className="text-sm font-semibold text-gray-800 mb-3">Products</h2>
+                                                                        <table className="w-full text-xs text-left border-collapse">
+                                                                            <thead>
+                                                                                <tr className="bg-gray-100 border-b">
+                                                                                    <th className="p-3 font-medium text-gray-700">Product</th>
+                                                                                    <th className="p-3 font-medium text-gray-700">Quantity</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                {prodPackage.products.map((product, idx) => (
+                                                                                    <tr key={idx} className="border-b hover:bg-gray-100 transition duration-150">
+                                                                                        <td className="p-3">
+                                                                                            <div className="flex flex-col">
+                                                                                                <span className="font-medium text-gray-900">{product.name}</span>
+                                                                                                <span className="text-gray-600 text-xs mt-1">{product.description || '-'}</span>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td className="p-3 text-gray-700">
+                                                                                            {product.pivot.quantity} {product.uom}
+                                                                                            {product.pivot.quantity > 1 ? 's' : ''}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                ))}
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex items-center space-x-4">
-                                                                {prodPackage.is_addon && (
-                                                                    <label className="switch switch-lg">
-                                                                        <input
-                                                                            className="checkbox"
-                                                                            type="checkbox"
-                                                                            checked={!!prodPackage.is_addon_included}
-                                                                            onChange={() => handleConfirmationAddonPackage(prodPackage, prodPackage.is_addon_included)}
-                                                                            onClick={(e) => e.stopPropagation()}
-                                                                        />
-                                                                    </label>
-                                                                )}
-                                                                <i
-                                                                    className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300`}
-                                                                ></i>
-                                                            </div>
-                                                        </button>
-                                                        <div
-                                                            className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-screen' : 'max-h-0'
-                                                                }`}
-                                                        >
-                                                            <div className="p-4">
-                                                                <h2 className="text-sm font-semibold text-gray-800 mb-3">Products</h2>
-                                                                <table className="w-full text-xs text-left border-collapse">
-                                                                    <thead>
-                                                                        <tr className="bg-gray-100 border-b">
-                                                                            <th className="p-3 font-medium text-gray-700">Product</th>
-                                                                            <th className="p-3 font-medium text-gray-700">Quantity</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {prodPackage.products.map((product, idx) => (
-                                                                            <tr key={idx} className="border-b hover:bg-gray-100 transition duration-150">
-                                                                                <td className="p-3">
-                                                                                    <div className="flex flex-col">
-                                                                                        <span className="font-medium text-gray-900">{product.name}</span>
-                                                                                        <span className="text-gray-600 text-xs mt-1">{product.description || '-'}</span>
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td className="p-3 text-gray-700">
-                                                                                    {product.pivot.quantity} {product.uom}
-                                                                                    {product.pivot.quantity > 1 ? 's' : ''}
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                        );
+                                                    });
+                                                })()
+                                                : null
+                                            }
 
                                             <hr className="my-4" />
 
