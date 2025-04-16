@@ -809,7 +809,7 @@ function OrderOverview() {
                                                                     </div>
                                                                 </button>
                                                                 <div
-                                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-screen' : 'max-h-0'
+                                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-full' : 'max-h-0'
                                                                         }`}
                                                                 >
                                                                     <div className="p-4">
