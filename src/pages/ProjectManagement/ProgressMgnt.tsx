@@ -4,7 +4,7 @@ import Loading from "../../components/Loading";
 import { useEffect, useRef, useState } from "react";
 import KTComponents, { KTDropdown } from "../../metronic/core";
 import { DefectInspectionForm, Permission, PhaseJob, RenoProgress, User } from "../../types";
-import { addUserItemPermission, changeInternalComment, changeOwnerComment, changeRenoProgressGeneralPermission, changeTaskStatus, changeUserItemPermission, fetchRenoProgress, fetchTaskDocuments, liveUploadTaskAttachment, permissionIndex, removeTaskDocument, removeUserItemPermission, toggleTaskVisibility, uploadTaskDocuments, uploadTaskExternalDocuments, userIndex } from "../../services/api";
+import { addUserItemPermission, changeInternalComment, changeOwnerComment, changeRenoProgressGeneralPermission, changeTaskStatus, changeUserItemPermission, fetchRenoProgress, fetchTaskDocuments, liveUploadTaskAttachment, permissionIndex, removeExternalTaskDocument, removeTaskDocument, removeUserItemPermission, toggleTaskVisibility, uploadTaskDocuments, uploadTaskExternalDocuments, userIndex } from "../../services/api";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -481,6 +481,29 @@ function ProgressMgnt() {
 
                 if (response.data === null) {
                     setDocumentItems([]);
+                }
+
+                notify('success', 'File removed successfully.');
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+
+        setIsLoading(false);
+    }
+
+    const removeServerExternalFile = async (taskId: number, documentIndex: number) => {
+        setIsLoading(true);
+
+        try {
+            const response = await removeExternalTaskDocument(renoProgressId, taskId, documentIndex);
+
+            if (response?.success) {
+                setExternalDocumentItems(response.data);
+
+                if (response.data === null) {
+                    setExternalDocumentItems([]);
                 }
 
                 notify('success', 'File removed successfully.');
@@ -2291,7 +2314,7 @@ function ProgressMgnt() {
                                                         {externalDocumentManageMode && (
                                                             <button
                                                                 className="btn btn-xs btn-danger btn-icon transition-colors duration-200 hover:bg-red-600"
-                                                                onClick={() => removeServerFile(selectedDocumentTaskId, index)}
+                                                                onClick={() => removeServerExternalFile(selectedDocumentTaskId, index)}
                                                                 aria-label={`Remove ${item.name || item.original_name}`}
                                                             >
                                                                 <i className="ki-filled ki-trash"></i>

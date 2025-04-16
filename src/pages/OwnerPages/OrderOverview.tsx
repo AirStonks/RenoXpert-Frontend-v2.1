@@ -211,7 +211,7 @@ function OrderOverview() {
                 } else {
                     notify('success', 'You just save your money!');
                 }
-                
+
                 setOrderDetail(response.data);
 
                 const modalEl = document.querySelector('#confirm_uninclude_modal') as HTMLElement;
@@ -600,11 +600,11 @@ function OrderOverview() {
                                         <div className="card-body p-4">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <span className="text-sm text-gray-600">QUO Number:</span>
+                                                    <span className="text-xs text-gray-600">QUO Number:</span>
                                                     <p className="text-sm text-gray-900 font-semibold">{orderDetail.order_no}</p>
                                                 </div>
                                                 <div>
-                                                    <span className="text-sm text-gray-600">Date Created:</span>
+                                                    <span className="text-xs text-gray-600">Date Created:</span>
                                                     <p className="text-sm text-gray-900 font-semibold">{formatDate(orderDetail.created_at)}</p>
                                                 </div>
                                             </div>
@@ -786,9 +786,9 @@ function OrderOverview() {
                                                                                     Quantity: {prodPackage.quantity}
                                                                                 </span>
                                                                             </div>
-                                                                            <span className="mt-2 text-base font-bold text-gray-900">
+                                                                            {/* <span className="mt-2 text-base font-bold text-gray-900">
                                                                                 RM {prodPackage.total_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                                                            </span>
+                                                                            </span> */}
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex items-center space-x-4">
@@ -980,11 +980,16 @@ function OrderOverview() {
                                                                 <span className="text-gray-500 mt-1 max-w-md">
                                                                     {prodPackage.description}
                                                                 </span>
-                                                                <span className="mt-2 text-base font-bold text-gray-900">
+                                                                <div className="inline-block mt-2">
+                                                                    <span className='badge'>
+                                                                        Quantity: {prodPackage.quantity}
+                                                                    </span>
+                                                                </div>
+                                                                {/* <span className="mt-2 text-base font-bold text-gray-900">
                                                                     RM {prodPackage.total_price.toLocaleString(undefined, {
                                                                         minimumFractionDigits: 2,
                                                                     })}
-                                                                </span>
+                                                                </span> */}
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center space-x-4">
