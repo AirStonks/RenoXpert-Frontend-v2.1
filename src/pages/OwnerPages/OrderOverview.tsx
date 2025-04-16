@@ -809,7 +809,7 @@ function OrderOverview() {
                                                                     </div>
                                                                 </button>
                                                                 <div
-                                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-full' : 'max-h-0'
+                                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[9999px]' : 'max-h-0'
                                                                         }`}
                                                                 >
                                                                     <div className="p-4">
@@ -1011,7 +1011,7 @@ function OrderOverview() {
                                                     </button>
                                                     <div
                                                         className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ?
-                                                            'max-h-full' : 'max-h-0'}`}
+                                                            'max-h-[9999px]' : 'max-h-0'}`}
                                                     >
                                                         <div className="p-4">
                                                             <h2 className="text-sm font-semibold text-gray-800 mb-3">
