@@ -567,6 +567,20 @@ function EditOrder() {
         recalculateTotalAmount();
     };
 
+    const toggleIsAddonIncluded = (packId: number) => {
+        console.log(packId);
+        setSelectedPackages((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage: Package) => {
+                if (prodPackage.id === packId) {
+                    return { ...prodPackage, is_addon_included: !prodPackage.is_addon_included };
+                }
+                return prodPackage;
+            })
+
+            return updatedPackages
+        })
+    }
+
     const recalculateTotalAmount = () => {
         const newTotal = selectedPackages.reduce((sum, pkg) => {
             sum +=
@@ -1038,6 +1052,7 @@ function EditOrder() {
                                                             toggleProperty={toggleProperty}
                                                             adjustQuantity={adjustQuantity}
                                                             handleRemoveProduct={handleRemoveProduct}
+                                                            toggleIsAddonIncluded={toggleIsAddonIncluded}
                                                         />
                                                     ))}
                                             </div>

@@ -24,7 +24,7 @@ function ConfirmUnincludeAddon({ pkg, onSubmit }: Props) {
                         Confirm Uninclude Addon Package
                     </div>
 
-                    <div className="text-gray-800">
+                    <div className="text-gray-800 text-center">
                         Are you sure you want uninclude this add-on package?
                     </div>
 

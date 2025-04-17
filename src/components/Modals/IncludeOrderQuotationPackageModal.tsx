@@ -168,7 +168,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                         total_price: packagePrice,
                         category: packageCategory,
                         is_addon: packageIsAddon === '1',
-                        is_addon_included: true,
+                        is_addon_included: false,
                         description_internal: packageInternalDesc,
                         products: selectedPackage.products || [], // Ensure products is included
                     };

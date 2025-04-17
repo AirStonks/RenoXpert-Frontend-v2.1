@@ -76,7 +76,18 @@ function OrderDetail() {
     const [activeTab, setActiveTab] = useState('tab_1_1');
     const [isEditingInternalRemark, setIsEditingInternalRemark] = useState(false);
     const [editableInternalRemark, setEditableInternalRemark] = useState('');
+    const [agreeTnc, setAgreeTnc] = useState(false);
+    const [agreeRenoAgreement, setAgreeRenoAgreement] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>(() => {
+        const initialState: { [key: string]: boolean } = {};
+        if (orderDetail) {
+            orderDetail.latest_quotation.packages.forEach((_, index) => {
+                initialState[`content_${index}`] = true;
+            });
+        }
+        return initialState;
+    });
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -125,7 +136,7 @@ function OrderDetail() {
             let category;
             if (quotationPackage.is_addon === true) {
                 addonCounter += 1;
-                category = `Add-on Option ${addonCounter}`;
+                category = `Add-on Option ${addonCounter} (${quotationPackage.name})`;
             } else {
                 category = quotationPackage.category;
             }
@@ -208,6 +219,21 @@ function OrderDetail() {
         } else {
             navigate('/orders');
         }
+    };
+
+    const toggleAccordion = (id: string) => {
+        setOpenAccordions((prev) => ({
+            ...prev,
+            [id]: prev[id] == null ? false : !prev[id],
+        }));
+    };
+
+    const handleAgreeTncChange = (event) => {
+        setAgreeTnc(event.target.checked);
+    };
+
+    const handleAgreeRenoAgreementChange = (event) => {
+        setAgreeRenoAgreement(event.target.checked);
     };
 
     const handleReleaseOrder = async () => {
@@ -1496,767 +1522,610 @@ function OrderDetail() {
                                 Reno Agreement
                             </button>
                         </div>
-                        <div className={activeTab === 'tab_1_1' ? '' : 'hidden'} id="tab_1_1">
+                        <div className={activeTab === 'tab_1_1' ? 'block' : 'hidden'} id="tab_1_1">
                             <div className="overflow-x-auto">
-                                {orderDetail.status === 'confirmed' &&
-                                    <div className="flex flex-col flex-1 mb-4">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-lg text-gray-900 mb-1 font-semibold">{(100 - (orderDetail.sale.remaining_percentage * 100)).toFixed(2)}% Invoice Issued</span>
-                                            <div className="flex">
-                                                <div className="badge badge-success badge-outline text-md mb-2">
-                                                    {(orderDetail.sale.invoices.reduce((sum, invoice) => {
-                                                        if (invoice.status === 'paid') {
-                                                            return sum + invoice.percentage;
-                                                        }
-                                                        return sum;
-                                                    }, 0) * 100).toFixed(2)}% Paid
-                                                </div>
+                                {/* Progress Bar */}
+                                {orderDetail.status === 'confirmed' && (
+                                    <div className="flex flex-col mb-6">
+                                        <div className="flex flex-col justify-between items-center mb-2">
+                                            <span className="text-lg text-gray-900 font-semibold">
+                                                {(100 - orderDetail.sale.remaining_percentage * 100).toFixed(2)}% Invoice Issued
+                                            </span>
+                                            <div className="badge badge-success badge-outline text-md mt-2 sm:mt-0">
+                                                {(orderDetail.sale.invoices.reduce((sum, invoice) => invoice.status === 'paid' ? sum + invoice.percentage : sum, 0) * 100).toFixed(2)}% Paid
                                             </div>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-[12px] mb-2 relative overflow-hidden">
-                                            {/* Issued progress bar (outer) */}
-                                            <div
-                                                className="absolute top-0 left-0 h-full bg-blue-200 transition-all duration-300"
-                                                style={{
-                                                    width: `${100 - (orderDetail.sale.remaining_percentage * 100)}%`,
-                                                    height: '12px'
-                                                }}
-                                            />
-
-                                            {/* Paid progress bar (inner) */}
-                                            <div
-                                                className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                                style={{
-                                                    width: `${orderDetail.sale.invoices.reduce((sum, invoice) => {
-                                                        if (invoice.status === 'paid') {
-                                                            return sum + invoice.percentage;
-                                                        }
-                                                        return sum;
-                                                    }, 0) * 100}%`,
-                                                    height: '12px'
-                                                }}
-                                            />
+                                        <div className="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden">
+                                            <div className="absolute top-0 left-0 h-full bg-blue-200" style={{ width: `${100 - orderDetail.sale.remaining_percentage * 100}%` }} />
+                                            <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${orderDetail.sale.invoices.reduce((sum, invoice) => invoice.status === 'paid' ? sum + invoice.percentage : sum, 0) * 100}%` }} />
                                         </div>
-                                        <div className="flex mb-2 gap-2">
-                                            <span className="badge badge-pill badge-outline gap-1 items-center bg-blue-50 border-blue-200 text-blue-300">
-                                                <span className="badge badge-dot size-1.5 bg-blue-300"></span>
-                                                Issued
+                                        <div className="flex gap-2 mt-2">
+                                            <span className="badge badge-outline bg-blue-50 border-blue-200 text-blue-300 flex items-center gap-1">
+                                                <span className="badge badge-dot size-1.5 bg-blue-300"></span> Issued
                                             </span>
-                                            <span className="badge badge-pill badge-outline gap-1 items-center badge-success">
-                                                <span className="badge badge-dot size-1.5 badge-success"></span>
-                                                Paid
+                                            <span className="badge badge-outline badge-success flex items-center gap-1">
+                                                <span className="badge badge-dot size-1.5 bg-green-500"></span> Paid
                                             </span>
                                         </div>
                                     </div>
-                                }
+                                )}
 
-                                <div className="flex flex-col mb-4">
-                                    <div className="card flex-1 mb-2">
-                                        <div className="card-header py-0 flex justify-between">
-                                            <h2 className="card-title">
-                                                Quotation Order Detail
-                                            </h2>
-                                            <span className={`badge badge-sm p-2 cursor-default capitalize
-                                                ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
-                                                ${orderDetail.status === 'revoked' ? 'badge-danger' : ''} 
-                                                badge-outline`}
-                                            >
-                                                {(orderDetail.status === 'confirmed' ? 'sale' : orderDetail.status)}
+                                <div className="flex flex-col gap-4 mb-6">
+                                    {/* Quotation Detail */}
+                                    <div className="card flex-1 bg-white shadow-sm rounded-lg">
+                                        <div className="card-header p-4 flex justify-between items-center">
+                                            <h2 className="card-title text-lg font-semibold">Quotation Order Detail</h2>
+                                            <span className={`badge badge-sm p-2 capitalize badge-outline ${orderDetail.status === 'confirmed' ? 'badge-success' : orderDetail.status === 'revoked' ? 'badge-danger' : ''}`}>
+                                                {orderDetail.status === 'confirmed' ? 'Sale' : orderDetail.status}
                                             </span>
                                         </div>
-                                        <div className="card-body">
-                                            <div className="flex justify-between flex-wrap gap-8 mb-4">
-                                                <div className="flex flex-col">
-                                                    {/* <span className='badge badge-sm text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span> */}
-                                                    <span className='text-sm text-gray-600'>QUO Number:</span>
-                                                    <span className='text-sm text-gray-900 font-semibold'>{orderDetail.order_no}</span>
+                                        <div className="card-body p-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <span className="text-xs text-gray-600">QUO Number:</span>
+                                                    <p className="text-sm text-gray-900 font-semibold">{orderDetail.order_no}</p>
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <span className='text-sm text-gray-600'>Date Created:</span>
-                                                    <span className='text-sm text-gray-900 font-semibold'>
-                                                        {formatDate(orderDetail.created_at)}
-                                                    </span>
+                                                <div>
+                                                    <span className="text-xs text-gray-600">Date Created:</span>
+                                                    <p className="text-sm text-gray-900 font-semibold">{formatDate(orderDetail.created_at)}</p>
                                                 </div>
                                             </div>
-                                            {orderDetail.status === 'confirmed' &&
+                                            <div className="grid grid-cols-1 gap-4 mt-2">
+                                                <div>
+                                                    <span className="text-md text-gray-600">Total Amount:</span>
+                                                    <p className="text-lg text-gray-900 font-bold">RM {((orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                </div>
+                                            </div>
+                                            {orderDetail.status === 'confirmed' && (
                                                 <>
-
-                                                    {/* Summary */}
-                                                    {packageCategories.some(category => category.category !== "undefined") &&
-                                                        !orderDetail.f_1 &&
-                                                        <div className="card-body p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg shadow-sm mb-4">
-                                                            <div className="flex flex-col gap-5">
-                                                                {/* Header */}
-                                                                <div className="flex items-center gap-2">
-                                                                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                                                    </svg>
-                                                                    <span className="text-xl text-purple-600 font-bold">Summary</span>
-                                                                </div>
-
-                                                                {/* Category Summary */}
-                                                                <div className="grid grid-cols-1 gap-4">
-                                                                    {packageCategories.map((category, index) => (
-                                                                        <div key={index} className="flex justify-between items-center p-4 bg-white rounded-lg shadow-xs hover:shadow-md transition-shadow">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <span className="text-sm text-gray-600 font-medium">Total {category.category} Cost</span>
-                                                                            </div>
-                                                                            <span className="text-sm text-gray-700 font-semibold">
-                                                                                RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                            </span>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
+                                                    {!orderDetail.f_1 && (
+                                                        <div className="mt-4 p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg">
+                                                            <h3 className="text-lg text-purple-600 font-bold flex items-center gap-2">Summary</h3>
+                                                            <div className="mt-2 space-y-2">
+                                                                {packageCategories.map((category, index) => (
+                                                                    <div key={index} className="flex justify-between p-2 bg-white rounded shadow-sm">
+                                                                        <span className="text-sm text-gray-600">Total {category.category}</span>
+                                                                        <span className="text-sm text-gray-700 font-semibold whitespace-nowrap">RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         </div>
-                                                    }
-
-                                                    {
-                                                        selectedQuotation.bonus && (
-                                                            <div className="card-body p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg shadow-md mb-4">
-                                                                <div className="flex flex-col gap-4">
-                                                                    <div className="flex flex-col">
-                                                                        <span className='text-lg text-teal-600 font-bold'>Bonus:</span> {/* Increased font size and boldness */}
-                                                                        <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
-                                                                            {selectedQuotation.bonus.description ?
-                                                                                selectedQuotation.bonus.description.split('\n').map((item, index) => (
-                                                                                    <li key={index} className="mb-1">
-                                                                                        <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
-                                                                                    </li>
-                                                                                ))
-                                                                                :
-                                                                                <li className="mb-1">
-                                                                                    <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">No Details</span>
-                                                                                </li>
-                                                                            }
-                                                                        </ul>
-                                                                    </div>
-                                                                    <div className="flex flex-col mt-4">
-                                                                        <span className='text-sm text-gray-600 font-semibold'>Discount:</span>
-                                                                        <span className='text-xl text-teal-600 font-bold'>
-                                                                            {`RM ${selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                    }
-
-                                                    {/* Total Amount section */}
-                                                    <div className="card-body p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg shadow-md mb-4">
-                                                        <div className="flex flex-col gap-4">
-                                                            <div className="flex flex-col">
-                                                                <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
-                                                                <span className='text-xl text-gray-900 font-semibold'>
-                                                                    {orderDetail.final_amount > 0
-                                                                        ? `RM ${(
-                                                                            orderDetail.final_amount -
-                                                                            (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                        : `RM ${(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                </span>
-                                                                {selectedQuotation.bonus && (
-                                                                    <span className='text-gray-900 text-sm'>
-                                                                        Original Price: RM {orderDetail.final_amount > 0 ? totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                    </span>
-                                                                )}
+                                                    )}
+                                                    {selectedQuotation.bonus && (
+                                                        <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
+                                                            <h3 className="text-lg text-teal-600 font-bold">Bonus:</h3>
+                                                            <ul className="text-sm text-gray-900 font-semibold mt-2 space-y-1">
+                                                                {(selectedQuotation.bonus.description?.split('\n') || ['No Details']).map((item, index) => (
+                                                                    <li key={index} className="p-2 bg-teal-50 rounded">{item}</li>
+                                                                ))}
+                                                            </ul>
+                                                            <div className="mt-2">
+                                                                <span className="text-sm text-gray-600 font-semibold">Discount:</span>
+                                                                <p className="text-xl text-teal-600 font-bold">RM {selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                                             </div>
                                                         </div>
+                                                    )}
+                                                    <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
+                                                        <h3 className="text-lg text-blue-600 font-bold">Total Amount:</h3>
+                                                        <p className="text-xl text-gray-900 font-semibold">
+                                                            RM {((orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </p>
+                                                        {selectedQuotation.bonus && (
+                                                            <p className="text-gray-900 text-sm">
+                                                                Original Price: RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </p>
+                                                        )}
                                                     </div>
                                                 </>
-                                            }
+                                            )}
                                         </div>
                                     </div>
 
-                                    <div className="card flex-1 mb-2">
-                                        <div className="card-header">
-                                            <h2 className="card-title">
-                                                Property
-                                            </h2>
-                                        </div>
-                                        <div className="card-body">
-                                            {orderDetail.property &&
-                                                <>
-                                                    <div className="flex justify-between flex-wrap">
-                                                        <div className="flex flex-col mb-4 mr-8">
-                                                            <span className='text-sm text-gray-600'>Name:</span>
-                                                            <span className='text-sm text-gray-900 font-semibold'>{orderDetail.property.name}</span>
+                                    {/* Property */}
+                                    <div className="accordion-item flex-1 border rounded-xl shadow-sm">
+                                        <button
+                                            className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl md:cursor-default md:hover:bg-transparent transition duration-200 focus:outline-none"
+                                            onClick={() => toggleAccordion('property')}
+                                        >
+                                            <h2 className="text-lg font-semibold">Property</h2>
+                                            <i className={`ki-outline ${openAccordions['property'] !== false ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300`}></i>
+                                        </button>
+                                        <div className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${openAccordions['property'] !== false ? 'max-h-screen' : 'max-h-0'}`}>
+                                            <div className="p-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    {[
+                                                        { label: 'Name', value: orderDetail.property.name },
+                                                        { label: 'Unit', value: `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}` },
+                                                        { label: 'Unit Type', value: orderDetail.unit_type || '-' },
+                                                        { label: 'Partition', value: orderDetail.include_partition ? 'Yes' : 'No' },
+                                                    ].map(({ label, value }) => (
+                                                        <div key={label}>
+                                                            <span className="text-sm text-gray-600">{label}:</span>
+                                                            <p className="text-sm text-gray-900 font-semibold">{value}</p>
                                                         </div>
-                                                        <div className=""></div>
-                                                    </div>
-
-                                                    <div className="flex justify-between flex-wrap">
-                                                        <div className="flex flex-col mb-4">
-                                                            <span className='text-sm text-gray-600'>Unit:</span>
-                                                            <span className='text-sm text-gray-900 font-semibold'>{orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}</span>
-                                                        </div>
-                                                        <div className="flex flex-col mb-4 mr-8">
-                                                            <span className='text-sm text-gray-600'>Unit Type:</span>
-                                                            <span className='text-sm text-gray-900 font-semibold'>{orderDetail.unit_type ? orderDetail.unit_type : '-'}</span>
-                                                        </div>
-                                                        <div className="flex flex-col mb-4">
-                                                            <span className='text-sm text-gray-600'>Partition:</span>
-                                                            <span className='text-sm text-gray-900 font-semibold'>{orderDetail.include_partition ? 'Yes' : 'No'}</span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex flex-col">
-                                                        <span className='text-sm text-gray-600'>Address:</span>
-                                                        <span className='text-sm text-gray-900'>
-                                                            {[
-                                                                orderDetail.property.address,
-                                                                orderDetail.property.street,
-                                                                orderDetail.property.postcode,
-                                                                orderDetail.property.city,
-                                                                orderDetail.property.state,
-                                                            ]
-                                                                .filter(Boolean)
-                                                                .join(', ')
-                                                            }
-                                                        </span>
-                                                    </div>
-                                                </>
-                                            }
+                                                    ))}
+                                                </div>
+                                                <div className="mt-4">
+                                                    <span className="text-sm text-gray-600">Address:</span>
+                                                    <p className="text-sm text-gray-900">{[orderDetail.property.address, orderDetail.property.street, orderDetail.property.postcode, orderDetail.property.city, orderDetail.property.state].filter(Boolean).join(', ')}</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {orderDetail.status === 'confirmed' ?
-                                    <>
-                                        <div className="flex flex-col gap-2 mb-4">
-                                            <span className="flex text-gray-900 text-lg font-semibold">
-                                                Payment Invoices
-                                            </span>
+                                <hr className="my-4" />
 
-                                            {orderDetail.sale.invoices.length === 0 ?
-                                                <div className="flex flex-col items-center">
-                                                    <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
-                                                    <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
+                                {/* Payment Invoices */}
+                                {orderDetail.status === 'confirmed' && (
+                                    <div className="mb-6">
+                                        <h2 className="text-lg text-gray-900 font-semibold mb-4">Payment Invoices</h2>
+                                        {orderDetail.sale.invoices.length === 0 ? (
+                                            <div className="flex flex-col items-center">
+                                                <img alt="No invoices" className="max-h-[160px] mb-4" src={`/public/media/illustrations/3${document.documentElement.classList.contains('dark') ? '-dark' : ''}.svg`} />
+                                                <h3 className="text-xl font-semibold text-gray-900">No Payment Invoices Available</h3>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {orderDetail.sale.invoices.map((invoice, index) => (
+                                                    <Link to={`/invoice/${invoice.id}/view`} key={index} className="card bg-white shadow-sm rounded-lg hover:shadow-md transition-shadow">
+                                                        <div className="card-body p-4 flex flex-col">
+                                                            <div className="flex items-center gap-4 mb-2">
+                                                                <div className="relative size-12 shrink-0">
+                                                                    <svg className="w-full h-full stroke-blue-500 fill-blue-100" viewBox="0 0 44 48">
+                                                                        <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" />
+                                                                    </svg>
+                                                                </div>
+                                                                <div>
+                                                                    <h3 className="text-sm text-gray-900 font-medium">{invoice.invoice_no}</h3>
+                                                                    <span className={`badge badge-outline ${invoice.status === 'paid' ? 'badge-success' : invoice.status === 'overdue' ? 'badge-danger' : ''}`}>
+                                                                        {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="mt-2">
+                                                                <span className="text-xs text-gray-600">Amount:</span>
+                                                                <p className="text-sm text-gray-900 font-medium">RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                            </div>
+                                                            <div className="mt-2">
+                                                                <span className="text-xs text-gray-600">Due Date:</span>
+                                                                <p className="text-sm text-gray-900 font-medium">{invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A'}</p>
+                                                            </div>
+                                                        </div>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
-                                                    <h2 className="text-xl font-semibold text-gray-900">There is no Payment Invoices here</h2>
-                                                </div>
-                                                : orderDetail.sale.invoices.map((invoice, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="card cursor-pointer"
-                                                        data-modal-toggle="#payment_invoice_modal"
-                                                    // onClick={() => setSelectedInvoiceId(Number(invoice.id))}
-                                                    >
-                                                        <div className="card-body flex justify-between items-center">
-                                                            <div className="flex items-center gap-4">
-                                                                <div className="flex flex-col gap-1">
-                                                                    <div className="flex">
-                                                                        <div className="relative size-[50px] shrink-0 mr-8">
-                                                                            <svg className="w-full h-full stroke-info-clarity fill-info-light" fill="none" height="48" viewBox="0 0 44 48" width="44" xmlns="http://www.w3.org/2000/svg">
-                                                                                <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" fill="#EFF6FF">
-                                                                                </path>
-                                                                                <path d="M16.25 2.89711C19.8081 0.842838 24.1919 0.842837 27.75 2.89711L37.4006 8.46891C40.9587 10.5232 43.1506 14.3196 43.1506 18.4282V29.5718C43.1506 33.6804 40.9587 37.4768 37.4006 39.5311L27.75 45.1029C24.1919 47.1572 19.8081 47.1572 16.25 45.1029L6.59937 39.5311C3.04125 37.4768 0.849365 33.6803 0.849365 29.5718V18.4282C0.849365 14.3196 3.04125 10.5232 6.59937 8.46891L16.25 2.89711Z" stroke="#1B84FF" strokeOpacity="0.2">
-                                                                                </path>
-                                                                            </svg>
-                                                                            <div className="absolute leading-none left-2/4 top-2/4 -translate-y-2/4 -translate-x-2/4">
-                                                                                <i className="ki-outline ki-document text-1.5xl ps-px text-info"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div className="flex flex-col">
-                                                                            <h3 className="text-gray-900 text-sm font-medium">
-                                                                                {invoice.invoice_no}
-                                                                            </h3>
-                                                                            <div className="flex flex-col mr-8 mb-2">
-                                                                                <span className={`badge badge-outline 
-                                                                                                            ${invoice.status === 'paid' ? 'badge-success' : ''}
-                                                                                                            ${invoice.status === 'overdue' ? 'badge-danger' : ''}
-                                                                                                        `}>
-                                                                                    {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                                                                                </span>
-                                                                            </div>
+                                {/* Packages and Summary */}
+                                {orderDetail.status !== 'confirmed' && (
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center justify-between bg-gray-50 py-3 px-4 rounded-t-lg border-b border-gray-200 mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <svg
+                                                    className="w-6 h-6 text-blue-600"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M20 12H4m16-4H4m16 8H4m-2-6h20a2 2 0 012 2v6a2 2 0 01-2 2H2a2 2 0 01-2-2v-6a2 2 0 012-2z"
+                                                    />
+                                                </svg>
+                                                <h2 className="text-xl sm:text-2xl text-blue-600 font-bold tracking-tight">
+                                                    Packages
+                                                </h2>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col gap-4">
+                                            {orderDetail
+                                                ? (() => {
+                                                    let packageCounter = 0;
+                                                    let addonCounter = 0;
+                                                    return orderDetail.latest_quotation.packages.map((prodPackage, index) => {
+                                                        const isAddon = prodPackage.is_addon;
+                                                        const counter = isAddon ? addonCounter++ : packageCounter++;
+                                                        const accordionId = `content_${index}`;
+                                                        const isOpen = openAccordions[accordionId] !== false;
+
+                                                        return (
+                                                            <div className={`accordion-item border rounded-xl w-full shadow-sm ${isAddon ? 'bg-blue-50 border-blue-300' : ''}`} key={index}>
+                                                                <button
+                                                                    className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl hover:bg-gray-50 transition duration-200 focus:outline-none"
+                                                                    onClick={() => toggleAccordion(`content_${index}`)}
+                                                                >
+                                                                    <div className="flex items-center flex-grow text-left w-full">
+                                                                        <div className="flex flex-col w-full">
+                                                                            {prodPackage.is_addon ? (
+                                                                                <>
+                                                                                    <div className="flex justify-between">
+                                                                                        <span className="font-medium text-gray-700 text-xs">
+                                                                                            Add-on Option {counter + 1}:
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <span className="text-base font-semibold text-gray-900">{prodPackage.name}</span>
+                                                                                </>
+                                                                            ) :
+                                                                                <div className="flex justify-between">
+                                                                                    <span className="text-base font-semibold text-gray-900">{prodPackage.name}</span>
+                                                                                </div>
+                                                                            }
+                                                                            <span className="text-gray-500 mt-1 max-w-md">{prodPackage.description}</span>
                                                                         </div>
                                                                     </div>
+                                                                    <div className="flex items-center space-x-4">
+                                                                        {prodPackage.is_addon ? (
+                                                                            <div className="flex flex-col gap-2">
+                                                                                <label className="switch switch-lg">
+                                                                                    <input
+                                                                                        className="checkbox"
+                                                                                        type="checkbox"
+                                                                                        checked={!!prodPackage.is_addon_included}
+                                                                                        readOnly
+                                                                                    />
+                                                                                </label>
+                                                                                <div className="inline-block">
+                                                                                    <span className={`badge ${isAddon ? 'bg-white border-blue-300' : ''}`}>
+                                                                                        x{prodPackage.quantity}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        )
+                                                                            :
+                                                                            <div className="inline-block">
+                                                                                <span className="badge">
+                                                                                    x{prodPackage.quantity}
+                                                                                </span>
+                                                                            </div>
+                                                                        }
+                                                                        <i
+                                                                            className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300`}
+                                                                        ></i>
+                                                                    </div>
+                                                                </button>
+                                                                <div
+                                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[9999px]' : 'max-h-0'
+                                                                        }`}
+                                                                >
+                                                                    <div className="p-4">
+                                                                        <h2 className="text-sm font-semibold text-gray-800 mb-3">Products</h2>
+                                                                        <table className="w-full text-2xs text-left border-collapse">
+                                                                            <thead>
+                                                                                <tr className={`border-b ${isAddon ? 'bg-white border-blue-300' : 'bg-gray-100'}`}>
+                                                                                    <th className="p-3 font-medium text-gray-700">S.o.W</th>
+                                                                                    <th className="p-3 font-medium text-gray-700">Product</th>
+                                                                                    <th className="p-3 font-medium text-gray-700">Quantity</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                {prodPackage.products.map((product, idx) => {
+                                                                                    const isSupplyAndInstall = product.pivot.includeSupply || product.pivot.includeInstall
 
-                                                                    <div className="flex mr-14 flex-wrap">
-                                                                        <div className="flex flex-col mr-8 mb-2">
-                                                                            <span className="text-xs text-gray-600">
-                                                                                Amount:
-                                                                            </span>
-                                                                            <span className="text-sm text-gray-900 font-medium">
-                                                                                RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                            </span>
-                                                                        </div>
-
-                                                                        <div className="flex flex-col">
-                                                                            <span className="text-xs text-gray-600">
-                                                                                Due Date:
-                                                                            </span>
-                                                                            <span className="text-sm text-gray-900 font-medium">
-                                                                                {invoice.due_date
-                                                                                    ? new Date(invoice.due_date).toLocaleDateString('en-GB', {
-                                                                                        day: 'numeric',
-                                                                                        month: 'long',
-                                                                                        year: 'numeric'
-                                                                                    })
-                                                                                    : 'N/A'}
-                                                                            </span>
-                                                                        </div>
+                                                                                    if (isSupplyAndInstall) {
+                                                                                        return (
+                                                                                            <tr key={idx} className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''}`}>
+                                                                                                <td className='py-3 px-2 text-gray-700 text-left'>
+                                                                                                    {product.pivot.includeSupply && product.pivot.includeInstall ? 'Supply & InstallI' : product.pivot.includeSupply ? 'Supply' : 'Install'}
+                                                                                                </td>
+                                                                                                <td className="p-3">
+                                                                                                    <div className="flex flex-col">
+                                                                                                        <span className="font-medium text-gray-900">{product.name}</span>
+                                                                                                        <span className="text-gray-600 text-xs mt-1">{product.description || '-'}</span>
+                                                                                                    </div>
+                                                                                                </td>
+                                                                                                <td className="p-3 text-gray-700">
+                                                                                                    {product.pivot.quantity} {product.uom}
+                                                                                                    {product.pivot.quantity > 1 ? 's' : ''}
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        )
+                                                                                    }
+                                                                                })}
+                                                                            </tbody>
+                                                                        </table>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                ))
+                                                        );
+                                                    });
+                                                })()
+                                                : null
                                             }
-                                        </div>
-                                    </>
-                                    :
-                                    ''
-                                }
 
-                                {orderDetail.status === 'confirmed' ?
-                                    ''
-                                    :
-                                    <>
-                                        <table className="w-full border-collapse mb-6">
-                                            <thead className="bg-gray-100">
-                                                <tr>
-                                                    <th className="p-2 text-center hidden md:table-cell">No.</th>
-                                                    <th className="p-2 text-left">Description</th>
-                                                    <th className="p-2 text-center">UOM</th>
-                                                    <th className="p-2 text-center">QTY</th>
-                                                    <th className="p-2 text-center"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {(() => {
-                                                    let packageCounter = 0;
-                                                    let addonCounter = 0;
+                                            <hr className="my-4" />
 
-                                                    return orderDetail.latest_quotation.packages.map((quotationPackage: Package, index: number) => {
-                                                        const isAddon = quotationPackage.is_addon;
-                                                        const counter = isAddon ? addonCounter++ : packageCounter++;
-
-                                                        return (
-                                                            <React.Fragment key={index}>
-                                                                <tr className="bg-slate-50 border-b">
-                                                                    <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
-                                                                    <td className="p-2 font-semibold">
-                                                                        <div className="flex flex-col">
-                                                                            {quotationPackage.is_addon && <span className="text-gray-900">ADD-ON OPTIONAL {counter + 1}: </span>}
-                                                                            <span>{quotationPackage.name}</span>
-                                                                            <span className="text-gray-700 text-xs">{quotationPackage.description}</span>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="p-2 text-center"></td>
-                                                                    <td className="p-2 text-center font-semibold">
-                                                                        {quotationPackage.is_addon && !quotationPackage.is_addon_included ?
-                                                                            <i className="ki-filled ki-cross-circle text-danger text-xl"></i>
-                                                                            :
-                                                                            quotationPackage.quantity || 1
-                                                                        }
-                                                                    </td>
-                                                                    <td className="p-2 text-center hidden md:table-cell"></td>
-                                                                </tr>
-                                                                {quotationPackage.products.map((product, prodIndex) => (
-                                                                    (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
-                                                                        <tr key={prodIndex} className="border-b">
-                                                                            <td className="p-2 hidden md:table-cell"></td>
-                                                                            <td className="p-2">
-                                                                                <div className="flex flex-col">
-                                                                                    <span className="text-gray-900">{product.name}</span>
-                                                                                    <span className="text-gray-500 text-xs">
-                                                                                        {product.description
-                                                                                            ? product.description.startsWith('Supply & installation of')
-                                                                                                ? !product.pivot.includeSupply && !product.pivot.includeInstall
-                                                                                                    ? product.description.replace('Supply & installation of', '').trim()
-                                                                                                    : !product.pivot.includeSupply
-                                                                                                        ? `Installation of ${product.description.replace('Supply & installation of', '').trim()}`
-                                                                                                        : !product.pivot.includeInstall
-                                                                                                            ? `Supply of ${product.description.replace('Supply & installation of', '').trim()}`
-                                                                                                            : product.description
-                                                                                                : product.description
-                                                                                            : ''}
-                                                                                    </span>
-                                                                                </div>
-                                                                            </td>
-                                                                            <td className="p-2 text-center text-gray-900">{product.uom}</td>
-                                                                            <td className="p-2 text-center text-gray-900">{product.pivot.included ? product.pivot.quantity : 0}</td>
-                                                                            <td className="p-2 text-center hidden md:table-cell text-gray-900">
-                                                                                {!product.pivot.included && `- ${product.product_excluded_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                            </td>
-                                                                        </tr>
-                                                                    ) : null
-                                                                ))}
-                                                            </React.Fragment>
-                                                        )
-                                                    })
-                                                })()}
-                                            </tbody>
-                                        </table>
-
-                                        {/* Summary */}
-                                        {packageCategories.some(category => category.category !== "undefined") &&
-                                            !orderDetail.f_1 &&
-                                            <div className="card-body p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg shadow-sm mb-4">
-                                                <div className="flex flex-col gap-5">
-                                                    {/* Header */}
-                                                    <div className="flex items-center gap-2">
-                                                        <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                                                        </svg>
-                                                        <span className="text-xl text-purple-600 font-bold">Summary</span>
-                                                    </div>
-
-                                                    {/* Category Summary */}
-                                                    <div className="grid grid-cols-1 gap-4">
+                                            {!orderDetail.f_1 && (
+                                                <div className="p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg">
+                                                    <h3 className="text-lg text-purple-600 font-bold flex items-center gap-2">Summary</h3>
+                                                    <div className="mt-2 space-y-2">
                                                         {packageCategories.map((category, index) => (
-                                                            <div key={index} className="flex justify-between items-center p-4 bg-white rounded-lg shadow-xs hover:shadow-md transition-shadow">
-                                                                <div className="flex items-center gap-3">
-                                                                    <span className="text-sm text-gray-600 font-medium">Total {category.category} Cost</span>
-                                                                </div>
-                                                                <span className="text-sm text-gray-700 font-semibold">
-                                                                    RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                </span>
+                                                            <div key={index} className="flex justify-between p-2 bg-white rounded shadow-sm">
+                                                                <span className="text-sm text-gray-600">Total {category.category}</span>
+                                                                <span className="text-sm text-gray-700 font-semibold whitespace-nowrap">RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        }
-
-                                        {
-                                            selectedQuotation.bonus && (
-                                                <div className="card-body p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg shadow-md mb-4">
-                                                    <div className="flex flex-col gap-4">
-                                                        <div className="flex flex-col">
-                                                            <span className='text-lg text-teal-600 font-bold'>Bonus:</span> {/* Increased font size and boldness */}
-                                                            <ul className='text-sm text-gray-900 font-semibold list-inside pl-2 mt-2'>
-                                                                {selectedQuotation.bonus.description ?
-                                                                    selectedQuotation.bonus.description.split('\n').map((item, index) => (
-                                                                        <li key={index} className="mb-1">
-                                                                            <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">{item}</span>
-                                                                        </li>
-                                                                    ))
-                                                                    :
-                                                                    <li className="mb-1">
-                                                                        <span className="block light:bg-teal-100 dark:bg-teal-500 p-2 rounded-md shadow-sm">No Details</span>
-                                                                    </li>
-                                                                }
-                                                            </ul>
-                                                        </div>
-                                                        <div className="flex flex-col mt-4">
-                                                            <span className='text-sm text-gray-600 font-semibold'>Discount:</span>
-                                                            <span className='text-xl text-teal-600 font-bold'>
-                                                                {`RM ${selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                            </span>
-                                                        </div>
+                                            )}
+                                            {selectedQuotation.bonus && (
+                                                <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
+                                                    <h3 className="text-lg text-teal-600 font-bold">Bonus:</h3>
+                                                    <ul className="text-sm text-gray-900 font-semibold mt-2 space-y-1">
+                                                        {(selectedQuotation.bonus.description?.split('\n') || ['No Details']).map((item, index) => (
+                                                            <li key={index} className="p-2 bg-teal-50 rounded">{item}</li>
+                                                        ))}
+                                                    </ul>
+                                                    <div className="mt-2">
+                                                        <span className="text-sm text-gray-600 font-semibold">Discount:</span>
+                                                        <p className="text-xl text-teal-600 font-bold">RM {selectedQuotation.bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                                     </div>
                                                 </div>
-                                            )
-                                        }
-
-                                        {/* Total Amount section */}
-                                        <div className="card-body p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg shadow-md mb-8">
-                                            <div className="flex flex-col gap-4">
-                                                <div className="flex flex-col">
-                                                    <span className='text-lg text-blue-600 font-bold'>Total Amount:</span> {/* Increased font size and boldness */}
-                                                    <span className='text-xl text-gray-900 font-semibold'>
-                                                        {orderDetail.final_amount > 0
-                                                            ? `RM ${(
-                                                                totalExcludedAddonAmount -
-                                                                (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                                            ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                            : `RM ${(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                    </span>
-                                                    {selectedQuotation.bonus && (
-                                                        <span className='text-gray-900 text-sm'>
-                                                            Original Price: RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </span>
-                                                    )}
-                                                </div>
+                                            )}
+                                            <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
+                                                <h3 className="text-lg text-blue-600 font-bold">Total Amount:</h3>
+                                                <p className="text-xl text-gray-900 font-semibold">
+                                                    RM {((orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </p>
+                                                {selectedQuotation.bonus && (
+                                                    <p className="text-gray-900 text-sm">Original Price: RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                )}
+                                            </div>
+                                            <div className="mt-6 flex flex-col items-center">
+                                                <span className="font-bold text-lg mb-2">Progressive Payment of the Contract Sum</span>
+                                                <table className="table w-full max-w-lg text-sm text-gray-700 font-medium">
+                                                    <thead>
+                                                        <tr>
+                                                            <th className="p-2">Description</th>
+                                                            <th className="p-2 text-center">%</th>
+                                                            <th className="p-2 text-center">Amount (RM)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {orderDetail.is_progressive_payment ? (
+                                                            [
+                                                                { desc: 'Upon Confirmation and before Commencement of Phase 1', percent: 50 },
+                                                                { desc: 'Upon Completion of Phase 1 and before Commencement of Phase 2', percent: 50 },
+                                                            ].map((row, idx) => (
+                                                                <tr key={idx}>
+                                                                    <td className="p-2">{row.desc}</td>
+                                                                    <td className="p-2 text-center">{row.percent}</td>
+                                                                    <td className="p-2 text-center">{((totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                                </tr>
+                                                            ))
+                                                        ) : (
+                                                            <tr>
+                                                                <td className="p-2">Upon Confirmation of Agreement</td>
+                                                                <td className="p-2 text-center">100</td>
+                                                                <td className="p-2 text-center">{(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                            </tr>
+                                                        )}
+                                                        <tr className="font-bold">
+                                                            <td className="p-2">Total:</td>
+                                                            <td className="p-2 text-center">100</td>
+                                                            <td className="p-2 text-center">{(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
+                                    </div>
+                                )}
 
-                                        <div className="flex flex-col mb-8">
-                                            <span className='font-bold text-center'>PROGRESSIVE PAYMENT OF THE CONTRACT SUM</span>
-                                            {orderDetail && orderDetail.is_progressive_payment ? (
-                                                <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Description</th>
-                                                            <th className='text-center'>%</th>
-                                                            <th className='text-center'>Amount (RM)</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>Upon Confirmation and before Commencement of Phase 1</td>
-                                                            <td className='text-center'>50</td>
-                                                            <td className='text-center'>
-                                                                {orderDetail.final_amount > 0
-                                                                    ? `RM ${(
-                                                                        (orderDetail.final_amount -
-                                                                            (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
-                                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
-                                                            <td className='text-center'>50</td>
-                                                            <td className='text-center'>
-                                                                {orderDetail.final_amount > 0
-                                                                    ? `RM ${(
-                                                                        (orderDetail.final_amount -
-                                                                            (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
-                                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                            </td>
-                                                        </tr>
-                                                        <tr className='font-bold'>
-                                                            <td>Total:</td>
-                                                            <td className='text-center'>100</td>
-                                                            <td className='text-center'>
-                                                                {orderDetail.final_amount > 0
-                                                                    ? `RM ${(
-                                                                        orderDetail.final_amount -
-                                                                        (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : `RM ${(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            ) : (
-                                                <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Description</th>
-                                                            <th className='text-center'>%</th>
-                                                            <th className='text-center'>Amount (RM)</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>Upon Confirmation of Agreement</td>
-                                                            <td className='text-center'>100</td>
-                                                            <td className='text-center'>
-                                                                {orderDetail && orderDetail.final_amount > 0
-                                                                    ? `RM ${(
-                                                                        orderDetail.final_amount -
-                                                                        (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : orderDetail
-                                                                        ? `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                        : 'RM 0.00'}
-                                                            </td>
-                                                        </tr>
-                                                        <tr className='font-bold'>
-                                                            <td>Total:</td>
-                                                            <td className='text-center'>100</td>
-                                                            <td className='text-center'>
-                                                                {orderDetail && orderDetail.final_amount > 0
-                                                                    ? `RM ${(
-                                                                        totalExcludedAddonAmount -
-                                                                        (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : orderDetail
-                                                                        ? `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                        : 'RM 0.00'}
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            )}
-                                        </div>
-
-                                        <div className="flex flex-col items-start gap-4">
-                                            <label className="form-label flex items-center gap-2 flex-wrap">
-                                                <input
-                                                    className="checkbox"
-                                                    name="agree_tnc"
-                                                    type="checkbox"
-                                                    value="1"
-                                                    checked={false}
-                                                    readOnly
-                                                />
-                                                <span className="max-w-[80%]">
-                                                    I have read and accept the <a href='#' className='link' onClick={() => setActiveTab('tab_1_2')}>Term and Condition</a>
+                                {/* Checkboxes */}
+                                {orderDetail.status !== 'confirmed' && (
+                                    <div className="flex flex-col gap-4 mt-6">
+                                        {[
+                                            { name: 'agree_tnc', label: 'Terms and Conditions', checked: agreeTnc, onChange: handleAgreeTncChange, tab: 'tab_1_2' },
+                                            { name: 'agree_reno_agreement', label: 'Reno Agreement', checked: agreeRenoAgreement, onChange: handleAgreeRenoAgreementChange, tab: 'tab_1_3' },
+                                        ].map(({ name, label, checked, onChange, tab }) => (
+                                            <label key={name} className="flex items-center gap-2">
+                                                <input type="checkbox" className="checkbox" name={name} checked={checked || orderDetail.status === 'confirmed'} onChange={onChange} disabled={orderDetail.status === 'confirmed'} />
+                                                <span className="text-sm">
+                                                    I have read and accept the{' '}
+                                                    <a href="#" className="text-blue-500 hover:underline" onClick={() => setActiveTab(tab)}>
+                                                        {label}
+                                                    </a>
                                                 </span>
                                             </label>
-                                            <label className="form-label flex items-center gap-2 flex-wrap">
-                                                <input
-                                                    className="checkbox"
-                                                    name="agree_reno_agreement"
-                                                    type="checkbox"
-                                                    value="1"
-                                                    checked={false}
-                                                    readOnly
-                                                />
-                                                <span className="max-w-[80%]">I acknowledge I have agreed with the <a href='#' className='link' onClick={() => setActiveTab('tab_1_3')}>Reno Agreement</a></span>
-                                            </label>
-                                        </div>
-                                    </>
-                                }
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
-                        <div className={activeTab === 'tab_1_4' ? '' : 'hidden'} id="tab_1_4">
-                            {orderDetail.status === 'confirmed' ?
-                                <>
-                                    <table className="w-full border-collapse mb-8">
-                                        <thead className="bg-gray-100">
-                                            <tr>
-                                                <th className="p-2 text-sm text-center hidden md:table-cell">No.</th>
-                                                <th className="p-2 text-sm text-left">Description</th>
-                                                <th className="p-2 text-center">UOM</th>
-                                                <th className="p-2 text-center">QTY</th>
-                                                <th className="p-2 text-center"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {orderDetail.latest_quotation.packages.map((quotationPackage: Package, index: number) => (
-                                                <React.Fragment key={index}>
-                                                    <tr className="bg-slate-50 border-b text-2xs">
-                                                        <td className="p-2 text-center hidden md:table-cell">{index + 1}</td>
-                                                        <td className="p-2 font-semibold">
-                                                            <div className="flex flex-col">
-                                                                {quotationPackage.is_addon ?
-                                                                    <span>{`ADD-ON OPTIONAL ${index + 1}: `}</span>
-                                                                    : ''
-                                                                }
-                                                                <span>{quotationPackage.name}</span>
-                                                                <span className='text-gray-700 text-2xs'>{quotationPackage.description}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="p-2 text-center"></td>
-                                                        <td className="p-2 text-center font-semibold">{quotationPackage.quantity ? quotationPackage.quantity : 1}</td>
-                                                        <td className="p-2 text-center"></td>
-                                                    </tr>
-                                                    {quotationPackage.products.map((product: Product, prodIndex: number) => (
-                                                        // Check if product.pivot.visibility is true
-                                                        (product.pivot.includeSupply || product.pivot.includeInstall) && product.pivot.visibility ? (
-                                                            <tr key={prodIndex} className="border-b text-2xs">
-                                                                <td className="p-2 hidden md:table-cell"></td>
-                                                                <td className="p-2 flex flex-col">
-                                                                    <span className='text-gray-900'>{product.name}</span>
-                                                                    <span className='text-gray-500 text-2xs'>
-                                                                        {(!product.description || product.description === "")
-                                                                            ? ""
-                                                                            : getProductDescription(product)
-                                                                        }
-                                                                    </span>
-                                                                </td>
-                                                                <td className="p-2 text-center">
-                                                                    {product.uom}
-                                                                </td>
-                                                                <td className="p-2 text-center">
-                                                                    {!product.pivot.included
-                                                                        ? 0
-                                                                        : product.pivot.quantity}
-                                                                </td>
-                                                                <td className="p-2 text-center hidden md:table-cell"></td>
-                                                            </tr>
-                                                        ) : (
-                                                            ""
-                                                        )
-                                                    ))}
-                                                </React.Fragment>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                        <div className={activeTab === 'tab_1_4' ? 'block' : 'hidden'} id="tab_1_4">
+                            {orderDetail.status === 'confirmed' ? (
+                                <div className="flex flex-col gap-4">
+                                    {orderDetail.latest_quotation.packages.map((quotationPackage, index) => {
+                                        const isAddon = quotationPackage.is_addon;
+                                        const counter = isAddon ? index + 1 : index + 1; // Simplified counter logic
+                                        const accordionId = `content_${index}`;
+                                        const isOpen = openAccordions[accordionId] !== false;
 
-                                    <div className="flex flex-col mb-8">
-                                        <span className='font-bold text-center'>PROGRESSIVE PAYMENT OF THE CONTRACT SUM</span>
-                                        {orderDetail && orderDetail.is_progressive_payment ? (
-                                            <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
+                                        return (
+                                            <div className={`accordion-item border rounded-xl w-full shadow-sm ${isAddon ? 'bg-blue-50 border-blue-300' : ''}`} key={index}>
+                                                <button
+                                                    className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl hover:bg-gray-50 transition duration-200 focus:outline-none"
+                                                    onClick={() => toggleAccordion(`content_${index}`)}
+                                                >
+                                                    <div className="flex items-center flex-grow text-left w-full">
+                                                        <div className="flex flex-col w-full">
+                                                            {quotationPackage.is_addon ? (
+                                                                <>
+                                                                    <div className="flex justify-between">
+                                                                        <span className="font-medium text-gray-700 text-xs">
+                                                                            Add-on Option {counter + 1}:
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className="text-base font-semibold text-gray-900">{quotationPackage.name}</span>
+                                                                </>
+                                                            ) :
+                                                                <div className="flex justify-between">
+                                                                    <span className="text-base font-semibold text-gray-900">{quotationPackage.name}</span>
+                                                                </div>
+                                                            }
+                                                            <span className="text-gray-500 mt-1 max-w-md">{quotationPackage.description}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center space-x-4">
+                                                        {quotationPackage.is_addon ? (
+                                                            <div className="flex flex-col gap-2">
+                                                                <label className="switch switch-lg">
+                                                                    <input
+                                                                        className="checkbox"
+                                                                        type="checkbox"
+                                                                        checked={!!quotationPackage.is_addon_included}
+                                                                        readOnly
+                                                                    />
+                                                                </label>
+                                                                <div className="inline-block">
+                                                                    <span className={`badge ${isAddon ? 'bg-white border-blue-300' : ''}`}>
+                                                                        x{quotationPackage.quantity}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                            :
+                                                            <div className="inline-block">
+                                                                <span className="badge">
+                                                                    x{quotationPackage.quantity}
+                                                                </span>
+                                                            </div>
+                                                        }
+                                                        <i
+                                                            className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300`}
+                                                        ></i>
+                                                    </div>
+                                                </button>
+                                                <div
+                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[9999px]' : 'max-h-0'
+                                                        }`}
+                                                >
+                                                    <div className="p-4">
+                                                        <h2 className="text-sm font-semibold text-gray-800 mb-3">Products</h2>
+                                                        <table className="w-full text-2xs text-left border-collapse">
+                                                            <thead>
+                                                                <tr className={`border-b ${isAddon ? 'bg-white border-blue-300' : 'bg-gray-100'}`}>
+                                                                    <th className="p-3 font-medium text-gray-700">S.o.W</th>
+                                                                    <th className="p-3 font-medium text-gray-700">Product</th>
+                                                                    <th className="p-3 font-medium text-gray-700">Quantity</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {quotationPackage.products.map((product, idx) => {
+                                                                    const isSupplyAndInstall = product.pivot.includeSupply || product.pivot.includeInstall
+
+                                                                    if (isSupplyAndInstall) {
+                                                                        return (
+                                                                            <tr key={idx} className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''}`}>
+                                                                                <td className='py-3 px-2 text-gray-700 text-left'>
+                                                                                    {product.pivot.includeSupply && product.pivot.includeInstall ? 'Supply & InstallI' : product.pivot.includeSupply ? 'Supply' : 'Install'}
+                                                                                </td>
+                                                                                <td className="p-3">
+                                                                                    <div className="flex flex-col">
+                                                                                        <span className="font-medium text-gray-900">{product.name}</span>
+                                                                                        <span className="text-gray-600 text-xs mt-1">{product.description || '-'}</span>
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td className="p-3 text-gray-700">
+                                                                                    {product.pivot.quantity} {product.uom}
+                                                                                    {product.pivot.quantity > 1 ? 's' : ''}
+                                                                                </td>
+                                                                            </tr>
+                                                                        )
+                                                                    }
+                                                                })}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    <div className="flex flex-col items-center">
+                                        <span className="font-bold text-lg mb-2">Progressive Payment of the Contract Sum</span>
+                                        <div className="overflow-x-auto w-full max-w-lg">
+                                            <table className="table w-full text-sm text-gray-700 font-medium">
                                                 <thead>
                                                     <tr>
-                                                        <th>Description</th>
-                                                        <th className='text-center'>%</th>
-                                                        <th className='text-center'>Amount (RM)</th>
+                                                        <th className="p-2">Description</th>
+                                                        <th className="p-2 text-center">%</th>
+                                                        <th className="p-2 text-center">Amount (RM)</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr>
-                                                        <td>Upon Confirmation and before Commencement of Phase 1</td>
-                                                        <td className='text-center'>50</td>
-                                                        <td className='text-center'>
+                                                    {orderDetail.is_progressive_payment ? (
+                                                        <>
+                                                            <tr>
+                                                                <td className="p-2">Upon Confirmation and before Commencement of Phase 1</td>
+                                                                <td className="p-2 text-center">50</td>
+                                                                <td className="p-2 text-center">
+                                                                    {orderDetail.final_amount > 0
+                                                                        ? (
+                                                                            (orderDetail.final_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
+                                                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                        : ((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(
+                                                                            undefined,
+                                                                            { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                                                                        )}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className="p-2">Upon Completion of Phase 1 and before Commencement of Phase 2</td>
+                                                                <td className="p-2 text-center">50</td>
+                                                                <td className="p-2 text-center">
+                                                                    {orderDetail.final_amount > 0
+                                                                        ? (
+                                                                            (orderDetail.final_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
+                                                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                        : ((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(
+                                                                            undefined,
+                                                                            { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                                                                        )}
+                                                                </td>
+                                                            </tr>
+                                                        </>
+                                                    ) : (
+                                                        <tr>
+                                                            <td className="p-2">Upon Confirmation of Agreement</td>
+                                                            <td className="p-2 text-center">100</td>
+                                                            <td className="p-2 text-center">
+                                                                {orderDetail.final_amount > 0
+                                                                    ? (
+                                                                        orderDetail.final_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
+                                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                    : (totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                    <tr className="font-bold">
+                                                        <td className="p-2">Total:</td>
+                                                        <td className="p-2 text-center">100</td>
+                                                        <td className="p-2 text-center">
                                                             {orderDetail.final_amount > 0
-                                                                ? `RM ${(
-                                                                    (orderDetail.final_amount -
-                                                                        (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
-                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
-                                                        <td className='text-center'>50</td>
-                                                        <td className='text-center'>
-                                                            {orderDetail.final_amount > 0
-                                                                ? `RM ${(
-                                                                    (orderDetail.final_amount -
-                                                                        (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) / 2
-                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${((totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                        </td>
-                                                    </tr>
-                                                    <tr className='font-bold'>
-                                                        <td>Total:</td>
-                                                        <td className='text-center'>100</td>
-                                                        <td className='text-center'>
-                                                            {orderDetail.final_amount > 0
-                                                                ? `RM ${(
-                                                                    orderDetail.final_amount -
-                                                                    (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : `RM ${(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                ? (
+                                                                    orderDetail.final_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
+                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                : (totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value || 0)).toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}
                                                         </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
-                                        ) : (
-                                            <table className='table align-middle text-gray-700 font-medium text-sm max-w-lg'>
-                                                <thead>
-                                                    <tr>
-                                                        <th>Description</th>
-                                                        <th className='text-center'>%</th>
-                                                        <th className='text-center'>Amount (RM)</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Upon Confirmation of Agreement</td>
-                                                        <td className='text-center'>100</td>
-                                                        <td className='text-center'>
-                                                            {orderDetail && orderDetail.final_amount > 0
-                                                                ? `RM ${(
-                                                                    orderDetail.final_amount -
-                                                                    (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : orderDetail
-                                                                    ? `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : 'RM 0.00'}
-                                                        </td>
-                                                    </tr>
-                                                    <tr className='font-bold'>
-                                                        <td>Total:</td>
-                                                        <td className='text-center'>100</td>
-                                                        <td className='text-center'>
-                                                            {orderDetail && orderDetail.final_amount > 0
-                                                                ? `RM ${(
-                                                                    orderDetail.final_amount -
-                                                                    (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)
-                                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                : orderDetail
-                                                                    ? `RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                    : 'RM 0.00'}
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        )}
+                                        </div>
                                     </div>
-                                </>
-                                :
-                                ''
-                            }
+                                </div>
+                            ) : null}
                         </div>
                         <div className={activeTab === 'tab_1_2' ? '' : 'hidden'} id="tab_1_2">
                             {tnc}
