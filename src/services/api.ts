@@ -1574,6 +1574,18 @@ export const removeTaskDocument = async (renoProgressId: number, taskId: number,
     }
 };
 
+export const removeExternalTaskDocument = async (renoProgressId: number, taskId: number, documentIndex: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/task/${taskId}/documents/external/${documentIndex}/remove`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};
+
 
 export const renoProgressIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
     try {

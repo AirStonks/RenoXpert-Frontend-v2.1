@@ -321,11 +321,11 @@ function CreatePackage() {
                             </div>
 
                             <div className="flex flex-col gap-2 mb-8">
-                                <label className="text-sm font-medium text-gray-900">Package Type</label>
+                                <label className="text-sm font-medium text-gray-900">Add-On Package</label>
                                 <span className="text-xs text-gray-600 tracking-wide mb-2">
-                                    Package Type impacts Quotation Order availability: Fixed types can't be toggled during creation/editing, while Add-on types can.
+                                    Add-On Package impacts Quotation Order availability: Add-On Package can be toggled during creation/editing.
                                 </span>
-                                <label className="switch switch-lg">
+                                <div className="flex gap-2 items-center">
                                     <input
                                         className="checkbox"
                                         name="is_ready"
@@ -334,9 +334,9 @@ function CreatePackage() {
                                         onChange={toggleIsAddon}
                                     />
                                     <span className="switch-label">
-                                        {formData.is_addon ? "Add-on" : "Fixed"}
+                                        Enable Add-on Package
                                     </span>
-                                </label>
+                                </div>
                             </div>
                         </div>
                     </div>
