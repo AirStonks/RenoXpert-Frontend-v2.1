@@ -220,7 +220,7 @@ function OwnerHome() {
                                             </div>
                                         </div>
                                         <div className="status">
-                                            <span className={`badge badge-pill badge-outline gap-1 items-center ${order.status === 'confirmed' ? 'badge-success' : ''}`}>
+                                            <span className={`badge badge-pill badge-outline gap-1 items-center ${order.status === 'confirmed' ? 'badge-success' : ''} ${order.status === 'voided' ? 'badge-danger' : ''}`}>
                                                 {(order.status === 'confirmed' ? 'sale' : order.status).charAt(0).toUpperCase() + (order.status === 'confirmed' ? 'sale' : order.status).slice(1)}
                                             </span>
                                         </div>
