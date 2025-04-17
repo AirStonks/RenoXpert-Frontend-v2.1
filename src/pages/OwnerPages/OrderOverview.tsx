@@ -1171,7 +1171,7 @@ function OrderOverview() {
                                                 <h3 className="text-md text-indigo-600 font-bold mb-3 flex items-center gap-2">
                                                     Progressive Payment of the Contract Sum
                                                 </h3>
-                                                <div className="w-full max-w-lg bg-white rounded-lg shadow-sm border border-gray-200">
+                                                <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
                                                     <table className="w-full text-xs text-gray-700 font-medium border-collapse">
                                                         <thead>
                                                             <tr className="bg-gray-50 border-b border-gray-200">

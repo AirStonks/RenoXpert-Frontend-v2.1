@@ -140,21 +140,21 @@ const QuotationOrderPDF = ({ orderDetail }) => {
     const QUOTATION_DATE = orderDetail.status === 'confirmed' ? formatDate(orderDetail.updated_at) : getCurrentDate();
 
 
-    const ATTN_NAME = orderDetail.user.name;
-    const ATTN_ADDRESS = `${orderDetail.user.address.address_1}, ${orderDetail.user.address.address_2}, ${orderDetail.user.address.city}, ${orderDetail.user.address.state}, ${orderDetail.user.address.postcode}`;
-    const ATTN_MOBILE = `+${orderDetail.user.country_code} ${orderDetail.user.phone_no}`;
-    const ATTN_EMAIL = orderDetail.user.email;
+    const ATTN_NAME = orderDetail.user ? orderDetail.user.name : "N/A";
+    const ATTN_ADDRESS = orderDetail.user ? `${orderDetail.user.address.address_1}, ${orderDetail.user.address.address_2}, ${orderDetail.user.address.city}, ${orderDetail.user.address.state}, ${orderDetail.user.address.postcode}` : "N/A";
+    const ATTN_MOBILE = orderDetail.user ? `+${orderDetail.user.country_code} ${orderDetail.user.phone_no}` : "N/A";
+    const ATTN_EMAIL = orderDetail.user ? orderDetail.user.email : "N/A";
 
-    const RENO_PROPERTY_NAME = orderDetail.property.name;
-    const RENO_UNIT_NO = `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}`
+    const RENO_PROPERTY_NAME = orderDetail.property ? orderDetail.property.name : "N/A";
+    const RENO_UNIT_NO = orderDetail.property ? `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}` : "N/A";
     const RENO_UNIT_TYPE = orderDetail.unit_type || "N/A";
-    const RENO_PROPERTY_ADDRESS = [
+    const RENO_PROPERTY_ADDRESS = orderDetail.property ? [
         orderDetail.property.address,
         orderDetail.property.street,
         orderDetail.property.postcode,
         orderDetail.property.city,
         orderDetail.property.state,
-    ].filter(Boolean).join(', ') || "N/A";
+    ].filter(Boolean).join(', ') || "N/A" : "N/A";
 
     // Calculate totals based on package unitPrice and qty
     const totalItems = orderDetail.latest_quotation.packages.reduce((sum, item) => sum + item.quantity, 0);
