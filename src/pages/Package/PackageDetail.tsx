@@ -303,10 +303,10 @@ function PackageDetail() {
                                     </tr>
                                     <tr>
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Package Type:
+                                            Add-on Package:
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
-                                            {packageDetail.is_addon ? 'Add-on' : 'Fixed'}
+                                            {packageDetail.is_addon ? 'Yes' : 'No'}
                                         </td>
                                     </tr>
                                 </tbody>
