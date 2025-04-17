@@ -1087,7 +1087,7 @@ function OrderDetail() {
                                                     Property Name:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.property.name}
+                                                    {orderDetail.property ? orderDetail.property.name : 'N/A'}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1737,7 +1737,7 @@ function OrderDetail() {
                                             <div className="p-4">
                                                 <div className="grid grid-cols-2 gap-4">
                                                     {[
-                                                        { label: 'Name', value: orderDetail.property.name },
+                                                        { label: 'Name', value: orderDetail.property ? orderDetail.property.name : 'N/A' },
                                                         {
                                                             label: 'Unit',
                                                             value: `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}`,
@@ -2128,7 +2128,7 @@ function OrderDetail() {
                                                 <h3 className="text-md text-indigo-600 font-bold mb-3 flex items-center gap-2">
                                                     Progressive Payment of the Contract Sum
                                                 </h3>
-                                                <div className="w-full max-w-lg bg-white rounded-lg shadow-sm border border-gray-200">
+                                                <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
                                                     <table className="w-full text-xs text-gray-700 font-medium border-collapse">
                                                         <thead>
                                                             <tr className="bg-gray-50 border-b border-gray-200">
