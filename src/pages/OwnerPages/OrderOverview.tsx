@@ -49,15 +49,7 @@ function OrderOverview() {
 
 
     const [activeTab, setActiveTab] = useState('tab_1_1');
-    const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>(() => {
-        const initialState: { [key: string]: boolean } = {};
-        if (orderDetail) {
-            JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).forEach((_, index) => {
-                initialState[`content_${index}`] = true;
-            });
-        }
-        return initialState;
-    });
+    const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({});
 
     const [agreeTnc, setAgreeTnc] = useState(false);
     const [agreeRenoAgreement, setAgreeRenoAgreement] = useState(false);
@@ -170,6 +162,25 @@ function OrderOverview() {
             setTotalExcludedAddonAmount(totalAmount);
         }
     }, [orderDetail])
+
+    useEffect(() => {
+        if (orderDetail) {
+            setOpenAccordions(() => {
+                const initialState: { [key: string]: boolean } = {};
+                if (orderDetail) {
+                    JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).forEach((_, index) => {
+                        initialState[`content_${index}`] = false;
+                    });
+                }
+                return initialState;
+            });
+
+            setOpenAccordions((prev) => ({
+                ...prev,
+                property: false
+            }));
+        }
+    }, [orderDetail]); // Empty dependency array to run only once on mount
 
     const getCurrentDate = () => {
         const date = new Date();
@@ -508,18 +519,18 @@ function OrderOverview() {
                         <div className="flex gap-4 justify-center">
                             <Link
                                 to={'/owner/home'}
-                                className="ki-solid ki-arrow-left items-center text-gray-900">
-                            </Link>
-                            {orderDetail.status === 'confirmed' ?
-                                <span className="text-lg text-gray-900 font-semibold">Quotation Order Overview</span>
-                                :
-                                <span className="text-lg text-gray-900 font-semibold">Quotation Order Agreement</span>
-                            }
-
+                                className="ki-solid ki-arrow-left items-center text-gray-900"
+                            ></Link>
+                            {orderDetail.status === 'confirmed' ? (
+                                <span className="text-md text-gray-900 font-semibold">
+                                    Quotation Order Overview
+                                </span>
+                            ) : (
+                                <span className="text-md text-gray-900 font-semibold">
+                                    Quotation Order Agreement
+                                </span>
+                            )}
                         </div>
-                        {/* <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
-                        <i className="ki-filled ki-printer"></i>
-                    </button> */}
                     </div>
 
                     {/* Body */}
@@ -530,22 +541,18 @@ function OrderOverview() {
                                 className={`tab ${activeTab === 'tab_1_1' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('tab_1_1')}
                             >
-                                {orderDetail.status === 'confirmed' ?
-                                    'Overview'
-                                    :
-                                    'Quotation Order'
-                                }
+                                {orderDetail.status === 'confirmed' ? 'Overview' : 'Quotation Order'}
                             </button>
-                            {orderDetail.status === 'confirmed' ?
+                            {orderDetail.status === 'confirmed' ? (
                                 <button
                                     className={`tab ${activeTab === 'tab_1_4' ? 'active' : ''}`}
                                     onClick={() => setActiveTab('tab_1_4')}
                                 >
                                     Quotation Order
                                 </button>
-                                :
+                            ) : (
                                 ''
-                            }
+                            )}
                             <button
                                 className={`tab ${activeTab === 'tab_1_2' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('tab_1_2')}
@@ -567,23 +574,44 @@ function OrderOverview() {
                                 {orderDetail.status === 'confirmed' && (
                                     <div className="flex flex-col mb-6">
                                         <div className="flex flex-col sm:flex-row justify-between items-center mb-2">
-                                            <span className="text-lg text-gray-900 font-semibold">
-                                                {(100 - orderDetail.sale.remaining_percentage * 100).toFixed(2)}% Invoice Issued
+                                            <span className="text-md text-gray-900 font-semibold">
+                                                {(100 - orderDetail.sale.remaining_percentage * 100).toFixed(2)}%
+                                                Invoice Issued
                                             </span>
-                                            <div className="badge badge-success badge-outline text-md mt-2 sm:mt-0">
-                                                {(orderDetail.sale.invoices.reduce((sum, invoice) => invoice.status === 'paid' ? sum + invoice.percentage : sum, 0) * 100).toFixed(2)}% Paid
+                                            <div className="badge badge-success badge-outline text-sm mt-2 sm:mt-0">
+                                                {(orderDetail.sale.invoices.reduce(
+                                                    (sum, invoice) =>
+                                                        invoice.status === 'paid' ? sum + invoice.percentage : sum,
+                                                    0
+                                                ) * 100).toFixed(2)}
+                                                % Paid
                                             </div>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-3 relative overflow-hidden">
-                                            <div className="absolute top-0 left-0 h-full bg-blue-200" style={{ width: `${100 - orderDetail.sale.remaining_percentage * 100}%` }} />
-                                            <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${orderDetail.sale.invoices.reduce((sum, invoice) => invoice.status === 'paid' ? sum + invoice.percentage : sum, 0) * 100}%` }} />
+                                            <div
+                                                className="absolute top-0 left-0 h-full bg-blue-200"
+                                                style={{ width: `${100 - orderDetail.sale.remaining_percentage * 100}%` }}
+                                            />
+                                            <div
+                                                className="absolute top-0 left-0 h-full bg-green-500"
+                                                style={{
+                                                    width: `${orderDetail.sale.invoices.reduce(
+                                                        (sum, invoice) =>
+                                                            invoice.status === 'paid' ? sum + invoice.percentage : sum,
+                                                        0
+                                                    ) * 100
+                                                        }%`,
+                                                }}
+                                            />
                                         </div>
                                         <div className="flex gap-2 mt-2">
                                             <span className="badge badge-outline bg-blue-50 border-blue-200 text-blue-300 flex items-center gap-1">
-                                                <span className="badge badge-dot size-1.5 bg-blue-300"></span> Issued
+                                                <span className="badge badge-dot size-1.5 bg-blue-300"></span>{' '}
+                                                Issued
                                             </span>
                                             <span className="badge badge-outline badge-success flex items-center gap-1">
-                                                <span className="badge badge-dot size-1.5 bg-green-500"></span> Paid
+                                                <span className="badge badge-dot size-1.5 bg-green-500"></span>{' '}
+                                                Paid
                                             </span>
                                         </div>
                                     </div>
@@ -593,27 +621,52 @@ function OrderOverview() {
                                     {/* Quotation Detail */}
                                     <div className="card flex-1 bg-white shadow-sm rounded-lg">
                                         <div className="card-header p-4 flex justify-between items-center">
-                                            <h2 className="card-title text-lg font-semibold">Quotation Order Detail</h2>
-                                            <span className={`badge badge-sm p-2 capitalize badge-outline ${orderDetail.status === 'confirmed' ? 'badge-success' : orderDetail.status === 'revoked' ? 'badge-danger' : ''}`}>
-                                                {orderDetail.status === 'confirmed' ? 'Sale' : orderDetail.status}
+                                            <h2 className="card-title text-md font-semibold">
+                                                Quotation Order Detail
+                                            </h2>
+                                            <span
+                                                className={`badge badge-sm p-2 capitalize badge-outline ${orderDetail.status === 'confirmed'
+                                                    ? 'badge-success'
+                                                    : orderDetail.status === 'voided'
+                                                        ? 'badge-danger'
+                                                        : ''
+                                                    }`}
+                                            >
+                                                {orderDetail.status === 'confirmed'
+                                                    ? 'Sale'
+                                                    : orderDetail.status}
                                             </span>
                                         </div>
                                         <div className="card-body p-4">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <span className="text-xs text-gray-600">QUO Number:</span>
-                                                    <p className="text-sm text-gray-900 font-semibold">{orderDetail.order_no}</p>
+                                                    <span className="text-2xs text-gray-600">QUO Number:</span>
+                                                    <p className="text-xs text-gray-900 font-semibold">
+                                                        {orderDetail.order_no}
+                                                    </p>
                                                 </div>
                                                 <div>
-                                                    <span className="text-xs text-gray-600">Date Created:</span>
-                                                    <p className="text-sm text-gray-900 font-semibold">{formatDate(orderDetail.created_at)}</p>
+                                                    <span className="text-2xs text-gray-600">Date Created:</span>
+                                                    <p className="text-xs text-gray-900 font-semibold">
+                                                        {formatDate(orderDetail.created_at)}
+                                                    </p>
                                                 </div>
                                             </div>
                                             {orderDetail.status !== 'confirmed' && (
                                                 <div className="grid grid-cols-1 gap-4 mt-2">
                                                     <div>
-                                                        <span className="text-md text-gray-600">Total Amount:</span>
-                                                        <p className="text-lg text-gray-900 font-bold"> RM {((orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) - (bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                        <span className="text-sm text-gray-600">Total Amount:</span>
+                                                        <p className="text-md text-gray-900 font-bold">
+                                                            RM{' '}
+                                                            {(
+                                                                (orderDetail.final_amount > 0
+                                                                    ? orderDetail.final_amount
+                                                                    : totalExcludedAddonAmount) - (bonus?.value || 0)
+                                                            ).toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             )}
@@ -621,12 +674,25 @@ function OrderOverview() {
                                                 <>
                                                     {!orderDetail.f_1 && (
                                                         <div className="mt-4 p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg">
-                                                            <h3 className="text-lg text-purple-600 font-bold flex items-center gap-2">Summary</h3>
+                                                            <h3 className="text-md text-purple-600 font-bold flex items-center gap-2">
+                                                                Summary
+                                                            </h3>
                                                             <div className="mt-2 space-y-2">
                                                                 {packageCategories.map((category, index) => (
-                                                                    <div key={index} className="flex justify-between p-2 bg-white rounded shadow-sm">
-                                                                        <span className="text-sm text-gray-600">Total {category.category}</span>
-                                                                        <span className="text-sm text-gray-700 font-semibold whitespace-nowrap">RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                                    <div
+                                                                        key={index}
+                                                                        className="flex justify-between p-2 bg-white rounded shadow-sm"
+                                                                    >
+                                                                        <span className="text-xs text-gray-600">
+                                                                            Total {category.category}
+                                                                        </span>
+                                                                        <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                                            RM{' '}
+                                                                            {category.total_price.toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
+                                                                        </span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -634,26 +700,55 @@ function OrderOverview() {
                                                     )}
                                                     {bonus && (
                                                         <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
-                                                            <h3 className="text-lg text-teal-600 font-bold">Bonus:</h3>
-                                                            <ul className="text-sm text-gray-900 font-semibold mt-2 space-y-1">
-                                                                {(bonus.description?.split('\n') || ['No Details']).map((item, index) => (
-                                                                    <li key={index} className="p-2 bg-teal-50 rounded">{item}</li>
-                                                                ))}
+                                                            <h3 className="text-md text-teal-600 font-bold">Bonus:</h3>
+                                                            <ul className="text-xs text-gray-900 font-semibold mt-2 space-y-1">
+                                                                {(bonus.description?.split('\n') || ['No Details']).map(
+                                                                    (item, index) => (
+                                                                        <li
+                                                                            key={index}
+                                                                            className="p-2 bg-teal-50 rounded"
+                                                                        >
+                                                                            {item}
+                                                                        </li>
+                                                                    )
+                                                                )}
                                                             </ul>
                                                             <div className="mt-2">
-                                                                <span className="text-sm text-gray-600 font-semibold">Discount:</span>
-                                                                <p className="text-xl text-teal-600 font-bold">RM {bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                                <span className="text-xs text-gray-600 font-semibold">
+                                                                    Discount:
+                                                                </span>
+                                                                <p className="text-md text-teal-600 font-bold">
+                                                                    RM{' '}
+                                                                    {bonus.value.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     )}
                                                     <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
-                                                        <h3 className="text-lg text-blue-600 font-bold">Total Amount:</h3>
-                                                        <p className="text-xl text-gray-900 font-semibold">
-                                                            RM {((orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) - (bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        <h3 className="text-md text-blue-600 font-bold">
+                                                            Total Amount:
+                                                        </h3>
+                                                        <p className="text-md text-gray-900 font-semibold">
+                                                            RM{' '}
+                                                            {(
+                                                                (orderDetail.final_amount > 0
+                                                                    ? orderDetail.final_amount
+                                                                    : totalExcludedAddonAmount) - (bonus?.value || 0)
+                                                            ).toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
                                                         </p>
                                                         {bonus && (
-                                                            <p className="text-gray-900 text-sm">
-                                                                Original Price: RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            <p className="text-xs text-gray-900">
+                                                                Original Price: RM{' '}
+                                                                {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}
                                                             </p>
                                                         )}
                                                     </div>
@@ -665,30 +760,56 @@ function OrderOverview() {
                                     {/* Property */}
                                     <div className="accordion-item flex-1 border rounded-xl shadow-sm">
                                         <button
-                                            className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl md:cursor-default md:hover:bg-transparent transition duration-200 focus:outline-none"
+                                            className="flex items-center justify-between gap-4 w-full text-2xs p-4 rounded-xl md:cursor-default md:hover:bg-transparent transition duration-200 focus:outline-none"
                                             onClick={() => window.innerWidth < 768 && toggleAccordion('property')}
                                         >
-                                            <h2 className="text-lg font-semibold">Property</h2>
-                                            <i className={`ki-outline ${openAccordions['property'] !== false ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300 md:hidden`}></i>
+                                            <h2 className="text-md font-semibold">Property</h2>
+                                            <i
+                                                className={`ki-outline ${openAccordions['property'] !== false ? 'ki-down' : 'ki-right'
+                                                    } text-gray-600 text-xs transition-transform duration-300 md:hidden`}
+                                            ></i>
                                         </button>
-                                        <div className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${openAccordions['property'] !== false ? 'max-h-screen' : 'max-h-0 md:max-h-screen'}`}>
+                                        <div
+                                            className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${openAccordions['property'] !== false
+                                                ? 'max-h-screen'
+                                                : 'max-h-0 md:max-h-screen'
+                                                }`}
+                                        >
                                             <div className="p-4">
                                                 <div className="grid grid-cols-2 gap-4">
                                                     {[
                                                         { label: 'Name', value: orderDetail.property.name },
-                                                        { label: 'Unit', value: `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}` },
+                                                        {
+                                                            label: 'Unit',
+                                                            value: `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}`,
+                                                        },
                                                         { label: 'Unit Type', value: orderDetail.unit_type || '-' },
-                                                        { label: 'Partition', value: orderDetail.include_partition ? 'Yes' : 'No' },
+                                                        {
+                                                            label: 'Partition',
+                                                            value: orderDetail.include_partition ? 'Yes' : 'No',
+                                                        },
                                                     ].map(({ label, value }) => (
                                                         <div key={label}>
-                                                            <span className="text-sm text-gray-600">{label}:</span>
-                                                            <p className="text-sm text-gray-900 font-semibold">{value}</p>
+                                                            <span className="text-xs text-gray-600">{label}:</span>
+                                                            <p className="text-xs text-gray-900 font-semibold">
+                                                                {value}
+                                                            </p>
                                                         </div>
                                                     ))}
                                                 </div>
                                                 <div className="mt-4">
-                                                    <span className="text-sm text-gray-600">Address:</span>
-                                                    <p className="text-sm text-gray-900">{[orderDetail.property.address, orderDetail.property.street, orderDetail.property.postcode, orderDetail.property.city, orderDetail.property.state].filter(Boolean).join(', ')}</p>
+                                                    <span className="text-xs text-gray-600">Address:</span>
+                                                    <p className="text-xs text-gray-900">
+                                                        {[
+                                                            orderDetail.property.address,
+                                                            orderDetail.property.street,
+                                                            orderDetail.property.postcode,
+                                                            orderDetail.property.city,
+                                                            orderDetail.property.state,
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(', ')}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -700,37 +821,78 @@ function OrderOverview() {
                                 {/* Payment Invoices */}
                                 {orderDetail.status === 'confirmed' && (
                                     <div className="mb-6">
-                                        <h2 className="text-lg text-gray-900 font-semibold mb-4">Payment Invoices</h2>
+                                        <h2 className="text-md text-gray-900 font-semibold mb-4">
+                                            Payment Invoices
+                                        </h2>
                                         {orderDetail.sale.invoices.length === 0 ? (
                                             <div className="flex flex-col items-center">
-                                                <img alt="No invoices" className="max-h-[160px] mb-4" src={`/public/media/illustrations/3${document.documentElement.classList.contains('dark') ? '-dark' : ''}.svg`} />
-                                                <h3 className="text-xl font-semibold text-gray-900">No Payment Invoices Available</h3>
+                                                <img
+                                                    alt="No invoices"
+                                                    className="max-h-[160px] mb-4"
+                                                    src={`/public/media/illustrations/3${document.documentElement.classList.contains('dark')
+                                                        ? '-dark'
+                                                        : ''
+                                                        }.svg`}
+                                                />
+                                                <h3 className="text-md font-semibold text-gray-900">
+                                                    No Payment Invoices Available
+                                                </h3>
                                             </div>
                                         ) : (
                                             <div className="grid grid-cols-1 gap-4">
                                                 {orderDetail.sale.invoices.map((invoice, index) => (
-                                                    <Link to={`/invoice/${invoice.id}/view`} key={index} className="card bg-white shadow-sm rounded-lg hover:shadow-md transition-shadow">
+                                                    <Link
+                                                        to={`/invoice/${invoice.id}/view`}
+                                                        key={index}
+                                                        className="card bg-white shadow-sm rounded-lg hover:shadow-md transition-shadow"
+                                                    >
                                                         <div className="card-body p-4 flex flex-col">
                                                             <div className="flex items-center gap-4 mb-2">
                                                                 <div className="relative size-12 shrink-0">
-                                                                    <svg className="w-full h-full stroke-blue-500 fill-blue-100" viewBox="0 0 44 48">
+                                                                    <svg
+                                                                        className="w-full h-full stroke-blue-500 fill-blue-100"
+                                                                        viewBox="0 0 44 48"
+                                                                    >
                                                                         <path d="M16 2.4641C19.7128 0.320509 24.2872 0.320508 28 2.4641L37.6506 8.0359C41.3634 10.1795 43.6506 14.141 43.6506 18.4282V29.5718C43.6506 33.859 41.3634 37.8205 37.6506 39.9641L28 45.5359C24.2872 47.6795 19.7128 47.6795 16 45.5359L6.34937 39.9641C2.63655 37.8205 0.349365 33.859 0.349365 29.5718V18.4282C0.349365 14.141 2.63655 10.1795 6.34937 8.0359L16 2.4641Z" />
                                                                     </svg>
                                                                 </div>
                                                                 <div>
-                                                                    <h3 className="text-sm text-gray-900 font-medium">{invoice.invoice_no}</h3>
-                                                                    <span className={`badge badge-outline ${invoice.status === 'paid' ? 'badge-success' : invoice.status === 'overdue' ? 'badge-danger' : ''}`}>
-                                                                        {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                                                                    <h3 className="text-xs text-gray-900 font-medium">
+                                                                        {invoice.invoice_no}
+                                                                    </h3>
+                                                                    <span
+                                                                        className={`badge badge-outline ${invoice.status === 'paid'
+                                                                            ? 'badge-success'
+                                                                            : invoice.status === 'overdue'
+                                                                                ? 'badge-danger'
+                                                                                : ''
+                                                                            }`}
+                                                                    >
+                                                                        {invoice.status.charAt(0).toUpperCase() +
+                                                                            invoice.status.slice(1)}
                                                                     </span>
                                                                 </div>
                                                             </div>
                                                             <div className="mt-2">
-                                                                <span className="text-xs text-gray-600">Amount:</span>
-                                                                <p className="text-sm text-gray-900 font-medium">RM {invoice.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                                <span className="text-2xs text-gray-600">Amount:</span>
+                                                                <p className="text-xs text-gray-900 font-medium">
+                                                                    RM{' '}
+                                                                    {invoice.amount.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                </p>
                                                             </div>
                                                             <div className="mt-2">
-                                                                <span className="text-xs text-gray-600">Due Date:</span>
-                                                                <p className="text-sm text-gray-900 font-medium">{invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A'}</p>
+                                                                <span className="text-2xs text-gray-600">Due Date:</span>
+                                                                <p className="text-xs text-gray-900 font-medium">
+                                                                    {invoice.due_date
+                                                                        ? new Date(invoice.due_date).toLocaleDateString(
+                                                                            'en-GB',
+                                                                            { day: 'numeric', month: 'long', year: 'numeric' }
+                                                                        )
+                                                                        : 'N/A'}
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     </Link>
@@ -746,7 +908,7 @@ function OrderOverview() {
                                         <div className="flex items-center justify-between bg-gray-50 py-3 px-4 rounded-t-lg border-b border-gray-200 mb-6">
                                             <div className="flex items-center gap-3">
                                                 <svg
-                                                    className="w-6 h-6 text-blue-600"
+                                                    className="w-5 h-5 text-blue-600"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
@@ -759,7 +921,7 @@ function OrderOverview() {
                                                         d="M20 12H4m16-4H4m16 8H4m-2-6h20a2 2 0 012 2v6a2 2 0 01-2 2H2a2 2 0 01-2-2v-6a2 2 0 012-2z"
                                                     />
                                                 </svg>
-                                                <h2 className="text-xl sm:text-2xl text-blue-600 font-bold tracking-tight">
+                                                <h2 className="text-lg sm:text-xl text-blue-600 font-bold tracking-tight">
                                                     Packages
                                                 </h2>
                                             </div>
@@ -769,16 +931,22 @@ function OrderOverview() {
                                                 ? (() => {
                                                     let packageCounter = 0;
                                                     let addonCounter = 0;
-                                                    return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((prodPackage, index) => {
+                                                    return JSON.parse(
+                                                        JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))
+                                                    ).map((prodPackage, index) => {
                                                         const isAddon = prodPackage.is_addon;
                                                         const counter = isAddon ? addonCounter++ : packageCounter++;
                                                         const accordionId = `content_${index}`;
                                                         const isOpen = openAccordions[accordionId] !== false;
 
                                                         return (
-                                                            <div className={`accordion-item border rounded-xl w-full shadow-sm ${isAddon ? 'bg-blue-50 border-blue-300' : ''}`} key={index}>
+                                                            <div
+                                                                className={`accordion-item border rounded-xl w-full shadow-sm ${isAddon ? 'bg-blue-50 border-blue-300' : ''
+                                                                    }`}
+                                                                key={index}
+                                                            >
                                                                 <button
-                                                                    className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl hover:bg-gray-50 transition duration-200 focus:outline-none"
+                                                                    className="flex items-center justify-between gap-4 w-full text-2xs p-4 rounded-xl hover:bg-gray-50 transition duration-200 focus:outline-none"
                                                                     onClick={() => toggleAccordion(`content_${index}`)}
                                                                 >
                                                                     <div className="flex items-center flex-grow text-left w-full">
@@ -786,18 +954,24 @@ function OrderOverview() {
                                                                             {prodPackage.is_addon ? (
                                                                                 <>
                                                                                     <div className="flex justify-between">
-                                                                                        <span className="font-medium text-gray-700 text-xs">
+                                                                                        <span className="font-medium text-gray-700 text-2xs">
                                                                                             Add-on Option {counter + 1}:
                                                                                         </span>
                                                                                     </div>
-                                                                                    <span className="text-base font-semibold text-gray-900">{prodPackage.name}</span>
+                                                                                    <span className="text-sm font-semibold text-gray-900">
+                                                                                        {prodPackage.name}
+                                                                                    </span>
                                                                                 </>
-                                                                            ) :
+                                                                            ) : (
                                                                                 <div className="flex justify-between">
-                                                                                    <span className="text-base font-semibold text-gray-900">{prodPackage.name}</span>
+                                                                                    <span className="text-sm font-semibold text-gray-900">
+                                                                                        {prodPackage.name}
+                                                                                    </span>
                                                                                 </div>
-                                                                            }
-                                                                            <span className="text-gray-500 mt-1 max-w-md">{prodPackage.description}</span>
+                                                                            )}
+                                                                            <span className="text-xs text-gray-500 mt-1 max-w-md">
+                                                                                {prodPackage.description}
+                                                                            </span>
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex items-center space-x-4">
@@ -808,26 +982,34 @@ function OrderOverview() {
                                                                                         className="checkbox"
                                                                                         type="checkbox"
                                                                                         checked={!!prodPackage.is_addon_included}
-                                                                                        onChange={() => handleConfirmationAddonPackage(prodPackage, prodPackage.is_addon_included)}
+                                                                                        onChange={() =>
+                                                                                            handleConfirmationAddonPackage(
+                                                                                                prodPackage,
+                                                                                                prodPackage.is_addon_included
+                                                                                            )
+                                                                                        }
                                                                                         onClick={(e) => e.stopPropagation()}
                                                                                     />
                                                                                 </label>
                                                                                 <div className="inline-block">
-                                                                                    <span className={`badge ${isAddon ? 'bg-white border-blue-300' : ''}`}>
+                                                                                    <span
+                                                                                        className={`badge ${isAddon ? 'bg-white border-blue-300' : ''
+                                                                                            }`}
+                                                                                    >
                                                                                         x{prodPackage.quantity}
                                                                                     </span>
                                                                                 </div>
                                                                             </div>
-                                                                        )
-                                                                            :
+                                                                        ) : (
                                                                             <div className="inline-block">
-                                                                                <span className="badge">
+                                                                                <span className="badge bg-white border-blue-300">
                                                                                     x{prodPackage.quantity}
                                                                                 </span>
                                                                             </div>
-                                                                        }
+                                                                        )}
                                                                         <i
-                                                                            className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300`}
+                                                                            className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'
+                                                                                } text-gray-600 text-xs transition-transform duration-300`}
                                                                         ></i>
                                                                     </div>
                                                                 </button>
@@ -836,29 +1018,55 @@ function OrderOverview() {
                                                                         }`}
                                                                 >
                                                                     <div className="p-4">
-                                                                        <h2 className="text-sm font-semibold text-gray-800 mb-3">Products</h2>
-                                                                        <table className="w-full text-2xs text-left border-collapse">
+                                                                        <h2 className="text-xs font-semibold text-gray-800 mb-3">
+                                                                            Products
+                                                                        </h2>
+                                                                        <table className="w-full text-xs text-left border-collapse">
                                                                             <thead>
-                                                                                <tr className={`border-b ${isAddon ? 'bg-white border-blue-300' : 'bg-gray-100'}`}>
-                                                                                    <th className="p-3 font-medium text-gray-700">S.o.W</th>
-                                                                                    <th className="p-3 font-medium text-gray-700">Product</th>
-                                                                                    <th className="p-3 font-medium text-gray-700">Quantity</th>
+                                                                                <tr
+                                                                                    className={`border-b ${isAddon ? 'bg-white border-blue-300' : 'bg-gray-100'
+                                                                                        }`}
+                                                                                >
+                                                                                    <th className="p-3 font-medium text-gray-700">
+                                                                                        S.o.W
+                                                                                    </th>
+                                                                                    <th className="p-3 font-medium text-gray-700">
+                                                                                        Product
+                                                                                    </th>
+                                                                                    <th className="p-3 font-medium text-gray-700">
+                                                                                        Quantity
+                                                                                    </th>
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody>
                                                                                 {prodPackage.products.map((product, idx) => {
-                                                                                    const isSupplyAndInstall = product.pivot.includeSupply || product.pivot.includeInstall
+                                                                                    const isSupplyAndInstall =
+                                                                                        product.pivot.includeSupply ||
+                                                                                        product.pivot.includeInstall;
 
                                                                                     if (isSupplyAndInstall) {
                                                                                         return (
-                                                                                            <tr key={idx} className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''}`}>
-                                                                                                <td className='py-3 px-2 text-gray-700 text-left'>
-                                                                                                    {product.pivot.includeSupply && product.pivot.includeInstall ? 'Supply & InstallI' : product.pivot.includeSupply ? 'Supply' : 'Install'}
+                                                                                            <tr
+                                                                                                key={idx}
+                                                                                                className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''
+                                                                                                    }`}
+                                                                                            >
+                                                                                                <td className="py-3 px-2 text-gray-700 text-left">
+                                                                                                    {product.pivot.includeSupply &&
+                                                                                                        product.pivot.includeInstall
+                                                                                                        ? 'Supply & Install'
+                                                                                                        : product.pivot.includeSupply
+                                                                                                            ? 'Supply'
+                                                                                                            : 'Install'}
                                                                                                 </td>
                                                                                                 <td className="p-3">
                                                                                                     <div className="flex flex-col">
-                                                                                                        <span className="font-medium text-gray-900">{product.name}</span>
-                                                                                                        <span className="text-gray-600 text-xs mt-1">{product.description || '-'}</span>
+                                                                                                        <span className="font-medium text-gray-900">
+                                                                                                            {product.name}
+                                                                                                        </span>
+                                                                                                        <span className="text-2xs text-gray-600露: 'inherit' text-gray-600 mt-1">
+                                                                                                            {product.description || '-'}
+                                                                                                        </span>
                                                                                                     </div>
                                                                                                 </td>
                                                                                                 <td className="p-3 text-gray-700">
@@ -866,8 +1074,9 @@ function OrderOverview() {
                                                                                                     {product.pivot.quantity > 1 ? 's' : ''}
                                                                                                 </td>
                                                                                             </tr>
-                                                                                        )
+                                                                                        );
                                                                                     }
+                                                                                    return null;
                                                                                 })}
                                                                             </tbody>
                                                                         </table>
@@ -877,20 +1086,29 @@ function OrderOverview() {
                                                         );
                                                     });
                                                 })()
-                                                : null
-                                            }
-
+                                                : null}
                                             <hr className="my-4" />
 
                                             {!orderDetail.f_1 && (
                                                 <div className="p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg">
-                                                    <h3 className="text-lg text-purple-600 font-bold flex items-center gap-2">Summary</h3>
+                                                    <h3 className="text-md text-purple-600 font-bold flex items-center gap-2">
+                                                        Summary
+                                                    </h3>
                                                     <div className="mt-2 space-y-2">
                                                         {packageCategories.map((category, index) => (
-                                                            <div key={index} className="flex justify-between p-2 gap-2 bg-white rounded shadow-sm">
-                                                                <span className="text-sm text-gray-600">Total {category.category}</span>
-                                                                <span className="text-sm text-gray-700 font-semibold whitespace-nowrap">
-                                                                    RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            <div
+                                                                key={index}
+                                                                className="flex justify-between p-2 gap-2 bg-white rounded shadow-sm"
+                                                            >
+                                                                <span className="text-xs text-gray-600">
+                                                                    Total {category.category}
+                                                                </span>
+                                                                <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                                    RM{' '}
+                                                                    {category.total_price.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
                                                                 </span>
                                                             </div>
                                                         ))}
@@ -899,63 +1117,128 @@ function OrderOverview() {
                                             )}
                                             {bonus && (
                                                 <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
-                                                    <h3 className="text-lg text-teal-600 font-bold">Bonus:</h3>
-                                                    <ul className="text-sm text-gray-900 font-semibold mt-2 space-y-1">
-                                                        {(bonus.description?.split('\n') || ['No Details']).map((item, index) => (
-                                                            <li key={index} className="p-2 bg-teal-50 rounded">{item}</li>
-                                                        ))}
+                                                    <h3 className="text-md text-teal-600 font-bold">Bonus:</h3>
+                                                    <ul className="text-xs text-gray-900 font-semibold mt-2 space-y-1">
+                                                        {(bonus.description?.split('\n') || ['No Details']).map(
+                                                            (item, index) => (
+                                                                <li
+                                                                    key={index}
+                                                                    className="p-2 bg-teal-50 rounded"
+                                                                >
+                                                                    {item}
+                                                                </li>
+                                                            )
+                                                        )}
                                                     </ul>
                                                     <div className="mt-2">
-                                                        <span className="text-sm text-gray-600 font-semibold">Discount:</span>
-                                                        <p className="text-xl text-teal-600 font-bold">RM {bonus.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                        <span className="text-xs text-gray-600 font-semibold">
+                                                            Discount:
+                                                        </span>
+                                                        <p className="text-md text-teal-600 font-bold">
+                                                            RM{' '}
+                                                            {bonus.value.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             )}
                                             <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
-                                                <h3 className="text-lg text-blue-600 font-bold">Total Amount:</h3>
-                                                <p className="text-xl text-gray-900 font-semibold">
-                                                    RM {((orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) - (bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                <h3 className="text-md text-blue-600 font-bold">Total Amount:</h3>
+                                                <p className="text-md text-gray-900 font-semibold">
+                                                    RM{' '}
+                                                    {(
+                                                        (orderDetail.final_amount > 0
+                                                            ? orderDetail.final_amount
+                                                            : totalExcludedAddonAmount) - (bonus?.value || 0)
+                                                    ).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
                                                 </p>
                                                 {bonus && (
-                                                    <p className="text-gray-900 text-sm">Original Price: RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                                    <p className="text-xs text-gray-900">
+                                                        Original Price: RM{' '}
+                                                        {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </p>
                                                 )}
                                             </div>
-                                            <div className="mt-6 flex flex-col items-center">
-                                                <span className="font-bold text-lg mb-2">Progressive Payment of the Contract Sum</span>
-                                                <table className="table w-full max-w-lg text-sm text-gray-700 font-medium">
-                                                    <thead>
-                                                        <tr>
-                                                            <th className="p-2">Description</th>
-                                                            <th className="p-2 text-center">%</th>
-                                                            <th className="p-2 text-center">Amount (RM)</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {orderDetail.is_progressive_payment ? (
-                                                            [
-                                                                { desc: 'Upon Confirmation and before Commencement of Phase 1', percent: 50 },
-                                                                { desc: 'Upon Completion of Phase 1 and before Commencement of Phase 2', percent: 50 },
-                                                            ].map((row, idx) => (
-                                                                <tr key={idx}>
-                                                                    <td className="p-2">{row.desc}</td>
-                                                                    <td className="p-2 text-center">{row.percent}</td>
-                                                                    <td className="p-2 text-center">{((totalExcludedAddonAmount - (bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                                                </tr>
-                                                            ))
-                                                        ) : (
-                                                            <tr>
-                                                                <td className="p-2">Upon Confirmation of Agreement</td>
-                                                                <td className="p-2 text-center">100</td>
-                                                                <td className="p-2 text-center">{(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            <div className="mt-6 p-4 bg-gray-100 border-l-4 border-indigo-500 rounded-lg">
+                                                <h3 className="text-md text-indigo-600 font-bold mb-3 flex items-center gap-2">
+                                                    Progressive Payment of the Contract Sum
+                                                </h3>
+                                                <div className="w-full max-w-lg bg-white rounded-lg shadow-sm border border-gray-200">
+                                                    <table className="w-full text-xs text-gray-700 font-medium border-collapse">
+                                                        <thead>
+                                                            <tr className="bg-gray-50 border-b border-gray-200">
+                                                                <th className="p-3 text-left font-semibold text-gray-700">Description</th>
+                                                                <th className="p-3 text-center font-semibold text-gray-700">%</th>
+                                                                <th className="p-3 text-center font-semibold text-gray-700">Amount (RM)</th>
                                                             </tr>
-                                                        )}
-                                                        <tr className="font-bold">
-                                                            <td className="p-2">Total:</td>
-                                                            <td className="p-2 text-center">100</td>
-                                                            <td className="p-2 text-center">{(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                                        </thead>
+                                                        <tbody>
+                                                            {orderDetail.is_progressive_payment ? (
+                                                                [
+                                                                    {
+                                                                        desc: 'Upon Confirmation and before Commencement of Phase 1',
+                                                                        percent: 50,
+                                                                    },
+                                                                    {
+                                                                        desc: 'Upon Completion of Phase 1 and before Commencement of Phase 2',
+                                                                        percent: 50,
+                                                                    },
+                                                                ].map((row, idx) => (
+                                                                    <tr
+                                                                        key={idx}
+                                                                        className="border-b border-gray-200 hover:bg-gray-50 transition duration-150"
+                                                                    >
+                                                                        <td className="p-3 text-gray-600 max-w-xs">{row.desc}</td>
+                                                                        <td className="p-3 text-center">{row.percent}%</td>
+                                                                        <td className="p-3 text-center">
+                                                                            {(
+                                                                                (totalExcludedAddonAmount - (bonus?.value || 0)) / 2
+                                                                            ).toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
+                                                                        </td>
+                                                                    </tr>
+                                                                ))
+                                                            ) : (
+                                                                <tr className="border-b border-gray-200 hover:bg-gray-50 transition duration-150">
+                                                                    <td className="p-3 text-gray-600 max-w-xs">Upon Confirmation of Agreement</td>
+                                                                    <td className="p-3 text-center">100%</td>
+                                                                    <td className="p-3 text-center">
+                                                                        {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(
+                                                                            undefined,
+                                                                            {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            }
+                                                                        )}
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                            <tr className="font-bold bg-gray-50 border-t border-gray-200">
+                                                                <td className="p-3 text-gray-700">Total</td>
+                                                                <td className="p-3 text-center">100%</td>
+                                                                <td className="p-3 text-center">
+                                                                    {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(
+                                                                        undefined,
+                                                                        {
+                                                                            minimumFractionDigits: 2,
+                                                                            maximumFractionDigits: 2,
+                                                                        }
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -965,14 +1248,37 @@ function OrderOverview() {
                                 {orderDetail.status !== 'confirmed' && (
                                     <div className="flex flex-col gap-4 mt-6">
                                         {[
-                                            { name: 'agree_tnc', label: 'Terms and Conditions', checked: agreeTnc, onChange: handleAgreeTncChange, tab: 'tab_1_2' },
-                                            { name: 'agree_reno_agreement', label: 'Reno Agreement', checked: agreeRenoAgreement, onChange: handleAgreeRenoAgreementChange, tab: 'tab_1_3' },
+                                            {
+                                                name: 'agree_tnc',
+                                                label: 'Terms and Conditions',
+                                                checked: agreeTnc,
+                                                onChange: handleAgreeTncChange,
+                                                tab: 'tab_1_2',
+                                            },
+                                            {
+                                                name: 'agree_reno_agreement',
+                                                label: 'Reno Agreement',
+                                                checked: agreeRenoAgreement,
+                                                onChange: handleAgreeRenoAgreementChange,
+                                                tab: 'tab_1_3',
+                                            },
                                         ].map(({ name, label, checked, onChange, tab }) => (
                                             <label key={name} className="flex items-center gap-2">
-                                                <input type="checkbox" className="checkbox" name={name} checked={checked || orderDetail.status === 'confirmed'} onChange={onChange} disabled={orderDetail.status === 'confirmed'} />
-                                                <span className="text-sm">
+                                                <input
+                                                    type="checkbox"
+                                                    className="checkbox"
+                                                    name={name}
+                                                    checked={checked || orderDetail.status === 'confirmed'}
+                                                    onChange={onChange}
+                                                    disabled={orderDetail.status === 'confirmed'}
+                                                />
+                                                <span className="text-xs">
                                                     I have read and accept the{' '}
-                                                    <a href="#" className="text-blue-500 hover:underline" onClick={() => setActiveTab(tab)}>
+                                                    <a
+                                                        href="#"
+                                                        className="text-blue-500 hover:underline"
+                                                        onClick={() => setActiveTab(tab)}
+                                                    >
                                                         {label}
                                                     </a>
                                                 </span>
@@ -990,16 +1296,22 @@ function OrderOverview() {
                                     ? (() => {
                                         let packageCounter = 0;
                                         let addonCounter = 0;
-                                        return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((prodPackage, index) => {
+                                        return JSON.parse(
+                                            JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))
+                                        ).map((prodPackage, index) => {
                                             const isAddon = prodPackage.is_addon;
                                             const counter = isAddon ? addonCounter++ : packageCounter++;
                                             const accordionId = `content_${index}`;
                                             const isOpen = openAccordions[accordionId] !== false;
 
                                             return (
-                                                <div className={`accordion-item border rounded-xl w-full shadow-sm ${isAddon ? 'bg-blue-50 border-blue-300' : ''}`} key={index}>
+                                                <div
+                                                    className={`accordion-item border rounded-xl w-full shadow-sm ${isAddon ? 'bg-blue-50 border-blue-300' : ''
+                                                        }`}
+                                                    key={index}
+                                                >
                                                     <button
-                                                        className="flex items-center justify-between gap-4 w-full text-xs p-4 rounded-xl hover:bg-gray-50 transition duration-200 focus:outline-none"
+                                                        className="flex items-center justify-between gap-4 w-full text-2xs p-4 rounded-xl hover:bg-gray-50 transition duration-200 focus:outline-none"
                                                         onClick={() => toggleAccordion(`content_${index}`)}
                                                     >
                                                         <div className="flex items-center flex-grow text-left w-full">
@@ -1007,18 +1319,24 @@ function OrderOverview() {
                                                                 {prodPackage.is_addon ? (
                                                                     <>
                                                                         <div className="flex justify-between">
-                                                                            <span className="font-medium text-gray-700 text-xs">
+                                                                            <span className="font-medium text-gray-700 text-2xs">
                                                                                 Add-on Option {counter + 1}:
                                                                             </span>
                                                                         </div>
-                                                                        <span className="text-base font-semibold text-gray-900">{prodPackage.name}</span>
+                                                                        <span className="text-sm font-semibold text-gray-900">
+                                                                            {prodPackage.name}
+                                                                        </span>
                                                                     </>
-                                                                ) :
+                                                                ) : (
                                                                     <div className="flex justify-between">
-                                                                        <span className="text-base font-semibold text-gray-900">{prodPackage.name}</span>
+                                                                        <span className="text-sm font-semibold text-gray-900">
+                                                                            {prodPackage.name}
+                                                                        </span>
                                                                     </div>
-                                                                }
-                                                                <span className="text-gray-500 mt-1 max-w-md">{prodPackage.description}</span>
+                                                                )}
+                                                                <span className="text-xs text-gray-500 mt-1 max-w-md">
+                                                                    {prodPackage.description}
+                                                                </span>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center space-x-4">
@@ -1029,26 +1347,34 @@ function OrderOverview() {
                                                                             className="checkbox"
                                                                             type="checkbox"
                                                                             checked={!!prodPackage.is_addon_included}
-                                                                            onChange={() => handleConfirmationAddonPackage(prodPackage, prodPackage.is_addon_included)}
+                                                                            onChange={() =>
+                                                                                handleConfirmationAddonPackage(
+                                                                                    prodPackage,
+                                                                                    prodPackage.is_addon_included
+                                                                                )
+                                                                            }
                                                                             onClick={(e) => e.stopPropagation()}
                                                                         />
                                                                     </label>
                                                                     <div className="inline-block">
-                                                                        <span className={`badge ${isAddon ? 'bg-white border-blue-300' : ''}`}>
+                                                                        <span
+                                                                            className={`badge ${isAddon ? 'bg-white border-blue-300' : ''
+                                                                                }`}
+                                                                        >
                                                                             x{prodPackage.quantity}
                                                                         </span>
                                                                     </div>
                                                                 </div>
-                                                            )
-                                                                :
+                                                            ) : (
                                                                 <div className="inline-block">
-                                                                    <span className="badge">
+                                                                    <span className="badge bg-white border-blue-300">
                                                                         x{prodPackage.quantity}
                                                                     </span>
                                                                 </div>
-                                                            }
+                                                            )}
                                                             <i
-                                                                className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'} text-gray-600 text-sm transition-transform duration-300`}
+                                                                className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'
+                                                                    } text-gray-600 text-xs transition-transform duration-300`}
                                                             ></i>
                                                         </div>
                                                     </button>
@@ -1057,29 +1383,50 @@ function OrderOverview() {
                                                             }`}
                                                     >
                                                         <div className="p-4">
-                                                            <h2 className="text-sm font-semibold text-gray-800 mb-3">Products</h2>
-                                                            <table className="w-full text-2xs text-left border-collapse">
+                                                            <h2 className="text-xs font-semibold text-gray-800 mb-3">
+                                                                Products
+                                                            </h2>
+                                                            <table className="w-full text-xs text-left border-collapse">
                                                                 <thead>
-                                                                    <tr className={`border-b ${isAddon ? 'bg-white border-blue-300' : 'bg-gray-100'}`}>
+                                                                    <tr
+                                                                        className={`border-b ${isAddon ? 'bg-white border-blue-300' : 'bg-gray-100'
+                                                                            }`}
+                                                                    >
                                                                         <th className="p-3 font-medium text-gray-700">S.o.W</th>
                                                                         <th className="p-3 font-medium text-gray-700">Product</th>
-                                                                        <th className="p-3 font-medium text-gray-700">Quantity</th>
+                                                                        <th className="p-3 font-medium text-gray-700">
+                                                                            Quantity
+                                                                        </th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
                                                                     {prodPackage.products.map((product, idx) => {
-                                                                        const isSupplyAndInstall = product.pivot.includeSupply || product.pivot.includeInstall
+                                                                        const isSupplyAndInstall =
+                                                                            product.pivot.includeSupply || product.pivot.includeInstall;
 
                                                                         if (isSupplyAndInstall) {
                                                                             return (
-                                                                                <tr key={idx} className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''}`}>
-                                                                                    <td className='py-3 px-2 text-gray-700 text-left'>
-                                                                                        {product.pivot.includeSupply && product.pivot.includeInstall ? 'Supply & InstallI' : product.pivot.includeSupply ? 'Supply' : 'Install'}
+                                                                                <tr
+                                                                                    key={idx}
+                                                                                    className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''
+                                                                                        }`}
+                                                                                >
+                                                                                    <td className="py-3 px-2 text-gray-700 text-left">
+                                                                                        {product.pivot.includeSupply &&
+                                                                                            product.pivot.includeInstall
+                                                                                            ? 'Supply & Install'
+                                                                                            : product.pivot.includeSupply
+                                                                                                ? 'Supply'
+                                                                                                : 'Install'}
                                                                                     </td>
                                                                                     <td className="p-3">
                                                                                         <div className="flex flex-col">
-                                                                                            <span className="font-medium text-gray-900">{product.name}</span>
-                                                                                            <span className="text-gray-600 text-xs mt-1">{product.description || '-'}</span>
+                                                                                            <span className="font-medium text-gray-900">
+                                                                                                {product.name}
+                                                                                            </span>
+                                                                                            <span className="text-2xs text-gray-600 mt-1">
+                                                                                                {product.description || '-'}
+                                                                                            </span>
                                                                                         </div>
                                                                                     </td>
                                                                                     <td className="p-3 text-gray-700">
@@ -1087,8 +1434,9 @@ function OrderOverview() {
                                                                                         {product.pivot.quantity > 1 ? 's' : ''}
                                                                                     </td>
                                                                                 </tr>
-                                                                            )
+                                                                            );
                                                                         }
+                                                                        return null;
                                                                     })}
                                                                 </tbody>
                                                             </table>
@@ -1098,12 +1446,13 @@ function OrderOverview() {
                                             );
                                         });
                                     })()
-                                    : null
-                                }
+                                    : null}
                                 <div className="flex flex-col items-center">
-                                    <span className="font-bold text-lg mb-2">Progressive Payment of the Contract Sum</span>
+                                    <span className="font-bold text-md mb-2">
+                                        Progressive Payment of the Contract Sum
+                                    </span>
                                     <div className="overflow-x-auto w-full max-w-lg">
-                                        <table className="table w-full text-sm text-gray-700 font-medium">
+                                        <table className="table w-full text-xs text-gray-700 font-medium">
                                             <thead>
                                                 <tr>
                                                     <th className="p-2">Description</th>
@@ -1115,17 +1464,31 @@ function OrderOverview() {
                                                 {orderDetail.is_progressive_payment ? (
                                                     <>
                                                         <tr>
-                                                            <td className="p-2">Upon Confirmation and before Commencement of Phase 1</td>
+                                                            <td className="p-2">
+                                                                Upon Confirmation and before Commencement of Phase 1
+                                                            </td>
                                                             <td className="p-2 text-center">50</td>
                                                             <td className="p-2 text-center">
-                                                                {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                {(
+                                                                    (totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2
+                                                                ).toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}
                                                             </td>
                                                         </tr>
                                                         <tr>
-                                                            <td className="p-2">Upon Completion of Phase 1 and before Commencement of Phase 2</td>
+                                                            <td className="p-2">
+                                                                Upon Completion of Phase 1 and before Commencement of Phase 2
+                                                            </td>
                                                             <td className="p-2 text-center">50</td>
                                                             <td className="p-2 text-center">
-                                                                {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                {(
+                                                                    (totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2
+                                                                ).toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}
                                                             </td>
                                                         </tr>
                                                     </>
@@ -1134,7 +1497,13 @@ function OrderOverview() {
                                                         <td className="p-2">Upon Confirmation of Agreement</td>
                                                         <td className="p-2 text-center">100</td>
                                                         <td className="p-2 text-center">
-                                                            {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(
+                                                                undefined,
+                                                                {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                }
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 )}
@@ -1142,7 +1511,13 @@ function OrderOverview() {
                                                     <td className="p-2">Total:</td>
                                                     <td className="p-2 text-center">100</td>
                                                     <td className="p-2 text-center">
-                                                        {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(
+                                                            undefined,
+                                                            {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            }
+                                                        )}
                                                     </td>
                                                 </tr>
                                             </tbody>
@@ -1154,12 +1529,12 @@ function OrderOverview() {
 
                         {/* T&C Tab */}
                         <div className={activeTab === 'tab_1_2' ? 'block' : 'hidden'} id="tab_1_2">
-                            <div className="prose max-w-none p-4">{tnc}</div>
+                            <div className="prose max-w-none p-4 text-xs">{tnc}</div>
                         </div>
 
                         {/* Reno Agreement Tab */}
                         <div className={activeTab === 'tab_1_3' ? 'block' : 'hidden'} id="tab_1_3">
-                            <div className="prose max-w-none p-4">{renoAgreement}</div>
+                            <div className="prose max-w-none p-4 text-xs">{renoAgreement}</div>
                         </div>
                     </div>
                 </div>
@@ -1169,7 +1544,7 @@ function OrderOverview() {
             {orderDetail.status === 'released' ?
                 <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2">
                     <button
-                        className="btn btn-lg btn-primary rounded-3xl shadow-lg"
+                        className="btn btn-lg btn-primary rounded-3xl shadow-lg text-xs"
                         onClick={handleAgreeOrder}
                         disabled={isButtonDisabled}
                     >
