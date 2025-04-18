@@ -197,6 +197,8 @@ export interface Order {
     property_id?: string,
     property?: Property,
     bedroom_count?: number,
+    single_bedroom_count?: number,
+    queen_bedroom_count?: number,
     bathroom_count?: number,
     include_partition?: boolean,
     is_progressive_payment?: boolean,

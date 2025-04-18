@@ -63,7 +63,8 @@ function CreateOrder() {
         status: "",
         isFinalAmountEnable: false,
         isDraftMode: false,
-        bedroom_count: 1,
+        single_bedroom_count: 1,
+        queen_bedroom_count: 1,
         bathroom_count: 1,
         include_partition: false,
         is_progressive_payment: true,
@@ -161,7 +162,7 @@ function CreateOrder() {
                     block: registrationForm.property.block,
                     floor: registrationForm.property.level,
                     unitNo: registrationForm.property.unit,
-                    bedroom_count: Number(registrationForm.questions.quest_1),
+                    // bedroom_count: Number(registrationForm.questions.quest_1),
                     bathroom_count: Number(registrationForm.questions.quest_2),
                 }));
             } else {
@@ -192,7 +193,9 @@ function CreateOrder() {
                     include_partition: response.data.include_partition ? true : false,
                     is_progressive_payment: response.data.is_progressive_payment ? true : false,
                     internal_remark: response.data.internal_remark || "",
-                    bedroom_count: response.data.bedroom_count,
+                    // bedroom_count: response.data.bedroom_count,
+                    single_bedroom_count: response.data.single_bedroom_count,
+                    queen_bedroom_count: response.data.queen_bedroom_count,
                     bathroom_count: response.data.bathroom_count,
                     bonus: {
                         description: response.data.latest_quotation.bonus?.description || "",
@@ -358,7 +361,9 @@ function CreateOrder() {
             block: formData.block,
             floor: formData.floor,
             unit_no: formData.unitNo,
-            bedroom_count: formData.bedroom_count,
+            // bedroom_count: formData.bedroom_count,
+            single_bedroom_count: formData.single_bedroom_count,
+            queen_bedroom_count: formData.queen_bedroom_count,
             bathroom_count: formData.bathroom_count,
             include_partition: formData.include_partition,
             is_progressive_payment: formData.is_progressive_payment,
@@ -656,7 +661,7 @@ function CreateOrder() {
     return (
         <>
             {loading && <Loading />}
-            
+
             <div className="flex justify-between items-center flex-wrap mb-6 lg:mr-[400px] lg:pr-6">
                 <div className="flex gap-4 items-center">
                     <button className="text-gray-800 dark:text-gray-400" onClick={handleBackClick}>
@@ -680,14 +685,15 @@ function CreateOrder() {
 
             <div className="flex grow flex-col gap-3 lg:gap-6 lg:mr-[400px] lg:pr-6">
                 <div className="flex flex-col gap-8 mb-8" data-accordion="true" data-accordion-expand-all="true">
-                    <div className="card">
-                        <div className="card-body">
-                            <h2 className="text-xl mb-4 font-semibold text-gray-900">Order</h2>
-                            <div className="flex gap-8">
-                                <div className="flex flex-col flex-1 gap-8">
+                    <div className="card shadow-sm">
+                        <div className="card-body p-6">
+                            <h2 className="text-xl font-semibold text-gray-900 mb-6">Order</h2>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Owner Section */}
+                                <div className="flex flex-col gap-6">
                                     <div className="flex flex-col gap-2">
                                         <span className="text-base font-semibold text-gray-900">Select an Owner</span>
-                                        <span className="text-xs text-info">
+                                        <span className="text-xs text-blue-600">
                                             Selecting an owner will disable Draft Mode
                                         </span>
                                         <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="owner_dropdown">
@@ -723,17 +729,13 @@ function CreateOrder() {
                                             </div>
                                         </div>
                                         {selectedUser && (
-                                            <div className="card mb-4">
-                                                <div className="card-body">
-                                                    <div className="flex flex-col gap-1 text-gray-900">
-                                                        <span className="text-sm font-semibold">{selectedUser.name}</span>
-                                                        <span className="text-sm font-normal text-slate-400">
-                                                            {selectedUser.email}
-                                                        </span>
-                                                        <span className="text-sm font-normal">
-                                                            +{selectedUser.country_code} {selectedUser.phone_no}
-                                                        </span>
-                                                    </div>
+                                            <div className="card bg-gray-50 p-4 rounded-md">
+                                                <div className="flex flex-col gap-1 text-gray-900">
+                                                    <span className="text-sm font-semibold">{selectedUser.name}</span>
+                                                    <span className="text-sm text-gray-500">{selectedUser.email}</span>
+                                                    <span className="text-sm">
+                                                        +{selectedUser.country_code} {selectedUser.phone_no}
+                                                    </span>
                                                 </div>
                                             </div>
                                         )}
@@ -741,7 +743,7 @@ function CreateOrder() {
                                     <div className="flex flex-col gap-2">
                                         <span className="text-base font-semibold text-gray-900">Internal Remark</span>
                                         <textarea
-                                            className="textarea"
+                                            className="textarea w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             name="internal_remark"
                                             id="internal_remark"
                                             rows={4}
@@ -750,164 +752,178 @@ function CreateOrder() {
                                         ></textarea>
                                     </div>
                                 </div>
-                                <div className="flex flex-col flex-1 gap-2">
-                                    <span className="text-base font-semibold text-gray-900">Select a Property</span>
-                                    <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="property_dropdown">
-                                        <button
-                                            className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
-                                            onClick={handleOpenPropertyDropdown}
-                                        >
-                                            <span>Property</span>
-                                            <i className="ki-filled ki-down"></i>
-                                        </button>
-                                        <div className="dropdown-content w-full max-w-80">
-                                            <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
-                                                <label className="input input-sm">
-                                                    <i className="ki-filled ki-magnifier"></i>
-                                                    <input
-                                                        ref={inputPropertyRef}
-                                                        placeholder="Search property"
-                                                        type="text"
-                                                        value={searchPropertyTerm}
-                                                        onChange={handleSearchProperty}
-                                                    />
-                                                </label>
-                                            </div>
-                                            <div className="menu menu-default flex flex-col w-full">
-                                                {properties.map((property, index) => (
-                                                    <div className="menu-item" key={index} data-id={property.id}>
-                                                        <button
-                                                            className="menu-link"
-                                                            onClick={() => handleSelectProperty(property)}
-                                                        >
-                                                            <span className="menu-title">{property.name}</span>
-                                                        </button>
-                                                    </div>
-                                                ))}
+
+                                {/* Property Section */}
+                                <div className="flex flex-col gap-6">
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-base font-semibold text-gray-900">Select a Property</span>
+                                        <div className="dropdown" data-dropdown="true" data-dropdown-trigger="click" id="property_dropdown">
+                                            <button
+                                                className="dropdown-toggle btn btn-light w-full flex justify-between items-center"
+                                                onClick={handleOpenPropertyDropdown}
+                                            >
+                                                <span>Property</span>
+                                                <i className="ki-filled ki-down"></i>
+                                            </button>
+                                            <div className="dropdown-content w-full max-w-80">
+                                                <div className="px-4 pt-4 text-sm text-gray-900 font-medium">
+                                                    <label className="input input-sm">
+                                                        <i className="ki-filled ki-magnifier"></i>
+                                                        <input
+                                                            ref={inputPropertyRef}
+                                                            placeholder="Search property"
+                                                            type="text"
+                                                            value={searchPropertyTerm}
+                                                            onChange={handleSearchProperty}
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <div className="menu menu-default flex flex-col w-full">
+                                                    {properties.map((property, index) => (
+                                                        <div className="menu-item" key={index} data-id={property.id}>
+                                                            <button
+                                                                className="menu-link"
+                                                                onClick={() => handleSelectProperty(property)}
+                                                            >
+                                                                <span className="menu-title">{property.name}</span>
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
+                                        {selectedProperty && (
+                                            <div className="card bg-gray-50 p-4 rounded-md">
+                                                <div className="flex flex-col gap-1 text-gray-900">
+                                                    <span className="text-sm font-semibold">{selectedProperty.name}</span>
+                                                    <span className="text-sm text-gray-500">
+                                                        {[
+                                                            selectedProperty.address,
+                                                            selectedProperty.street,
+                                                            selectedProperty.postcode,
+                                                            selectedProperty.city,
+                                                            selectedProperty.state,
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(", ")}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     {selectedProperty && (
-                                        <>
-                                            <div className="card mb-4">
-                                                <div className="card-body">
-                                                    <div className="flex flex-col gap-1 text-gray-900">
-                                                        <span className="text-sm font-semibold text-gray-900">
-                                                            {selectedProperty.name}
-                                                        </span>
-                                                        <span className="text-sm font-normal text-slate-400">
-                                                            {[
-                                                                selectedProperty.address,
-                                                                selectedProperty.street,
-                                                                selectedProperty.postcode,
-                                                                selectedProperty.city,
-                                                                selectedProperty.state,
-                                                            ]
-                                                                .filter(Boolean)
-                                                                .join(", ")}
-                                                        </span>
-                                                    </div>
+                                        <div className="flex flex-col gap-6">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-gray-900">Unit Type</span>
+                                                    <input
+                                                        className="input p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        type="text"
+                                                        name="unit_type"
+                                                        value={formData.unit_type}
+                                                        onChange={handleChange}
+                                                    />
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col gap-4">
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-900">Unit Type</span>
-                                                        <input
-                                                            className="input mb-2"
-                                                            type="text"
-                                                            name="unit_type"
-                                                            value={formData.unit_type}
-                                                            onChange={handleChange}
-                                                        />
-                                                    </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-gray-900">Block</span>
+                                                    <input
+                                                        className="input p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        type="text"
+                                                        name="block"
+                                                        value={formData.block}
+                                                        onChange={handleChange}
+                                                    />
                                                 </div>
-                                                <div className="flex gap-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-900">Block</span>
-                                                        <input
-                                                            className="input mb-2"
-                                                            type="text"
-                                                            name="block"
-                                                            value={formData.block}
-                                                            onChange={handleChange}
-                                                        />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-900">Floor</span>
-                                                        <input
-                                                            className="input mb-2"
-                                                            type="text"
-                                                            name="floor"
-                                                            value={formData.floor || ""}
-                                                            onChange={handleChange}
-                                                        />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-900">Unit No</span>
-                                                        <input
-                                                            className="input mb-2"
-                                                            type="text"
-                                                            name="unitNo"
-                                                            value={formData.unitNo}
-                                                            onChange={handleChange}
-                                                        />
-                                                    </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-gray-900">Floor</span>
+                                                    <input
+                                                        className="input p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        type="text"
+                                                        name="floor"
+                                                        value={formData.floor || ""}
+                                                        onChange={handleChange}
+                                                    />
                                                 </div>
-                                                <div className="flex gap-8">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-900">Total Bedroom</span>
-                                                        <select
-                                                            className="select"
-                                                            name="bedroom_count"
-                                                            id="bedroom_count"
-                                                            onChange={handleChange}
-                                                            value={formData.bedroom_count}
-                                                        >
-                                                            <option value="1">1</option>
-                                                            <option value="2">2</option>
-                                                            <option value="3">3</option>
-                                                            <option value="4">4</option>
-                                                            <option value="5">5</option>
-                                                        </select>
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-900">Total Bathroom</span>
-                                                        <select
-                                                            className="select"
-                                                            name="bathroom_count"
-                                                            id="bathroom_count"
-                                                            onChange={handleChange}
-                                                            value={formData.bathroom_count}
-                                                        >
-                                                            <option value="1">1</option>
-                                                            <option value="2">2</option>
-                                                            <option value="3">3</option>
-                                                        </select>
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-900 mb-2">Partition</span>
-                                                        <label className="switch switch-lg">
-                                                            <input
-                                                                className="checkbox"
-                                                                name="include_partition"
-                                                                type="checkbox"
-                                                                checked={!!formData.include_partition}
-                                                                onChange={() =>
-                                                                    setFormData((prev) => ({
-                                                                        ...prev,
-                                                                        include_partition: !prev.include_partition,
-                                                                    }))
-                                                                }
-                                                            />
-                                                            <span className="switch-label">
-                                                                {formData.include_partition ? "Yes" : "No"}
-                                                            </span>
-                                                        </label>
-                                                    </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-gray-900">Unit No</span>
+                                                    <input
+                                                        className="input p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        type="text"
+                                                        name="unitNo"
+                                                        value={formData.unitNo}
+                                                        onChange={handleChange}
+                                                    />
                                                 </div>
                                             </div>
-                                        </>
+                                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-gray-900">Single Bedroom</span>
+                                                    <select
+                                                        className="select p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        name="single_bedroom_count"
+                                                        id="single_bedroom_count"
+                                                        onChange={handleChange}
+                                                        value={formData.single_bedroom_count}
+                                                    >
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                        <option value="5">5</option>
+                                                    </select>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-gray-900">Queen Bedroom</span>
+                                                    <select
+                                                        className="select p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        name="queen_bedroom_count"
+                                                        id="queen_bedroom_count"
+                                                        onChange={handleChange}
+                                                        value={formData.queen_bedroom_count}
+                                                    >
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                        <option value="5">5</option>
+                                                    </select>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-gray-900">Bathroom</span>
+                                                    <select
+                                                        className="select p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        name="bathroom_count"
+                                                        id="bathroom_count"
+                                                        onChange={handleChange}
+                                                        value={formData.bathroom_count}
+                                                    >
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                    </select>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-gray-900">Partition</span>
+                                                    <label className="switch switch-lg flex items-center gap-2">
+                                                        <input
+                                                            className="checkbox"
+                                                            name="include_partition"
+                                                            type="checkbox"
+                                                            checked={!!formData.include_partition}
+                                                            onChange={() =>
+                                                                setFormData((prev) => ({
+                                                                    ...prev,
+                                                                    include_partition: !prev.include_partition,
+                                                                }))
+                                                            }
+                                                        />
+                                                        <span className="text-sm">{formData.include_partition ? "Yes" : "No"}</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
