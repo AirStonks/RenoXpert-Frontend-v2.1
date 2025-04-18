@@ -1384,7 +1384,7 @@ function OrderDetail() {
                                                                         {categoryOptions.find(option => option.value === prodPackage.category)?.label}
                                                                     </div>
                                                                 )}
-                                                                <span className="text-sm text-gray-600 font-medium">
+                                                                <span className="text-sm text-gray-600 font-medium text-start">
                                                                     {prodPackage.description_internal && (
                                                                         <div className="flex items-center gap-2">
                                                                             <i className="ki-filled ki-information-2 text-warning text-xl"></i>
