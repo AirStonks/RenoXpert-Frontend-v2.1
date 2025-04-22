@@ -4,7 +4,7 @@ import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
-import { DefectInspectionForm, RenoProgress } from "../../types";
+import { DefectInspectionForm, Order, RenoProgress } from "../../types";
 import { changeTaskStatus, fetchRenoProgress, markDIFormAsCompleted } from "../../services/api";
 import React from 'react';
 import DIRLinkManagementModal from "./components/Modals/DIRLinkManagementModal";
@@ -32,6 +32,7 @@ function DefectInspectionReport() {
     const renoProgressId = id ? parseInt(id, 10) : null;
 
     const [diForm, setDiForm] = useState<DefectInspectionForm | null>(null);
+    const [order, setOrder] = useState<Order | null>(null);
     const [taskId, setTaskId] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -68,6 +69,7 @@ function DefectInspectionReport() {
 
                 if (response?.success) {
                     setDiForm(data.defect_inspection_form);
+                    setOrder(data.sale.order);
                     setTaskId(Number(data.phases[0].jobs[1].tasks[0].id));
                 }
 
@@ -303,6 +305,42 @@ function DefectInspectionReport() {
                                         </td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             {diForm?.property ? (diForm?.property?.block + '-' + diForm?.property?.level + '-' + diForm?.property?.unit) : 'N/A'}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Bedroom:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {order?.bedroom_count}
+                                        </td>
+                                    </tr>
+                                    {order?.single_bedroom_count && order?.queen_bedroom_count &&
+                                        <>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Single Bedroom:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {order?.single_bedroom_count}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Queen Bathroom:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {order?.queen_bedroom_count}
+                                                </td>
+                                            </tr>
+                                        </>
+                                    }
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Bathroom:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {order?.bathroom_count}
                                         </td>
                                     </tr>
                                     <tr>

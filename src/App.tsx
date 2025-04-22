@@ -1,10 +1,8 @@
-// src\App.tsx
-
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+// src/App.tsx
+import { createBrowserRouter, RouterProvider, RouteObject } from 'react-router-dom';
+import { useEffect } from 'react';
 import KTComponent from './metronic/core';
 import KTLayout from './metronic/app/layouts/demo1';
-import { useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import ProtectedRoute from './utils/ProtectedRoute';
 import MasterLayout from './pages/Master';
@@ -103,7 +101,6 @@ import DIFormMain from './pages/ProjectManagement/DIFormMain';
 import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
 import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
 
-
 interface ProtectedLayoutProps {
     children: React.ReactNode;
 }
@@ -120,56 +117,39 @@ const OwnerProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
     </OwnerProtectedRoute>
 );
 
-
 const OperationProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
     <OperationProtectedRoute>
         <OperationMasterLayout>{children}</OperationMasterLayout>
     </OperationProtectedRoute>
 );
 
-const routeCat = [
+// Define route configuration
+const routeCat: { path: string; element: JSX.Element; layout?: React.FC<ProtectedLayoutProps> | null }[][] = [
     // Staff/Admin
     [
         { path: '/login', element: <Login />, layout: null },
         { path: '/dashboard', element: <Dashboard />, layout: ProtectedLayout },
-
-        /*--- PROFILE ---*/
         { path: '/profile/change-password', element: <ChangePassword />, layout: ProtectedLayout },
-
-
-        /*--- PRODUCT ---*/
         { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
         { path: '/products/create', element: <CreateProduct />, layout: ProtectedLayout },
         { path: '/products/:id', element: <ProductDetail />, layout: ProtectedLayout },
         { path: '/products/edit/:id', element: <EditProduct />, layout: ProtectedLayout },
         { path: '/products/category', element: <ProductCategory />, layout: ProtectedLayout },
         { path: '/products/archives', element: <ProductArchive />, layout: ProtectedLayout },
-
-        /*--- PACKAGES ---*/
         { path: '/packages', element: <PackageMain />, layout: ProtectedLayout },
         { path: '/packages/create', element: <CreatePackage />, layout: ProtectedLayout },
         { path: '/packages/:id', element: <PackageDetail />, layout: ProtectedLayout },
         { path: '/packages/edit/:id', element: <EditPackage />, layout: ProtectedLayout },
         { path: '/packages/archives', element: <PackageArchive />, layout: ProtectedLayout },
-
-        /*--- QUOTATION TEMPLATE ---*/
         { path: '/quotations', element: <QuotationMain />, layout: ProtectedLayout },
         { path: '/quotations/create', element: <CreateQuotation />, layout: ProtectedLayout },
         { path: '/quotations/edit/:id', element: <EditQuotation />, layout: ProtectedLayout },
         { path: '/quotations/:id', element: <QuotationDetail />, layout: ProtectedLayout },
         { path: '/quotations/archives', element: <QuotationArchive />, layout: ProtectedLayout },
-
-        /*--- PROPERTY ---*/
         { path: '/properties', element: <PropertyMain />, layout: ProtectedLayout },
-
-
-        /*--- REGISTRATION FORM ---*/
         { path: '/registration-forms', element: <RegistrationFormMain />, layout: ProtectedLayout },
         { path: '/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
         { path: '/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
-
-
-        /*--- QUOTATION ORDER ---*/
         { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },
         { path: '/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
         { path: '/orders/:id/ver/:verId', element: <PreviousOrderDetail />, layout: ProtectedLayout },
@@ -179,13 +159,8 @@ const routeCat = [
         { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation />, layout: ProtectedLayout },
         { path: '/preview/owner/order/overview/id/:id', element: <OrderPreview />, layout: null },
         { path: '/orders/print/:id', element: <QuotationOrderPrint />, layout: null },
-
-        /*--- SALES ---*/
         { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },
         { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
-
-
-        /*--- PO---*/
         { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
         { path: '/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
         { path: '/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
@@ -196,12 +171,7 @@ const routeCat = [
         { path: '/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
         { path: '/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
         { path: '/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
-
-        /*--- DISCOUNT AND FEE ---*/
         { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
-
-
-        /*--- PROGRESS MANAGEMENT ---*/
         { path: '/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
         { path: '/reno-progress/progress-tracker', element: <PMProgressTrack />, layout: ProtectedLayout },
         { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
@@ -209,47 +179,23 @@ const routeCat = [
         { path: '/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/key-management/update', element: <UpdateKeyManagement />, layout: ProtectedLayout },
         { path: '/di-forms', element: <DIFormMain />, layout: ProtectedLayout },
-
-
-        /*--- USERS ---*/
         { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
         { path: '/users/:id', element: <UserDetail />, layout: ProtectedLayout },
         { path: '/users/internal/add', element: <AddInternalUser />, layout: ProtectedLayout },
         { path: '/users/add', element: <AddUser />, layout: ProtectedLayout },
         { path: '/users/add/owner', element: <AddOwner />, layout: ProtectedLayout },
-
-
-        /*--- INVENTORY ---*/
         { path: '/inventory', element: <InventoryMain />, layout: ProtectedLayout },
-
-
-        /*--- FINANCE ---*/
         { path: '/finance/sales-order-po', element: <SalesOrderPO />, layout: ProtectedLayout },
-
-
-        /*--- OTP REQUEST ---*/
         { path: '/otp-requests', element: <OTPRequestList />, layout: ProtectedLayout },
-
-
-        /*--- DEVELOPER TOOLS ---*/
         { path: '/developer-tools', element: <DeveloperTool />, layout: ProtectedLayout },
     ],
-
     // Owner
     [
-
-        /*--- QUOTATION VIEW ---*/
         { path: '/invoice/:id/view', element: <ViewQuotation />, layout: OwnerProtectedLayout },
         { path: '/invoice/:id/payment/success', element: <PaymentSuccess />, layout: OwnerProtectedLayout },
         { path: '/invoice/:id/payment/error', element: <PaymentError />, layout: OwnerProtectedLayout },
-
         { path: '/success/test', element: <PaymentSuccess />, layout: null },
-
-
-        /*--- REGISTRATION FORM ---*/
         { path: '/owner/form/reno-registration-forms/:id', element: <RenoRegistrationFormDetail />, layout: OwnerProtectedLayout },
-
-
         { path: '/owner/login', element: <OwnerLogin />, layout: null },
         { path: '/', element: <OwnerHome />, layout: OwnerProtectedLayout },
         { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
@@ -264,9 +210,7 @@ const routeCat = [
         { path: '/owner/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },
         { path: '/owner/reno/progress/:id/phase/:phase/attachments', element: <RenoProgressPhaseAttachments />, layout: OwnerProtectedLayout },
         { path: '/owner/order/:id/customize-addons', element: <CustomAddonPackage />, layout: OwnerProtectedLayout },
-
     ],
-
     // Operation
     [
         { path: '/op/login', element: <OperationLogin />, layout: null },
@@ -278,63 +222,47 @@ const routeCat = [
         { path: '/op/form/submit/success', element: <OpFormSubmitSuccess />, layout: OperationProtectedLayout },
         { path: '/op/reno/progress/:id', element: <RenoProgressManagement />, layout: OperationProtectedLayout },
     ],
-
     // Vendor
     [
         { path: '/vendor-login', element: <VendorLogin />, layout: null },
     ],
-
     // General
     [
-        /*--- TEST ---*/
         { path: '/test', element: <Test />, layout: null },
         { path: '/test2', element: <Test2 />, layout: null },
         { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
         { path: '/di-form/report', element: <PublicDIReport />, layout: null },
-    ]
+    ],
 ];
 
+// Convert routeCat to createBrowserRouter format
+const routes: RouteObject[] = routeCat.flat().map(({ path, element, layout: Layout }) => ({
+    path,
+    element: Layout ? <Layout>{element}</Layout> : element,
+}));
+
+// Create router with future flags
+const router = createBrowserRouter(routes, {
+    future: {
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+    },
+});
+
 function App() {
-    return (
-        <Router>
-            <AppRoutes />
-        </Router>
-    );
-}
-
-function AppRoutes() {
-    const location = useLocation();
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-
     useEffect(() => {
         KTComponent.init();
         KTLayout.init();
+    }, []);
 
-        const token = localStorage.getItem('token');
-        setIsAuthenticated(!!token);
-    }, [location]);
+    const token = localStorage.getItem('token');
+    const isAuthenticated = !!token;
 
     if (isAuthenticated === null) {
-        return <Loading />; // Show a loading indicator
+        return <Loading />;
     }
 
-    return (
-        <Routes>
-            {routeCat.map((routes) => (
-                routes.map(({ path, element, layout: Layout = ProtectedLayout }) => (
-                    <Route
-                        key={path}
-                        path={path}
-                        element={
-                            path === '/login' || Layout === null
-                                ? element
-                                : <Layout>{element}</Layout>
-                        }
-                    />
-                ))
-            ))}
-        </Routes>
-    );
+    return <RouterProvider router={router} />;
 }
 
 export default App;

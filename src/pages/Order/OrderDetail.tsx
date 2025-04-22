@@ -1153,7 +1153,7 @@ function OrderDetail() {
                                                     Total Single Bedroom:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.bedroom_count}
+                                                    {orderDetail.single_bedroom_count}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1161,7 +1161,7 @@ function OrderDetail() {
                                                     Total Queen Bedroom:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.bedroom_count}
+                                                    {orderDetail.queen_bedroom_count}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1271,10 +1271,10 @@ function OrderDetail() {
                                     <thead>
                                         <tr>
                                             <th className="text-sm text-gray-600 pb-3 text-left">Category</th>
+                                            <th className="text-sm text-gray-600 pb-3 text-right">Total Price</th>
                                             <th className="text-sm text-gray-600 pb-3 text-right">COGS</th>
                                             <th className="text-sm text-gray-600 pb-3 text-right">Nett Margin</th>
                                             <th className="text-sm text-gray-600 pb-3 text-right">Margin %</th>
-                                            <th className="text-sm text-gray-600 pb-3 text-right">Total Price</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1287,6 +1287,9 @@ function OrderDetail() {
                                                 <tr key={index}>
                                                     <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">{category.category}</td>
                                                     <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
+                                                        RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
                                                         RM {category.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </td>
                                                     <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
@@ -1295,15 +1298,15 @@ function OrderDetail() {
                                                     <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
                                                         {categoryMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                                     </td>
-                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
-                                                        RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </td>
                                                 </tr>
                                             );
                                         })}
                                         {/* Totals Row */}
                                         <tr className="border-t">
                                             <td className="text-sm text-gray-600 font-bold pt-3 pe-4 lg:pe-8">Total</td>
+                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 RM {totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
@@ -1313,32 +1316,37 @@ function OrderDetail() {
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 {marginInPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                             </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
                                         </tr>
                                         {/* Bonus/Discount Row (if applicable) */}
                                         {selectedQuotation.bonus && (
                                             <tr>
-                                                <td className="text-sm text-gray-600 pt-3 pe-4 lg:pe-8">Bonus/Discount</td>
-                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap" colSpan={3}></td>
+                                                <td className="text-sm text-gray-600 pt-3 whitespace-nowrap">Bonus/Discount</td>
                                                 <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
                                                     - RM {Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">-</td>
+                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
+                                                    - RM {Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
+                                                    - {(marginInPercentage - nettMarginPercentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                                 </td>
                                             </tr>
                                         )}
                                         {/* Nett Amount Row */}
                                         <tr>
                                             <td className="text-sm text-gray-600 font-bold pt-3 pe-4 lg:pe-8">Nett Amount</td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap" colSpan={1}></td>
+                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                RM {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                RM {(totalCogs).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 RM {nettMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 {nettMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                         </tr>
                                     </tbody>

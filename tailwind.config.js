@@ -323,7 +323,12 @@ export default {
 					600: '#0B0C10',
 					black: '#000000',
 					clarity: 'rgba(24, 25, 31, 0.50)',
-				}
+				},
+				teal: {
+					50: '#e6fffa',
+					500: '#14b8a6',
+					700: '#0d9488',
+				},
 			},
 			boxShadow: {
 				card: 'var(--tw-card-box-shadow)',
@@ -411,7 +416,23 @@ export default {
 				lg: '1024px',
 				xl: '1280px',
 				'2xl': '1536px',
-			}
+			},
+			animation: {
+				'fade-in': 'fadeIn 0.3s ease-in-out',
+				'pulse-once': 'pulse-once 0.5s ease-in-out',
+			},
+			keyframes: {
+				fadeIn: {
+					'0%': { opacity: '0', transform: 'translateY(10px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
+				},
+				'pulse-once': {
+					'0%': { transform: 'scale(1)' },
+					'50%': { transform: 'scale(1.05)' },
+					'100%': { transform: 'scale(1)' },
+				},
+			},
+
 		},
 		custom: ({ theme }) => ({
 			components: {

@@ -388,7 +388,7 @@ function PackageDetail() {
                                             <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
                                                 RM {product.provisioning.install.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
-                                            <td className="whitespace-nowrap text-gray-900 font-semibold">
+                                            <td className="whitespace-nowrap font-semibold text-success">
                                                 RM {((product.provisioning.supply.retail_price + product.provisioning.install.retail_price) * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                             <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
@@ -397,7 +397,7 @@ function PackageDetail() {
                                             <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
                                                 RM {product.provisioning.install.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
-                                            <td className="whitespace-nowrap text-gray-900 font-semibold">
+                                            <td className="whitespace-nowrap font-semibold text-danger">
                                                 RM {((product.provisioning.supply.cogs + product.provisioning.install.cogs) * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                         </tr>
