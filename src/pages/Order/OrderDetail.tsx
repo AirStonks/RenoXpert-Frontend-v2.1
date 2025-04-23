@@ -814,7 +814,7 @@ function OrderDetail() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="flex flex-col flex-[3] gap-8">
+                <div className="flex flex-col flex-[2] gap-8">
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
@@ -1407,7 +1407,7 @@ function OrderDetail() {
                                                                         {`Add-on Included: ${prodPackage.is_addon_included ? 'Yes' : 'No'}`}
                                                                     </span>
                                                                 )}
-                                                                <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md">Quantity: {(prodPackage.quantity ? prodPackage.quantity : 1)}</span>
+                                                                <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md whitespace-nowrap">Quantity: {(prodPackage.quantity ? prodPackage.quantity : 1)}</span>
                                                                 <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
                                                                 <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                                             </div>
@@ -1419,11 +1419,14 @@ function OrderDetail() {
                                                                         <tr>
                                                                             <th className='w-[10px] text-center'>Supply</th>
                                                                             <th className='w-[10px] text-center'>Install</th>
-                                                                            <th className='w-[250px]'>Product</th>
+                                                                            <th className='w-[450px]'>Product</th>
                                                                             <th className='w-[100px] text-center'>Quantity</th>
-                                                                            <th className='w-[100px] text-center'>Unit Price</th>
+                                                                            <th className='w-[100px] text-center'>Supply RP</th>
+                                                                            <th className='w-[100px] text-center'>Install RP</th>
+                                                                            <th className='w-[100px] text-center'>Supply COGS</th>
+                                                                            <th className='w-[100px] text-center'>Install COGS</th>
                                                                             <th className='w-[100px] text-center'>Discount</th>
-                                                                            <th className='w-[100px] text-center'>Total Price</th>
+                                                                            <th className='w-[100px] text-center'>Total Amount</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -1476,10 +1479,23 @@ function OrderDetail() {
                                                                                         {product.pivot.included ? ((!product.pivot.includeSupply && !product.pivot.includeInstall ? 0 : product.pivot.quantity)) : '0'}
                                                                                     </span>
                                                                                 </td>
-                                                                                <td className="text-center">
-                                                                                    RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                <td className="text-center whitespace-nowrap">
+                                                                                    RM {product.provisioning.supply.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                                 </td>
-                                                                                <td className='text-center'>
+                                                                                <td className="text-center whitespace-nowrap">
+                                                                                    RM {product.provisioning.install.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                </td>
+                                                                                <td className="text-center whitespace-nowrap">
+                                                                                    {product.pivot.includeSupply &&
+                                                                                        `RM ${product.provisioning.supply.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                                    }
+                                                                                </td>
+                                                                                <td className="text-center whitespace-nowrap">
+                                                                                    {product.pivot.includeInstall &&
+                                                                                        `RM ${product.provisioning.install.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                                    }
+                                                                                </td>
+                                                                                <td className='text-center whitespace-nowrap'>
                                                                                     {!product.pivot.includeSupply || !product.pivot.includeInstall
                                                                                         ? `- RM ${(
                                                                                             (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0) +
@@ -1488,7 +1504,7 @@ function OrderDetail() {
                                                                                             .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                                         : null}
                                                                                 </td>
-                                                                                <td className="text-center">
+                                                                                <td className="text-center whitespace-nowrap">
                                                                                     {!product.pivot.included
                                                                                         ? null
                                                                                         : `RM ${(
