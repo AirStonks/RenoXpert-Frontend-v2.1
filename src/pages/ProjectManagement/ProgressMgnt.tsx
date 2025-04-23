@@ -864,10 +864,40 @@ function ProgressMgnt() {
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                        Bedroom:
+                                    </td>
+                                    <td className="text-sm text-gray-900 pb-3">
+                                        {renoProgress.sale.order.bedroom_count}
+                                    </td>
                                 </tr>
+                                {renoProgress.sale.order.single_bedroom_count && renoProgress.sale.order.queen_bedroom_count &&
+                                    <>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Single Bedroom:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                {renoProgress.sale.order.single_bedroom_count}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                                Queen Bedroom:
+                                            </td>
+                                            <td className="text-sm text-gray-900 pb-3">
+                                                {renoProgress.sale.order.queen_bedroom_count}
+                                            </td>
+                                        </tr>
+                                    </>
+                                }
                                 <tr>
-                                </tr>
-                                <tr>
+                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
+                                        Bathroom:
+                                    </td>
+                                    <td className="text-sm text-gray-900 pb-3">
+                                        {renoProgress.sale.order.bathroom_count}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

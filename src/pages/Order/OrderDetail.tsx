@@ -814,7 +814,7 @@ function OrderDetail() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="flex flex-col flex-[3] gap-8">
+                <div className="flex flex-col flex-[2] gap-8">
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
@@ -1153,7 +1153,7 @@ function OrderDetail() {
                                                     Total Single Bedroom:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.bedroom_count}
+                                                    {orderDetail.single_bedroom_count}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1161,7 +1161,7 @@ function OrderDetail() {
                                                     Total Queen Bedroom:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.bedroom_count}
+                                                    {orderDetail.queen_bedroom_count}
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1271,10 +1271,10 @@ function OrderDetail() {
                                     <thead>
                                         <tr>
                                             <th className="text-sm text-gray-600 pb-3 text-left">Category</th>
+                                            <th className="text-sm text-gray-600 pb-3 text-right">Total Price</th>
                                             <th className="text-sm text-gray-600 pb-3 text-right">COGS</th>
                                             <th className="text-sm text-gray-600 pb-3 text-right">Nett Margin</th>
                                             <th className="text-sm text-gray-600 pb-3 text-right">Margin %</th>
-                                            <th className="text-sm text-gray-600 pb-3 text-right">Total Price</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1287,6 +1287,9 @@ function OrderDetail() {
                                                 <tr key={index}>
                                                     <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">{category.category}</td>
                                                     <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
+                                                        RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
                                                         RM {category.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </td>
                                                     <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
@@ -1295,15 +1298,15 @@ function OrderDetail() {
                                                     <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
                                                         {categoryMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                                     </td>
-                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
-                                                        RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </td>
                                                 </tr>
                                             );
                                         })}
                                         {/* Totals Row */}
                                         <tr className="border-t">
                                             <td className="text-sm text-gray-600 font-bold pt-3 pe-4 lg:pe-8">Total</td>
+                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 RM {totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
@@ -1313,32 +1316,37 @@ function OrderDetail() {
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 {marginInPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                             </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
                                         </tr>
                                         {/* Bonus/Discount Row (if applicable) */}
                                         {selectedQuotation.bonus && (
                                             <tr>
-                                                <td className="text-sm text-gray-600 pt-3 pe-4 lg:pe-8">Bonus/Discount</td>
-                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap" colSpan={3}></td>
+                                                <td className="text-sm text-gray-600 pt-3 whitespace-nowrap">Bonus/Discount</td>
                                                 <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
                                                     - RM {Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">-</td>
+                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
+                                                    - RM {Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
+                                                    - {(marginInPercentage - nettMarginPercentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                                 </td>
                                             </tr>
                                         )}
                                         {/* Nett Amount Row */}
                                         <tr>
                                             <td className="text-sm text-gray-600 font-bold pt-3 pe-4 lg:pe-8">Nett Amount</td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap" colSpan={1}></td>
+                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                RM {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
+                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                RM {(totalCogs).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 RM {nettMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 {nettMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -1399,7 +1407,7 @@ function OrderDetail() {
                                                                         {`Add-on Included: ${prodPackage.is_addon_included ? 'Yes' : 'No'}`}
                                                                     </span>
                                                                 )}
-                                                                <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md">Quantity: {(prodPackage.quantity ? prodPackage.quantity : 1)}</span>
+                                                                <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md whitespace-nowrap">Quantity: {(prodPackage.quantity ? prodPackage.quantity : 1)}</span>
                                                                 <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
                                                                 <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                                             </div>
@@ -1411,11 +1419,14 @@ function OrderDetail() {
                                                                         <tr>
                                                                             <th className='w-[10px] text-center'>Supply</th>
                                                                             <th className='w-[10px] text-center'>Install</th>
-                                                                            <th className='w-[250px]'>Product</th>
+                                                                            <th className='w-[450px]'>Product</th>
                                                                             <th className='w-[100px] text-center'>Quantity</th>
-                                                                            <th className='w-[100px] text-center'>Unit Price</th>
+                                                                            <th className='w-[100px] text-center'>Supply RP</th>
+                                                                            <th className='w-[100px] text-center'>Install RP</th>
+                                                                            <th className='w-[100px] text-center'>Supply COGS</th>
+                                                                            <th className='w-[100px] text-center'>Install COGS</th>
                                                                             <th className='w-[100px] text-center'>Discount</th>
-                                                                            <th className='w-[100px] text-center'>Total Price</th>
+                                                                            <th className='w-[100px] text-center'>Total Amount</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -1468,10 +1479,23 @@ function OrderDetail() {
                                                                                         {product.pivot.included ? ((!product.pivot.includeSupply && !product.pivot.includeInstall ? 0 : product.pivot.quantity)) : '0'}
                                                                                     </span>
                                                                                 </td>
-                                                                                <td className="text-center">
-                                                                                    RM {(product.provisioning.supply.retail_price + product.provisioning.install.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                <td className="text-center whitespace-nowrap">
+                                                                                    RM {product.provisioning.supply.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                                 </td>
-                                                                                <td className='text-center'>
+                                                                                <td className="text-center whitespace-nowrap">
+                                                                                    RM {product.provisioning.install.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                </td>
+                                                                                <td className="text-center whitespace-nowrap">
+                                                                                    {product.pivot.includeSupply &&
+                                                                                        `RM ${product.provisioning.supply.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                                    }
+                                                                                </td>
+                                                                                <td className="text-center whitespace-nowrap">
+                                                                                    {product.pivot.includeInstall &&
+                                                                                        `RM ${product.provisioning.install.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                                    }
+                                                                                </td>
+                                                                                <td className='text-center whitespace-nowrap'>
                                                                                     {!product.pivot.includeSupply || !product.pivot.includeInstall
                                                                                         ? `- RM ${(
                                                                                             (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0) +
@@ -1480,7 +1504,7 @@ function OrderDetail() {
                                                                                             .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                                         : null}
                                                                                 </td>
-                                                                                <td className="text-center">
+                                                                                <td className="text-center whitespace-nowrap">
                                                                                     {!product.pivot.included
                                                                                         ? null
                                                                                         : `RM ${(
