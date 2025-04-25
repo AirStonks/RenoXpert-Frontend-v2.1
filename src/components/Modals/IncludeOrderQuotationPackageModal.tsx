@@ -167,13 +167,13 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                         quantity: 1,
                         total_price: packagePrice,
                         category: packageCategory,
-                        is_addon: packageIsAddon === '1',
+                        is_addon: packageIsAddon === 'true',
                         is_addon_included: false,
                         description_internal: packageInternalDesc,
                         products: selectedPackage.products || [], // Ensure products is included
                     };
 
-                    console.log(packageIsAddon);
+                    console.log(packageIsAddon === 'true');
                     
                     
                     const updatedPackages = [...selectedPackages, newPackage];
