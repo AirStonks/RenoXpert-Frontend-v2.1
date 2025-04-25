@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchDIForms, fetchQCForms, retrieveRenoProgresses, userDetail } from "../../services/operationApi";
+import { fetchRPMDIForms, fetchQCForms, retrieveRenoProgresses, userDetail } from "../../services/operationApi";
 import { DefectInspectionForm, QCForm, RenoProgress, User } from "../../types";
 import Loading from "../../components/Loading";
 import KTComponents from "../../metronic/core";
@@ -127,7 +127,7 @@ function OperationHome() {
     ) => {
         try {
             setLoading(true);
-            const response = await fetchDIForms(size, page, searchTerm, order, field, status, true);
+            const response = await fetchRPMDIForms(size, page, searchTerm, order, field, status, true);
             const data = response?.data || [];
             setDIForms(data);
             setTotalItems(response?.totalCount || 0);
@@ -169,7 +169,7 @@ function OperationHome() {
     const getDIForms = async () => {
         setLoading(true);
         try {
-            const response = await fetchDIForms(5, 1, '', 'asc', '', true);
+            const response = await fetchRPMDIForms(5, 1, '', 'asc', '', true);
 
             if (response.success) {
                 setDIForms(response.data);
@@ -613,7 +613,7 @@ function OperationHome() {
                                                     )
                                                     .map((diForm: DefectInspectionForm, index: number) => (
                                                         <Link
-                                                            to={`/reno/defect-inspection-form?progressId=${diForm.reno_progress_id}`}
+                                                            to={`/reno/defect-inspection-form/${diForm.id}`}
                                                             className="card shadow-none rounded-lg" key={index}
                                                         >
                                                             <div className="card-body flex justify-between items-center p-4">

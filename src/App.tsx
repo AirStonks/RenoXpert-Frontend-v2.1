@@ -100,6 +100,9 @@ import POInvoicePrint from './pages/PO/components/POInvoicePrint';
 import DIFormMain from './pages/ProjectManagement/DIFormMain';
 import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
 import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
+import Error404 from './pages/Errors/Error404';
+import DIReport from './pages/ProjectManagement/DIReport';
+
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -179,6 +182,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/key-management/update', element: <UpdateKeyManagement />, layout: ProtectedLayout },
         { path: '/di-forms', element: <DIFormMain />, layout: ProtectedLayout },
+        { path: '/di-forms/:id', element: <DIReport />, layout: ProtectedLayout },
         { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
         { path: '/users/:id', element: <UserDetail />, layout: ProtectedLayout },
         { path: '/users/internal/add', element: <AddInternalUser />, layout: ProtectedLayout },
@@ -216,7 +220,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/op/login', element: <OperationLogin />, layout: null },
         { path: '/op/home', element: <OperationHome />, layout: OperationProtectedLayout },
         { path: '/op', element: <OperationHome />, layout: OperationProtectedLayout },
-        { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
+        { path: '/reno/defect-inspection-form/:id', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
         { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
         { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
         { path: '/op/form/submit/success', element: <OpFormSubmitSuccess />, layout: OperationProtectedLayout },
@@ -232,6 +236,8 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/test2', element: <Test2 />, layout: null },
         { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
         { path: '/di-form/report', element: <PublicDIReport />, layout: null },
+        // Add catch-all route for 404
+        { path: '*', element: <Error404 />, layout: null },
     ],
 ];
 

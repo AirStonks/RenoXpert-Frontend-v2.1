@@ -1241,7 +1241,11 @@ function OrderDetail() {
                                                     className="flex items-center flex-wrap gap-3.5 cursor-pointer text-orange-500 font-semibold text-sm">
                                                     {orderDetail.order_no}-{String.fromCharCode(64 + orderQuotation.version)}
                                                 </Link>
-                                                <span className="text-xs text-gray-600">
+                                                <span className="text-xs text-gray-500">
+                                                    Updated At:
+                                                    <span className="font-semibold ml-1">{orderQuotation.updated_at}</span>
+                                                </span>
+                                                <span className="text-xs text-gray-700">
                                                     Updated By:
                                                     <span className="font-semibold ml-1">{orderQuotation.created_by.name}</span>
                                                 </span>
@@ -1414,19 +1418,21 @@ function OrderDetail() {
                                                         </button>
                                                         <div className="accordion-content active border-t" id={"package_content_" + prodPackage.id.toString()}>
                                                             <div className="product-list flex flex-col">
-                                                                <table className="table align-middle text-gray-700 font-medium text-sm">
+                                                                <table className="table align-middle text-gray-700 text-sm">
                                                                     <thead>
                                                                         <tr>
                                                                             <th className='w-[10px] text-center'>Supply</th>
                                                                             <th className='w-[10px] text-center'>Install</th>
                                                                             <th className='w-[450px]'>Product</th>
                                                                             <th className='w-[100px] text-center'>Quantity</th>
-                                                                            <th className='w-[100px] text-center'>Supply RP</th>
-                                                                            <th className='w-[100px] text-center'>Install RP</th>
-                                                                            <th className='w-[100px] text-center'>Supply COGS</th>
-                                                                            <th className='w-[100px] text-center'>Install COGS</th>
-                                                                            <th className='w-[100px] text-center'>Discount</th>
-                                                                            <th className='w-[100px] text-center'>Total Amount</th>
+                                                                            <th className='w-[100px] whitespace-nowrap'>Supply RRP</th>
+                                                                            <th className='w-[100px] whitespace-nowrap'>Install RRP</th>
+                                                                            <th className='w-[100px] whitespace-nowrap'>Total RRP</th>
+                                                                            <th className='w-[100px] whitespace-nowrap'>Supply COGS</th>
+                                                                            <th className='w-[100px] whitespace-nowrap'>Install COGS</th>
+                                                                            <th className='w-[100px] whitespace-nowrap'>Total COGS</th>
+                                                                            <th className='w-[100px] whitespace-nowrap'>Margin %</th>
+                                                                            <th className='w-[100px] whitespace-nowrap'>Margin Amount</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -1479,43 +1485,99 @@ function OrderDetail() {
                                                                                         {product.pivot.included ? ((!product.pivot.includeSupply && !product.pivot.includeInstall ? 0 : product.pivot.quantity)) : '0'}
                                                                                     </span>
                                                                                 </td>
-                                                                                <td className="text-center whitespace-nowrap">
-                                                                                    RM {product.provisioning.supply.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
+                                                                                    {product.pivot.includeSupply &&
+                                                                                        `RM ${product.provisioning.supply.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                                    }
                                                                                 </td>
-                                                                                <td className="text-center whitespace-nowrap">
-                                                                                    RM {product.provisioning.install.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                                <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
+                                                                                    {product.pivot.includeInstall &&
+                                                                                        `RM ${product.provisioning.install.retail_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                                    }
                                                                                 </td>
-                                                                                <td className="text-center whitespace-nowrap">
+                                                                                <td className="whitespace-nowrap font-semibold text-success">
+                                                                                    {(!product.pivot.includeSupply && !product.pivot.includeInstall)
+                                                                                        ? null
+                                                                                        : `RM ${(
+                                                                                            (product.pivot.includeSupply ? (product.provisioning.supply.retail_price * product.pivot.quantity) : 0) +
+                                                                                            (product.pivot.includeInstall ? (product.provisioning.install.retail_price * product.pivot.quantity) : 0)
+                                                                                        )
+                                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
                                                                                     {product.pivot.includeSupply &&
                                                                                         `RM ${product.provisioning.supply.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                                     }
                                                                                 </td>
-                                                                                <td className="text-center whitespace-nowrap">
+                                                                                <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
                                                                                     {product.pivot.includeInstall &&
                                                                                         `RM ${product.provisioning.install.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                                                                                     }
                                                                                 </td>
-                                                                                <td className='text-center whitespace-nowrap'>
-                                                                                    {!product.pivot.includeSupply || !product.pivot.includeInstall
-                                                                                        ? `- RM ${(
-                                                                                            (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0) +
-                                                                                            (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
-                                                                                        )
-                                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                                                                        : null}
-                                                                                </td>
-                                                                                <td className="text-center whitespace-nowrap">
-                                                                                    {!product.pivot.included
+                                                                                <td className="whitespace-nowrap font-semibold text-danger">
+                                                                                    {(!product.pivot.includeSupply && !product.pivot.includeInstall)
                                                                                         ? null
                                                                                         : `RM ${(
-                                                                                            (product.provisioning.supply.retail_price * product.pivot.quantity -
-                                                                                                (!product.pivot.includeSupply ? product.provisioning.supply.excluded_price * product.pivot.quantity : 0)
-                                                                                            ) +
-                                                                                            (product.provisioning.install.retail_price * product.pivot.quantity -
-                                                                                                (!product.pivot.includeInstall ? product.provisioning.install.excluded_price * product.pivot.quantity : 0)
-                                                                                            )
+                                                                                            (product.pivot.includeSupply ? (product.provisioning.supply.cogs * product.pivot.quantity) : 0) +
+                                                                                            (product.pivot.includeInstall ? (product.provisioning.install.cogs * product.pivot.quantity) : 0)
                                                                                         )
                                                                                             .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap font-semibold">
+                                                                                    {product.pivot.included
+                                                                                        ? (() => {
+                                                                                            const totalRRP =
+                                                                                                (product.pivot.includeSupply
+                                                                                                    ? product.provisioning.supply.retail_price * product.pivot.quantity
+                                                                                                    : 0) +
+                                                                                                (product.pivot.includeInstall
+                                                                                                    ? product.provisioning.install.retail_price * product.pivot.quantity
+                                                                                                    : 0);
+                                                                                            const totalCOGS =
+                                                                                                (product.pivot.includeSupply
+                                                                                                    ? product.provisioning.supply.cogs * product.pivot.quantity
+                                                                                                    : 0) +
+                                                                                                (product.pivot.includeInstall
+                                                                                                    ? product.provisioning.install.cogs * product.pivot.quantity
+                                                                                                    : 0);
+
+                                                                                            return totalRRP !== 0
+                                                                                                ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(
+                                                                                                    undefined,
+                                                                                                    { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                                                                                                )}%`
+                                                                                                : "";
+                                                                                        })()
+                                                                                        : ""}
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap font-semibold">
+                                                                                    {product.pivot.included
+                                                                                        ? (() => {
+                                                                                            const totalRRP =
+                                                                                                (product.pivot.includeSupply
+                                                                                                    ? product.provisioning.supply.retail_price * product.pivot.quantity
+                                                                                                    : 0) +
+                                                                                                (product.pivot.includeInstall
+                                                                                                    ? product.provisioning.install.retail_price * product.pivot.quantity
+                                                                                                    : 0);
+                                                                                            const totalCOGS =
+                                                                                                (product.pivot.includeSupply
+                                                                                                    ? product.provisioning.supply.cogs * product.pivot.quantity
+                                                                                                    : 0) +
+                                                                                                (product.pivot.includeInstall
+                                                                                                    ? product.provisioning.install.cogs * product.pivot.quantity
+                                                                                                    : 0);
+
+                                                                                            const marginAmount = totalRRP - totalCOGS;
+
+                                                                                            return totalRRP !== 0
+                                                                                                ? `RM ${marginAmount.toLocaleString(undefined, {
+                                                                                                    minimumFractionDigits: 2,
+                                                                                                    maximumFractionDigits: 2,
+                                                                                                })}`
+                                                                                                : "";
+                                                                                        })()
+                                                                                        : ""}
                                                                                 </td>
                                                                             </tr>
                                                                         ))}

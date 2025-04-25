@@ -1,65 +1,72 @@
-// src\pages\Product\Package\PackageMain.tsx
-
 import { useNavigate } from 'react-router-dom';
-import Button from '../../components/Buttons/Button';
-import KTComponent from '../../metronic/core';
 import { useEffect, useRef, useState } from 'react';
 import { Package } from '../../types';
 import { packageIndex, removePackage } from '../../services/api';
-import Loading from '../../components/Loading';
-import DeleteModal from '../../components/Modals/DeleteModal';
+import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import DeleteModal from '../../components/Modals/DeleteModal';
+import React from 'react';
+import {
+    ChevronDownIcon,
+    ChevronUpIcon,
+    ArrowPathIcon,
+    MagnifyingGlassIcon,
+    Squares2X2Icon,
+    ListBulletIcon,
+} from '@heroicons/react/24/solid';
 
-type SortOrder = 'asc' | 'desc' | null;
+type SortOrder = 'asc' | 'desc';
+type FilterCategory = 'All' | 'renovation' | 'partition' | 'carpentry' | 'furniture' | 'electrical_appliances' | 'air_conditioning' | 'smart_iot' | 'project_management' | 'loose_items' | 'others';
+type SortField = 'name' | 'created_at' | 'updated_at';
+type ViewMode = 'card' | 'list';
 
 const categoryOptions = [
-    { value: "renovation", label: "Renovation" },
-    { value: "partition", label: "Partition" },
-    { value: "carpentry", label: "Carpentry" },
-    { value: "furniture", label: "Furniture" },
-    { value: "electrical_appliances", label: "Electrical Appliances" },
-    { value: "air_conditioning", label: "Air Conditioning" },
-    { value: "smart_iot", label: "Smart IoT" },
-    { value: "project_management", label: "Project Management" },
-    { value: "loose_items", label: "Loose Items" },
-    { value: "others", label: "Others" },
+    { value: 'renovation', label: 'Renovation' },
+    { value: 'partition', label: 'Partition' },
+    { value: 'carpentry', label: 'Carpentry' },
+    { value: 'furniture', label: 'Furniture' },
+    { value: 'electrical_appliances', label: 'Electrical Appliances' },
+    { value: 'air_conditioning', label: 'Air Conditioning' },
+    { value: 'smart_iot', label: 'Smart IoT' },
+    { value: 'project_management', label: 'Project Management' },
+    { value: 'loose_items', label: 'Loose Items' },
+    { value: 'others', label: 'Others' },
 ];
 
 function PackageMain() {
     const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    // Define the shape of the stored config with expiration
     interface StoredConfig {
         page: number;
         size: number;
         searchTerm: string;
-        sortField: string;
+        sortField: SortField;
         sortOrder: SortOrder;
-        expiresAt: number; // Timestamp in milliseconds
+        filterCategory: FilterCategory;
+        viewMode: ViewMode;
+        expiresAt: number;
     }
 
-
-
-    // Load initial state from localStorage with expiration check
     const getInitialState = (): StoredConfig => {
         const savedState = localStorage.getItem('packageMainConfig');
-        const defaultState = {
+        const defaultState: StoredConfig = {
             page: 1,
             size: 10,
             searchTerm: '',
-            sortField: '',
-            sortOrder: 'desc' as SortOrder,
-            expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 1 day from now
+            sortField: 'name',
+            sortOrder: 'asc',
+            filterCategory: 'All',
+            viewMode: 'list',
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000,
         };
 
         if (savedState) {
             const parsedState: StoredConfig = JSON.parse(savedState);
             const currentTime = Date.now();
 
-            // Check if the data has expired
             if (currentTime > parsedState.expiresAt) {
-                localStorage.removeItem('packageMainConfig'); // Clear expired data
+                localStorage.removeItem('packageMainConfig');
                 return defaultState;
             }
             return parsedState;
@@ -67,19 +74,32 @@ function PackageMain() {
         return defaultState;
     };
 
-    const [packages, setPackages] = useState<Package[]>([]); // Initialize as an empty array
+    const [packages, setPackages] = useState<Package[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(getInitialState().page);
     const [size, setSize] = useState<number>(getInitialState().size);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>(getInitialState().searchTerm);
-    const [sortField, setSortField] = useState<string>(getInitialState().sortField);
+    const [sortField, setSortField] = useState<SortField>(getInitialState().sortField);
     const [sortOrder, setSortOrder] = useState<SortOrder>(getInitialState().sortOrder);
+    const [filterCategory, setFilterCategory] = useState<FilterCategory>(getInitialState().filterCategory);
+    const [viewMode, setViewMode] = useState<ViewMode>(getInitialState().viewMode);
+    const [expandedRows, setExpandedRows] = useState<number[]>([]);
+    const [selectedPackage, setSelectedPackage] = useState<{ id: number | string; name: string } | null>(null);
 
-    const [selectedPackage, setSelectedPackage] = useState<{ id: number | string, name: string } | null>(null);
+    const notify = (type: 'success' | 'error', message: string) => {
+        toast[type](message, {
+            position: 'top-center',
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme') || 'light',
+        });
+    };
 
-    // Save state to localStorage whenever it changes
     useEffect(() => {
         const config: StoredConfig = {
             page,
@@ -87,438 +107,550 @@ function PackageMain() {
             searchTerm,
             sortField,
             sortOrder,
-            expiresAt: Date.now() + 24 * 60 * 60 * 1000, // Set expiration to 1 day from now
+            filterCategory,
+            viewMode,
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000,
         };
         localStorage.setItem('packageMainConfig', JSON.stringify(config));
-    }, [page, size, searchTerm, sortField, sortOrder]);
+    }, [page, size, searchTerm, sortField, sortOrder, filterCategory, viewMode]);
 
     useEffect(() => {
-        document.title = "Packages | RenoXpert";
-        KTComponent.init();
-        initPackageTable(page, size, searchTerm, sortOrder, sortField);
-    }, [page, size, searchTerm, sortOrder, sortField]);
+        document.title = 'Packages | RenoXpert';
+        fetchPackages(page, size, searchTerm, sortOrder, sortField, filterCategory);
+    }, []);
 
-    const initPackageTable = async (
+    const fetchPackages = async (
         page: number,
         size: number,
-        searchTerm?: string,
-        order?: string,
-        field?: string
+        searchTerm: string,
+        order: SortOrder,
+        field: SortField,
+        category: FilterCategory
     ) => {
         try {
             setIsLoading(true);
             const response = await packageIndex(size, page, searchTerm, order, field, true);
-
-            const data = response?.data || [];
+            let data = response?.data || [];
             setPackages(data);
-
             setTotalItems(response?.totalCount || 0);
         } catch (error) {
             console.error('Error fetching packages:', error);
             setError('Failed to load packages');
+            notify('error', 'Failed to load packages');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleRefreshTable = async () => {
-        initPackageTable(page, size, searchTerm);
+    const handleRefresh = async () => {
+        setPage(1);
+        await fetchPackages(1, size, searchTerm, sortOrder, sortField, filterCategory);
+        notify('success', 'Packages refreshed');
     };
 
-    const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchTerm(value);
 
-        // Debounce logic remains the same
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
 
         debounceTimeout.current = setTimeout(async () => {
             setPage(1);
-
-            try {
-                setIsLoading(true);
-                const response = await packageIndex(size, 1, value, sortOrder, sortField, true);
-
-                const data = response?.data || [];
-                setPackages(data);
-                setTotalItems(response?.totalCount || 0);
-            } catch (error) {
-                console.error('Error searching products:', error);
-                setError('Failed to search products');
-            } finally {
-                setIsLoading(false);
-            }
-
+            await fetchPackages(1, size, value, sortOrder, sortField, filterCategory);
         }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
-        initPackageTable(newPage, size, searchTerm, sortOrder, sortField);
+        fetchPackages(newPage, size, searchTerm, sortOrder, sortField, filterCategory);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
-        setPage(1); // Reset to the first page when changing the page size
-        initPackageTable(1, newSize, searchTerm, sortOrder, sortField);
+        setPage(1);
+        fetchPackages(1, newSize, searchTerm, sortOrder, sortField, filterCategory);
     };
 
-    const handleSort = (field: string) => {
-        if (sortField === field) {
-            // Cycle through states: null -> asc -> desc -> null
-            if (sortOrder === null) {
-                setSortOrder('asc');
-                initPackageTable(page, size, searchTerm, 'asc', field);
-            } else if (sortOrder === 'asc') {
-                setSortOrder('desc');
-                initPackageTable(page, size, searchTerm, 'desc', field);
-            } else {
-                setSortOrder(null);
-                setSortField('');
-                initPackageTable(page, size, searchTerm, null, '');
-            }
-        } else {
-            // New field, start with ascending
-            setSortField(field);
-            setSortOrder('asc');
-            initPackageTable(page, size, searchTerm, 'asc', field);
-        }
+    const handleSortChange = (field: SortField) => {
+        const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
+        setSortField(field);
+        setSortOrder(newOrder);
+        fetchPackages(page, size, searchTerm, newOrder, field, filterCategory);
     };
 
-    const getSortIcon = (field: string) => {
-        if (sortField !== field) {
-            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
-        }
-        switch (sortOrder) {
-            case 'asc':
-                return <i className="ki-outline ki-arrow-up text-primary" />;
-            case 'desc':
-                return <i className="ki-outline ki-arrow-down text-primary" />;
-            default:
-                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
-        }
+    const handleFilterChange = (category: FilterCategory) => {
+        setFilterCategory(category);
+        setPage(1);
+        fetchPackages(1, size, searchTerm, sortOrder, sortField, category);
     };
 
-    const handleViewPackage = (pkgId: string | number) => {
-        navigate(`/packages/${pkgId}`);
-    }
+    const toggleRowExpansion = (id: number) => {
+        setExpandedRows((prev) =>
+            prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+        );
+    };
+
+    const toggleViewMode = () => {
+        setViewMode(viewMode === 'card' ? 'list' : 'card');
+        setExpandedRows([]);
+    };
 
     const handleRemovePackage = async (pkgId: number) => {
         try {
             const response = await removePackage(pkgId);
-
             if (response?.success) {
-                initPackageTable(page, size);
+                notify('success', 'Package removed successfully');
+                fetchPackages(page, size, searchTerm, sortOrder, sortField, filterCategory);
                 return { success: true };
             }
+            notify('error', 'Package removal failed');
             return { success: false };
-
         } catch (error) {
+            notify('error', 'Package removal failed');
             return { success: false, message: 'Package removal failed' };
         }
-    }
+    };
+
+    const formatDate = (date: string | null) => {
+        if (!date) return '-';
+        const [day, month, year] = date.split('/').map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        if (isNaN(dateObj.getTime())) return '-';
+        return dateObj.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        });
+    };
 
     const totalPages = Math.ceil(totalItems / size);
 
     return (
-        <>
-            {/* Loading Overlay */}
-            {isLoading && <Loading />}
-
-            <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-center flex-wrap">
-                    <span className="text-2xl font-bold text-gray-900">
-                        Package Overview
-                    </span>
-                    <div className="flex gap-3 flex-wrap">
-                        <Button
-                            url='/packages/create'
-                            btnText='Add New Package'
-                            btnSize='btn-sm'
-                            icon='ki-outline ki-plus-squared'
-                        />
-                        <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
-                            <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
-                                <i className="ki-filled ki-dots-vertical"></i>
-                            </button>
-
-                            <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
-                                {/* <div className="menu-item disabled">
-                                    <button
-                                        className="menu-link"
-                                        data-modal-toggle="#archive_product_modal"
-                                    >
-                                        <span className="menu-title">
-                                            <div className="flex gap-2 items-center">
-                                                <span>Manage Category</span>
-                                            </div>
-                                        </span>
-                                    </button>
-                                </div> */}
-                                <div className="menu-item">
-                                    <Link
-                                        to={'/packages/archives'}
-                                        className="menu-link"
-                                    >
-                                        <span className="menu-title">
-                                            <div className="flex gap-2 items-center">
-                                                <i className="ki-filled ki-archive"></i>
-                                                <span>Archived Zone</span>
-                                            </div>
-                                        </span>
-                                    </Link>
-                                </div>
-                            </div>
+        <div className="min-h-screen bg-gray-100 p-4">
+            {/* Sticky Header */}
+            <div className="sticky top-0 bg-white shadow-md rounded-lg p-4 mb-6 z-10">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <h1 className="text-2xl font-bold text-gray-800">Package Overview</h1>
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="relative flex-1 md:flex-none">
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search packages..."
+                                value={searchTerm}
+                                onChange={handleSearch}
+                                className="pl-10 pr-4 py-2 w-full md:w-64 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
                         </div>
+                        <select
+                            value={filterCategory}
+                            onChange={(e) => handleFilterChange(e.target.value as FilterCategory)}
+                            className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="All">All Categories</option>
+                            {categoryOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                        <select
+                            value={sortField}
+                            onChange={(e) => handleSortChange(e.target.value as SortField)}
+                            className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="name">Name</option>
+                            <option value="created_at">Created Date</option>
+                            <option value="updated_at">Updated Date</option>
+                        </select>
+                        <button
+                            onClick={handleRefresh}
+                            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                        >
+                            <ArrowPathIcon className="h-5 w-5" />
+                        </button>
+                        <button
+                            onClick={toggleViewMode}
+                            className={`p-2 rounded-lg transition ${viewMode === 'card' ? 'bg-gray-200 text-gray-800' : 'bg-blue-500 text-white'} hover:bg-opacity-80`}
+                            title={viewMode === 'card' ? 'Switch to List View' : 'Switch to Card View'}
+                        >
+                            {viewMode === 'card' ? (
+                                <ListBulletIcon className="h-5 w-5" />
+                            ) : (
+                                <Squares2X2Icon className="h-5 w-5" />
+                            )}
+                        </button>
+                        <Link
+                            to="/packages/create"
+                            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                        >
+                            Add New Package
+                        </Link>
+                        <Link
+                            to="/packages/archives"
+                            className="p-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+                        >
+                            Archived Zone
+                        </Link>
                     </div>
                 </div>
+            </div>
 
-                <div className="card">
-                    <div className="card-header flex-wrap gap-2">
-                        <div className="card-title">
-                            Package Overview
-                        </div>
-                        <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
-                            <button
-                                className="btn-refresh"
-                                onClick={handleRefreshTable}
+            {/* Error State */}
+            {error && (
+                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6">
+                    <p>{error}</p>
+                    <button onClick={handleRefresh} className="mt-2 underline hover:text-red-900">
+                        Try Again
+                    </button>
+                </div>
+            )}
+
+            {/* Content: Card or List View */}
+            {viewMode === 'card' ? (
+                // Card View
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {isLoading ? (
+                        // Skeleton Loader
+                        Array.from({ length: 6 }).map((_, index) => (
+                            <div
+                                key={index}
+                                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md animate-pulse"
                             >
-                                <i className="ki-solid ki-arrows-circle text-lg"></i>
-                            </button>
-                            <div className="flex">
-                                <label className="input input-sm">
-                                    <i className="ki-filled ki-magnifier"></i>
-                                    <input
-                                        placeholder="Search packages"
-                                        type="text"
-                                        value={searchTerm}
-                                        onChange={handleSearch}
-                                    />
-                                </label>
+                                <div className="h-6 bg-gray-200 dark:bg-gray-600 rounded w-1/2 mb-4"></div>
+                                <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-full mb-2"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-1/2 mb-4"></div>
+                                <div className="h-2 bg-gray-200 dark:bg-gray-600 rounded w-full mb-2"></div>
+                                <div className="h-2 bg-gray-200 dark:bg-gray-600 rounded w-3/4"></div>
                             </div>
-                            <div className="flex flex-wrap gap-2.5">
-                                {/* <select className="select select-sm w-28">
-                                    <option value="1">
-                                        Latest
-                                    </option>
-                                    <option value="2">
-                                        Older
-                                    </option>
-                                    <option value="3">
-                                        Oldest
-                                    </option>
-                                </select>
-                                <button className="btn btn-sm btn-outline btn-primary">
-                                    <i className="ki-filled ki-setting-4">
-                                    </i>
-                                    Filters
-                                </button>
-                                <label className="switch switch-sm">
-                                    <input className="order-2" name="check" type="checkbox" value="1" />
-                                    <span className="switch-label order-1">Push Alerts</span>
-                                </label> */}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="card-table">
-                        <table className="table align-middle text-gray-700 font-medium text-sm">
-                            <thead>
-                                <tr>
-                                    <th
-                                        className='w-[200px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('name')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Name {getSortIcon('name')}
+                        ))
+                    ) : packages.length > 0 ? (
+                        packages.map((pkg) => (
+                            <div
+                                key={pkg.id}
+                                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg dark:hover:shadow-xl dark:hover:shadow-teal-500/20 transform hover:scale-105 transition cursor-pointer"
+                            >
+                                <div className="block">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                                {pkg.name}
+                                            </h2>
                                         </div>
-                                    </th>
-                                    <th
-                                        className='w-[300px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('description_internal')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Internal Description {getSortIcon('description_internal')}
-                                        </div>
-                                    </th>
-                                    <th className='w-[110px] text-center'>Price</th>
-                                    <th className='w-[150px] text-center'>Category</th>
-                                    <th className='w-[80px] text-center'>Created By</th>
-                                    <th
-                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('created_at')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Created Date {getSortIcon('created_at')}
-                                        </div>
-                                    </th>
-                                    <th className='w-[80px] text-center'>Updated By</th>
-                                    <th
-                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('updated_at')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Updated Date {getSortIcon('updated_at')}
-                                        </div>
-                                    </th>
-                                    <th className='w-[110px] text-center'>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {packages.length > 0 ? (
-                                    packages.map((pkg, pkgIndex) => (
-                                        <tr
-                                            key={pkgIndex}
-                                            className={`${pkgIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleRowExpansion(Number(pkg.id))}
+                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                            aria-label={expandedRows.includes(Number(pkg.id)) ? 'Collapse details' : 'Expand details'}
                                         >
-                                            <td>
+                                            {expandedRows.includes(Number(pkg.id)) ? (
+                                                <ChevronUpIcon className="h-5 w-5" />
+                                            ) : (
+                                                <ChevronDownIcon className="h-5 w-5" />
+                                            )}
+                                        </button>
+                                    </div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{pkg.description || '-'}</p>
+                                    <div className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                                        <p>
+                                            <strong>Price:</strong> RM{' '}
+                                            {pkg.total_price.toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                        </p>
+                                        <p>
+                                            <strong>Category:</strong>{' '}
+                                            {pkg.category
+                                                ? categoryOptions.find((option) => option.value === pkg.category)?.label
+                                                : '-'}
+                                        </p>
+                                        <p>
+                                            <strong>Add-on Package:</strong> {pkg.is_addon ? 'Yes' : 'No'}
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <Link
+                                            to={`/packages/${pkg.id}`}
+                                            className="text-blue-500 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                        >
+                                            View
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                {/* Collapsible Details */}
+                                {expandedRows.includes(Number(pkg.id)) && (
+                                    <div className="mt-4 animate-fade-in" aria-expanded="true">
+                                        <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100 mb-2">Details</h3>
+                                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                                            <p>
+                                                <strong>Internal Description:</strong> {pkg.description_internal || '-'}
+                                            </p>
+                                            <p>
+                                                <strong>Add-on Package:</strong> {pkg.is_addon ? 'Yes' : 'No'}
+                                            </p>
+                                            <p>
+                                                <strong>Created By:</strong> {pkg.created_by ? pkg.created_by.name : '-'}
+                                            </p>
+                                            <p>
+                                                <strong>Created At:</strong> {formatDate(pkg.created_at)}
+                                            </p>
+                                            <p>
+                                                <strong>Updated By:</strong> {pkg.updated_by ? pkg.updated_by.name : '-'}
+                                            </p>
+                                            <p>
+                                                <strong>Updated At:</strong> {formatDate(pkg.updated_at)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-10">
+                            No packages available
+                        </div>
+                    )}
+                </div>
+            ) : (
+                // List View
+                <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-700">
+                        <thead className="bg-gray-50 text-gray-800 sticky top-0">
+                            <tr>
+                                <th className="px-4 py-3 w-12"></th>
+                                <th
+                                    className="w-[250px] px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSortChange('name')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Name
+                                        {sortField === 'name' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                                    </div>
+                                </th>
+                                <th className="w-[250px] px-4 py-3">Internal Description</th>
+                                <th className="w-[120px] px-4 py-3">Price</th>
+                                <th className="w-[80px] px-4 py-3">Category</th>
+                                <th className="w-[80px] px-4 py-3 whitespace-nowrap text-center">Add-on Package</th>
+                                <th className="w-[100px] px-4 py-3">Created By</th>
+                                <th className="w-[100px] px-4 py-3">Updated By</th>
+                                <th className="w-[80px] px-4 py-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {isLoading ? (
+                                // Skeleton Loader for List
+                                Array.from({ length: 6 }).map((_, index) => (
+                                    <tr key={index} className="border-b animate-pulse">
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-6"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-32"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-40"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-20"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-16"></div>
+                                        </td>
+
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-20"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-20"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-20"></div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : packages.length > 0 ? (
+                                packages.map((pkg) => (
+                                    <React.Fragment key={pkg.id}>
+                                        <tr className="border-b hover:bg-gray-50">
+                                            <td className="px-4 py-3">
+                                                <button
+                                                    onClick={() => toggleRowExpansion(Number(pkg.id))}
+                                                    className="text-gray-500 hover:text-gray-700"
+                                                >
+                                                    {expandedRows.includes(Number(pkg.id)) ? (
+                                                        <ChevronUpIcon className="h-5 w-5" />
+                                                    ) : (
+                                                        <ChevronDownIcon className="h-5 w-5" />
+                                                    )}
+                                                </button>
+                                            </td>
+                                            <td className="px-4 py-3">
                                                 <div className="flex flex-col">
-                                                    <span>{pkg.name}</span>
-                                                    <span className="text-xs text-slate-400">{pkg.description || ''}</span>
+                                                    <span className="font-medium">{pkg.name}</span>
+                                                    <span className="text-xs text-gray-500">{pkg.description || '-'}</span>
                                                 </div>
                                             </td>
-                                            <td>
-                                                {pkg.description_internal}
+                                            <td className="px-4 py-3">{pkg.description_internal || '-'}</td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                RM{' '}
+                                                {pkg.total_price.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
                                             </td>
-                                            <td className='text-center'>
-                                                RM {pkg.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            <td className="px-4 py-3">
+                                                {pkg.category
+                                                    ? categoryOptions.find((option) => option.value === pkg.category)?.label
+                                                    : '-'}
                                             </td>
-                                            <td className='text-center'>
-                                                {pkg.category ? categoryOptions.find(option => option.value === pkg.category)?.label : '-'}
+                                            <td className="px-4 py-3 text-center">
+                                                <span
+                                                    className={`inline-block h-3 w-3 rounded-full ${pkg.is_addon
+                                                            ? 'bg-green-500 dark:bg-green-400'
+                                                            : 'bg-gray-300 dark:bg-gray-600'
+                                                        }`}
+                                                    title={pkg.is_addon ? 'Add-on Package' : 'Not an Add-on Package'}
+                                                ></span>
                                             </td>
-                                            <td className='text-center'>
-                                                {pkg.created_by ? pkg.created_by.name : '-'}
+                                            <td className="px-4 py-3">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{pkg.created_by ? pkg.created_by.name : '-'}</span>
+                                                    <span className="text-xs text-gray-500">{formatDate(pkg.created_at)}</span>
+                                                </div>
                                             </td>
-                                            <td className='text-center'>
-                                                {pkg.created_at}
+                                            <td className="px-4 py-3">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{pkg.updated_by ? pkg.updated_by.name : '-'}</span>
+                                                    <span className="text-gray-500">{formatDate(pkg.updated_at)}</span>
+                                                </div>
                                             </td>
-                                            <td className='text-center'>
-                                                {pkg.updated_by ? pkg.updated_by.name : '-'}
-                                            </td>
-                                            <td className='text-center'>
-                                                {pkg.updated_at}
-                                            </td>
-                                            <td className='text-center'>
-                                                <div className="flex justify-around gap-2">
+                                            <td className="px-4 py-3">
+                                                <div className="flex gap-4">
                                                     <Link
                                                         to={`/packages/${pkg.id}`}
-                                                        className="btn btn-sm btn-secondary"
+                                                        className="text-blue-500 hover:underline"
                                                     >
                                                         View
                                                     </Link>
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={8} className="text-center text-gray-500">
-                                            No packages available
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                        {expandedRows.includes(Number(pkg.id)) && (
+                                            <tr className="border-b">
+                                                <td colSpan={9} className="px-6 py-4">
+                                                    <div
+                                                        className="bg-white rounded-lg shadow-sm p-6 transition-all duration-300 ease-in-out animate-fade-in"
+                                                        aria-expanded="true"
+                                                    >
+                                                        <h3 className="text-base font-semibold text-gray-800 mb-4">Details</h3>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                                            <div>
+                                                                <p className="font-medium text-gray-700">Internal Description</p>
+                                                                <p className="text-gray-600">{pkg.description_internal || '-'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-medium text-gray-700">Add-on Package</p>
+                                                                <p className="text-gray-600">{pkg.is_addon ? 'Yes' : 'No'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-medium text-gray-700">Created By</p>
+                                                                <p className="text-gray-600">{pkg.created_by ? pkg.created_by.name : '-'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-medium text-gray-700">Created At</p>
+                                                                <p className="text-gray-600">{formatDate(pkg.created_at)}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-medium text-gray-700">Updated By</p>
+                                                                <p className="text-gray-600">{pkg.updated_by ? pkg.updated_by.name : '-'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-medium text-gray-700">Updated At</p>
+                                                                <p className="text-gray-600">{formatDate(pkg.updated_at)}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={9} className="px-4 py-3 text-center text-gray-500">
+                                        No packages available
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {/* Pagination */}
+            {!isLoading && packages.length > 0 && (
+                <div className="flex flex-col md:flex-row items-center justify-between mt-6 bg-white p-4 rounded-lg shadow-md">
+                    <div className="flex items-center gap-2 mb-4 md:mb-0">
+                        <span>Show</span>
+                        <select
+                            value={size}
+                            onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                            className="border rounded-lg px-3 py-1"
+                        >
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                        </select>
+                        <span>per page</span>
                     </div>
-
-                    <div className="card-footer justify-center md:justify-between flex-col md:flex-row gap-3 text-gray-600 text-2sm font-medium">
-                        <div className="flex items-center gap-2">
-                            Show
-                            <select
-                                className="select select-sm w-16"
-                                name="perpage"
-                                value={size}
-                                onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                    <div className="flex items-center gap-4">
+                        <span>
+                            {(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}
+                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                disabled={page === 1}
+                                onClick={() => handlePageChange(page - 1)}
+                                className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
                             >
-                                <option value="5">5</option>
-                                <option value="10">10</option>
-                                <option value="20">20</option>
-                                <option value="30">30</option>
-                                <option value="50">50</option>
-                            </select>
-                            per page
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span>
-                            <div className="pagination">
-                                {/* Previous Page Button */}
-                                <button
-                                    className={`btn ${page === 1 ? 'disabled' : ''}`}
-                                    onClick={() => handlePageChange(page - 1)}
-                                >
-                                    <i className="ki-outline ki-black-left"></i>
-                                </button>
-
-                                {/* Page Number Buttons with Ellipses */}
-                                {totalPages > 0 && (
-                                    <>
-                                        {page > 3 && (
-                                            <>
-                                                <button
-                                                    className="btn"
-                                                    onClick={() => handlePageChange(1)}
-                                                >
-                                                    1
-                                                </button>
-                                                <span className="btn btn-disabled">...</span>
-                                            </>
-                                        )}
-
-                                        {Array.from({
-                                            length: Math.min(3, totalPages)
-                                        }, (_, index) => {
-                                            // Determine the start of the 3-page window
-                                            const startPage = Math.max(1,
-                                                Math.min(
-                                                    page - 1,
-                                                    totalPages - 2
-                                                )
-                                            );
-
-                                            const currentPage = startPage + index;
-                                            return (
-                                                <button
-                                                    key={currentPage}
-                                                    className={`btn ${page === currentPage ? 'active' : ''}`}
-                                                    onClick={() => handlePageChange(currentPage)}
-                                                >
-                                                    {currentPage}
-                                                </button>
-                                            );
-                                        })}
-
-                                        {page < totalPages - 2 && (
-                                            <>
-                                                <span className="btn btn-disabled">...</span>
-                                                <button
-                                                    className="btn"
-                                                    onClick={() => handlePageChange(totalPages)}
-                                                >
-                                                    {totalPages}
-                                                </button>
-                                            </>
-                                        )}
-                                    </>
-                                )}
-
-                                {/* Next Page Button */}
-                                <button
-                                    className={`btn ${page === totalPages ? 'disabled' : ''}`}
-                                    onClick={() => handlePageChange(page + 1)}
-                                >
-                                    <i className="ki-outline ki-black-right"></i>
-                                </button>
-                            </div>
+                                Previous
+                            </button>
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                                const startPage = Math.max(1, Math.min(page - 2, totalPages - 4));
+                                const currentPage = startPage + index;
+                                return (
+                                    <button
+                                        key={currentPage}
+                                        onClick={() => handlePageChange(currentPage)}
+                                        className={`px-3 py-1 border rounded-lg ${page === currentPage ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+                                    >
+                                        {currentPage}
+                                    </button>
+                                );
+                            })}
+                            <button
+                                disabled={page === totalPages}
+                                onClick={() => handlePageChange(page + 1)}
+                                className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+                            >
+                                Next
+                            </button>
                         </div>
                     </div>
                 </div>
-                {/* <ActivityCenter /> */}
-
-                {/* <PackageTable /> */}
-            </div>
-        </>
+            )}
+        </div>
     );
 }
 

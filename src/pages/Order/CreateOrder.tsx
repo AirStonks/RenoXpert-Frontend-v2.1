@@ -859,13 +859,13 @@ function CreateOrder() {
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-semibold text-gray-900">Single Bedroom</span>
+                                                    <span className="text-sm font-semibold text-gray-900">Queen Bedroom</span>
                                                     <select
                                                         className="select p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        name="single_bedroom_count"
-                                                        id="single_bedroom_count"
+                                                        name="queen_bedroom_count"
+                                                        id="queen_bedroom_count"
                                                         onChange={handleChange}
-                                                        value={formData.single_bedroom_count}
+                                                        value={formData.queen_bedroom_count}
                                                     >
                                                         <option value="1">1</option>
                                                         <option value="2">2</option>
@@ -875,13 +875,13 @@ function CreateOrder() {
                                                     </select>
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-semibold text-gray-900">Queen Bedroom</span>
+                                                    <span className="text-sm font-semibold text-gray-900">Single Bedroom</span>
                                                     <select
                                                         className="select p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                        name="queen_bedroom_count"
-                                                        id="queen_bedroom_count"
+                                                        name="single_bedroom_count"
+                                                        id="single_bedroom_count"
                                                         onChange={handleChange}
-                                                        value={formData.queen_bedroom_count}
+                                                        value={formData.single_bedroom_count}
                                                     >
                                                         <option value="1">1</option>
                                                         <option value="2">2</option>
