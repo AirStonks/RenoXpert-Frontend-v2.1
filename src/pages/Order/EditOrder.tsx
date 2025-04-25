@@ -856,6 +856,7 @@ function EditOrder() {
                                                         onChange={handleChange}
                                                         value={formData.single_bedroom_count}
                                                     >
+                                                        <option value="0">0</option>
                                                         <option value="1">1</option>
                                                         <option value="2">2</option>
                                                         <option value="3">3</option>
@@ -872,6 +873,7 @@ function EditOrder() {
                                                         onChange={handleChange}
                                                         value={formData.queen_bedroom_count}
                                                     >
+                                                        <option value="0">0</option>
                                                         <option value="1">1</option>
                                                         <option value="2">2</option>
                                                         <option value="3">3</option>
