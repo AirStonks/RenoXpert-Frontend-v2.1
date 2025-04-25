@@ -1745,6 +1745,30 @@ export const fetchKeyManagement = async (keyManagementId: number) => {
     }
 }
 
+export const fetchDIForm = async (diFormId: number) => {
+    try {
+        const response = await axios.get(API_URL + `di-forms/${diFormId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const addDIForm = async (diForm: any) => {
+    try {
+        const response = await axios.post(API_URL + `di-forms/addDIF`, diForm, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const fetchDIFormWithHashedString = async (hashedString: string) => {
     try {
         const response = await axios.get(API_URL + `defect-inspection-forms/public/${hashedString}`, {
@@ -1779,6 +1803,18 @@ export const toggleDIFormReportLinkStatus = async (diFormId: number) => {
     } catch (error) {
         handle401Error(error as AxiosError);
         throw error;
+    }
+}
+
+export const generateDIForm = async (diFormId: number) => {
+    try {
+        const response = await axios.get(API_URL + `di-forms/${diFormId}/generate`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
     }
 }
 
@@ -1906,7 +1942,7 @@ export const updateKeyCategoryQuantity = async (keyManagementId: number, categor
     }
 }
 
-export const fetchDIForms = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, status?: string, isHead: boolean = true) => {
+export const fetchRPMDIForms = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, status?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + `defect-inspection-forms`, {
             headers: getAuthHeaders(),

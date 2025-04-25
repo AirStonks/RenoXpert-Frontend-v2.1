@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { DefectInspectionForm, Property, RenoProgress, Sale } from '../../types';
 import KTComponents, { KTStepper, KTSticky } from '../../metronic/core';
 import { Slide, toast } from 'react-toastify';
-import { fetchProperties, fetchRenoProgressDetail, liveUpdateDIForm, removeDIFormAttachment, submitDIForm } from '../../services/operationApi';
+import { fetchDIForm, fetchProperties, fetchRenoProgressDetail, liveUpdateDIForm, removeDIFormAttachment, submitDIForm } from '../../services/operationApi';
 import Loading from '../../components/Loading';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import imageCompression from 'browser-image-compression';
+import { BuildingOfficeIcon, HomeIcon, SparklesIcon } from '@heroicons/react/24/outline'; // Using Heroicons
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -293,8 +294,8 @@ const initInspectionForm: DefectInspectionForm = {
 function DefectInspectionFormPage() {
     const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-    const queryParams = new URLSearchParams(location.search);
-    const renoProgressId = queryParams.get('progressId');
+    const { id } = useParams<{ id: string }>();
+    const formId = id ? parseInt(id, 10) : null;
 
     const [properties, setProperties] = useState<Property[] | null>(null);
     const [formData, setFormData] = useState<DefectInspectionForm>(initInspectionForm);
@@ -310,8 +311,30 @@ function DefectInspectionFormPage() {
             await KTComponents.init();
             await getProperties();
 
-            if (renoProgressId) {
-                await handleSearchRenoProgress(renoProgressId);
+            const handleSearchDIForm = async (diFormId: number) => {
+                setLoading(true);
+        
+                try {
+                    const response = await fetchDIForm(diFormId);
+                    const diForm: DefectInspectionForm = response.data;
+        
+                    if (response?.success) {
+        
+                        setFormData(diForm);
+        
+                        handleDynamicBedroomByNumber(diForm.bedroom_count);
+                        handleDynamicBathroomByNumber(diForm.bathroom_count);
+                    }
+        
+                } catch (error) {
+                    notify('error', 'Failed to fetch DI Form');
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            if (formId) {
+                await handleSearchDIForm(formId);
             }
 
             await new Promise(resolve => setTimeout(resolve, 1));
@@ -320,7 +343,7 @@ function DefectInspectionFormPage() {
 
         initFunctions();
 
-    }, [renoProgressId]);
+    }, [formId]);
 
     useEffect(() => {
         if (formData.status === 'submitted') {
@@ -366,48 +389,8 @@ function DefectInspectionFormPage() {
         }
     };
 
-    const handleSearchRenoProgress = async (renoProgressId: string) => {
-        setLoading(true); // Start loading immediately
-
-        try {
-            const response = await fetchRenoProgressDetail(Number(renoProgressId)); // Fetch reno progress data
-            const progress: RenoProgress = response.data;
-
-            if (response?.success) {
-                setFormData((prevData) => ({
-                    ...prevData,
-                    owner_email: progress.sale?.user?.email,
-                    reno_progress_id: renoProgressId,
-                    property: {
-                        ...prevData.property,
-                        property_name: progress.property?.id,
-                        block: progress.property?.block,
-                        level: progress.property?.floor,
-                        unit: progress.property?.unit_no,
-                    },
-                    bedroom_count: progress.sale?.order?.bedroom_count?.toString(),
-                    bathroom_count: progress.sale?.order?.bathroom_count?.toString(),
-                    area: progress.defect_inspection_form?.area,
-                    status: progress.defect_inspection_form?.status
-                }));
-            }
-
-            handleDynamicBedroomByNumber(progress.sale?.order?.bedroom_count);
-            handleDynamicBathroomByNumber(progress.sale?.order?.bathroom_count);
-
-        } catch (error) {
-            console.error('Error fetching reno progress or sale data:', error);
-        } finally {
-            // Ensure loading is set to false only after all the async operations are completed
-            setLoading(false);
-        }
-    };
-
     const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-
-        console.log(formData);
-
 
         if (name.startsWith('property.')) {
             const key = name.split('.')[1];
@@ -487,7 +470,7 @@ function DefectInspectionFormPage() {
                     }
 
                     debounceTimeout.current = setTimeout(async () => {
-                        const response = await liveUpdateDIForm(Number(renoProgressId), updateFormData);
+                        const response = await liveUpdateDIForm(Number(formId), updateFormData);
 
                         console.log(updateFormData);
 
@@ -546,7 +529,7 @@ function DefectInspectionFormPage() {
                     }
 
                     debounceTimeout.current = setTimeout(async () => {
-                        const response = await liveUpdateDIForm(Number(renoProgressId), updateFormData);
+                        const response = await liveUpdateDIForm(Number(formId), updateFormData);
 
                         console.log(updateFormData);
 
@@ -727,23 +710,15 @@ function DefectInspectionFormPage() {
     const handleSubmit = async () => {
         const validationErrors = validate();
 
-        // console.log(validationErrors);
-
-        if (renoProgressId) {
-            setFormData((prevData) => ({
-                ...prevData,
-                reno_progress_id: renoProgressId,
-            }));
-        }
-
-
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
+            console.log(validationErrors);
+            
             notify('error', 'Please check your form error.');
             return;
         } else {
             try {
-                const response = await submitDIForm(Number(renoProgressId));
+                const response = await submitDIForm(Number(formId));
 
                 if (response?.success) {
                     notify('success', 'Form successfully submitted.');
@@ -987,7 +962,7 @@ function DefectInspectionFormPage() {
                 }
             }
 
-            const response = await liveUpdateDIForm(Number(renoProgressId), updatedFormData);
+            const response = await liveUpdateDIForm(Number(formId), updatedFormData);
 
             if (response?.success) {
                 if (dynamicKey) {
@@ -1119,7 +1094,7 @@ function DefectInspectionFormPage() {
             }
         }
 
-        const response = await removeDIFormAttachment(Number(renoProgressId), updatedFormData);
+        const response = await removeDIFormAttachment(Number(formId), updatedFormData);
 
         if (response?.success) {
             if (dynamicKey) {
@@ -1186,7 +1161,7 @@ function DefectInspectionFormPage() {
             <div className="card-header py-2">
                 <h2 className="text-slate-900 text-lg font-semibold">Defect Inspection Form</h2>
             </div>
-            { formData.status === 'submitted' &&
+            {formData.status === 'submitted' &&
                 <div className="card-group">
                     <div data-sticky-wrapper="true">
                         <div className="badge badge-warning badge-outline text-md text-center flex flex-wrap justify-center gap-2.5 border rounded-lg py-2" data-sticky="true" data-sticky-activate="#release" data-sticky-class="fixed z-10 shadow-lg" data-sticky-name="basic" data-sticky-offset="20" data-sticky-release="#variants" data-sticky-start="auto" data-sticky-top="20" data-sticky-width="auto">
@@ -1281,71 +1256,44 @@ function DefectInspectionFormPage() {
                             {errors.owner_email && <span className="text-red-500 text-xs mt-2">{errors.owner_email}</span>}
                         </div>
 
-                        <div className="flex flex-col mb-8">
-                            <div className="flex gap-2 flex-wrap">
-                                <div className="flex flex-col flex-auto mb-6 md:mb-0">
-                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="property_name">Property to be renovated</label>
-                                    <select className={`select ${errors.property?.property_name ? 'border-danger' : ''}`} name="property.property_name" id="property.property_name" onChange={handleChange} value={formData.property.property_name}>
-                                        <option value="">Please Select</option>
-                                        {properties.map(property => (
-                                            <option key={property.id} value={property.id}>
-                                                {property.name}
-                                            </option>
-                                        ))}
-                                        <option value="other">Other...</option>
-                                    </select>
-                                    {errors.property?.property_name && <span className="text-red-500 text-xs mt-2">{errors.property?.property_name}</span>}
-                                </div>
-                                {formData.property.property_name === 'other' && (
-                                    <div className="flex flex-col flex-auto">
-                                        <label className="text-slate-900 mb-2 font-medium" htmlFor="property.other_property_name">
-                                            Please specify other property
-                                        </label>
-                                        <input
-                                            className={`input`}
-                                            type="text"
-                                            name="property.other_property_name"
-                                            id="property.other_property_name"
-                                            value={formData.property.other_property_name}
-                                            onChange={(e) => {
-                                                handleOtherPropertyChange(e);
-                                                handleChange(e);
-                                            }}
-                                        />
-                                        {/* {errors.other_property_name && <span className="text-red-500 text-xs mt-2">{errors.other_property_name}</span>} */}
+                        <div className="md:flex md:gap-6">
+                            {/* Property to be Renovated */}
+                            <div className="flex flex-col w-full mb-8">
+                                <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                                    <BuildingOfficeIcon className="w-5 h-5 text-blue-600" aria-label="Property Icon" /> Property to be Renovated
+                                </h3>
+                                <div className="card bg-white shadow-md rounded-lg border border-gray-100 hover:shadow-lg transition-shadow">
+                                    <div className="card-body p-4">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-base font-semibold text-gray-800">
+                                                {formData.property?.block}-{formData.property?.level}-{formData.property?.unit}
+                                            </span>
+                                            <span className="text-sm text-gray-600">{formData.property?.property_name}</span>
+                                        </div>
                                     </div>
-                                )}
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="flex flex-col mb-8">
-                            <div className="flex gap-2 mb-2">
-                                <div className="flex flex-col w-full">
-                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="property.block">Block</label>
-                                    <input className={`input ${errors.property?.block ? 'border-danger' : ''}`} type="text" name="property.block" id="property.block" value={formData.property?.block} onChange={handleChange} />
-                                    <span className="text-slate-500 text-xs">i.e: A</span>
-                                </div>
-                                <div className="flex flex-col w-full">
-                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="property.level">Level</label>
-                                    <input className={`input ${errors.property?.level ? 'border-danger' : ''}`} type="text" name="property.level" id="property.level" value={formData.property?.level} onChange={handleChange} />
-                                    <span className="text-slate-500 text-xs">i.e: 12</span>
-                                </div>
-                                <div className="flex flex-col w-full">
-                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="property.unit">Unit</label>
-                                    <input className={`input ${errors.property?.unit ? 'border-danger' : ''}`} type="text" name="property.unit" id="property.unit" value={formData.property?.unit} onChange={handleChange} />
-                                    <span className="text-slate-500 text-xs">i.e: 01</span>
+                            {/* Rooms */}
+                            <div className="flex flex-col w-full mb-8">
+                                <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                                    <HomeIcon className="w-5 h-5 text-blue-600" aria-label="Rooms Icon" /> Rooms
+                                </h3>
+                                <div className="card bg-white shadow-md rounded-lg border border-gray-100 hover:shadow-lg transition-shadow">
+                                    <div className="card-body p-4">
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <HomeIcon className="w-5 h-5 text-gray-500" aria-label="Bedroom Icon" />
+                                                <span className="text-sm text-gray-700">Bedroom: {formData.bedroom_count}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <SparklesIcon className="w-5 h-5 text-gray-500" aria-label="Bathroom Icon" />
+                                                <span className="text-sm text-gray-700">Bathroom: {formData.bathroom_count}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex">
-                                <span className="text-slate-500 text-xs">Full Unit i.e: A-12-01</span>
-                            </div>
-                            {(errors.property?.block || errors.property?.level || errors.property?.unit) &&
-                                <div className="mt-2 flex flex-col">
-                                    {errors.property?.block && <span className="text-red-500 text-xs">{errors.property?.block}</span>}
-                                    {errors.property?.level && <span className="text-red-500 text-xs">{errors.property?.level}</span>}
-                                    {errors.property?.unit && <span className="text-red-500 text-xs">{errors.property?.unit}</span>}
-                                </div>
-                            }
                         </div>
 
                         {/* <div className="flex flex-col mb-8">
@@ -1359,47 +1307,6 @@ function DefectInspectionFormPage() {
                             <input className={`input ${errors.contractor_email ? 'border-danger' : ''}`} type="text" name="contractor_email" id="contractor_email" value={formData.contractor_email} onChange={handleChange} />
                             {errors.contractor_email && <span className="text-red-500 text-xs mt-2">{errors.contractor_email}</span>}
                         </div> */}
-
-                        <div className="flex flex-col mb-8">
-                            <div className="flex gap-2 mb-2">
-                                <div className="flex flex-col w-full">
-                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="bedroom_count">How many Bedrooms?</label>
-                                    <select
-                                        className={`select`}
-                                        name="bedroom_count"
-                                        id="bedroom_count"
-                                        onChange={(e) => {
-                                            handleChange(e);
-                                            handleDynamicBedroom(e);
-                                        }}
-                                        value={formData.bedroom_count}
-                                    >
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                    </select>
-                                </div>
-                                <div className="flex flex-col w-full">
-                                    <label className="text-slate-900 mb-2 font-medium" htmlFor="bathroom_count">How Many Bathroom?</label>
-                                    <select
-                                        className={`select`}
-                                        name="bathroom_count"
-                                        id="bathroom_count"
-                                        onChange={(e) => {
-                                            handleChange(e);
-                                            handleDynamicBathroom(e);
-                                        }}
-                                        value={formData.bathroom_count}
-                                    >
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
 
                         <div className="flex flex-col mb-8">
                             <img src="/media/form/1.jpeg" alt="" />

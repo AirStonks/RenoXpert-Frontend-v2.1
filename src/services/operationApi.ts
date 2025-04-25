@@ -75,6 +75,27 @@ export const fetchRenoProgressDetail = async (renoProgressId: number) => {
     }
 }
 
+export const fetchRPMDIForms = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, status?: string, isHead: boolean = true) => {
+    try {
+        const response = await axios.get(API_URL + `op/reno/defect-inspection-forms`, {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field,
+                status: status,
+                head: isHead
+            }
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const fetchDIForms = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, status?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + `op/reno/defect-inspection-forms`, {
@@ -97,6 +118,18 @@ export const fetchDIForms = async (size: number = 5, page: number = 1, searchTer
 }
 
 export const fetchDIForm = async (formId: number) => {
+    try {
+        const response = await axios.get(API_URL + `di-forms/${formId}`, {
+            headers: getAuthHeaders(),
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const fetchRPMDIForm = async (formId: number) => {
     try {
         const response = await axios.get(API_URL + `op/reno/defect-inspection-forms/${formId}/fetch`, {
             headers: getAuthHeaders(),

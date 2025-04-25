@@ -470,6 +470,7 @@ export interface OwnerRegistrationForm {
 export interface DefectInspectionForm {
     id?: string,
     reno_progress_id?: string,
+    di_by?: string,
     date?: string,
     time?: string,
     owner_email?: string,
@@ -566,6 +567,7 @@ export interface DefectInspectionForm {
     status?: string,
     report_hash?: string,
     link_status?: 'unactive' | 'active',
+    submitted_at?: string,
     created_by?: User,
     updated_by?: User,
     created_at?: string,
@@ -1037,6 +1039,7 @@ export interface RenoProgress {
     permission_id?: string;
     permissions?: User[],
     completed_at?: string,
+    rpm_version?: number,
     created_at?: string,
     updated_at?: string,
 }

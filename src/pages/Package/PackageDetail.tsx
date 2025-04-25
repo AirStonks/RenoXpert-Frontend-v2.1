@@ -347,12 +347,13 @@ function PackageDetail() {
                                         <th className='w-[250px]'>Product</th>
                                         <th className='w-[50px] text-center'>Quantity</th>
                                         <th className='w-[100px] text-center'>Visibility</th>
-                                        <th className='w-[100px]'>Supply Retail Price</th>
-                                        <th className='w-[100px]'>Install Retail Price</th>
-                                        <th className='w-[100px]'>Total Retail Price</th>
-                                        <th className='w-[100px]'>Supply COGS</th>
-                                        <th className='w-[100px]'>Install COGS</th>
-                                        <th className='w-[100px]'>Total COGS</th>
+                                        <th className='w-[100px] whitespace-nowrap'>Supply RRP</th>
+                                        <th className='w-[100px] whitespace-nowrap'>Install RRP</th>
+                                        <th className='w-[100px] whitespace-nowrap'>Total RRP</th>
+                                        <th className='w-[100px] whitespace-nowrap'>Supply COGS</th>
+                                        <th className='w-[100px] whitespace-nowrap'>Install COGS</th>
+                                        <th className='w-[100px] whitespace-nowrap'>Total COGS</th>
+                                        <th className='w-[100px] whitespace-nowrap'>Profit</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -400,10 +401,12 @@ function PackageDetail() {
                                             <td className="whitespace-nowrap font-semibold text-danger">
                                                 RM {((product.provisioning.supply.cogs + product.provisioning.install.cogs) * product.pivot.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
+                                            <td className="whitespace-nowrap font-semibold">
+                                                RM {(((product.provisioning.supply.retail_price + product.provisioning.install.retail_price) * product.pivot.quantity) - ((product.provisioning.supply.cogs + product.provisioning.install.cogs) * product.pivot.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
-
                             </table>
                         </div>
                     </div>
