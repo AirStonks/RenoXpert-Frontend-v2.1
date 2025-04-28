@@ -118,6 +118,8 @@ export const SortableProductRowForPackage: React.FC<SortableProductRowForPackage
             </td>
             <td className="text-center">
                 {!product.pivot.visibility && <i className="ki-solid ki-eye-slash text-2xl"></i>}
+            </td>
+            <td className="text-center">
                 <button
                     className="btn-revoke btn btn-sm btn-danger"
                     data-tooltip="#remove_tooltip"

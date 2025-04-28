@@ -1423,6 +1423,7 @@ function OrderDetail() {
                                                                         <tr>
                                                                             <th className='w-[10px] text-center'>Supply</th>
                                                                             <th className='w-[10px] text-center'>Install</th>
+                                                                            <th className='w-[10px] text-center'></th>
                                                                             <th className='w-[450px]'>Product</th>
                                                                             <th className='w-[100px] text-center'>Quantity</th>
                                                                             <th className='w-[100px] whitespace-nowrap'>Supply RRP</th>
@@ -1463,6 +1464,9 @@ function OrderDetail() {
                                                                                             readOnly
                                                                                         />
                                                                                     </div>
+                                                                                </td>
+                                                                                <td className="text-center">
+                                                                                    {!product.pivot.visibility && <i className="ki-solid ki-eye-slash text-2xl"></i>}
                                                                                 </td>
                                                                                 <td>
                                                                                     <div className="flex flex-col">
@@ -1570,7 +1574,7 @@ function OrderDetail() {
 
                                                                                             const marginAmount = totalRRP - totalCOGS;
 
-                                                                                            return totalRRP !== 0
+                                                                                            return product.pivot.includeSupply || product.pivot.includeInstall
                                                                                                 ? `RM ${marginAmount.toLocaleString(undefined, {
                                                                                                     minimumFractionDigits: 2,
                                                                                                     maximumFractionDigits: 2,
@@ -2118,8 +2122,10 @@ function OrderDetail() {
                                                                                         const isSupplyAndInstall =
                                                                                             product.pivot.includeSupply ||
                                                                                             product.pivot.includeInstall;
+                                                                                        
+                                                                                        const isVisible = product.pivot.visibility;
 
-                                                                                        if (isSupplyAndInstall) {
+                                                                                        if (isSupplyAndInstall && isVisible) {
                                                                                             return (
                                                                                                 <tr
                                                                                                     key={idx}
