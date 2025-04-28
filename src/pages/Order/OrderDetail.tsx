@@ -1439,7 +1439,7 @@ function OrderDetail() {
                                                                         {prodPackage.products.map((product) => (
                                                                             <tr
                                                                                 key={product.id}
-                                                                                className={`${!product.pivot.includeSupply && !product.pivot.includeInstall ? 'light:bg-orange-50 dark:bg-orange-950' : ''}`}
+                                                                                className={`hover:bg-gray-50 ${!product.pivot.includeSupply && !product.pivot.includeInstall ? 'light:bg-orange-50 dark:bg-orange-950' : ''}`}
                                                                             >
                                                                                 <td>
                                                                                     <span></span>

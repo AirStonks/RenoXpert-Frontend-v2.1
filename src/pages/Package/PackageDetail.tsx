@@ -358,7 +358,7 @@ function PackageDetail() {
                                 </thead>
                                 <tbody>
                                     {packageDetail.products.map((product, index) => (
-                                        <tr key={index}>
+                                        <tr key={index} className="hover:bg-gray-50">
                                             <td>
                                                 <div className="flex flex-col">
                                                     <span>{product.name}</span>
