@@ -32,7 +32,7 @@ export const SortableProductRowForPackage: React.FC<SortableProductRowForPackage
             ref={setNodeRef}
             style={style}
             {...attributes}
-            className={`${!product.pivot.includeSupply && !product.pivot.includeInstall ? "light:bg-orange-50 dark:bg-orange-950" : ""}`}
+            className={`hover:bg-gray-50 ${!product.pivot.includeSupply && !product.pivot.includeInstall ? "light:bg-orange-50 dark:bg-orange-950" : ""}`}
         >
             <td>
                 <span {...listeners} style={{ cursor: "move" }}>☰</span>
