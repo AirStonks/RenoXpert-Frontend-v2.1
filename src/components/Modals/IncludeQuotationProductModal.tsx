@@ -229,7 +229,7 @@ function IncludeQuotationProductModal({ selectedPackages, setSelectedPackages, s
             {isLoading && <Loading />}
 
             <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="include_pack_prod_modal">
-                <div className="modal-content modal-center-y max-w-[900px]">
+                <div className="modal-content modal-center-y max-w-[1000px]">
                     <div className="modal-header py-4 px-5">
                         <span className="text-lg text-gray-900 font-bold">Add Product into Package</span>
                         <button
@@ -257,10 +257,10 @@ function IncludeQuotationProductModal({ selectedPackages, setSelectedPackages, s
                             <thead>
                                 <tr>
                                     <th
-                                        className='text-center cursor-pointer hover:bg-gray-50'
+                                        className='cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('name')}
                                     >
-                                        <div className="flex items-center justify-center gap-2">
+                                        <div className="flex gap-2">
                                             Name {getSortIcon('name')}
                                         </div>
                                     </th>

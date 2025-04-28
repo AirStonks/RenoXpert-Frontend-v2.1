@@ -325,11 +325,19 @@ function ProductMain() {
                                         </div>
                                     </th>
                                     <th
-                                        className='w-[450px] text-center cursor-pointer hover:bg-gray-50'
+                                        className='w-[450px] cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('name')}
                                     >
-                                        <div className="flex items-center justify-center gap-2">
+                                        <div className="flex items-center gap-2">
                                             Name {getSortIcon('name')}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className='w-[200px] cursor-pointer hover:bg-gray-50'
+                                        onClick={() => handleSort('name')}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            Supplier {getSortIcon('supplier_name')}
                                         </div>
                                     </th>
                                     <th
@@ -409,6 +417,11 @@ function ProductMain() {
                                                         <span className="text-xs font-semibold badge badge-outline badge-xs my-1">SKU: {product.SKU || '-'}</span>
                                                     </div>
                                                     <span className="text-xs text-slate-400">{product.description || ''}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="flex flex-col">
+                                                    <span>{product.supplier_name ? product.supplier_name : '-'}</span>
                                                 </div>
                                             </td>
                                             <td className='text-center'>

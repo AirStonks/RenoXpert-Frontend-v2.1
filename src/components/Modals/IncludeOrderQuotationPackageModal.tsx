@@ -174,8 +174,8 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                     };
 
                     console.log(packageIsAddon === 'true');
-                    
-                    
+
+
                     const updatedPackages = [...selectedPackages, newPackage];
                     setSelectedPackages(updatedPackages);
 
@@ -196,7 +196,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
             {isLoading && <Loading />}
 
             <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="include_package_modal">
-                <div className="modal-content modal-center-y max-w-[800px]">
+                <div className="modal-content modal-center-y max-w-[1000px]">
                     <div className="modal-header py-4 px-5">
                         <span className="text-lg text-gray-900 font-bold">Add Package into Quotation</span>
                         <button
@@ -230,15 +230,20 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                                             className='text-center cursor-pointer hover:bg-gray-50'
                                             onClick={() => handleSort('name')}
                                         >
-                                            <div className="flex items-center justify-center gap-2">
+                                            <div className="flex gap-2">
                                                 Name {getSortIcon('name')}
                                             </div>
                                         </th>
-                                        <th className="text-center">
+                                        <th>
                                             <span className="sort">
                                                 <span className="sort-label">
                                                     Internal Description
                                                 </span>
+                                            </span>
+                                        </th>
+                                        <th className="text-center">
+                                            <span>
+                                                Add-On Package
                                             </span>
                                         </th>
                                         <th
@@ -277,6 +282,15 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                                                     </td>
                                                     <td>
                                                         {pkg.description_internal}
+                                                    </td>
+                                                    <td className="text-center">
+                                                        <span
+                                                            className={`inline-block h-3 w-3 rounded-full ${pkg.is_addon
+                                                                ? 'bg-green-500 dark:bg-green-400'
+                                                                : 'bg-gray-300 dark:bg-gray-600'
+                                                                }`}
+                                                            title={pkg.is_addon ? 'Add-on Package' : 'Not an Add-on Package'}
+                                                        ></span>
                                                     </td>
                                                     <td className='text-center'>
                                                         {`RM ${pkg.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}

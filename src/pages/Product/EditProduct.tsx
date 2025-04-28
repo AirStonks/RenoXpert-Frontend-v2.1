@@ -203,6 +203,18 @@ const EditProduct: React.FC = () => {
                                             error={errors.name}
                                         />
 
+
+                                        {/* Supplier Name */}
+                                        <InputFieldGroup
+                                            fieldTitle="Supplier Name"
+                                            description="The supplier name who supplies the product."
+                                            placeholder="Supplier name"
+                                            name="supplier_name"
+                                            value={formData?.supplier_name}
+                                            onChange={handleChange}
+                                            error={errors.supplier_name}
+                                        />
+
                                         {/* Description */}
                                         <div className="flex flex-col items-baseline flex-wrap lg:flex-nowrap mb-8">
                                             <label className="mb-2 text-sm font-medium text-gray-900">

@@ -390,6 +390,14 @@ function ProductDetail() {
                                             {product.SKU ? product.SKU : 'N/A'}
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Supplier:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {product.supplier_name ? product.supplier_name : 'N/A'}
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
