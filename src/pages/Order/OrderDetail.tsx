@@ -1545,7 +1545,7 @@ function OrderDetail() {
                                                                                                     ? product.provisioning.install.cogs * product.pivot.quantity
                                                                                                     : 0);
 
-                                                                                            return totalRRP !== 0
+                                                                                            return product.pivot.includeSupply || product.pivot.includeInstall
                                                                                                 ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(
                                                                                                     undefined,
                                                                                                     { minimumFractionDigits: 2, maximumFractionDigits: 2 }
@@ -2122,7 +2122,7 @@ function OrderDetail() {
                                                                                         const isSupplyAndInstall =
                                                                                             product.pivot.includeSupply ||
                                                                                             product.pivot.includeInstall;
-                                                                                        
+
                                                                                         const isVisible = product.pivot.visibility;
 
                                                                                         if (isSupplyAndInstall && isVisible) {
