@@ -86,6 +86,7 @@ export interface Product {
     id?: number;
     name: string;
     SKU?: string;
+    supplier_name?: string;
     pm_category_id?: number;
     pm_category?: string | number;
     pivot?: {
