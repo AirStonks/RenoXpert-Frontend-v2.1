@@ -7,7 +7,7 @@ import { createProduct } from '../../services/api';
 import { toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import { Product } from '../../types';
+import { PMCategory, Product } from '../../types';
 import useFetchProductCategory from '../../hook/useFetchPMCategory';
 import Loading from '../../components/Loading';
 import { AxiosError } from 'axios';
@@ -168,7 +168,7 @@ function CreateProduct() {
     };
 
     // Handle drag over event
-    const handleDragOver = (event) => {
+    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         setDragging(true); // Set dragging state to true when dragging over
     };
@@ -179,21 +179,21 @@ function CreateProduct() {
     };
 
     // Handle drop event
-    const handleDrop = (event) => {
+    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         const droppedFiles = event.dataTransfer.files;
 
         // Filter for image files based on MIME types
-        const imageFiles = Array.from(droppedFiles).filter(file =>
+        const imageFiles = Array.from(droppedFiles).filter((file: File) =>
             ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'].includes(file.type)
         );
 
         if (pendingUploadItems.length + imageFiles.length + documentItems.length <= maxFiles) {
             if (imageFiles.length > 0) {
-                setPendingUploadItems((prevItems) => [
+                setPendingUploadItems((prevItems: File[]) => [
                     ...prevItems,
-                    ...imageFiles,
-                ]);
+                    ...imageFiles
+                ] as File[]);
             } else {
                 notify('error', 'Only image files are allowed.');
             }
@@ -203,7 +203,7 @@ function CreateProduct() {
         setDragging(false); // Reset dragging state when drop occurs
     };
 
-    const removeFile = (index) => {
+    const removeFile = (index: number) => {
         setPendingUploadItems((prevItems) => prevItems.filter((_, i) => i !== index));
     };
 
@@ -211,13 +211,28 @@ function CreateProduct() {
         const newErrors: FormErrors = {};
         if (!formData.name) newErrors.name = "Name required";
         if (!formData.uom) newErrors.uom = "UOM required";
-        if (!formData.pm_category_id || formData.pm_category_id === '') newErrors.pm_category_id = "PM Category required";
-        if ((formData?.provisioning.supply.retail_price < 0 || formData?.provisioning.supply.retail_price === '') && (formData?.type !== 'roundup')) newErrors.supply_retail_price = "Retail Price required";
-        if ((formData?.provisioning.supply.cogs < 0 || formData?.provisioning.supply.cogs === '') && (formData?.type !== 'roundup')) newErrors.supply_cogs = "Cost of Good Sold required";
-        if ((formData?.provisioning.supply.excluded_price < 0 || formData?.provisioning.supply.excluded_price === '') && (formData?.type !== 'roundup')) newErrors.supply_excluded_price = "Excluded Price required";
-        if ((formData?.provisioning.install.retail_price < 0 || formData?.provisioning.install.retail_price === '') && (formData?.type !== 'roundup')) newErrors.install_retail_price = "Retail Price required";
-        if ((formData?.provisioning.install.cogs < 0 || formData?.provisioning.install.cogs === '') && (formData?.type !== 'roundup')) newErrors.install_cogs = "Cost of Good Sold required";
-        if ((formData?.provisioning.install.excluded_price < 0 || formData?.provisioning.install.excluded_price === '') && (formData?.type !== 'roundup')) newErrors.install_excluded_price = "Excluded Price required";
+        if (!formData.pm_category_id) newErrors.pm_category_id = "PM Category required";
+
+        // Convert to number for comparison
+        const supplyRetail = Number(formData?.provisioning.supply.retail_price);
+        const supplyCogs = Number(formData?.provisioning.supply.cogs);
+        const supplyExcluded = Number(formData?.provisioning.supply.excluded_price);
+        const installRetail = Number(formData?.provisioning.install.retail_price);
+        const installCogs = Number(formData?.provisioning.install.cogs);
+        const installExcluded = Number(formData?.provisioning.install.excluded_price);
+
+        if ((supplyRetail <= 0 || isNaN(supplyRetail)) && formData?.type !== 'roundup')
+            newErrors.supply_retail_price = "Retail Price required";
+        if ((supplyCogs <= 0 || isNaN(supplyCogs)) && formData?.type !== 'roundup')
+            newErrors.supply_cogs = "Cost of Good Sold required";
+        if ((supplyExcluded <= 0 || isNaN(supplyExcluded)) && formData?.type !== 'roundup')
+            newErrors.supply_excluded_price = "Excluded Price required";
+        if ((installRetail <= 0 || isNaN(installRetail)) && formData?.type !== 'roundup')
+            newErrors.install_retail_price = "Retail Price required";
+        if ((installCogs <= 0 || isNaN(installCogs)) && formData?.type !== 'roundup')
+            newErrors.install_cogs = "Cost of Good Sold required";
+        if ((installExcluded <= 0 || isNaN(installExcluded)) && formData?.type !== 'roundup')
+            newErrors.install_excluded_price = "Excluded Price required";
 
         return newErrors;
     };
@@ -278,7 +293,7 @@ function CreateProduct() {
 
     // Convert pmCategory to the format needed for Dropdown options
     const dropdownOptions = [
-        ...pmCategory.map((cat: ProductCategory) => ({
+        ...pmCategory.map((cat: PMCategory) => ({
             value: cat.id.toString(),
             label: cat.name
         }))

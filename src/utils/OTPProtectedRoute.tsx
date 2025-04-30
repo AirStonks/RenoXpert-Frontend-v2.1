@@ -1,9 +1,13 @@
-// src/utils/ProtectedRoute.tsx
-
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-const OTPProtectedRoute = ({ children }) => {
+// Define the props interface with children typed as React.ReactNode
+interface OTPProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+// Use the interface for the component's props
+const OTPProtectedRoute: React.FC<OTPProtectedRouteProps> = ({ children }) => {
   const token = window.sessionStorage.getItem("otp-token");
 
   if (!token) {
@@ -16,4 +20,3 @@ const OTPProtectedRoute = ({ children }) => {
 };
 
 export default OTPProtectedRoute;
-

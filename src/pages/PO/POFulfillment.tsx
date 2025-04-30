@@ -6,14 +6,17 @@ import { POItem, PurchaseOrder, POPackage } from "../../types";
 import { markPOItemAsDelivered } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 
+interface AccordionState {
+    [key: number]: boolean;
+}
+
 function POFulfillment() {
     const navigate = useNavigate();
     const { state } = useLocation();
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
     const { poDetail, loading, error } = useFetchPO(poId);
-    const [po, setPo] = useState<PurchaseOrder | null>(null);
-    const [openAccordions, setOpenAccordions] = useState({});
+    const [po, setPo] = useState<PurchaseOrder | null>(null); const [openAccordions, setOpenAccordions] = useState<AccordionState>({});
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -72,7 +75,7 @@ function POFulfillment() {
         }
     };
 
-    const toggleAccordion = (packageId) => {
+    const toggleAccordion = (packageId: number) => {
         setOpenAccordions(prev => ({
             ...prev,
             [packageId]: !prev[packageId]

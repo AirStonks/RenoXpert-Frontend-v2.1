@@ -17,6 +17,7 @@ export interface Address {
     city?: string;
     state?: string;
     postcode?: string;
+    street?: string;
 }
 
 export interface Permission {
@@ -118,6 +119,7 @@ export interface Product {
         thumbnail?: Attachment;
         photos?: Attachment[];
     }
+    price?: number;
     color?: string;
     material?: string;
     width?: string;
@@ -169,7 +171,7 @@ export interface Quotation {
     total_amount?: number;
     valid_from?: string;
     valid_until?: string;
-    metadata?: JSON;
+    metadata?: string;
     packages?: Package[];
     status?: string;
     created_by?: User;
@@ -224,7 +226,7 @@ export interface Order {
     status?: string,
     released_at?: string;
     confirmed_at?: string;
-    metadata?: JSON,
+    metadata?: string,
     created_by?: User;
     updated_by?: User;
     created_at?: string;
@@ -247,7 +249,7 @@ export interface OrderQuotation {
         description?: string,
         value?: number | string,
     },
-    metadata?: JSON,
+    metadata?: string,
     created_by?: User,
     updated_by?: string,
     created_at?: string,
@@ -390,13 +392,24 @@ export interface OwnerRegistrationForm {
     }
     status?: string;
     furnishing?: {
+        [key: string]: {
+            [key: string]: string | undefined;
+        } | {
+            [bedroom: string]: {
+                [key: string]: string | undefined;
+            };
+        } | {
+            [bathroom: string]: {
+                [key: string]: string | undefined;
+            };
+        };
         foyer_entrance?: {
             grille_door?: string;
             digital_lock?: string;
             shoe_cabinet?: string;
             lights?: string;
             other?: string;
-        },
+        };
         kitchen?: {
             kitchen_cabinet?: string;
             kitchen_island?: string;
@@ -469,110 +482,116 @@ export interface OwnerRegistrationForm {
 }
 
 export interface DefectInspectionForm {
-    id?: string,
-    reno_progress_id?: string,
-    di_by?: string,
-    date?: string,
-    time?: string,
-    owner_email?: string,
+    id?: string;
+    reno_progress_id?: string;
+    di_by?: string;
+    date?: string;
+    time?: string;
+    owner_email?: string;
     property?: {
-        id?: string,
-        property_name?: string,
-        other_property_name?: string,
-        block?: string,
-        level?: string,
-        unit?: string,
-    },
-    reno_progress?: RenoProgress,
-    contractor_name?: string,
-    contractor_email?: string,
-    bedroom_count?: string | number,
-    bathroom_count?: string | number,
+        id?: string;
+        property_name?: string;
+        other_property_name?: string;
+        block?: string;
+        level?: string;
+        unit?: string;
+    };
+    reno_progress?: RenoProgress;
+    contractor_name?: string;
+    contractor_email?: string;
+    bedroom_count?: string | number;
+    bathroom_count?: string | number;
     area?: {
         foyer?: {
-            q1?: FormQuestion,
-            q2?: FormQuestion,
-            q3?: FormQuestion,
-            q4?: FormQuestion,
-        },
+            [key: string]: FormQuestion | undefined; // Add index signature
+            q1?: FormQuestion;
+            q2?: FormQuestion;
+            q3?: FormQuestion;
+            q4?: FormQuestion;
+        };
         kitchen?: {
-            q1?: FormQuestion,
-            q2?: FormQuestion,
-            q3?: FormQuestion,
-            q4?: FormQuestion,
-            q5?: FormQuestion,
-            q6?: FormQuestion,
-            q7?: FormQuestion,
-            q8?: FormQuestion,
-        },
+            [key: string]: FormQuestion | undefined; // Add index signature
+            q1?: FormQuestion;
+            q2?: FormQuestion;
+            q3?: FormQuestion;
+            q4?: FormQuestion;
+            q5?: FormQuestion;
+            q6?: FormQuestion;
+            q7?: FormQuestion;
+            q8?: FormQuestion;
+        };
         yard?: {
-            q1?: FormQuestion,
-            q2?: FormQuestion,
-            q3?: FormQuestion,
-            q4?: FormQuestion,
-            q5?: FormQuestion,
-            q6?: FormQuestion,
-            q7?: FormQuestion,
-            q8?: FormQuestion,
-        },
+            [key: string]: FormQuestion | undefined; // Add index signature
+            q1?: FormQuestion;
+            q2?: FormQuestion;
+            q3?: FormQuestion;
+            q4?: FormQuestion;
+            q5?: FormQuestion;
+            q6?: FormQuestion;
+        };
         living?: {
-            q1?: FormQuestion,
-            q2?: FormQuestion,
-            q3?: FormQuestion,
-            q4?: FormQuestion,
-            q5?: FormQuestion,
-            q6?: FormQuestion,
-            q7?: FormQuestion,
-            q8?: FormQuestion,
-            q9?: FormQuestion,
-        },
+            [key: string]: FormQuestion | undefined; // Add index signature
+            q1?: FormQuestion;
+            q2?: FormQuestion;
+            q3?: FormQuestion;
+            q4?: FormQuestion;
+            q5?: FormQuestion;
+            q6?: FormQuestion;
+            q7?: FormQuestion;
+            q8?: FormQuestion;
+            q9?: FormQuestion;
+        };
         balcony?: {
-            q1?: FormQuestion,
-            q2?: FormQuestion,
-            q3?: FormQuestion,
-            q4?: FormQuestion,
-        },
+            [key: string]: FormQuestion | undefined; // Add index signature
+            q1?: FormQuestion;
+            q2?: FormQuestion;
+            q3?: FormQuestion;
+            q4?: FormQuestion;
+        };
         hallway?: {
-            q1?: FormQuestion,
-            q2?: FormQuestion,
-            q3?: FormQuestion,
-            q4?: FormQuestion,
-        },
+            [key: string]: FormQuestion | undefined; // Add index signature
+            q1?: FormQuestion;
+            q2?: FormQuestion;
+            q3?: FormQuestion;
+            q4?: FormQuestion;
+        };
         bedrooms?: {
             [bedroom: string]: {
-                q1?: FormQuestion,
-                q2?: FormQuestion,
-                q3?: FormQuestion,
-                q4?: FormQuestion,
-                q5?: FormQuestion,
-                q6?: FormQuestion,
-                q7?: FormQuestion,
-                q8?: FormQuestion,
-                q9?: FormQuestion,
-            }
-        },
+                [key: string]: FormQuestion | undefined; // Add index signature
+                q1?: FormQuestion;
+                q2?: FormQuestion;
+                q3?: FormQuestion;
+                q4?: FormQuestion;
+                q5?: FormQuestion;
+                q6?: FormQuestion;
+                q7?: FormQuestion;
+                q8?: FormQuestion;
+                q9?: FormQuestion;
+            };
+        };
         bathrooms?: {
             [bathroom: string]: {
-                q1?: FormQuestion,
-                q2?: FormQuestion,
-                q3?: FormQuestion,
-                q4?: FormQuestion,
-                q5?: FormQuestion,
-                q6?: FormQuestion,
-                q7?: FormQuestion,
-                q8?: FormQuestion,
-                q9?: FormQuestion,
-            }
-        }
-    }
-    status?: string,
-    report_hash?: string,
-    link_status?: 'unactive' | 'active',
-    submitted_at?: string,
-    created_by?: User,
-    updated_by?: User,
-    created_at?: string,
-    updated_at?: string,
+                [key: string]: FormQuestion | undefined; // Add index signature
+                q1?: FormQuestion;
+                q2?: FormQuestion;
+                q3?: FormQuestion;
+                q4?: FormQuestion;
+                q5?: FormQuestion;
+                q6?: FormQuestion;
+                q7?: FormQuestion;
+                q8?: FormQuestion;
+                q9?: FormQuestion;
+            };
+        };
+    };
+    status?: string;
+    report_hash?: string;
+    link_status?: 'unactive' | 'active';
+    submitted_at?: string;
+    created_by?: User;
+    updated_by?: User;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface QCForm {
@@ -596,6 +615,7 @@ export interface QCForm {
     inspector_role?: 'belive' | 'contractor' | 'owner',
     contractor_email?: string,
     area?: {
+        [key: string]: any; // Add index signature to allow dynamic key access
         foyer?: {
             s1?: {
                 label?: string,
@@ -955,12 +975,10 @@ export interface QCForm {
 }
 
 export interface FormQuestion {
-    label?: string,
-    value?: string,
-    attachments?: {
-        [key: string]: Attachment
-    },
-    remark?: string,
+    label?: string;
+    value?: string;
+    attachments?: Attachment[]; // Change to array of Attachment
+    remark?: string;
 }
 
 export interface Attachment {
@@ -968,6 +986,7 @@ export interface Attachment {
     original_name?: string;
     file_url?: string;
     file?: File;
+    size?: number;
 }
 
 export interface RenoProgress {
@@ -1234,10 +1253,10 @@ export interface KeyManagement {
         remark?: string,
         quantity?: number  // Added quantity field
     }>,
-    created_by?: string,
-    updated_by?: string,
-    created_at?: User,
-    updated_at?: User,
+    created_by?: User,
+    updated_by?: User,
+    created_at?: string,
+    updated_at?: string,
 }
 
 export interface OTPRequest {

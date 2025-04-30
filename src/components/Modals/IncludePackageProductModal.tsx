@@ -533,6 +533,5 @@ return (
         </div>
     </div>
 );
-}
 
 export default IncludePackageProductModal;

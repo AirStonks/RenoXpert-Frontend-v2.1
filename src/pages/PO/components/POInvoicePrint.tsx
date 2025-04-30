@@ -3,14 +3,14 @@ import { useParams } from 'react-router-dom';
 import { PDFViewer } from '@react-pdf/renderer';
 import { Link } from 'react-router-dom';
 import useFetchInvoice from '../../../hook/useFetchInvoice';
-import { PurchaseOrder } from '../../../types';
+import { Invoice, POPackage, PurchaseOrder } from '../../../types';
 import { useEffect, useState } from 'react';
 import { styles } from '../styles/poInvoicePrintStyle';
 
 const getCurrentDate = () => {
     const date = new Date();
     const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    return date.toLocaleDateString('en-GB', options);
+    return date.toLocaleDateString('en-GB', options as Intl.DateTimeFormatOptions);
 };
 
 const formatDate = (dateStr: string) => {
@@ -20,7 +20,7 @@ const formatDate = (dateStr: string) => {
 };
 
 // Separate the PDF content into its own component
-const PoPDF = ({ invoiceDetail, poDetail }) => {
+const PoPDF = ({ invoiceDetail, poDetail }: { invoiceDetail: Invoice; poDetail: PurchaseOrder }) => {
     const COMPANY_NAME = "RenoXpert Sdn Bhd";
     const COMPANY_REG = "202401032588 (1578437-W)";
     const COMPANY_ADDRESS = "No. 42-46, Ground Floor, Jalan SS 19/1D";
@@ -132,7 +132,7 @@ const PoPDF = ({ invoiceDetail, poDetail }) => {
                 </Text>
             </View>
 
-            {poDetail.po_packages.map((pkg, pkgIndex) => (
+            {poDetail.po_packages.map((pkg: POPackage, pkgIndex: number) => (
                 <View style={styles.packageCard} key={pkgIndex} wrap={false}>
                     <View style={styles.packageHeader}>
                         <Text style={styles.packageTitle}>Package {pkgIndex + 1}: {pkg.name}</Text>

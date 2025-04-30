@@ -1179,7 +1179,6 @@ function DefectInspectionReport() {
                                                                                             {
                                                                                                 Array.isArray(bedroom?.[path]?.attachments) && bedroom?.[path]?.attachments.length > 0 ? (
                                                                                                     <div className="flex flex-wrap gap-4 border-gray-200">
-                                                                                                        {console.log(bedroomKey, ':', bedroom)} {/* Logs the attachments array */}
                                                                                                         {bedroom?.[path]?.attachments.map((attachment, index) => (
                                                                                                             <div className="flex gap-4 relative" key={index}>
                                                                                                                 <a

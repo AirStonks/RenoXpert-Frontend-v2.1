@@ -11,6 +11,7 @@ interface IncludeQuotationProductModalProps {
     setSelectedPackages: React.Dispatch<React.SetStateAction<Package[]>>;
     selectedPackageId: string;
     recalculateTotalAmount: () => void;
+    isFromOrderQuotation?: boolean;
 }
 
 type SortOrder = 'asc' | 'desc' | null;

@@ -48,7 +48,7 @@ export const user = async () => {
     }
 };
 
-export const changePassword = async (formData) => {
+export const changePassword = async (formData: any) => {
     try {
         const response = await axios.post(API_URL + 'change-password', formData, {
             headers: {
@@ -653,7 +653,7 @@ export const quotationIndexArchived = async (size: number = 5, page: number = 1,
     }
 };
 
-export const createQuotation = async (quotationData: Quotation, selectedPackages) => {
+export const createQuotation = async (quotationData: Quotation, selectedPackages: any) => {
     try {
         const dataToSend = {
             ...quotationData,

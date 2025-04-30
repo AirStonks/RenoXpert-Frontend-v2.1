@@ -12,6 +12,15 @@ import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableProductRow } from './components/SortableProductRow';
 
+// Define a local Product interface that extends the base Product
+interface LocalProduct extends Product {
+    quantity: number;
+    visibility: boolean;
+    price: number;
+    product_retail_price?: string | number;
+    note?: string;
+}
+
 function EditPackage() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -30,7 +39,7 @@ function EditPackage() {
     });
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-    const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<LocalProduct[]>([]);
     const [totalPrice, setTotalPrice] = useState<number>(0);
 
     const handleBackClick = () => {
@@ -64,13 +73,14 @@ function EditPackage() {
                 products: [],
             });
 
-            const transformedProducts = packageDetail.products.map(({ id, name, SKU, pivot, provisioning, description }) => ({
+            const transformedProducts: LocalProduct[] = packageDetail.products.map(({ id, name, SKU, pivot, provisioning, description }) => ({
                 id,
                 name,
                 SKU,
                 quantity: pivot.quantity,
                 visibility: pivot.visibility,
                 price: provisioning.install.retail_price + provisioning.supply.retail_price,
+                product_retail_price: provisioning.install.retail_price + provisioning.supply.retail_price,
                 description,
             }));
 
@@ -119,7 +129,7 @@ function EditPackage() {
                 name: item.name,
                 quantity: item.quantity,
                 visibility: item.visibility,
-                product_retail_price: parseFloat(item.product_retail_price || item.price.toString()),
+                product_retail_price: parseFloat(item.product_retail_price?.toString() || item.price.toString()),
             }));
 
             const packageData: Package = {
@@ -164,7 +174,7 @@ function EditPackage() {
         }
     };
 
-    const updateSelectedProducts = (products: Product[]) => {
+    const updateSelectedProducts = (products: LocalProduct[]) => {
         setSelectedProducts(products);
         const newTotalPrice = products.reduce((acc, product) => acc + (product.price * product.quantity), 0);
         setTotalPrice(newTotalPrice);
@@ -215,7 +225,7 @@ function EditPackage() {
 
     const toggleIsAddon = () => {
         setFormData((prev) => ({ ...prev, is_addon: !prev.is_addon }));
-    }
+    };
 
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;

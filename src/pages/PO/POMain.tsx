@@ -56,7 +56,7 @@ function POMain() {
             const newPOs = response?.data || [];
             setPurchaseOrders(newPOs);
             setTotalItems(response?.totalCount || 0);
-            setExpandedCards(newPOs.reduce((acc, po) => ({
+            setExpandedCards(newPOs.reduce((acc: Record<string, boolean>, po: PurchaseOrder) => ({
                 ...acc,
                 [po.id]: true
             }), {}));
@@ -88,7 +88,7 @@ function POMain() {
                 const newPOs = response?.data || [];
                 setPurchaseOrders(newPOs);
                 setTotalItems(response?.totalCount || 0);
-                setExpandedCards(newPOs.reduce((acc, po) => ({
+                setExpandedCards(newPOs.reduce((acc: Record<string, boolean>, po: PurchaseOrder) => ({
                     ...acc,
                     [po.id]: true
                 }), {}));

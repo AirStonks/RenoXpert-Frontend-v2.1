@@ -6,6 +6,7 @@ import Loading from "../../components/Loading";
 import { addKeyManagementItem, updateKeyCategoryQuantity, updateKeyManagementInfo } from "../../services/api";
 import KeyManagementCategoryItem from "./components/KeyManagementCategoryItem";
 import { Slide, toast } from "react-toastify";
+import { KeyManagement } from "../../types";
 
 function UpdateKeyManagement() {
     const navigate = useNavigate();
@@ -27,19 +28,29 @@ function UpdateKeyManagement() {
         });
     };
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<KeyManagement>({
         id: '',
         reno_progress_id: '',
         date_received_key: '',
         date_posted: '',
         pic_name: '',
-        no_main_door: 0,
-        no_room: 0,
         status: '',
-    })
+        metadata: [],
+    });
 
-    const [metadataItems, setMetadataItems] = useState({
-        metadata: []
+    const [metadataItems, setMetadataItems] = useState<{
+        metadata: Array<{
+            name: string;
+            value: Array<{
+                name?: string;
+                remark?: string;
+                attachment?: any;
+            }>;
+            remark?: string;
+            quantity?: number;
+        }>;
+    }>({
+        metadata: [],
     });
 
     const [isFormAmened, setIsFormAmend] = useState(false);
@@ -62,27 +73,23 @@ function UpdateKeyManagement() {
                 date_received_key: keyManagementDetail.date_received_key,
                 date_posted: keyManagementDetail.date_posted,
                 pic_name: keyManagementDetail.pic_name,
-                no_main_door: keyManagementDetail.no_main_door,
-                no_room: keyManagementDetail.no_room,
                 status: keyManagementDetail.status,
+                metadata: keyManagementDetail.metadata,
             });
 
             setMetadataItems({
-                metadata: keyManagementDetail.metadata
+                metadata: keyManagementDetail.metadata || [],
             });
-        }        
-
+        }
     }, [keyManagementDetail]);
 
-    const hasFormChanged = (currentData, originalData) => {
+    const hasFormChanged = (currentData: KeyManagement, originalData: KeyManagement | null): boolean => {
         if (!originalData) return false;
 
         return (
             currentData.date_received_key !== originalData.date_received_key ||
             currentData.date_posted !== originalData.date_posted ||
             currentData.pic_name !== originalData.pic_name ||
-            currentData.no_main_door !== originalData.no_main_door ||
-            currentData.no_room !== originalData.no_room ||
             currentData.status !== originalData.status
         );
     };
@@ -128,30 +135,21 @@ function UpdateKeyManagement() {
             if (response?.success) {
                 notify('success', 'Info Updated!');
             }
-
         } catch (error) {
             notify('error', 'Failed to update info');
         }
-    }
+    };
 
     const handleAddItem = async (category: string) => {
         try {
             const response = await addKeyManagementItem(renoProgressId, category);
 
             if (response?.success) {
-                // Find category in metadata
-                setFormData((prevFormData) => {
-                    const updatedMetadata = prevFormData.metadata.map((item) => {
-                        if (item.name === category) {
-                            return { ...item, metadata: response.data.metadata };
-                        }
-                        return item;
-                    });
-
-                    return {
-                        ...prevFormData,
-                        metadata: updatedMetadata,
-                    };
+                setMetadataItems((prevMetadataItems) => {
+                    const updatedMetadata = prevMetadataItems.metadata.map((item) =>
+                        item.name === category ? { ...item, value: response.data.metadata } : item
+                    );
+                    return { metadata: updatedMetadata };
                 });
             }
         } catch (error) {
@@ -159,23 +157,23 @@ function UpdateKeyManagement() {
         }
     };
 
-    const getLabelForName = (name) => {
-        const labelMap = {
-            'ori_acc_card': 'Original Access Card',
-            'dup_acc_card': 'Duplicate Access Card',
-            'car_acc_card': 'Car Park Access Card',
-            'guest_acc_card': 'Guest Access Card',
-            'main_door_key': 'Main Door Key',
-            'room_door_key': 'Room Door Key',
-            'yard_door_key': 'Yard Key',
-            'grill_door_key': 'Grill Door key',
-            'mailbox_key': 'Mailbox Key',
-            'ac_ledge_key': 'AC Ledge Key',
-            'ac_remote': 'AC Remote',
-            'others': 'Others',
+    const getLabelForName = (name: string): string => {
+        const labelMap: { [key: string]: string } = {
+            ori_acc_card: 'Original Access Card',
+            dup_acc_card: 'Duplicate Access Card',
+            car_acc_card: 'Car Park Access Card',
+            guest_acc_card: 'Guest Access Card',
+            main_door_key: 'Main Door Key',
+            room_door_key: 'Room Door Key',
+            yard_door_key: 'Yard Key',
+            grill_door_key: 'Grill Door key',
+            mailbox_key: 'Mailbox Key',
+            ac_ledge_key: 'AC Ledge Key',
+            ac_remote: 'AC Remote',
+            others: 'Others',
         };
 
-        return labelMap[name] || name; // Return original name if no mapping found
+        return labelMap[name] || name;
     };
 
     if (loading) {
@@ -190,12 +188,10 @@ function UpdateKeyManagement() {
         <>
             <div className="flex justify-between items-center flex-wrap mb-6">
                 <div className="flex gap-4 items-center">
-                    <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
+                    <button className="text-gray-800 dark:text-gray-400" onClick={handleBackClick}>
                         <i className="ki-solid ki-arrow-left"></i>
                     </button>
-                    <span className="text-2xl font-bold text-gray-900">
-                        Update Key Management
-                    </span>
+                    <span className="text-2xl font-bold text-gray-900">Update Key Management</span>
                 </div>
             </div>
 
@@ -203,17 +199,13 @@ function UpdateKeyManagement() {
                 <div className="flex flex-col flex-[3] gap-4">
                     <div className="card sm:mb-0 mb-2 mr-2">
                         <div className="card-header">
-                            <h2 className="card-title">
-                                Info
-                            </h2>
+                            <h2 className="card-title">Info</h2>
                         </div>
                         <div className="card-body">
                             <table className="table-auto">
                                 <tbody>
                                     <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Status:
-                                        </td>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Status:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <select
                                                 className="select select-bordered w-full max-w-xs"
@@ -230,9 +222,7 @@ function UpdateKeyManagement() {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Date received key:
-                                        </td>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Date received key:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <input
                                                 type="date"
@@ -243,9 +233,7 @@ function UpdateKeyManagement() {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Date posted:
-                                        </td>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Date posted:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <input
                                                 type="date"
@@ -256,14 +244,12 @@ function UpdateKeyManagement() {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            PIC Name:
-                                        </td>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">PIC Name:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             <input
                                                 type="text"
                                                 className="input"
-                                                name='pic_name'
+                                                name="pic_name"
                                                 value={formData.pic_name || ''}
                                                 onChange={handleChange}
                                             />
@@ -272,36 +258,25 @@ function UpdateKeyManagement() {
                                 </tbody>
                             </table>
 
-                            {isFormAmened &&
+                            {isFormAmened && (
                                 <div className="flex justify-end gap-4">
-                                    <button
-                                        className="btn btn-sm btn-secondary btn-outline"
-                                    >
-                                        Reset
-                                    </button>
-
-                                    <button
-                                        className="btn btn-sm btn-primary"
-                                        onClick={submitSaveInfo}
-                                    >
+                                    <button className="btn btn-sm btn-secondary btn-outline">Reset</button>
+                                    <button className="btn btn-sm btn-primary" onClick={submitSaveInfo}>
                                         Save
                                     </button>
                                 </div>
-                            }
-
+                            )}
                         </div>
                     </div>
                 </div>
-                <div className='flex flex-col flex-[7] gap-4'>
+                <div className="flex flex-col flex-[7] gap-4">
                     <div className="card">
                         <div className="card-header">
-                            <h2 className="card-title">
-                                Key & access card detail
-                            </h2>
+                            <h2 className="card-title">Key & access card detail</h2>
                         </div>
                         <div className="card-body">
                             <div className="flex flex-col mb-4 gap-2" data-accordion="true">
-                                {metadataItems.metadata.map((item: any, index: number) => (
+                                {metadataItems.metadata.map((item, index: number) => (
                                     <KeyManagementCategoryItem
                                         key={index}
                                         renoProgressId={renoProgressId}
@@ -319,7 +294,7 @@ function UpdateKeyManagement() {
                 </div>
             </div>
         </>
-    )
+    );
 }
 
 export default UpdateKeyManagement;

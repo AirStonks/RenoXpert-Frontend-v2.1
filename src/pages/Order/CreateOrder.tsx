@@ -346,7 +346,9 @@ function CreateOrder() {
             return;
         }
 
-        if (formData.bonus?.value) formData.bonus.value = Number(formData.bonus.value);
+        if (formData.bonus?.value != null) {
+            formData.bonus.value = formData.bonus.value.toString();
+        }
 
         const newOrder: Order = {
             user_id: selectedUser?.id || "",
@@ -371,7 +373,7 @@ function CreateOrder() {
             internal_remark: formData.internal_remark,
             completion_day: formData.completion_day,
             bonus: formData.bonus,
-            metadata: selectedPackages,
+            metadata: selectedPackages ? JSON.stringify(selectedPackages) : undefined,
         };
 
         try {
@@ -394,7 +396,7 @@ function CreateOrder() {
         }
     };
 
-    const openAddProductModal = (event) => {
+    const openAddProductModal = (event: React.MouseEvent<HTMLButtonElement>) => {
         const id = event.currentTarget.getAttribute("data-id");
         const selectedPackage = selectedPackages.find((pkg) => pkg.id === Number(id));
         if (selectedPackage) {

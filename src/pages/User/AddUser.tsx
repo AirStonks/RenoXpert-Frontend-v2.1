@@ -5,6 +5,24 @@ import ClipboardJS from "clipboard";
 import { User } from "../../types";
 import { addUser } from "../../services/api";
 
+interface ValidationErrors {
+    name_first?: string[];
+    name_last?: string[];
+    email?: string[];
+    phone?: string[];
+    salutations?: string[];
+    name_preferred?: string[];
+    ic?: string[];
+    address_1?: string[];
+    address_2?: string[];
+    city?: string[];
+    state?: string[];
+    postcode?: string[];
+    'address.city'?: string[];
+    'address.state'?: string[];
+    [key: string]: string[] | undefined;
+}
+
 const roles = [
     { value: 'owner', label: 'Owner', description: 'Create an owner account' },
     { value: 'vendor', label: 'Vendor', description: 'Create a vendor account' },
@@ -48,10 +66,10 @@ function AddUser() {
             city: '',
             state: '',
             postcode: '',
-        }
+        },
     });
     const [isLoading, setIsLoading] = useState(false);
-    const [validationErrors, setValidationErrors] = useState({});
+    const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
     const [success, setSuccess] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -137,14 +155,14 @@ function AddUser() {
             // Clear error for IC field
             setValidationErrors((prevErrors) => ({
                 ...prevErrors,
-                ic: '',
+                ic: undefined, // or ic: [] to indicate no errors
             }));
 
             return;
         } else {
             setFormData((prevData) => ({
                 ...prevData,
-                [name]: value
+                [name]: value,
             }));
         }
     };
@@ -157,7 +175,24 @@ function AddUser() {
     }
 
     const handleReset = () => {
-        setFormData({ name_first: '', name_last: '', email: '', type: 'staff', phone: '' });
+        setFormData({
+            email: '',
+            type: '',
+            country_code: '60',
+            phone: '',
+            name_first: '',
+            name_last: '',
+            name_preferred: '',
+            salutations: 'mr',
+            ic: '',
+            address: {
+                address_1: '',
+                address_2: '',
+                city: '',
+                state: '',
+                postcode: '',
+            },
+        });
     };
 
     const handleSubmit = async () => {

@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import ClipboardJS from "clipboard";
 import useFetchInvoice from "../../../../hook/useFetchInvoice";
 import Loading from "../../../../components/Loading";
-import { changeInvoiceLinkStatus, markInvoiceAsPaid } from "../../../../services/api";
 import { Slide, toast } from "react-toastify";
 import { Invoice } from "../../../../types";
 import PaymentDetailModal from "./PaymentDetailModal";
@@ -52,7 +51,7 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
 
     useEffect(() => {
         if (!loading && invoice) {
-            const target = document.getElementById('clipboard_1_target');
+            const target = document.getElementById('clipboard_1_target') as HTMLInputElement;
             const button = document.getElementById('clipboard_1_button');
 
             if (!target || !button) {

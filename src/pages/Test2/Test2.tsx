@@ -1,114 +1,114 @@
 
-import { DndContext, DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
-import React, { useState } from 'react';
-import { DraggablePackage } from './components/DraggablePackage';
-import { Package } from '../../types';
+// import { DndContext, DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
+// import { arrayMove } from '@dnd-kit/sortable';
+// import React, { useState } from 'react';
+// import { DraggablePackage } from './components/DraggablePackage';
+// import { Package } from '../../types';
 
 function Test2() {
-    const [packages, setPackages] = useState<Package[]>([
-        {
-            id: 'pkg-1',
-            name: 'Basic Package',
-            products: [{ id: 'prod-1', name: 'Product A', description: 'Basic item' }]
-        },
-        {
-            id: 'pkg-2',
-            name: 'Premium Package',
-            products: [{ id: 'prod-2', name: 'Product B', description: 'Premium item' }]
-        },
-        {
-            id: 'pkg-3',
-            name: 'Unassigned Products',
-            products: [
-                { id: 'prod-3', name: 'Product C', description: 'Extra item' },
-                { id: 'prod-4', name: 'Product D', description: 'Additional item' }
-            ]
-        }
-    ]);
+    // const [packages, setPackages] = useState<Package[]>([
+    //     {
+    //         id: 'pkg-1',
+    //         name: 'Basic Package',
+    //         products: [{ id: 'prod-1', name: 'Product A', description: 'Basic item' }]
+    //     },
+    //     {
+    //         id: 'pkg-2',
+    //         name: 'Premium Package',
+    //         products: [{ id: 'prod-2', name: 'Product B', description: 'Premium item' }]
+    //     },
+    //     {
+    //         id: 'pkg-3',
+    //         name: 'Unassigned Products',
+    //         products: [
+    //             { id: 'prod-3', name: 'Product C', description: 'Extra item' },
+    //             { id: 'prod-4', name: 'Product D', description: 'Additional item' }
+    //         ]
+    //     }
+    // ]);
 
-    const [activeId, setActiveId] = useState<string | null>(null);
+    // const [activeId, setActiveId] = useState<string | null>(null);
 
-    const handleDragStart = (event: DragStartEvent) => {
-        setActiveId(event.active.id as string);
-    };
+    // const handleDragStart = (event: DragStartEvent) => {
+    //     setActiveId(event.active.id as string);
+    // };
 
-    const handleDragEnd = (event: DragEndEvent) => {
-        const { active, over } = event;
+    // const handleDragEnd = (event: DragEndEvent) => {
+    //     const { active, over } = event;
 
-        if (!over?.id) {
-            setActiveId(null);
-            return;
-        }
+    //     if (!over?.id) {
+    //         setActiveId(null);
+    //         return;
+    //     }
 
-        if (active.id.toString().startsWith('pkg-') && over.id.toString().startsWith('pkg-')) {
-            const oldIndex = packages.findIndex(pkg => pkg.id === active.id);
-            const newIndex = packages.findIndex(pkg => pkg.id === over.id);
-            setPackages(arrayMove(packages, oldIndex, newIndex));
-        }
-        else if (active.id.toString().startsWith('prod-') && over.id.toString().startsWith('pkg-')) {
-            const sourcePackageId = active.data.current?.packageId as string;
-            const targetPackageId = over.id as string;
-            const draggedProductId = active.id as string;
+    //     if (active.id.toString().startsWith('pkg-') && over.id.toString().startsWith('pkg-')) {
+    //         const oldIndex = packages.findIndex(pkg => pkg.id === active.id);
+    //         const newIndex = packages.findIndex(pkg => pkg.id === over.id);
+    //         setPackages(arrayMove(packages, oldIndex, newIndex));
+    //     }
+    //     else if (active.id.toString().startsWith('prod-') && over.id.toString().startsWith('pkg-')) {
+    //         const sourcePackageId = active.data.current?.packageId as string;
+    //         const targetPackageId = over.id as string;
+    //         const draggedProductId = active.id as string;
 
-            if (sourcePackageId === targetPackageId) {
-                setActiveId(null);
-                return;
-            }
+    //         if (sourcePackageId === targetPackageId) {
+    //             setActiveId(null);
+    //             return;
+    //         }
 
-            setPackages(prevPackages => {
-                const sourcePackage = prevPackages.find(pkg => pkg.id === sourcePackageId);
-                const targetPackage = prevPackages.find(pkg => pkg.id === targetPackageId);
-                const product = sourcePackage?.products.find(p => p.id === draggedProductId);
+    //         setPackages(prevPackages => {
+    //             const sourcePackage = prevPackages.find(pkg => pkg.id === sourcePackageId);
+    //             const targetPackage = prevPackages.find(pkg => pkg.id === targetPackageId);
+    //             const product = sourcePackage?.products.find(p => p.id === draggedProductId);
 
-                if (!sourcePackage || !targetPackage || !product) return prevPackages;
+    //             if (!sourcePackage || !targetPackage || !product) return prevPackages;
 
-                return prevPackages.map(pkg => {
-                    if (pkg.id === sourcePackageId) {
-                        return { ...pkg, products: pkg.products.filter(p => p.id !== draggedProductId) };
-                    }
-                    if (pkg.id === targetPackageId) {
-                        return { ...pkg, products: [...pkg.products, product] };
-                    }
-                    return pkg;
-                });
-            });
-        }
+    //             return prevPackages.map(pkg => {
+    //                 if (pkg.id === sourcePackageId) {
+    //                     return { ...pkg, products: pkg.products.filter(p => p.id !== draggedProductId) };
+    //                 }
+    //                 if (pkg.id === targetPackageId) {
+    //                     return { ...pkg, products: [...pkg.products, product] };
+    //                 }
+    //                 return pkg;
+    //             });
+    //         });
+    //     }
 
-        setActiveId(null);
-    };
+    //     setActiveId(null);
+    // };
 
-    const handleSubmit = () => {
-        console.log('Current Packages:', packages);
-    };
+    // const handleSubmit = () => {
+    //     console.log('Current Packages:', packages);
+    // };
 
-    return (
-        <div className="container mx-auto p-4 max-w-2xl">
-            <h1 className="text-2xl font-bold mb-6">Package Manager</h1>
-            <DndContext
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-            >
-                <div className="flex flex-col gap-6">
-                    {packages.map((pkg) => (
-                        <DraggablePackage
-                            key={pkg.id}
-                            pkg={pkg}
-                            isDragging={activeId === pkg.id}
-                        />
-                    ))}
-                </div>
-            </DndContext>
-            <div className="mt-6">
-                <button
-                    onClick={handleSubmit}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
-                >
-                    Submit
-                </button>
-            </div>
-        </div>
-    );
+    // return (
+    //     <div className="container mx-auto p-4 max-w-2xl">
+    //         <h1 className="text-2xl font-bold mb-6">Package Manager</h1>
+    //         <DndContext
+    //             onDragStart={handleDragStart}
+    //             onDragEnd={handleDragEnd}
+    //         >
+    //             <div className="flex flex-col gap-6">
+    //                 {packages.map((pkg) => (
+    //                     <DraggablePackage
+    //                         key={pkg.id}
+    //                         pkg={pkg}
+    //                         isDragging={activeId === pkg.id}
+    //                     />
+    //                 ))}
+    //             </div>
+    //         </DndContext>
+    //         <div className="mt-6">
+    //             <button
+    //                 onClick={handleSubmit}
+    //                 className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+    //             >
+    //                 Submit
+    //             </button>
+    //         </div>
+    //     </div>
+    // );
 }
 
 

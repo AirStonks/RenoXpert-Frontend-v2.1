@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Order } from '../../../../types';
-import React from 'react';
 import { Slide, toast } from 'react-toastify';
 
 const APP_URL =

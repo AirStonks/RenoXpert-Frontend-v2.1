@@ -31,7 +31,7 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
     };
 
     // Stop event propagation for interactive elements
-    const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
+    const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
     return (
         <tr

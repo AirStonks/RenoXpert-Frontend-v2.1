@@ -14,8 +14,8 @@ const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
         : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
-        ? import.meta.env.VITE_STAGING_AWS_S3_URL
-        : null;
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null;
 
 const categoryOptions = [
     { value: "renovation", label: "Renovation" },
@@ -36,13 +36,15 @@ function EditOrderQuotation() {
     const qtyBtnRef = useRef(null);
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-    const [selectedPackages, setSelectedPackages] = useState<Package[]>([]);
+    const [selectedPackages, setSelectedPackagesState] = useState<Package[]>([]);
     const [selectedProducts, setSelectedProducts] = useState([]);
     const [selectedPackageId, setSelectedPackageId] = useState<number>();
     const [selectedProduct, setSelectedProduct] = useState([]);
     const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
     const [formDetail, setFormDetail] = useState<OwnerRegistrationForm | null>(null);
     const [totalAmount, setTotalAmount] = useState<number>(0);
+
+
 
     const handleBackClick = () => {
         localStorage.removeItem("selected_quotation_packages");
@@ -112,10 +114,10 @@ function EditOrderQuotation() {
         }
     };
 
-    const openAddProductModal = (event) => {
+    const openAddProductModal = (event: React.MouseEvent<HTMLButtonElement>) => {
         const id = event.currentTarget.getAttribute("data-id");
         const includePackages = localStorage.getItem("selected_quotation_packages");
-        const packages = JSON.parse(includePackages);
+        const packages: Package[] = JSON.parse(includePackages);
 
         const selectedPackage = packages.find((pkg) => pkg.id === Number(id));
 
@@ -156,18 +158,18 @@ function EditOrderQuotation() {
         handleSelectedQuotation();
 
         if (includePackages) {
-            const updatedPackages = JSON.parse(includePackages).map((pkg) => ({
+            const updatedPackages = JSON.parse(includePackages).map((pkg: Package) => ({
                 ...pkg,
                 quantity: pkg.quantity ?? 1,
             }));
 
-            setSelectedPackages(updatedPackages);
+            setSelectedPackagesState(updatedPackages);
             localStorage.setItem("selected_quotation_packages", JSON.stringify(updatedPackages));
             if (orderData) setTotalAmount(JSON.parse(orderData).totalAmount);
         } else if (selectedQuotation) {
             const packages = JSON.stringify(selectedQuotation.metadata);
             localStorage.setItem("include_packages", packages);
-            setSelectedPackages(JSON.parse(packages));
+            setSelectedPackagesState(JSON.parse(packages));
             localStorage.setItem("selected_quotation_packages", packages);
             setTotalAmount(selectedQuotation.total_amount);
         }
@@ -220,7 +222,7 @@ function EditOrderQuotation() {
         }
     };
 
-    const updateSelectedPackages = (packages) => {
+    const setSelectedPackagesHandler = (packages: Package[]) => {
         const updatedPackages = packages.map((prodPackage: Package) => {
             const packageTotalPrice = prodPackage.products.reduce(
                 (sum, product) =>
@@ -247,18 +249,18 @@ function EditOrderQuotation() {
             };
         });
 
-        setSelectedPackages(updatedPackages);
+        setSelectedPackagesState(updatedPackages);
         const newTotalAmount = calculateTotalAmount(updatedPackages);
         setTotalAmount(newTotalAmount);
         updateLocalStorage(updatedPackages);
     };
 
-    const updateLocalStorage = (packages) => {
+    const updateLocalStorage = (packages: Package[]) => {
         localStorage.setItem("selected_quotation_packages", JSON.stringify(packages));
     };
 
     const toggleProperty = (id: number, packId: number, property: "supply" | "install") => {
-        setSelectedPackages((prevPackages: Package[]) => {
+        setSelectedPackagesState((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage) => {
                 if (prodPackage.id === packId) {
                     const updatedProducts = prodPackage.products.map((product) => {
@@ -307,7 +309,7 @@ function EditOrderQuotation() {
     };
 
     const adjustQuantity = (prodId: number, packId: number, action: "increase" | "decrease") => {
-        setSelectedPackages((prevPackages: Package[]) => {
+        setSelectedPackagesState((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage) => {
                 if (prodPackage.id === packId) {
                     const updatedProducts = prodPackage.products.map((product) => {
@@ -372,7 +374,7 @@ function EditOrderQuotation() {
     };
 
     const adjustPackageQuantity = (packId: number, action: "increase" | "decrease") => {
-        setSelectedPackages((prevPackages: Package[]) => {
+        setSelectedPackagesState((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage) => {
                 if (prodPackage.id === packId) {
                     const newQuantity =
@@ -408,7 +410,7 @@ function EditOrderQuotation() {
     };
 
     const handleRemoveProduct = (packId: number, prodId: number) => {
-        setSelectedPackages((prevPackages: Package[]) => {
+        setSelectedPackagesState((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage: Package) => {
                 if (prodPackage.id === packId) {
                     const updatedProducts = prodPackage.products.filter((product) => product.id !== prodId);
@@ -432,7 +434,7 @@ function EditOrderQuotation() {
     };
 
     const handleRemovePackage = (packId: number) => {
-        setSelectedPackages((prevPackages: Package[]) => {
+        setSelectedPackagesState((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.filter((prodPackage: Package) => prodPackage.id !== packId);
             const newTotalAmount = calculateTotalAmount(updatedPackages);
             setTotalAmount(newTotalAmount);
@@ -440,6 +442,21 @@ function EditOrderQuotation() {
             return updatedPackages;
         });
     };
+
+
+
+    const toggleIsAddonIncluded = (packId: number) => {
+        setSelectedPackagesState((prevPackages: Package[]) => {
+            const updatedPackages = prevPackages.map((prodPackage: Package) => {
+                if (prodPackage.id === packId) {
+                    return { ...prodPackage, is_addon_included: !prodPackage.is_addon_included };
+                }
+                return prodPackage;
+            })
+
+            return updatedPackages
+        })
+    }
 
     const calculateTotalAmount = (packages: Package[]) => {
         return packages.reduce((sum, pkg) => {
@@ -474,7 +491,7 @@ function EditOrderQuotation() {
             const oldIndex = selectedPackages.findIndex((pkg) => `package-${pkg.id}` === active.id);
             const newIndex = selectedPackages.findIndex((pkg) => `package-${pkg.id}` === over.id);
             const newPackages = arrayMove(selectedPackages, oldIndex, newIndex);
-            setSelectedPackages(newPackages);
+            setSelectedPackagesState(newPackages);
             updateLocalStorage(newPackages);
         } else if (active.id.toString().startsWith("product-") && over.id.toString().startsWith("product-")) {
             const activeParts = active.id.toString().split("-");
@@ -483,7 +500,7 @@ function EditOrderQuotation() {
             const overPackId = parseInt(overParts[2]);
 
             if (activePackId === overPackId) {
-                setSelectedPackages((prevPackages) => {
+                setSelectedPackagesState((prevPackages) => {
                     const updatedPackages = prevPackages.map((pkg) => {
                         if (pkg.id === activePackId) {
                             const oldIndex = pkg.products.findIndex(
@@ -560,6 +577,7 @@ function EditOrderQuotation() {
                                             toggleProperty={toggleProperty}
                                             adjustQuantity={adjustQuantity}
                                             handleRemoveProduct={handleRemoveProduct}
+                                            toggleIsAddonIncluded={toggleIsAddonIncluded}
                                         />
                                     ))}
                                 </div>
@@ -580,11 +598,16 @@ function EditOrderQuotation() {
 
             <IncludeOrderQuotationPackageModal
                 selectedPackages={selectedPackages}
-                updateSelectedPackages={updateSelectedPackages}
+                setSelectedPackages={setSelectedPackagesHandler}
             />
-
             <IncludeQuotationProductModal
-                updateSelectedPackages={updateSelectedPackages}
+                selectedPackages={selectedPackages}
+                setSelectedPackages={setSelectedPackagesHandler}
+                selectedPackageId={selectedPackageId?.toString() || ""}
+                recalculateTotalAmount={() => {
+                    const newTotalAmount = calculateTotalAmount(selectedPackages);
+                    setTotalAmount(newTotalAmount);
+                }}
                 isFromOrderQuotation={true}
             />
         </>

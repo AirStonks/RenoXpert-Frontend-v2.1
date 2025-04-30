@@ -157,7 +157,6 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
         { path: '/orders/:id/ver/:verId', element: <PreviousOrderDetail />, layout: ProtectedLayout },
         { path: '/orders/create', element: <CreateOrder />, layout: ProtectedLayout },
-        { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation />, layout: ProtectedLayout },
         { path: '/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },
         { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation />, layout: ProtectedLayout },
         { path: '/preview/owner/order/overview/id/:id', element: <OrderPreview />, layout: null },

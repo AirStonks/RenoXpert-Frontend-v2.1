@@ -1,12 +1,10 @@
-import { useNavigate} from "react-router-dom";
 import Loading from "../../../components/Loading";
-import { useRef, useState } from "react";
+import { Dispatch, SetStateAction, useRef, useState } from "react";
 import { KTDropdown } from "../../../metronic/core";
-import { Permission, PhaseJob, RenoProgress, User } from "../../../types";
-import { addUserItemPermission, changeInternalComment, changeOwnerComment, changeRenoProgressGeneralPermission, changeTaskStatus, changeUserItemPermission, fetchRenoProgress, fetchTaskDocuments, liveUploadTaskAttachment, removeExternalTaskDocument, removeTaskDocument, removeUserItemPermission, toggleTaskVisibility, uploadTaskDocuments, uploadTaskExternalDocuments, userIndex } from "../../../services/api";
+import { Attachment, JobTask, Permission, PhaseJob, ProgressPhase, RenoProgress, User } from "../../../types";
+import { addUserItemPermission, changeInternalComment, changeOwnerComment, changeRenoProgressGeneralPermission, changeTaskStatus, changeUserItemPermission, fetchRenoProgress, fetchTaskDocuments, removeExternalTaskDocument, removeTaskDocument, removeUserItemPermission, toggleTaskVisibility, uploadTaskDocuments, uploadTaskExternalDocuments, userIndex } from "../../../services/api";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
-import imageCompression from 'browser-image-compression';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -17,27 +15,26 @@ const AWS_S3_URL =
 
 interface Props {
     renoProgress: RenoProgress;
-    setRenoProgress: (renoProgress: RenoProgress) => void;
+    setRenoProgress: Dispatch<SetStateAction<RenoProgress>>;
     permissions: Permission[];
     users: User[];
-    setUsers: (users: User[]) => void;
+    setUsers: Dispatch<SetStateAction<User[]>>;
 }
 
 function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUsers }: Props) {
-    const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
     const [activeTab, setActiveTab] = useState('pre_reno_tab');
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const [pendingUploadItems, setPendingUploadItems] = useState<File[]>(null);
+    const [pendingUploadItems, setPendingUploadItems] = useState<File[]>([]);
     const [dragging, setDragging] = useState(false);
     const [draggingExternal, setDraggingExternal] = useState(false);
-    const [documentItems, setDocumentItems] = useState<any[]>(null);
+    const [documentItems, setDocumentItems] = useState<Attachment[]>([]);
     const [selectedDocumentTaskId, setSelectedDocumentTaskId] = useState<number>(null);
     const [documentManageMode, setDocumentManageMode] = useState(false);
     const [externalDocumentManageMode, setExternalDocumentManageMode] = useState(false);
 
-    const [externalDocumentItems, setExternalDocumentItems] = useState<any[]>(null);
+    const [externalDocumentItems, setExternalDocumentItems] = useState<Attachment[]>([]);
     const [pendingExternalUploadItems, setPendingExternalUploadItems] = useState<File[]>([]);
 
     const maxFiles = 10; // Maximum number of files allowed
@@ -161,27 +158,25 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
     const handleOwnerCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
         const { value } = e.target;
 
-        // More efficient state update
-        setRenoProgress(prevRenoProgress => {
-            const updatedPhases = prevRenoProgress.phases.map(phase => ({
+        setRenoProgress((prevRenoProgress: RenoProgress): RenoProgress => {
+            const updatedPhases = prevRenoProgress.phases.map((phase: ProgressPhase) => ({
                 ...phase,
-                jobs: phase.jobs.map(job => ({
+                jobs: phase.jobs.map((job: PhaseJob) => ({
                     ...job,
-                    tasks: job.tasks.map(task =>
+                    tasks: job.tasks.map((task: JobTask) =>
                         task.id.toString() === taskId.toString()
                             ? { ...task, owner_comment: value }
                             : task
-                    )
-                }))
+                    ),
+                })),
             }));
 
             return {
                 ...prevRenoProgress,
-                phases: updatedPhases
+                phases: updatedPhases,
             };
         });
 
-        // Debounce logic remains the same
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
@@ -189,28 +184,26 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
         debounceTimeout.current = setTimeout(async () => {
             try {
                 await changeOwnerComment(Number(renoProgress.id), taskId, value);
-                console.log(renoProgress);
+            } catch (error: unknown) {
+                console.error('Error updating owner comment:', error);
+                notify('error', error instanceof Error ? error.message : 'An error occurred');
 
-            } catch (error) {
-                console.error('Error updating internal comment:', error);
-
-                // Optional: Revert the local state if the API call fails
-                setRenoProgress(prevRenoProgress => {
-                    const revertedPhases = prevRenoProgress.phases.map(phase => ({
+                setRenoProgress((prevRenoProgress: RenoProgress): RenoProgress => {
+                    const revertedPhases = prevRenoProgress.phases.map((phase: ProgressPhase) => ({
                         ...phase,
-                        jobs: phase.jobs.map(job => ({
+                        jobs: phase.jobs.map((job: PhaseJob) => ({
                             ...job,
-                            tasks: job.tasks.map(task =>
-                                task.id === taskId.toString()
-                                    ? { ...task, internal_comment: task.owner_comment }
+                            tasks: job.tasks.map((task: JobTask) =>
+                                task.id.toString() === taskId.toString()
+                                    ? { ...task, owner_comment: task.owner_comment }
                                     : task
-                            )
-                        }))
+                            ),
+                        })),
                     }));
 
                     return {
                         ...prevRenoProgress,
-                        phases: revertedPhases
+                        phases: revertedPhases,
                     };
                 });
             }
@@ -220,27 +213,25 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
     const handleInternalCommentChange = async (e: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
         const { value } = e.target;
 
-        // More efficient state update
-        setRenoProgress(prevRenoProgress => {
-            const updatedPhases = prevRenoProgress.phases.map(phase => ({
+        setRenoProgress((prevRenoProgress: RenoProgress): RenoProgress => {
+            const updatedPhases = prevRenoProgress.phases.map((phase: ProgressPhase) => ({
                 ...phase,
-                jobs: phase.jobs.map(job => ({
+                jobs: phase.jobs.map((job: PhaseJob) => ({
                     ...job,
-                    tasks: job.tasks.map(task =>
+                    tasks: job.tasks.map((task: JobTask) =>
                         task.id.toString() === taskId.toString()
                             ? { ...task, internal_comment: value }
                             : task
-                    )
-                }))
+                    ),
+                })),
             }));
 
             return {
                 ...prevRenoProgress,
-                phases: updatedPhases
+                phases: updatedPhases,
             };
         });
 
-        // Debounce logic remains the same
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
@@ -248,26 +239,26 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
         debounceTimeout.current = setTimeout(async () => {
             try {
                 await changeInternalComment(Number(renoProgress.id), taskId, value);
-            } catch (error) {
+            } catch (error: unknown) {
                 console.error('Error updating internal comment:', error);
+                notify('error', error instanceof Error ? error.message : 'An error occurred');
 
-                // Optional: Revert the local state if the API call fails
-                setRenoProgress(prevRenoProgress => {
-                    const revertedPhases = prevRenoProgress.phases.map(phase => ({
+                setRenoProgress((prevRenoProgress: RenoProgress): RenoProgress => {
+                    const revertedPhases = prevRenoProgress.phases.map((phase: ProgressPhase) => ({
                         ...phase,
-                        jobs: phase.jobs.map(job => ({
+                        jobs: phase.jobs.map((job: PhaseJob) => ({
                             ...job,
-                            tasks: job.tasks.map(task =>
-                                task.id === taskId.toString()
+                            tasks: job.tasks.map((task: JobTask) =>
+                                task.id.toString() === taskId.toString()
                                     ? { ...task, internal_comment: task.internal_comment }
                                     : task
-                            )
-                        }))
+                            ),
+                        })),
                     }));
 
                     return {
                         ...prevRenoProgress,
-                        phases: revertedPhases
+                        phases: revertedPhases,
                     };
                 });
             }
@@ -357,7 +348,7 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
     };
 
     // Handle drag over event
-    const handleDragOver = (event) => {
+    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         setDragging(true); // Set dragging state to true when dragging over
     };
@@ -368,22 +359,22 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
     };
 
     // Handle drop event
-    const handleDrop = (event) => {
+    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
-        const droppedFiles = event.dataTransfer.files;
+        const droppedFiles: FileList = event.dataTransfer.files;
         if (pendingUploadItems.length + droppedFiles.length + documentItems.length <= maxFiles) {
-            setPendingUploadItems((prevItems) => [
+            setPendingUploadItems((prevItems: File[]): File[] => [
                 ...prevItems,
                 ...Array.from(droppedFiles),
             ]);
         } else {
             notify('error', `You can only upload up to ${maxFiles} files.`);
         }
-        setDragging(false); // Reset dragging state when drop occurs
+        setDragging(false);
     };
 
     // Add these handlers
-    const handleExternalDragOver = (event) => {
+    const handleExternalDragOver = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         setDraggingExternal(true);
     };
@@ -392,11 +383,11 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
         setDraggingExternal(false);
     };
 
-    const handleExternalDrop = (event) => {
+    const handleExternalDrop = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
-        const droppedFiles = event.dataTransfer.files;
+        const droppedFiles: FileList = event.dataTransfer.files;
         if (pendingExternalUploadItems.length + droppedFiles.length + externalDocumentItems.length <= maxFiles) {
-            setPendingExternalUploadItems((prevItems) => [
+            setPendingExternalUploadItems((prevItems: File[]): File[] => [
                 ...prevItems,
                 ...Array.from(droppedFiles),
             ]);
@@ -407,7 +398,7 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
     };
 
     // Handle file removal
-    const removeFile = (index) => {
+    const removeFile = (index: number) => {
         setPendingUploadItems((prevItems) => prevItems.filter((_, i) => i !== index));
     };
 
@@ -462,44 +453,44 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
         setPendingUploadItems([]);
     };
 
-    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
-        const fileInput = event.target;
+    // const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, taskId: number) => {
+    //     const fileInput = event.target;
 
-        setIsLoading(true);
+    //     setIsLoading(true);
 
-        if (!fileInput.files || fileInput.files.length === 0) {
-            setIsLoading(false);
-            return;
-        }
+    //     if (!fileInput.files || fileInput.files.length === 0) {
+    //         setIsLoading(false);
+    //         return;
+    //     }
 
-        try {
-            const options = {
-                maxSizeMB: 2, // Max file size (in MB)
-                maxWidthOrHeight: 1920, // Max image width/height
-                useWebWorker: true, // Use a web worker to compress the image in the background
-            };
+    //     try {
+    //         const options = {
+    //             maxSizeMB: 2, // Max file size (in MB)
+    //             maxWidthOrHeight: 1920, // Max image width/height
+    //             useWebWorker: true, // Use a web worker to compress the image in the background
+    //         };
 
-            const compressedFile = await imageCompression(event.target.files[0], options);
+    //         const compressedFile = await imageCompression(event.target.files[0], options);
 
-            const compressedImage = new File(
-                [compressedFile],
-                event.target.files[0].name,
-                { type: event.target.files[0].type }
-            );
+    //         const compressedImage = new File(
+    //             [compressedFile],
+    //             event.target.files[0].name,
+    //             { type: event.target.files[0].type }
+    //         );
 
-            const response = await liveUploadTaskAttachment(Number(renoProgress.id), taskId, compressedImage);
+    //         const response = await liveUploadTaskAttachment(Number(renoProgress.id), taskId, compressedImage);
 
-            if (response?.success) {
-                setDocumentItems(response.data);
-                notify('success', 'File uploaded successfully.');
-            }
+    //         if (response?.success) {
+    //             setDocumentItems(response.data);
+    //             notify('success', 'File uploaded successfully.');
+    //         }
 
-        } catch (error) {
-            notify('error', 'Error while uploading file.');
-        }
+    //     } catch (error) {
+    //         notify('error', 'Error while uploading file.');
+    //     }
 
-        setIsLoading(false);
-    }
+    //     setIsLoading(false);
+    // }
 
     const handleExternalFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(event.target.files ?? []);
@@ -599,9 +590,10 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
         setDocumentItems(null);
     }
 
+    type TaskStatus = 'not_started' | 'started' | 'in_progress' | 'completed' | 'not_available' | 'submitted';
+
     const calculateJobProgress = (job: PhaseJob) => {
-        // Define the status weightages
-        const statusWeights = {
+        const statusWeights: Record<TaskStatus, number> = {
             not_started: 0,
             started: 0.25,
             in_progress: 0.75,
@@ -610,17 +602,14 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
             submitted: 1,
         };
 
-        // Calculate the weighted sum of task statuses using task_weightage
         const weightedSum = job.tasks.reduce((sum, task) => {
-            const statusWeight = statusWeights[task.status] || 0;
-            const taskWeight = task.task_weightage || 1; // Use task_weightage or default to 1 if not provided
+            const statusWeight = statusWeights[task.status as TaskStatus] || 0;
+            const taskWeight = task.task_weightage || 1;
             return sum + (taskWeight * statusWeight);
         }, 0);
 
-        // Calculate total task weight (sum of all task weights)
-        const totalWeight = job.tasks.reduce((sum, task) => sum + (task.task_weightage || 1), 0); // Default to 1 if task_weightage is not present
+        const totalWeight = job.tasks.reduce((sum, task) => sum + (task.task_weightage || 1), 0);
 
-        // Return the progress percentage (multiply by 100 to get percentage)
         return totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0;
     };
 
@@ -1005,7 +994,7 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
                                                         .filter(permission => {
                                                             // Check if the current user type is 'owner' and exclude permission.id === 2
                                                             const isOwner = perm.type === 'owner';
-                                                            return !isOwner || (isOwner && permission.id !== 2);
+                                                            return !isOwner || (isOwner && Number(permission.id) !== 2);
                                                         })
                                                         .map((permission, index) => (
                                                             <div className="menu-item" key={index} data-id={permission.id}>
@@ -1916,9 +1905,9 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
                                 <label
                                     className={`flex w-full p-6 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-300 rounded-xl border-dashed transition-all duration-200 ${dragging ? 'border-blue-500 bg-blue-50' : 'hover:border-blue-400 hover:bg-blue-50'
                                         }`}
-                                    onDragOver={handleDragOver}
+                                    onDragOver={() => handleDragOver}
                                     onDragLeave={handleDragLeave}
-                                    onDrop={handleDrop}
+                                    onDrop={() => handleDrop}
                                     htmlFor="file-upload-regular"
                                 >
                                     <div className="flex flex-col place-items-center place-content-center text-center rounded-xl w-full">
@@ -2080,9 +2069,9 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
                                 <label
                                     className={`flex w-full p-6 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-300 rounded-xl border-dashed transition-all duration-200 ${draggingExternal ? 'border-green-500 bg-green-50' : 'hover:border-green-400 hover:bg-green-50'
                                         }`}
-                                    onDragOver={handleExternalDragOver}
+                                    onDragOver={() => handleExternalDragOver}
                                     onDragLeave={handleExternalDragLeave}
-                                    onDrop={handleExternalDrop}
+                                    onDrop={() => handleExternalDrop}
                                     htmlFor="file-upload-external"
                                 >
                                     <div className="flex flex-col place-items-center place-content-center text-center rounded-xl w-full">
@@ -2210,11 +2199,11 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
                                                             <div className="flex flex-col">
                                                                 <a
                                                                     className="flex items-center gap-2 text-sm text-gray-900 hover:text-green-600 transition-colors duration-200"
-                                                                    href={item.url || AWS_S3_URL + item.file_url}
+                                                                    href={item.file_url || AWS_S3_URL + item.file_url}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {item.name || item.original_name}
+                                                                    {item.original_name || item.original_name}
                                                                 </a>
                                                                 {item.size && (
                                                                     <span className="text-xs text-gray-600">{formatFileSize(item.size)}</span>
@@ -2225,7 +2214,7 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
                                                             <button
                                                                 className="btn btn-xs btn-danger btn-icon transition-colors duration-200 hover:bg-red-600"
                                                                 onClick={() => removeServerExternalFile(selectedDocumentTaskId, index)}
-                                                                aria-label={`Remove ${item.name || item.original_name}`}
+                                                                aria-label={`Remove ${item.original_name || item.original_name}`}
                                                             >
                                                                 <i className="ki-filled ki-trash"></i>
                                                             </button>

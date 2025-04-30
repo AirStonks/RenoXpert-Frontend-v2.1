@@ -4,7 +4,7 @@ import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
-import { DefectInspectionForm, Order, RenoProgress } from "../../types";
+import { Attachment, DefectInspectionForm, Order, RenoProgress } from "../../types";
 import { changeTaskStatus, fetchDIForm, fetchRenoProgress, markDIFormAsCompleted } from "../../services/api";
 import React from 'react';
 import DIRLinkManagementModal from "./components/Modals/DIRLinkManagementModal";
@@ -529,20 +529,22 @@ function DIReport() {
                                                                                                 // You can use 'attachments' here as needed, for example:
                                                                                                 return (
                                                                                                     <div className="flex flex-wrap gap-4 border-gray-200">
-                                                                                                        {diForm?.area?.foyer?.[path]?.attachments?.map((attachment, index) => (
+                                                                                                        {diForm?.area?.foyer?.[path]?.attachments?.map((attachment: Attachment, index: number) => (
                                                                                                             <div className="flex gap-4 relative" key={index}>
-                                                                                                                <a
-                                                                                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
-                                                                                                                    href={AWS_S3_URL + (attachment.file_url)}
-                                                                                                                    target="_blank"
-                                                                                                                    rel="noopener noreferrer"
-                                                                                                                >
-                                                                                                                    <img
-                                                                                                                        src={AWS_S3_URL + (attachment.file_url)}
-                                                                                                                        alt={attachment.original_name}
-                                                                                                                        className="w-16 h-16 object-cover border border-gray-300 rounded"
-                                                                                                                    />
-                                                                                                                </a>
+                                                                                                                {attachment.file_url && attachment.original_name ? (
+                                                                                                                    <a
+                                                                                                                        className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                        href={AWS_S3_URL + attachment.file_url}
+                                                                                                                        target="_blank"
+                                                                                                                        rel="noopener noreferrer"
+                                                                                                                    >
+                                                                                                                        <img
+                                                                                                                            src={AWS_S3_URL + attachment.file_url}
+                                                                                                                            alt={attachment.original_name}
+                                                                                                                            className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                        />
+                                                                                                                    </a>
+                                                                                                                ) : null}
                                                                                                             </div>
                                                                                                         ))}
                                                                                                     </div>
@@ -634,7 +636,7 @@ function DIReport() {
                                                                                                     // You can use 'attachments' here as needed, for example:
                                                                                                     return (
                                                                                                         <div className="flex flex-wrap gap-4 border-gray-200">
-                                                                                                            {diForm?.area?.kitchen?.[path]?.attachments?.map((attachment, index) => (
+                                                                                                            {diForm?.area?.kitchen?.[path]?.attachments?.map((attachment: Attachment, index: number) => (
                                                                                                                 <div className="flex gap-4 relative" key={index}>
                                                                                                                     <a
                                                                                                                         className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
@@ -1190,29 +1192,26 @@ function DIReport() {
                                                                                         </div>
 
                                                                                         <div className="col-start-9 col-span-4 ">
-                                                                                            {
-                                                                                                Array.isArray(bedroom?.[path]?.attachments) && bedroom?.[path]?.attachments.length > 0 ? (
-                                                                                                    <div className="flex flex-wrap gap-4 border-gray-200">
-                                                                                                        {console.log(bedroomKey, ':', bedroom)} {/* Logs the attachments array */}
-                                                                                                        {bedroom?.[path]?.attachments.map((attachment, index) => (
-                                                                                                            <div className="flex gap-4 relative" key={index}>
-                                                                                                                <a
-                                                                                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
-                                                                                                                    href={AWS_S3_URL + (attachment.file_url)}
-                                                                                                                    target="_blank"
-                                                                                                                    rel="noopener noreferrer"
-                                                                                                                >
-                                                                                                                    <img
-                                                                                                                        src={AWS_S3_URL + (attachment.file_url)}
-                                                                                                                        alt={attachment.original_name}
-                                                                                                                        className="w-16 h-16 object-cover border border-gray-300 rounded"
-                                                                                                                    />
-                                                                                                                </a>
-                                                                                                            </div>
-                                                                                                        ))}
-                                                                                                    </div>
-                                                                                                ) : null
-                                                                                            }
+                                                                                            {bedroom?.[path]?.attachments && bedroom?.[path]?.attachments.length > 0 ? (
+                                                                                                <div className="flex flex-wrap gap-4 border-gray-200">
+                                                                                                    {bedroom?.[path]?.attachments.map((attachment: Attachment, index: number) => (
+                                                                                                        <div className="flex gap-4 relative" key={index}>
+                                                                                                            <a
+                                                                                                                className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                href={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                target="_blank"
+                                                                                                                rel="noopener noreferrer"
+                                                                                                            >
+                                                                                                                <img
+                                                                                                                    src={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                    alt={attachment.original_name}
+                                                                                                                    className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                />
+                                                                                                            </a>
+                                                                                                        </div>
+                                                                                                    ))}
+                                                                                                </div>
+                                                                                            ) : null}
                                                                                         </div>
 
                                                                                         <div className="col-span-8">
@@ -1296,28 +1295,26 @@ function DIReport() {
                                                                                         </div>
 
                                                                                         <div className="col-start-9 col-span-4 ">
-                                                                                            {
-                                                                                                Array.isArray(bathroom?.[path]?.attachments) && bathroom?.[path]?.attachments.length > 0 ? (
-                                                                                                    <div className="flex flex-wrap gap-4 border-gray-200">
-                                                                                                        {bathroom?.[path]?.attachments.map((attachment, index) => (
-                                                                                                            <div className="flex gap-4 relative" key={index}>
-                                                                                                                <a
-                                                                                                                    className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
-                                                                                                                    href={AWS_S3_URL + (attachment.file_url)}
-                                                                                                                    target="_blank"
-                                                                                                                    rel="noopener noreferrer"
-                                                                                                                >
-                                                                                                                    <img
-                                                                                                                        src={AWS_S3_URL + (attachment.file_url)}
-                                                                                                                        alt={attachment.original_name}
-                                                                                                                        className="w-16 h-16 object-cover border border-gray-300 rounded"
-                                                                                                                    />
-                                                                                                                </a>
-                                                                                                            </div>
-                                                                                                        ))}
-                                                                                                    </div>
-                                                                                                ) : null
-                                                                                            }
+                                                                                            {bathroom?.[path]?.attachments && bathroom?.[path]?.attachments.length > 0 ? (
+                                                                                                <div className="flex flex-wrap gap-4 border-gray-200">
+                                                                                                    {bathroom?.[path]?.attachments.map((attachment: Attachment, index: number) => (
+                                                                                                        <div className="flex gap-4 relative" key={index}>
+                                                                                                            <a
+                                                                                                                className="text-sm font-medium text-gray-900 hover:text-primary-active mb-px relative"
+                                                                                                                href={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                target="_blank"
+                                                                                                                rel="noopener noreferrer"
+                                                                                                            >
+                                                                                                                <img
+                                                                                                                    src={AWS_S3_URL + (attachment.file_url)}
+                                                                                                                    alt={attachment.original_name}
+                                                                                                                    className="w-16 h-16 object-cover border border-gray-300 rounded"
+                                                                                                                />
+                                                                                                            </a>
+                                                                                                        </div>
+                                                                                                    ))}
+                                                                                                </div>
+                                                                                            ) : null}
                                                                                         </div>
 
                                                                                         <div className="col-span-8">

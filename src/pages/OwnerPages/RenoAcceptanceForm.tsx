@@ -1,94 +1,88 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { RenoAccetanceForm } from "../../types";
-import Loading from "../../components/Loading";
-import SignatureCanvas from 'react-signature-canvas';
-import useFetchOwnerRenoProgress from "../../hook/useFetchOwnerRenoProgresses";
 
-const initialFormData: RenoAccetanceForm = {
-    reno_progress_id: '',
-    is_accepted: false,
-    date: '',
-    property: {
-        property_name: '',
-        block: '',
-        level: '',
-        unit: '',
-    },
-    user: {
-        id: '',
-        name: '',
-        email: '',
-        phone_no: '',
-    }
-};
+// const initialFormData: RenoAccetanceForm = {
+//     reno_progress_id: '',
+//     is_accepted: false,
+//     date: '',
+//     property: {
+//         property_name: '',
+//         block: '',
+//         level: '',
+//         unit: '',
+//     },
+//     user: {
+//         id: '',
+//         name: '',
+//         email: '',
+//         phone_no: '',
+//     }
+// };
 
-const token = localStorage.getItem('o_token');
+// const token = localStorage.getItem('o_token');
 
 function RenoAcceptanceForm() {
-    const navigate = useNavigate();
-    const { id } = useParams<{ id: string }>();
-    const renoProgressId = id ? parseInt(id, 10) : null;
-    const { renoProgressDetail, loading, error } = useFetchOwnerRenoProgress(renoProgressId);
-    const [formData, setFormData] = useState(initialFormData);
-    const [signature, setSignature] = useState();
+    // const navigate = useNavigate();
+    // const { id } = useParams<{ id: string }>();
+    // const renoProgressId = id ? parseInt(id, 10) : null;
+    // const { renoProgressDetail, loading, error } = useFetchOwnerRenoProgress(renoProgressId);
+    // const [formData, setFormData] = useState(initialFormData);
+    // const [signature, setSignature] = useState();
 
-    // $renovatedProperty = Get renoProgress.sale.order.property
-    // Block
-    // Level
-    // Unit
-    // $completionDate = [Date input]
-    // $agreement = false
-    // $signature = [Signature Input]
-    // $ownerName = renoProgress.sale.order.user.name
-    // $phoneNo = renoProgress.sale.order.user.phone_no
-    // $email = renoProgress.sale.order.user.email
+    // // $renovatedProperty = Get renoProgress.sale.order.property
+    // // Block
+    // // Level
+    // // Unit
+    // // $completionDate = [Date input]
+    // // $agreement = false
+    // // $signature = [Signature Input]
+    // // $ownerName = renoProgress.sale.order.user.name
+    // // $phoneNo = renoProgress.sale.order.user.phone_no
+    // // $email = renoProgress.sale.order.user.email
 
-    useEffect(() => {
-        if (renoProgressDetail) {
-            setFormData({
-                reno_progress_id: renoProgressId.toString(),
-                is_accepted: false,
-                date: new Date().toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric'
-                }),
-                property: {
-                    property_name: renoProgressDetail.property.name,
-                    block: renoProgressDetail.property.block,
-                    level: renoProgressDetail.property.floor,
-                    unit: renoProgressDetail.property.unit_no,
-                },
-                user: {
-                    id: renoProgressDetail.user.id,
-                    name: renoProgressDetail.user.name,
-                    email: renoProgressDetail.user.email,
-                    phone_no: renoProgressDetail.user.phone_no,
-                }
-            });
-        }
-    }, [renoProgressId, renoProgressDetail])
+    // useEffect(() => {
+    //     if (renoProgressDetail) {
+    //         setFormData({
+    //             reno_progress_id: renoProgressId.toString(),
+    //             is_accepted: false,
+    //             date: new Date().toLocaleDateString('en-GB', {
+    //                 day: '2-digit',
+    //                 month: 'long',
+    //                 year: 'numeric'
+    //             }),
+    //             property: {
+    //                 property_name: renoProgressDetail.property.name,
+    //                 block: renoProgressDetail.property.block,
+    //                 level: renoProgressDetail.property.floor,
+    //                 unit: renoProgressDetail.property.unit_no,
+    //             },
+    //             user: {
+    //                 id: renoProgressDetail.user.id,
+    //                 name: renoProgressDetail.user.name,
+    //                 email: renoProgressDetail.user.email,
+    //                 phone_no: renoProgressDetail.user.phone_no,
+    //             }
+    //         });
+    //     }
+    // }, [renoProgressId, renoProgressDetail])
 
-    const handleAgree = (event) => {
-        setFormData((prevData) => ({
-            ...prevData,
-            is_accepted: event.target.checked
-        }));
-    };
+    // const handleAgree = (event) => {
+    //     setFormData((prevData) => ({
+    //         ...prevData,
+    //         is_accepted: event.target.checked
+    //     }));
+    // };
 
-    const handleClearSignature = (ref) => {
-        signature.clear();
-    }
+    // const handleClearSignature = (ref) => {
+    //     signature.clear();
+    // }
 
-    const handleSubmit = () => {
-        console.log(formData);
+    // const handleSubmit = () => {
+    //     console.log(formData);
 
-    }
+    // }
 
     return (
         <>
-            {loading && <Loading />}
+            {/* {loading && <Loading />}
             <div className="card w-full">
                 <div className="card-header py-2">
                     <div className="flex gap-4 justify-center">
@@ -250,7 +244,7 @@ function RenoAcceptanceForm() {
                 >
                     Submit
                 </button>
-            </div>
+            </div> */}
         </>
     )
 }

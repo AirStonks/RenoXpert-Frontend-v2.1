@@ -74,11 +74,11 @@ function DIFormMain() {
         try {
             setIsLoading(true);
             const response = await fetchRPMDIForms(size, page, searchTerm, order, field);
-            let data = response?.data || [];
+            let data: DefectInspectionForm[] = response?.data || [];
 
             // Client-side status filtering
             if (status !== 'All') {
-                data = data.filter((form) =>
+                data = data.filter((form: DefectInspectionForm) =>
                     status === 'Submitted' ? !!form.submitted_at : !form.submitted_at
                 );
             }

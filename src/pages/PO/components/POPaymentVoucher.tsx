@@ -1,18 +1,32 @@
 import { Document, Page, PDFDownloadLink, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import useFetchPO from '../../../hook/useFetchPO';
 import { styles } from '../styles/quotationPrintStyle';
 import { PDFViewer } from '@react-pdf/renderer';
-import { Link } from 'react-router-dom';
+import { PurchaseOrder, POPackage, POItem, Sale, User } from '../../../types'; // Adjust the import path
+
+// Define the PODetail interface
+interface PODetail extends PurchaseOrder {
+    po_no: string;
+    total_amount: number;
+    vendor: User;
+    sale?: Sale;
+    po_packages: POPackage[];
+    order_status: string;
+}
 
 const getCurrentDate = () => {
     const date = new Date();
-    const options = { day: '2-digit', month: 'short', year: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    };
     return date.toLocaleDateString('en-GB', options);
 };
 
 // Separate the PDF content into its own component
-const PoPDF = ({ poDetail }) => {
+const PoPDF = ({ poDetail }: { poDetail: PurchaseOrder }) => {
     const COMPANY_NAME = "RenoXpert Sdn Bhd";
     const COMPANY_REG = "202401032588 (1578437-W)";
     const COMPANY_ADDRESS = "No. 42-46, Ground Floor, Jalan SS 19/1D";
@@ -123,7 +137,7 @@ const PoPDF = ({ poDetail }) => {
                 </Text>
             </View>
 
-            {poDetail.po_packages.map((pkg, pkgIndex) => (
+            {poDetail.po_packages.map((pkg: POPackage, pkgIndex: number) => (
                 <View style={styles.packageCard} key={pkgIndex} wrap={false}>
                     <View style={styles.packageHeader}>
                         <Text style={styles.packageTitle}>Package {pkgIndex + 1}: {pkg.name}</Text>
@@ -146,7 +160,7 @@ const PoPDF = ({ poDetail }) => {
                                 <Text style={styles.itemTh}>UOM</Text>
                             </View>
                         </View>
-                        {pkg.po_items.map((product) => (
+                        {pkg.po_items.map((product: POItem) => (
                             <View style={styles.itemRow} key={product.id}>
                                 <View style={{ flex: 2 }}>
                                     <Text style={styles.itemTd}>
@@ -181,7 +195,7 @@ const PoPDF = ({ poDetail }) => {
 
             <Text
                 style={styles.pageNumber}
-                render={({ pageNumber, totalPages }) => `${pageNumber}`}
+                render={({ pageNumber }) => `${pageNumber}`}
                 fixed
             />
 
@@ -270,7 +284,7 @@ function POPaymentVoucher() {
                 </div>
 
                 {/* PDF Preview (Always Visible, Fills Remaining Space) */}
-                <div className="w-full flex-1 bg-white border border-gray-300 rounded-lg overflow-hidden shadow-md">
+                Content: <div className="w-full flex-1 bg-white border border-gray-300 rounded-lg overflow-hidden shadow-md">
                     <PDFViewer
                         width="100%"
                         height="100%"
@@ -283,8 +297,6 @@ function POPaymentVoucher() {
             </div>
         </div>
     );
-
-
 }
 
 export default POPaymentVoucher;

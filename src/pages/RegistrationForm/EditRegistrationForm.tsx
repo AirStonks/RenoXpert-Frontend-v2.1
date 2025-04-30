@@ -6,9 +6,12 @@ import { OwnerRegistrationForm, Property } from "../../types";
 import { fetchProperties, updateRegistrationForm } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 
+type FurnishingCategory = 'foyer_entrance' | 'kitchen' | 'yard' | 'dining' | 'living' | 'bedrooms' | 'bathrooms';
+
 interface FormErrors {
     [key: string]: string | FormErrors | undefined; // Use string or undefined for error messages
 }
+
 
 const countryOptions = [
     { code: '60', name: 'Malaysia', flag: '/public/media/flags/malaysia.svg' },
@@ -264,17 +267,17 @@ function EditRegistrationForm() {
         navigate('/registration-forms/' + formId);
     }
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
         const { name, value } = e.target;
 
         if (name === 'ic') {
             const formattedIC = formatICNumber(value);
             setFormData((prevData) => ({
-                ...prevData,
+                ...prevData!,
                 ic: formattedIC,
             }));
-
-            // Clear error for IC field
             setErrors((prevErrors) => ({
                 ...prevErrors,
                 ic: '',
@@ -282,59 +285,102 @@ function EditRegistrationForm() {
             return;
         }
 
-        // Check if the name starts with 'questions'
+        // Handle questions
         if (name.startsWith('questions.')) {
-            const property = name.split('.')[1]; // Get the specific question property
-
-            // Update the questions state
+            const property = name.split('.')[1];
             setFormData((prevData) => ({
-                ...prevData,
+                ...prevData!,
                 questions: {
-                    ...prevData.questions,
+                    ...prevData!.questions,
                     [property]: value,
                 },
             }));
-        } else if (name.startsWith('furnishing.')) {
-            const [a, cat, rooms, q] = name.split('.');
-            console.log(cat);
-
-            if (cat === 'bedrooms' || cat === 'bathrooms') {
-                setFormData((prevData) => ({
-                    ...prevData,
-                    furnishing: {
-                        ...prevData.furnishing,
-                        [cat]: {
-                            ...prevData.furnishing?.[cat],
-                            [rooms]: {
-                                ...prevData.furnishing?.[cat]?.[rooms],
-                                [q]: value
-                            },
-                        }
-                    }
-                }))
-            } else {
-                const [furnish, category, property] = name.split('.');
-                console.log(furnish);
-                setFormData((prevData) => ({
-                    ...prevData,
-                    furnishing: {
-                        ...prevData.furnishing,
-                        [category]: {
-                            ...prevData.furnishing[category],
-                            [property]: value,
-                        },
-                    },
-                }));
-            }
-        } else {
-            // Handle other input and select changes
-            setFormData((prevData) => ({
-                ...prevData,
-                [name]: value,
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                [name]: '',
             }));
+            return;
         }
 
-        // Clear errors for the updated field
+        // Handle furnishing
+        if (name.startsWith('furnishing.')) {
+            const parts = name.split('.');
+            if (parts.length === 4) {
+                const [, cat, room, q] = parts as [string, FurnishingCategory, string, string];
+                if (cat === 'bedrooms' || cat === 'bathrooms') {
+                    setFormData((prevData) => {
+                        const currentFurnishing = prevData!.furnishing || {};
+
+                        // Define specific types for bedrooms and bathrooms
+                        type Bedroom = {
+                            bedframe?: string;
+                            wardrobe?: string;
+                            study_table?: string;
+                            writing_chair?: string;
+                            curtain?: string;
+                            lights?: string;
+                            fan?: string;
+                            ac?: string;
+                            other?: string;
+                            remark?: string;
+                        };
+
+                        type Bathroom = {
+                            water_heater?: string;
+                            bidet?: string;
+                            mirror?: string;
+                            shower_screen?: string;
+                            lights?: string;
+                            other?: string;
+                            remark?: string;
+                        };
+
+                        // Use the appropriate type based on category
+                        const currentCategory =
+                            cat === 'bedrooms'
+                                ? ((currentFurnishing[cat] || {}) as Record<string, Bedroom>)
+                                : ((currentFurnishing[cat] || {}) as Record<string, Bathroom>);
+
+                        return {
+                            ...prevData!,
+                            furnishing: {
+                                ...currentFurnishing,
+                                [cat]: {
+                                    ...currentCategory,
+                                    [room]: {
+                                        ...(currentCategory[room] || {}),
+                                        [q]: value,
+                                    },
+                                },
+                            } as OwnerRegistrationForm['furnishing'],
+                        };
+                    });
+                }
+            } else if (parts.length === 3) {
+                const [, category, property] = parts as [string, FurnishingCategory, string];
+                setFormData((prevData) => ({
+                    ...prevData!,
+                    furnishing: {
+                        ...prevData!.furnishing,
+                        [category]: {
+                            ...(prevData!.furnishing?.[category] || {}),
+                            [property]: value,
+                        },
+                    } as OwnerRegistrationForm['furnishing'],
+                }));
+            }
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                [name]: '',
+            }));
+            return;
+        }
+
+        // Handle other inputs
+        setFormData((prevData) => ({
+            ...prevData!,
+            [name]: value,
+        }));
         setErrors((prevErrors) => ({
             ...prevErrors,
             [name]: '',
@@ -343,7 +389,7 @@ function EditRegistrationForm() {
         // Specific logic for 'property_name'
         if (name === 'property_name' && value !== 'other') {
             setFormData((prevData) => ({
-                ...prevData,
+                ...prevData!,
                 other_property_name: '',
             }));
             setErrors((prevErrors) => ({
@@ -360,7 +406,7 @@ function EditRegistrationForm() {
         }))
     }
 
-    const handleOtherPropertyChange = (e) => {
+    const handleOtherPropertyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData((prevData) => ({ ...prevData, other_property_name: e.target.value }));
     };
 
@@ -370,14 +416,27 @@ function EditRegistrationForm() {
 
         setErrors({});
 
-        // Update the bathroom count and dynamically add/remove bedrooms in the form data
         setFormData((prevFormData) => {
-            const updatedBedrooms = { ...prevFormData.furnishing?.bedrooms };
+            // Explicitly type updatedBedrooms to match the bedrooms structure
+            const updatedBedrooms: Record<
+                string,
+                {
+                    bedframe?: string;
+                    wardrobe?: string;
+                    study_table?: string;
+                    writing_chair?: string;
+                    curtain?: string;
+                    lights?: string;
+                    fan?: string;
+                    ac?: string;
+                    other?: string;
+                    remark?: string;
+                }
+            > = { ...prevFormData.furnishing?.bedrooms };
 
-            // Add or remove bathroom fields based on the new count
+            // Add or remove bedroom fields based on the new count
             for (let i = 1; i <= bedroomCount; i++) {
                 if (!updatedBedrooms[`bedroom${i}`]) {
-                    // Add a new bathroom with empty questions (q1, q2, ..., q8)
                     updatedBedrooms[`bedroom${i}`] = {
                         bedframe: '',
                         wardrobe: '',
@@ -401,16 +460,16 @@ function EditRegistrationForm() {
                 }
             });
 
-            // Return the updated formData
+            // Ensure the furnishing object matches the OwnerRegistrationForm type
             return {
                 ...prevFormData,
                 furnishing: {
                     ...prevFormData.furnishing,
-                    bedrooms: updatedBedrooms
-                }
+                    bedrooms: updatedBedrooms,
+                } as OwnerRegistrationForm['furnishing'],
             };
         });
-    }
+    };
 
     const handleDynamicBathroom = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { value } = e.target;
@@ -418,15 +477,25 @@ function EditRegistrationForm() {
 
         setErrors({});
 
-        // Update the bathroom count and dynamically add/remove bathrooms in the form data
         setFormData((prevFormData) => {
-            const updatedbathrooms = { ...prevFormData.furnishing?.bathrooms };
+            // Explicitly type updatedBathrooms to match the bathrooms structure
+            const updatedBathrooms: Record<
+                string,
+                {
+                    water_heater?: string;
+                    bidet?: string;
+                    mirror?: string;
+                    shower_screen?: string;
+                    lights?: string;
+                    other?: string;
+                    remark?: string;
+                }
+            > = { ...prevFormData.furnishing?.bathrooms };
 
             // Add or remove bathroom fields based on the new count
             for (let i = 1; i <= bathroomCount; i++) {
-                if (!updatedbathrooms[`bathroom${i}`]) {
-                    // Add a new bathroom with empty questions (q1, q2, ..., q8)
-                    updatedbathrooms[`bathroom${i}`] = {
+                if (!updatedBathrooms[`bathroom${i}`]) {
+                    updatedBathrooms[`bathroom${i}`] = {
                         water_heater: '',
                         bidet: '',
                         mirror: '',
@@ -439,20 +508,20 @@ function EditRegistrationForm() {
             }
 
             // Remove bathrooms if the number is decreased
-            Object.keys(updatedbathrooms).forEach((key) => {
+            Object.keys(updatedBathrooms).forEach((key) => {
                 const bathroomNumber = parseInt(key.replace('bathroom', ''));
                 if (bathroomNumber > bathroomCount) {
-                    delete updatedbathrooms[key];
+                    delete updatedBathrooms[key];
                 }
             });
 
-            // Return the updated formData
+            // Ensure the furnishing object matches the OwnerRegistrationForm type
             return {
                 ...prevFormData,
                 furnishing: {
                     ...prevFormData.furnishing,
-                    bathrooms: updatedbathrooms
-                }
+                    bathrooms: updatedBathrooms,
+                } as OwnerRegistrationForm['furnishing'],
             };
         });
     };
@@ -476,17 +545,17 @@ function EditRegistrationForm() {
         if (!formData.unit) newErrors.unit = "Unit is required";
         if (!formData.layout_type) newErrors.layout_type = "Layout Type is required";
         if (!formData.sqft) newErrors.sqft = "Sqft is required";
-        if (!formData.quest_1) newErrors.quest_1 = "Please select an option";
-        if (!formData.quest_2) newErrors.quest_2 = "Please select an option";
-        if (!formData.quest_3) newErrors.quest_3 = "Please select an option";
-        if (!formData.quest_4) newErrors.quest_4 = "Please select an option";
-        if (!formData.quest_5) newErrors.quest_5 = "Please select an option";
-        if (!formData.quest_6) newErrors.quest_6 = "Please select an option";
-        if (!formData.quest_7) newErrors.quest_7 = "Please select an option";
-        if (!formData.quest_8) newErrors.quest_8 = "Please select an option";
+        if (!formData.questions.quest_1) newErrors.quest_1 = "Please select an option";
+        if (!formData.questions.quest_2) newErrors.quest_2 = "Please select an option";
+        if (!formData.questions.quest_3) newErrors.quest_3 = "Please select an option";
+        if (!formData.questions.quest_4) newErrors.quest_4 = "Please select an option";
+        if (!formData.questions.quest_5) newErrors.quest_5 = "Please select an option";
+        if (!formData.questions.quest_6) newErrors.quest_6 = "Please select an option";
+        if (!formData.questions.quest_7) newErrors.quest_7 = "Please select an option";
+        if (!formData.questions.quest_8) newErrors.quest_8 = "Please select an option";
 
         if (formData.property_name === 'other') {
-            if (!formData.other_property_name) newErrors.other_property_name = "Please fill the the other property name";
+            if (!formData.other_property_name) newErrors.other_property_name = "Please fill the other property name";
         }
 
         return newErrors;
@@ -548,7 +617,9 @@ function EditRegistrationForm() {
                                         </option>
                                     ))}
                                 </select>
-                                {errors.salutations && <span className="text-red-500 text-xs mt-2">{errors.salutations}</span>}
+                                {typeof errors.salutations === 'string' && (
+                                    <span className="text-red-500 text-xs mt-2">{errors.salutations}</span>
+                                )}
                             </div>
 
                             <div className="flex flex-col mb-8">
@@ -565,8 +636,12 @@ function EditRegistrationForm() {
                                 </div>
                                 {(errors.name_first || errors.name_last) &&
                                     <div className="mt-2 flex flex-col">
-                                        {errors.name_first && <span className="text-red-500 text-xs">{errors.name_first}</span>}
-                                        {errors.name_last && <span className="text-red-500 text-xs">{errors.name_last}</span>}
+                                        {typeof errors.name_first === 'string' && (
+                                            <span className="text-red-500 text-xs mt-2">{errors.name_first}</span>
+                                        )}
+                                        {typeof errors.name_last === 'string' && (
+                                            <span className="text-red-500 text-xs mt-2">{errors.name_last}</span>
+                                        )}
                                     </div>
                                 }
                             </div>
@@ -574,7 +649,9 @@ function EditRegistrationForm() {
                             <div className="flex flex-col mb-8">
                                 <label className="text-slate-900 mb-2 font-medium" htmlFor="name_preferred">Preferred Name</label>
                                 <input className={`input ${errors.name_preferred ? 'border-danger' : ''}`} type="text" name="name_preferred" id="name_preferred" value={formData?.name_preferred} onChange={handleChange} />
-                                {errors.name_preferred && <span className="text-red-500 text-xs mt-2">{errors.name_preferred}</span>}
+                                {typeof errors.name_preferred === 'string' && (
+                                    <span className="text-red-500 text-xs mt-2">{errors.name_preferred}</span>
+                                )}
                             </div>
 
                             <div className="flex flex-col mb-8">
@@ -620,8 +697,12 @@ function EditRegistrationForm() {
 
                                 {(errors.email || errors.phone_no) &&
                                     <div className="mt-2 flex flex-col">
-                                        {errors.email && <span className="text-red-500 text-xs">{errors.email}</span>}
-                                        {errors.phone_no && <span className="text-red-500 text-xs">{errors.phone_no}</span>}
+                                        {typeof errors.email === 'string' && (
+                                            <span className="text-red-500 text-xs mt-2">{errors.email}</span>
+                                        )}
+                                        {typeof errors.phone_no === 'string' && (
+                                            <span className="text-red-500 text-xs mt-2">{errors.phone_no}</span>
+                                        )}
                                     </div>
                                 }
                             </div>
@@ -632,7 +713,9 @@ function EditRegistrationForm() {
                                 <div className="flex flex-col mb-8">
                                     <input className={`input ${errors.address_1 ? 'border-danger' : ''}`} type="text" name="address_1" id="address_1" value={formData?.address_1} onChange={handleChange} />
                                     <span className="text-slate-500 text-xs">Address Line 1</span>
-                                    {errors.address_1 && <span className="text-red-500 text-xs mt-2">{errors.address_1}</span>}
+                                    {typeof errors.address_1 === 'string' && (
+                                        <span className="text-red-500 text-xs mt-2">{errors.address_1}</span>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col mb-8">
@@ -653,8 +736,12 @@ function EditRegistrationForm() {
                                     </div>
                                     {(errors.city || errors.state) &&
                                         <div className="mt-2 flex flex-col">
-                                            {errors.city && <span className="text-red-500 text-xs">{errors.city}</span>}
-                                            {errors.state && <span className="text-red-500 text-xs">{errors.state}</span>}
+                                            {typeof errors.city === 'string' && (
+                                                <span className="text-red-500 text-xs mt-2">{errors.city}</span>
+                                            )}
+                                            {typeof errors.state === 'string' && (
+                                                <span className="text-red-500 text-xs mt-2">{errors.state}</span>
+                                            )}
                                         </div>
                                     }
                                 </div>
@@ -662,14 +749,18 @@ function EditRegistrationForm() {
                                 <div className="flex flex-col">
                                     <input className={`input ${errors.postcode ? 'border-danger' : ''}`} type="text" name="postcode" id="postcode" value={formData?.postcode} onChange={handleChange} />
                                     <span className="text-slate-500 text-xs">Postal / Zip Code</span>
-                                    {errors.postcode && <span className="text-red-500 text-xs mt-2">{errors.postcode}</span>}
+                                    {typeof errors.postcode === 'string' && (
+                                        <span className="text-red-500 text-xs mt-2">{errors.postcode}</span>
+                                    )}
                                 </div>
                             </div>
 
                             <div className="flex flex-col mb-8">
                                 <label className="text-slate-900 mb-2 font-medium" htmlFor="ic">IC / ID number (information needed for renovation agreement purpose)</label>
                                 <input className={`input ${errors.ic ? 'border-danger' : ''}`} type="text" name="ic" id="ic" value={formData?.ic} onChange={handleChange} />
-                                {errors.ic && <span className="text-red-500 text-xs mt-2">{errors.ic}</span>}
+                                {typeof errors.ic === 'string' && (
+                                    <span className="text-red-500 text-xs mt-2">{errors.ic}</span>
+                                )}
                             </div>
 
                             <div className="flex flex-col mb-8">
@@ -685,7 +776,9 @@ function EditRegistrationForm() {
                                             ))}
                                             <option value="other">Other...</option>
                                         </select>
-                                        {errors.property_name && <span className="text-red-500 text-xs mt-2">{errors.property_name}</span>}
+                                        {typeof errors.property_name === 'string' && (
+                                            <span className="text-red-500 text-xs mt-2">{errors.property_name}</span>
+                                        )}
                                     </div>
                                     {formData?.property_name === 'other' && (
                                         <div className="flex flex-col flex-auto">
@@ -703,7 +796,9 @@ function EditRegistrationForm() {
                                                     handleChange(e);
                                                 }}
                                             />
-                                            {errors.other_property_name && <span className="text-red-500 text-xs mt-2">{errors.other_property_name}</span>}
+                                            {typeof errors.other_property_name === 'string' && (
+                                                <span className="text-red-500 text-xs mt-2">{errors.other_property_name}</span>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -735,9 +830,15 @@ function EditRegistrationForm() {
                                 </div>
                                 {(errors.block || errors.level || errors.unit) &&
                                     <div className="mt-2 flex flex-col">
-                                        {errors.block && <span className="text-red-500 text-xs">{errors.block}</span>}
-                                        {errors.level && <span className="text-red-500 text-xs">{errors.level}</span>}
-                                        {errors.unit && <span className="text-red-500 text-xs">{errors.unit}</span>}
+                                        {typeof errors.block === 'string' && (
+                                            <span className="text-red-500 text-xs mt-2">{errors.block}</span>
+                                        )}
+                                        {typeof errors.level === 'string' && (
+                                            <span className="text-red-500 text-xs mt-2">{errors.level}</span>
+                                        )}
+                                        {typeof errors.unit === 'string' && (
+                                            <span className="text-red-500 text-xs mt-2">{errors.unit}</span>
+                                        )}
                                     </div>
                                 }
                             </div>
@@ -745,13 +846,17 @@ function EditRegistrationForm() {
                             <div className="flex flex-col mb-8">
                                 <label className="text-slate-900 mb-2 font-medium" htmlFor="layout_type">Layout Type</label>
                                 <input className={`input ${errors.layout_type ? 'border-danger' : ''}`} type="text" name="layout_type" id="layout_type" value={formData?.layout_type} onChange={handleChange} />
-                                {errors.layout_type && <span className="text-red-500 text-xs mt-2">{errors.layout_type}</span>}
+                                {typeof errors.layout_type === 'string' && (
+                                    <span className="text-red-500 text-xs mt-2">{errors.layout_type}</span>
+                                )}
                             </div>
 
                             <div className="flex flex-col mb-8">
                                 <label className="text-slate-900 mb-2 font-medium" htmlFor="sqft">Sqft</label>
                                 <input className={`input ${errors.sqft ? 'border-danger' : ''}`} type="text" name="sqft" id="sqft" value={formData?.sqft} onChange={handleChange} />
-                                {errors.sqft && <span className="text-red-500 text-xs mt-2">{errors.sqft}</span>}
+                                {typeof errors.sqft === 'string' && (
+                                    <span className="text-red-500 text-xs mt-2">{errors.sqft}</span>
+                                )}
                             </div>
 
                             <div className="flex flex-col">
@@ -774,7 +879,9 @@ function EditRegistrationForm() {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.quest_1 && <span className="text-red-500 text-xs mt-2">{errors.quest_1}</span>}
+                                    {typeof errors.quest_1 === 'string' && (
+                                        <span className="text-red-500 text-xs mt-2">{errors.quest_1}</span>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col mb-8">
@@ -796,7 +903,9 @@ function EditRegistrationForm() {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.quest_2 && <span className="text-red-500 text-xs mt-2">{errors.quest_2}</span>}
+                                    {typeof errors.quest_2 === 'string' && (
+                                        <span className="text-red-500 text-xs mt-2">{errors.quest_2}</span>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col mb-8">
@@ -809,7 +918,9 @@ function EditRegistrationForm() {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.quest_3 && <span className="text-red-500 text-xs mt-2">{errors.quest_3}</span>}
+                                    {typeof errors.quest_3 === 'string' && (
+                                        <span className="text-red-500 text-xs mt-2">{errors.quest_3}</span>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col mb-8">
@@ -822,7 +933,9 @@ function EditRegistrationForm() {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.quest_4 && <span className="text-red-500 text-xs mt-2">{errors.quest_4}</span>}
+                                    {typeof errors.quest_3 === 'string' && (
+                                        <span className="text-red-500 text-xs mt-2">{errors.quest_3}</span>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col mb-8">
@@ -835,7 +948,9 @@ function EditRegistrationForm() {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.quest_5 && <span className="text-red-500 text-xs mt-2">{errors.quest_5}</span>}
+                                    {typeof errors.quest_5 === 'string' && (
+                                        <span className="text-red-500 text-xs mt-2">{errors.quest_5}</span>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col mb-8">
@@ -848,7 +963,9 @@ function EditRegistrationForm() {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.quest_6 && <span className="text-red-500 text-xs mt-2">{errors.quest_6}</span>}
+                                    {typeof errors.quest_6 === 'string' && (
+                                        <span className="text-red-500 text-xs mt-2">{errors.quest_6}</span>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col mb-8">
@@ -861,7 +978,9 @@ function EditRegistrationForm() {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.quest_7 && <span className="text-red-500 text-xs mt-2">{errors.quest_7}</span>}
+                                    {typeof errors.quest_7 === 'string' && (
+                                        <span className="text-red-500 text-xs mt-2">{errors.quest_7}</span>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col mb-8">
@@ -874,7 +993,9 @@ function EditRegistrationForm() {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.quest_8 && <span className="text-red-500 text-xs mt-2">{errors.quest_8}</span>}
+                                    {typeof errors.quest_8 === 'string' && (
+                                        <span className="text-red-500 text-xs mt-2">{errors.quest_8}</span>
+                                    )}
                                 </div>
                             </div>
 
@@ -1105,7 +1226,9 @@ function EditRegistrationForm() {
                                                                 />
                                                             </div>
 
-                                                            {errors[bedroomKey] && <span className="text-red-500 text-sm mt-2">{errors[bedroomKey]}</span>}
+                                                            {typeof errors[bedroomKey] === 'string' && (
+                                                                <span className="text-red-500 text-sm mt-2">{errors[bedroomKey] as string}</span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1285,7 +1408,9 @@ function EditRegistrationForm() {
                                                                 />
                                                             </div>
 
-                                                            {errors[bathroomKey] && <span className="text-red-500 text-sm mt-2">{errors[bathroomKey]}</span>}
+                                                            {typeof errors[bathroomKey] === 'string' && (
+                                                                <span className="text-red-500 text-sm mt-2">{errors[bathroomKey] as string}</span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>

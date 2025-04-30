@@ -91,7 +91,7 @@ const IncludePOItemsModal: React.FC<IncludePOItemsModalProps> = ({
             setIsLoading(true);
             const response = await productIndex(size, page, value);
 
-            const data = response?.data || [];
+            const data: Product[] = response?.data || [];
 
             // Exclude products where pm_category_id is 1
             const filteredData = data.filter(product => product.pm_category_id !== 1);

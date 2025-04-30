@@ -11,6 +11,16 @@ import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableProductRow } from './components/SortableProductRow';
 
+// Define a local Product interface that extends the base Product
+interface LocalProduct extends Product {
+    quantity: number;
+    visibility: boolean;
+    price: number;
+    note?: string;
+    supply: boolean;
+    install: boolean;
+}
+
 function CreatePackage() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -25,7 +35,7 @@ function CreatePackage() {
     });
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-    const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<LocalProduct[]>([]);
     const [totalPrice, setTotalPrice] = useState<number>(0);
     const [loading, setLoading] = useState(false);
 
@@ -59,16 +69,17 @@ function CreatePackage() {
                 const response = await fetchPackage(packageId);
                 if (response?.success) {
                     const data: Package = response.data;
-                    const transformedProducts = data.products.map((product: any) => ({
-                        SKU: product.SKU,
-                        description: product.description,
+                    const transformedProducts: LocalProduct[] = data.products.map((product) => ({
+                        SKU: product.SKU || '',
+                        description: product.description || '',
                         id: product.id,
-                        install: product.pivot.includeInstall,
-                        name: product.name,
-                        price: product.provisioning.supply.retail_price + product.provisioning.install.retail_price,
-                        quantity: product.pivot.quantity,
-                        supply: product.pivot.includeSupply,
-                        visibility: product.pivot.visibility,
+                        install: product.pivot?.includeInstall ?? false,
+                        name: product.name || '',
+                        price: (product.provisioning?.supply?.retail_price || 0) + (product.provisioning?.install?.retail_price || 0),
+                        quantity: product.pivot?.quantity || 1,
+                        supply: product.pivot?.includeSupply ?? false,
+                        visibility: product.pivot?.visibility ?? true,
+                        note: product.pivot?.internal_note || '',
                     }));
 
                     setSelectedProducts(transformedProducts);
@@ -79,13 +90,14 @@ function CreatePackage() {
                     setTotalPrice(calculatedTotalPrice);
                     setFormData({
                         ...formData,
-                        packageName: data.name,
-                        description: data.description,
-                        description_internal: data.description_internal,
+                        packageName: data.name || '',
+                        description: data.description || '',
+                        description_internal: data.description_internal || '',
                     });
                 }
             } catch (error) {
                 console.error('Error fetching duplicate products:', error);
+                notify('error', 'Failed to load duplicate package data.');
             }
             setLoading(false);
         };
@@ -172,6 +184,7 @@ function CreatePackage() {
                 notify('error', "Product creation unsuccessful. Check the errors below.");
             } else {
                 console.error('Product creation failed:', error);
+                notify('error', "An unexpected error occurred during package creation.");
             }
         }
     };
@@ -186,8 +199,10 @@ function CreatePackage() {
         }
     };
 
-    const updateSelectedProducts = (products: Product[]) => {
+    const updateSelectedProducts = (products: LocalProduct[]) => {
         setSelectedProducts(products);
+        const newTotalPrice = products.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+        setTotalPrice(newTotalPrice);
     };
 
     const updateTotalPrice = (price: number, operator: string) => {
@@ -197,8 +212,8 @@ function CreatePackage() {
     };
 
     const adjustQuantity = (id: number, action: 'increase' | 'decrease') => {
-        setSelectedProducts((prevProducts) => {
-            return prevProducts.map((product) => {
+        setSelectedProducts((prevProducts) =>
+            prevProducts.map((product) => {
                 if (product.id === id) {
                     const newQty = action === 'increase' ? product.quantity + 1 : Math.max(1, product.quantity - 1);
                     const operator = action === 'increase' ? '+' : '-';
@@ -208,8 +223,8 @@ function CreatePackage() {
                     return { ...product, quantity: newQty };
                 }
                 return product;
-            });
-        });
+            })
+        );
     };
 
     const handleRemoveProduct = (id: number) => {
@@ -235,7 +250,7 @@ function CreatePackage() {
 
     const toggleIsAddon = () => {
         setFormData((prev) => ({ ...prev, is_addon: !prev.is_addon }));
-    }
+    };
 
     return (
         <>
@@ -319,7 +334,6 @@ function CreatePackage() {
                                     error={validationErrors.category}
                                 />
                             </div>
-
                             <div className="flex flex-col gap-2 mb-8">
                                 <label className="text-sm font-medium text-gray-900">Add-On Package</label>
                                 <span className="text-xs text-gray-600 tracking-wide mb-2">
@@ -328,14 +342,12 @@ function CreatePackage() {
                                 <div className="flex gap-2 items-center">
                                     <input
                                         className="checkbox"
-                                        name="is_ready"
+                                        name="is_addon"
                                         type="checkbox"
                                         checked={!!formData.is_addon}
                                         onChange={toggleIsAddon}
                                     />
-                                    <span className="switch-label">
-                                        Enable Add-on Package
-                                    </span>
+                                    <span className="switch-label">Enable Add-on Package</span>
                                 </div>
                             </div>
                         </div>
@@ -361,7 +373,7 @@ function CreatePackage() {
                                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                                 <thead>
                                                     <tr>
-                                                        <th className="w-[50px]"></th> {/* Drag handle column */}
+                                                        <th className="w-[50px]"></th>
                                                         <th className="w-[250px]">Product</th>
                                                         <th className="w-[100px] text-center">Quantity</th>
                                                         <th className="w-[120px] text-center">Retail Price</th>

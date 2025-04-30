@@ -3,26 +3,57 @@ import { useLocation } from 'react-router-dom';
 import { Slide, toast } from 'react-toastify';
 import Loading from '../../components/Loading';
 import { fetchDIFormWithHashedString } from '../../services/publicApi';
+import { DefectInspectionForm, FormQuestion, Attachment } from '../../types';
 
 const AWS_S3_URL =
-    import.meta.env.VITE_APP_ENV === "production"
+    import.meta.env.VITE_APP_ENV === 'production'
         ? import.meta.env.VITE_AWS_S3_URL
-        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+        : import.meta.env.VITE_APP_ENV === 'staging' || import.meta.env.VITE_APP_ENV === 'local'
             ? import.meta.env.VITE_STAGING_AWS_S3_URL
-            : null
+            : null;
+
+type AreaKeys = keyof DefectInspectionForm['area'];
+
+interface ActiveSubTab {
+    [key: string]: string;
+}
+
+interface Question {
+    label: string;
+    path: string;
+}
+
+interface Tab {
+    id: string;
+    label: string;
+    area: AreaKeys; // Restrict to valid area keys
+    questions: Question[];
+    isDynamic?: boolean;
+}
+
+interface InspectionItemProps {
+    label: string;
+    data?: FormQuestion;
+}
+
+interface AreaCardProps {
+    title: string;
+    areaData?: { [key: string]: FormQuestion };
+    questions: Question[];
+}
 
 function PublicDIReport() {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
-    const hashedString = queryParams.get("id");
+    const hashedString = queryParams.get('id');
     const [isLoading, setIsLoading] = useState(false);
-    const [diForm, setDiForm] = useState(null);
+    const [diForm, setDiForm] = useState<DefectInspectionForm | null>(null);
     const [activeTab, setActiveTab] = useState('tab_1');
-    const [activeSubTab, setActiveSubTab] = useState({});
+    const [activeSubTab, setActiveSubTab] = useState<ActiveSubTab>({});
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
-            position: "top-center",
+            position: 'top-center',
             autoClose: 3000,
             hideProgressBar: true,
             closeOnClick: true,
@@ -40,9 +71,8 @@ function PublicDIReport() {
                 const response = await fetchDIFormWithHashedString(hashedString);
                 if (response?.success) {
                     setDiForm(response?.data);
-                    // Initialize sub-tabs for dynamic areas
-                    const initialSubTabs = {};
-                    ['bedrooms', 'bathrooms'].forEach(area => {
+                    const initialSubTabs: ActiveSubTab = {};
+                    ['bedrooms', 'bathrooms'].forEach((area) => {
                         if (response?.data?.area[area]) {
                             const keys = Object.keys(response.data.area[area]);
                             if (keys.length > 0) initialSubTabs[area] = keys[0];
@@ -65,17 +95,23 @@ function PublicDIReport() {
         }
     }, [hashedString]);
 
-    const tabs = [
+    const tabs: Tab[] = [
         {
-            id: 'tab_1', label: 'Foyer & Entrance', area: 'foyer', questions: [
+            id: 'tab_1',
+            label: 'Foyer & Entrance',
+            area: 'foyer',
+            questions: [
                 { label: '1.1 Entrance door (Frame, leaf, handle, lock, accessories)', path: 'q1' },
                 { label: '1.2 Floor & skirting', path: 'q2' },
                 { label: '1.3 Wall & ceiling', path: 'q3' },
                 { label: '1.4 DB box', path: 'q4' },
-            ]
+            ],
         },
         {
-            id: 'tab_2', label: 'Kitchen', area: 'kitchen', questions: [
+            id: 'tab_2',
+            label: 'Kitchen',
+            area: 'kitchen',
+            questions: [
                 { label: '2.1 Floor & skirting', path: 'q1' },
                 { label: '2.2 Wall & ceiling', path: 'q2' },
                 { label: '2.3 Electrical & wiring (plug point, switches, etc)', path: 'q3' },
@@ -84,20 +120,26 @@ function PublicDIReport() {
                 { label: '2.6 Electrical appliances (Fridge, microwave, oven, hood & hob, etc)', path: 'q6' },
                 { label: '2.7 Door (Frame, leaf, handle, accessories, etc)', path: 'q7' },
                 { label: '2.8 Window (Frame, panel, handle, accessories, etc)', path: 'q8' },
-            ]
+            ],
         },
         {
-            id: 'tab_3', label: 'Yard', area: 'yard', questions: [
+            id: 'tab_3',
+            label: 'Yard',
+            area: 'yard',
+            questions: [
                 { label: '3.1 Floor & skirting (Floor trap)', path: 'q1' },
                 { label: '3.2 Wall & ceiling', path: 'q2' },
                 { label: '3.3 Electrical & wiring (plug point, switches, etc)', path: 'q3' },
                 { label: '3.4 Piping & water flow (Kitchen sink, etc)', path: 'q4' },
                 { label: '3.5 Electrical appliances (Washing machine, dryer, etc)', path: 'q5' },
                 { label: '3.6 AC ledge (Railing, compressor, etc)', path: 'q6' },
-            ]
+            ],
         },
         {
-            id: 'tab_4', label: 'Living & Dining', area: 'living', questions: [
+            id: 'tab_4',
+            label: 'Living & Dining',
+            area: 'living',
+            questions: [
                 { label: '4.1 Floor & skirting', path: 'q1' },
                 { label: '4.2 Wall', path: 'q2' },
                 { label: '4.3 Ceiling', path: 'q3' },
@@ -107,26 +149,36 @@ function PublicDIReport() {
                 { label: '4.7 Air conditioner', path: 'q7' },
                 { label: '4.8 Air conditioner turned on for 2 hours or more', path: 'q8' },
                 { label: '4.9 Other', path: 'q9' },
-            ]
+            ],
         },
         {
-            id: 'tab_5', label: 'Balcony', area: 'balcony', questions: [
+            id: 'tab_5',
+            label: 'Balcony',
+            area: 'balcony',
+            questions: [
                 { label: '5.1 Floor & skirting (Floor trap, evenness, etc)', path: 'q1' },
                 { label: '5.2 Wall & ceiling', path: 'q2' },
                 { label: '5.3 Railing', path: 'q3' },
                 { label: '5.4 AC ledge', path: 'q4' },
-            ]
+            ],
         },
         {
-            id: 'tab_6', label: 'Hallway', area: 'hallway', questions: [
+            id: 'tab_6',
+            label: 'Hallway',
+            area: 'hallway',
+            questions: [
                 { label: '6.1 Floor & skirting', path: 'q1' },
                 { label: '6.2 Wall', path: 'q2' },
                 { label: '6.3 Ceiling', path: 'q3' },
                 { label: '6.4 Electrical & wiring (plug point, switches, etc)', path: 'q4' },
-            ]
+            ],
         },
         {
-            id: 'tab_7', label: 'Bedrooms', area: 'bedrooms', isDynamic: true, questions: [
+            id: 'tab_7',
+            label: 'Bedrooms',
+            area: 'bedrooms',
+            isDynamic: true,
+            questions: [
                 { label: '1. Floor & skirting', path: 'q1' },
                 { label: '2. Wall', path: 'q2' },
                 { label: '3. Ceiling', path: 'q3' },
@@ -136,10 +188,14 @@ function PublicDIReport() {
                 { label: '7. Air conditioner', path: 'q7' },
                 { label: '8. Air conditioner turned on for 2 hours or more', path: 'q8' },
                 { label: '9. Other', path: 'q9' },
-            ]
+            ],
         },
         {
-            id: 'tab_8', label: 'Bathrooms', area: 'bathrooms', isDynamic: true, questions: [
+            id: 'tab_8',
+            label: 'Bathrooms',
+            area: 'bathrooms',
+            isDynamic: true,
+            questions: [
                 { label: '1. Floor (Floor trap, etc)', path: 'q1' },
                 { label: '2. Wall & ceiling', path: 'q2' },
                 { label: '3. Door (Frame, panel, handle, accessories, etc)', path: 'q3' },
@@ -149,11 +205,11 @@ function PublicDIReport() {
                 { label: '7. Piping & water flow (Basin, bidet, tap, WC, shower, etc)', path: 'q7' },
                 { label: '8. Shower screen (Panel, frame, accessories, etc)', path: 'q8' },
                 { label: '9. Other', path: 'q9' },
-            ]
+            ],
         },
     ];
 
-    const InspectionItem = ({ label, data }) => {
+    const InspectionItem = ({ label, data }: InspectionItemProps) => {
         return (
             <div className="py-3 border-b border-gray-200 last:border-b-0">
                 <div className="flex flex-col md:grid md:grid-cols-12 gap-2 text-xs text-gray-700">
@@ -172,7 +228,7 @@ function PublicDIReport() {
                         {data?.value === 'not-available' ? (
                             <span className="w-5 h-5 bg-gray-400 rounded-full flex items-center justify-center text-white text-xs">—</span>
                         ) : (
-                            <span className="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 text-xs">—</span>
+                            <span className="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-centerkii text-gray-400 text-xs">—</span>
                         )}
                     </div>
                     <div className="hidden md:flex md:col-span-1 justify-center items-center">
@@ -191,10 +247,16 @@ function PublicDIReport() {
                         )}
                     </div>
                     <div className="md:col-span-4 mt-2 md:mt-0">
-                        {data?.attachments?.length > 0 ? (
+                        {data?.attachments && Object.keys(data.attachments).length > 0 ? (
                             <div className="flex flex-wrap gap-2">
-                                {data.attachments.map((attachment, index) => (
-                                    <a key={index} href={AWS_S3_URL + attachment.file_url} target="_blank" rel="noopener noreferrer" className="block">
+                                {Object.values(data.attachments).map((attachment: Attachment, index: number) => (
+                                    <a
+                                        key={index}
+                                        href={AWS_S3_URL + attachment.file_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="block"
+                                    >
                                         <img
                                             src={AWS_S3_URL + attachment.file_url}
                                             alt={attachment.original_name}
@@ -217,7 +279,7 @@ function PublicDIReport() {
         );
     };
 
-    const AreaCard = ({ title, areaData, questions }) => (
+    const AreaCard = ({ title, areaData, questions }: AreaCardProps) => (
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-3">{title}</h2>
             <div className="hidden md:grid md:grid-cols-12 gap-2 text-xs text-gray-700 font-medium mb-3">
@@ -234,21 +296,30 @@ function PublicDIReport() {
     );
 
     if (isLoading) return <Loading />;
-    if (!diForm) return (
-        <main className="grow pt-5 flex items-center min-h-screen bg-gray-50" id="content" role="main">
-            <div className="flex flex-col items-center w-full">
-                <div className="container relative flex flex-col items-center justify-center py-8 px-4 sm:px-6 lg:px-8 max-w-2xl" id="content_container">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 text-center">
-                        <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p className="text-gray-600 text-base font-medium">No data available yet</p>
-                        <p className="text-gray-500 text-sm mt-1">Check back later or refresh the page</p>
+    if (!diForm)
+        return (
+            <main className="grow pt-5 flex items-center min-h-screen bg-gray-50" id="content" role="main">
+                <div className="flex flex-col items-center w-full">
+                    <div
+                        className="container relative flex flex-col items-center justify-center py-8 px-4 sm:px-6 lg:px-8 max-w-2xl"
+                        id="content_container"
+                    >
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 text-center">
+                            <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                ></path>
+                            </svg>
+                            <p className="text-gray-600 text-base font-medium">No data available yet</p>
+                            <p className="text-gray-500 text-sm mt-1">Check back later or refresh the page</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </main>
-    );
+            </main>
+        );
 
     return (
         <main className="grow pt-5 items-center" id="content" role="content">
@@ -294,16 +365,23 @@ function PublicDIReport() {
                                 </div>
                             </div>
 
-                            {/* Status Badge */}
                             <div className="mt-3 sm:mt-4 flex justify-center sm:justify-end">
-                                <span className={`inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium ${diForm.status === 'completed' || diForm.status === 'submitted' ? 'bg-green-100 text-green-800' :
-                                    diForm.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-gray-100 text-gray-800'
-                                    }`}>
-                                    <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mr-1 sm:mr-2 ${diForm.status === 'completed' || diForm.status === 'submitted' ? 'bg-green-500' :
-                                        diForm.status === 'in_progress' ? 'bg-yellow-500' :
-                                            'bg-gray-500'
-                                        }`}></span>
+                                <span
+                                    className={`inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium ${diForm.status === 'completed' || diForm.status === 'submitted'
+                                        ? 'bg-green-100 text-green-800'
+                                        : diForm.status === 'in_progress'
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                        }`}
+                                >
+                                    <span
+                                        className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mr-1 sm:mr-2 ${diForm.status === 'completed' || diForm.status === 'submitted'
+                                            ? 'bg-green-500'
+                                            : diForm.status === 'in_progress'
+                                                ? 'bg-yellow-500'
+                                                : 'bg-gray-500'
+                                            }`}
+                                    ></span>
                                     {diForm.status.replace('_', ' ').toUpperCase()}
                                 </span>
                             </div>
@@ -314,7 +392,8 @@ function PublicDIReport() {
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab.id}
-                                        className={`px-3 py-1 text-xs font-medium rounded-t-lg transition-colors ${activeTab === tab.id ? 'bg-white text-blue-600 border-b-2 border-blue-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                        className={`px-3 py-1 text-xs font-medium rounded-t-lg transition-colors ${activeTab === tab.id ? 'bg-white text-blue-600 border-b-2 border-blue-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
                                         onClick={() => setActiveTab(tab.id)}
                                     >
                                         {tab.label}
@@ -332,8 +411,11 @@ function PublicDIReport() {
                                                 {Object.keys(diForm.area[tab.area] || {}).map((key) => (
                                                     <button
                                                         key={key}
-                                                        className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${activeSubTab[tab.area] === key ? 'bg-blue-100 text-blue-600 border border-blue-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                                                        onClick={() => setActiveSubTab(prev => ({ ...prev, [tab.area]: key }))}
+                                                        className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${activeSubTab[tab.area] === key
+                                                                ? 'bg-blue-100 text-blue-600 border border-blue-600'
+                                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                            }`}
+                                                        onClick={() => setActiveSubTab((prev) => ({ ...prev, [tab.area]: key }))}
                                                     >
                                                         {key.replace(tab.area.slice(0, -1), tab.label.slice(0, -1) + ' ')}
                                                     </button>
@@ -342,13 +424,17 @@ function PublicDIReport() {
                                             {activeSubTab[tab.area] && (
                                                 <AreaCard
                                                     title={activeSubTab[tab.area].replace(tab.area.slice(0, -1), tab.label.slice(0, -1) + ' ')}
-                                                    areaData={diForm.area[tab.area][activeSubTab[tab.area]]}
+                                                    areaData={(diForm.area[tab.area] as any)[activeSubTab[tab.area]]} // Type assertion
                                                     questions={tab.questions}
                                                 />
                                             )}
                                         </>
                                     ) : (
-                                        <AreaCard title={tab.label} areaData={diForm.area[tab.area]} questions={tab.questions} />
+                                        <AreaCard
+                                            title={tab.label}
+                                            areaData={diForm.area[tab.area] as any} // Type assertion
+                                            questions={tab.questions}
+                                        />
                                     )}
                                 </div>
                             ))}

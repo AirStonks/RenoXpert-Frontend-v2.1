@@ -126,7 +126,7 @@ export const fetchOwnerRenoProgresses = async () => {
     }
 };
 
-export const submitRegistrationForm = async (formData) => {
+export const submitRegistrationForm = async (formData: any) => {
     try {
         const response = await axios.post(API_URL + `owner/reno-registration-form/overview/submit`, formData, {
             headers: {
