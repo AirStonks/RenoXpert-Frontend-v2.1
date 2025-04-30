@@ -975,7 +975,7 @@ function EditPO() {
                                                     handleRemovePOProduct={handleRemovePOProduct}
                                                     handleChangeQty={handleChangeQty}
                                                     openAccordions={openAccordions}
-                                                    toggleAccordion={() => toggleAccordion}
+                                                    toggleAccordion={(packageId: string) => toggleAccordion(Number(packageId))}
                                                 />
                                             ))}
                                         </SortableContext>
