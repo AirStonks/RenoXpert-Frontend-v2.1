@@ -139,10 +139,10 @@ function EditPackage() {
                     return acc;
                 }, {} as Record<string, string>);
                 setValidationErrors(formattedErrors);
-                notify('error', "Product creation unsuccessful. Check the errors below.");
+                notify('error', "Product update unsuccessful. Check the errors below.");
             } else {
                 console.error('Product creation failed:', error);
-                notify('error', "An unexpected error occurred during package creation.");
+                notify('error', "An unexpected error occurred during package update.");
             }
         }
     };
