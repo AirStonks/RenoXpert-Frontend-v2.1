@@ -121,19 +121,15 @@ function EditPackage() {
             const newProducts = selectedProducts;
 
             const packageData: Package = {
-                name: formData.packageName,
-                total_price: formData.packagePrice,
-                description: formData.description,
+                ...formData,
+                id: packageId,
                 products: newProducts,
-                description_internal: formData.description_internal,
-                category: formData.category,
-                is_addon: formData.is_addon,
             };
 
-            const response = await createPackage(packageData);
+            const response = await updatePackage(packageData);
             if (response?.success) {
-                notify('success', "Package Created Successfully!");
-                navigate('/packages');
+                notify('success', "Package Updated Successfully!");
+                navigate('/packages/' + packageId);
             }
         } catch (error) {
             if (error.response?.status === 422) {
@@ -143,10 +139,10 @@ function EditPackage() {
                     return acc;
                 }, {} as Record<string, string>);
                 setValidationErrors(formattedErrors);
-                notify('error', "Product creation unsuccessful. Check the errors below.");
+                notify('error', "Product update unsuccessful. Check the errors below.");
             } else {
                 console.error('Product creation failed:', error);
-                notify('error', "An unexpected error occurred during package creation.");
+                notify('error', "An unexpected error occurred during package update.");
             }
         }
     };
