@@ -121,16 +121,12 @@ function EditPackage() {
             const newProducts = selectedProducts;
 
             const packageData: Package = {
-                name: formData.packageName,
-                total_price: formData.packagePrice,
-                description: formData.description,
+                ...formData,
+                id: packageId,
                 products: newProducts,
-                description_internal: formData.description_internal,
-                category: formData.category,
-                is_addon: formData.is_addon,
             };
 
-            const response = await createPackage(packageData);
+            const response = await updatePackage(packageData);
             if (response?.success) {
                 notify('success', "Package Created Successfully!");
                 navigate('/packages');
