@@ -11,6 +11,7 @@ interface IncludeQuotationProductModalProps {
     setSelectedPackages: React.Dispatch<React.SetStateAction<Package[]>>;
     selectedPackageId: string;
     recalculateTotalAmount: () => void;
+    isFromOrderQuotation?: boolean;
 }
 
 type SortOrder = 'asc' | 'desc' | null;
@@ -336,7 +337,7 @@ function IncludeQuotationProductModal({ selectedPackages, setSelectedPackages, s
                                                             data-name={product.name}
                                                             data-desc={product.description}
                                                             // Pass current button into handleSelectProduct
-                                                            onClick={(e) => handleSelectProduct(e.target)}
+                                                            onClick={(e) => handleSelectProduct(e.target as HTMLButtonElement)}
                                                         >
                                                             {buttonText}
                                                         </button>

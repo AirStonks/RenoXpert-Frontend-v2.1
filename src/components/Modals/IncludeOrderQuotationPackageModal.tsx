@@ -6,14 +6,14 @@ import { Package, Product } from "../../types";
 import { fetchPackages, packageIndex } from "../../services/api";
 import Loading from "../Loading";
 
-interface IncludeOrderQuotationPackageModallProps {
+interface IncludeOrderQuotationPackageModalProps {
     selectedPackages: Package[];
     setSelectedPackages: React.Dispatch<React.SetStateAction<Package[]>>;
 }
 
 type SortOrder = 'asc' | 'desc' | null;
 
-function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackages }: IncludeOrderQuotationPackageModallProps) {
+function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackages }: IncludeOrderQuotationPackageModalProps) {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const [packages, setPackages] = useState<Package[]>([]); // Initialize as an empty array
@@ -308,7 +308,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                                                                 data-intdesc={pkg.description_internal}
                                                                 data-cat={pkg.category}
                                                                 data-addon={pkg.is_addon}
-                                                                onClick={(e) => handleSelectPackage(e.target)}
+                                                                onClick={(e) => handleSelectPackage(e.target as HTMLButtonElement)}
                                                             >
                                                                 {buttonText}
                                                             </button>

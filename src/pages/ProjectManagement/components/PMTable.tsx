@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { RenoProgress } from '../../../types';
-import { toast } from 'react-toastify';
+import { Slide, toast } from 'react-toastify';
 import { renoProgressIndex } from '../../../services/api';
 import Loading from '../../../components/Loading';
 import { useNavigate } from 'react-router-dom';

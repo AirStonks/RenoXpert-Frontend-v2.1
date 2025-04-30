@@ -10,6 +10,10 @@ import { acceptPO, rejectPO, releasePO, revertPO } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
 
+interface AccordionState {
+    [key: number]: boolean;
+}
+
 function PODetail() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -18,8 +22,7 @@ function PODetail() {
     const { poDetail, loading, error, refetch } = useFetchPO(poId);
     const { currentUser, loading: userLoading } = useUser();
     const [isLoading, setIsLoading] = useState(false);
-
-    const [openAccordions, setOpenAccordions] = useState({});
+    const [openAccordions, setOpenAccordions] = useState<AccordionState>({});
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -140,7 +143,7 @@ function PODetail() {
         return <div>Purchase Order not found</div>;
     }
 
-    const toggleAccordion = (packageId) => {
+    const toggleAccordion = (packageId: number) => {
         setOpenAccordions(prev => ({
             ...prev,
             [packageId]: !prev[packageId]

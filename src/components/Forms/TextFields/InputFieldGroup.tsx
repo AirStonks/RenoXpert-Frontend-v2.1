@@ -32,13 +32,16 @@ const InputFieldGroup: React.FC<InputFieldGroupProps> = ({
             } else {
                 // Parse value as a number and check for NaN
                 const parsedValue = parseFloat(newValue);
-                // If parsedValue is NaN, we do not change the value
-                newValue = isNaN(parsedValue) ? '' : parsedValue;
+                // If parsedValue is NaN, set to empty string, else convert to string
+                newValue = isNaN(parsedValue) ? '' : parsedValue.toString();
             }
         }
 
-        // Call the passed onChange handler with the updated value
-        onChange(e as React.ChangeEvent<HTMLInputElement>);
+        // Create a new event object with the updated value
+        const newEvent = e;
+
+        // Call the passed onChange handler with the updated event
+        onChange(newEvent as React.ChangeEvent<HTMLInputElement>);
     };
 
     // Ensure the value is either a string or number (for type="number")

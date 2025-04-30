@@ -16,11 +16,22 @@ interface Props {
     categoryQty: number;
     title: string;
     id: string;
-    items: [];
+    items: any[];
     handleUpdateMetadata: React.Dispatch<React.SetStateAction<{
         metadata: any[];
     }>>
 }
+
+type MetadataItem = {
+    name: string;
+    value: Array<{
+        name?: string;
+        remark?: string;
+        attachment?: [];
+    }>;
+    remark?: string;
+    quantity?: number;
+};
 
 function KeyManagementCategoryItem({ renoProgressId, keyManagementId, categoryQty, title, id, items: initialItems, handleUpdateMetadata }: Props) {
     const [items, setItems] = useState(initialItems);
@@ -121,7 +132,7 @@ function KeyManagementCategoryItem({ renoProgressId, keyManagementId, categoryQt
             const response = await uploadKeyManagementItemPhoto(renoProgressId, category, index, file);
 
             if (response?.success) {
-                const selectedCat = response.data.metadata.find(item =>
+                const selectedCat = response.data.metadata.find((item: MetadataItem) =>
                     item.name === category
                 );
 
@@ -131,19 +142,17 @@ function KeyManagementCategoryItem({ renoProgressId, keyManagementId, categoryQt
                     )
                 );
             }
-
         } catch (error) {
             console.error('Error uploading photo:', error);
         }
-    }
+    };
 
     const handleChangePhotoSelect = async (index: number, category: string, file: File) => {
         try {
             const response = await changeKeyManagementItemPhoto(renoProgressId, category, index, file);
 
             if (response?.success) {
-
-                const selectedCat = response.data.metadata.find(item =>
+                const selectedCat = response.data.metadata.find((item: MetadataItem) =>
                     item.name === category
                 );
 
@@ -152,32 +161,27 @@ function KeyManagementCategoryItem({ renoProgressId, keyManagementId, categoryQt
                         i === index ? { ...item, attachment: selectedCat.value[index].attachment } : item
                     )
                 );
-
             }
-
         } catch (error) {
             console.error('Error uploading photo:', error);
         }
-    }
+    };
 
     const handleRemoveCategoryItem = async (index: number, category: string) => {
         try {
             const response = await removeKeyManagementItem(renoProgressId, category, index);
 
             if (response?.success) {
-
-                const selectedCat = response.data.metadata.find(item =>
+                const selectedCat = response.data.metadata.find((item: MetadataItem) =>
                     item.name === category
                 );
 
                 setItems(selectedCat.value);
-
             }
-
         } catch (error) {
             console.error('Error uploading photo:', error);
         }
-    }
+    };
 
     return (
         <>

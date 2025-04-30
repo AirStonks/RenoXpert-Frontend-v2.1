@@ -75,6 +75,7 @@ function OperationHome() {
     const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchTerm(value);
+        setPage(1);
 
         // Debounce logic remains the same
         if (debounceTimeout.current) {
@@ -83,10 +84,23 @@ function OperationHome() {
         debounceTimeout.current = setTimeout(async () => {
             try {
                 setLoading(true);
-                const response = await retrieveRenoProgresses(size, page, value);
 
-                const data = response?.data || [];
-                setRenoProgresses(data);
+                if (activeTab === 'tab_1_1') {
+                    const response = await retrieveRenoProgresses(size, 1, value);
+
+                    const data: RenoProgress[] = response?.data || [];
+                    setRenoProgresses(data);
+
+                    setTotalItems(response?.totalCount || 0);
+
+                } else if (activeTab === 'tab_1_2') {
+                    const response = await fetchRPMDIForms(size, 1, value);
+
+                    const data: DefectInspectionForm[] = response?.data || [];
+                    setDIForms(data);
+
+                    setTotalItems(response?.totalCount || 0);
+                }
             } catch (error) {
                 console.error('Error searching renoProgress:', error);
             } finally {
@@ -169,7 +183,7 @@ function OperationHome() {
     const getDIForms = async () => {
         setLoading(true);
         try {
-            const response = await fetchRPMDIForms(5, 1, '', 'asc', '', true);
+            const response = await fetchRPMDIForms(5, 1, '', 'asc', '', '', true);
 
             if (response.success) {
                 setDIForms(response.data);
@@ -223,7 +237,7 @@ function OperationHome() {
     const handleSizeChange = (newSize: number, tab: string) => {
         setSize(newSize);
         setPage(1); // Reset to the first page when changing the page size
-        
+
         if (tab === 'tab_1_1') {
             initRenoProgress(1, newSize, searchTerm, sortOrder, sortField, filterStatus);
         } else if (tab === 'tab_1_2') {
@@ -441,96 +455,98 @@ function OperationHome() {
                                     }
                                 </div>
 
-                                <div className="flex flex-col gap-2 justify-center items-center">
-                                    <div className="flex items-center gap-2">
-                                        Show
-                                        <select
-                                            className="select select-sm w-16"
-                                            name="perpage"
-                                            value={size}
-                                            onChange={(e) => handleSizeChange(parseInt(e.target.value), 'tab_1_1')}
-                                        >
-                                            <option value="5">5</option>
-                                            <option value="10">10</option>
-                                            <option value="20">20</option>
-                                            <option value="30">30</option>
-                                            <option value="50">50</option>
-                                        </select>
-                                        per page
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        {/* <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span> */}
-                                        <div className="pagination">
-                                            {/* Previous Page Button */}
-                                            <button
-                                                className={`btn ${page === 1 ? 'disabled' : ''}`}
-                                                onClick={() => handlePageChange((page - 1), 'tab_1_1')}
+                                {totalPages > 0 && (
+                                    <div className="flex flex-col gap-2 justify-center items-center">
+                                        <div className="flex items-center gap-2">
+                                            Show
+                                            <select
+                                                className="select select-sm w-16"
+                                                name="perpage"
+                                                value={size}
+                                                onChange={(e) => handleSizeChange(parseInt(e.target.value), 'tab_1_1')}
                                             >
-                                                <i className="ki-outline ki-black-left"></i>
-                                            </button>
+                                                <option value="5">5</option>
+                                                <option value="10">10</option>
+                                                <option value="20">20</option>
+                                                <option value="30">30</option>
+                                                <option value="50">50</option>
+                                            </select>
+                                            per page
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            {/* <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span> */}
+                                            <div className="pagination">
+                                                {/* Previous Page Button */}
+                                                <button
+                                                    className={`btn ${page === 1 ? 'disabled' : ''}`}
+                                                    onClick={() => handlePageChange((page - 1), 'tab_1_1')}
+                                                >
+                                                    <i className="ki-outline ki-black-left"></i>
+                                                </button>
 
-                                            {/* Page Number Buttons with Ellipses */}
-                                            {totalPages > 0 && (
-                                                <>
-                                                    {page > 3 && (
-                                                        <>
-                                                            <button
-                                                                className="btn"
-                                                                onClick={() => handlePageChange(1, 'tab_1_1')}
-                                                            >
-                                                                1
-                                                            </button>
-                                                            <span className="btn btn-disabled">...</span>
-                                                        </>
-                                                    )}
+                                                {/* Page Number Buttons with Ellipses */}
+                                                {totalPages > 0 && (
+                                                    <>
+                                                        {page > 3 && (
+                                                            <>
+                                                                <button
+                                                                    className="btn"
+                                                                    onClick={() => handlePageChange(1, 'tab_1_1')}
+                                                                >
+                                                                    1
+                                                                </button>
+                                                                <span className="btn btn-disabled">...</span>
+                                                            </>
+                                                        )}
 
-                                                    {Array.from({
-                                                        length: Math.min(3, totalPages)
-                                                    }, (_, index) => {
-                                                        // Determine the start of the 3-page window
-                                                        const startPage = Math.max(1,
-                                                            Math.min(
-                                                                page - 1,
-                                                                totalPages - 2
-                                                            )
-                                                        );
+                                                        {Array.from({
+                                                            length: Math.min(3, totalPages)
+                                                        }, (_, index) => {
+                                                            // Determine the start of the 3-page window
+                                                            const startPage = Math.max(1,
+                                                                Math.min(
+                                                                    page - 1,
+                                                                    totalPages - 2
+                                                                )
+                                                            );
 
-                                                        const currentPage = startPage + index;
-                                                        return (
-                                                            <button
-                                                                key={currentPage}
-                                                                className={`btn ${page === currentPage ? 'active' : ''}`}
-                                                                onClick={() => handlePageChange(currentPage, 'tab_1_1')}
-                                                            >
-                                                                {currentPage}
-                                                            </button>
-                                                        );
-                                                    })}
+                                                            const currentPage = startPage + index;
+                                                            return (
+                                                                <button
+                                                                    key={currentPage}
+                                                                    className={`btn ${page === currentPage ? 'active' : ''}`}
+                                                                    onClick={() => handlePageChange(currentPage, 'tab_1_1')}
+                                                                >
+                                                                    {currentPage}
+                                                                </button>
+                                                            );
+                                                        })}
 
-                                                    {page < totalPages - 2 && (
-                                                        <>
-                                                            <span className="btn btn-disabled">...</span>
-                                                            <button
-                                                                className="btn"
-                                                                onClick={() => handlePageChange(totalPages, 'tab_1_1')}
-                                                            >
-                                                                {totalPages}
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </>
-                                            )}
+                                                        {page < totalPages - 2 && (
+                                                            <>
+                                                                <span className="btn btn-disabled">...</span>
+                                                                <button
+                                                                    className="btn"
+                                                                    onClick={() => handlePageChange(totalPages, 'tab_1_1')}
+                                                                >
+                                                                    {totalPages}
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
 
-                                            {/* Next Page Button */}
-                                            <button
-                                                className={`btn ${page === totalPages ? 'disabled' : ''}`}
-                                                onClick={() => handlePageChange((page + 1), 'tab_1_1')}
-                                            >
-                                                <i className="ki-outline ki-black-right"></i>
-                                            </button>
+                                                {/* Next Page Button */}
+                                                <button
+                                                    className={`btn ${page === totalPages ? 'disabled' : ''}`}
+                                                    onClick={() => handlePageChange((page + 1), 'tab_1_1')}
+                                                >
+                                                    <i className="ki-outline ki-black-right"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                         <div className={activeTab === 'tab_1_2' ? '' : 'hidden'} id="tab_1_2">
@@ -661,96 +677,98 @@ function OperationHome() {
                                     }
                                 </div>
 
-                                <div className="flex flex-col gap-2 justify-center items-center">
-                                    <div className="flex items-center gap-2">
-                                        Show
-                                        <select
-                                            className="select select-sm w-16"
-                                            name="perpage"
-                                            value={size}
-                                            onChange={(e) => handleSizeChange(parseInt(e.target.value), 'tab_1_2')}
-                                        >
-                                            <option value="5">5</option>
-                                            <option value="10">10</option>
-                                            <option value="20">20</option>
-                                            <option value="30">30</option>
-                                            <option value="50">50</option>
-                                        </select>
-                                        per page
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        {/* <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span> */}
-                                        <div className="pagination">
-                                            {/* Previous Page Button */}
-                                            <button
-                                                className={`btn ${page === 1 ? 'disabled' : ''}`}
-                                                onClick={() => handlePageChange((page - 1), 'tab_1_2')}
+                                {totalPages > 0 && (
+                                    <div className="flex flex-col gap-2 justify-center items-center">
+                                        <div className="flex items-center gap-2">
+                                            Show
+                                            <select
+                                                className="select select-sm w-16"
+                                                name="perpage"
+                                                value={size}
+                                                onChange={(e) => handleSizeChange(parseInt(e.target.value), 'tab_1_2')}
                                             >
-                                                <i className="ki-outline ki-black-left"></i>
-                                            </button>
+                                                <option value="5">5</option>
+                                                <option value="10">10</option>
+                                                <option value="20">20</option>
+                                                <option value="30">30</option>
+                                                <option value="50">50</option>
+                                            </select>
+                                            per page
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            {/* <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span> */}
+                                            <div className="pagination">
+                                                {/* Previous Page Button */}
+                                                <button
+                                                    className={`btn ${page === 1 ? 'disabled' : ''}`}
+                                                    onClick={() => handlePageChange((page - 1), 'tab_1_2')}
+                                                >
+                                                    <i className="ki-outline ki-black-left"></i>
+                                                </button>
 
-                                            {/* Page Number Buttons with Ellipses */}
-                                            {totalPages > 0 && (
-                                                <>
-                                                    {page > 3 && (
-                                                        <>
-                                                            <button
-                                                                className="btn"
-                                                                onClick={() => handlePageChange(1, 'tab_1_2')}
-                                                            >
-                                                                1
-                                                            </button>
-                                                            <span className="btn btn-disabled">...</span>
-                                                        </>
-                                                    )}
+                                                {/* Page Number Buttons with Ellipses */}
+                                                {totalPages > 0 && (
+                                                    <>
+                                                        {page > 3 && (
+                                                            <>
+                                                                <button
+                                                                    className="btn"
+                                                                    onClick={() => handlePageChange(1, 'tab_1_2')}
+                                                                >
+                                                                    1
+                                                                </button>
+                                                                <span className="btn btn-disabled">...</span>
+                                                            </>
+                                                        )}
 
-                                                    {Array.from({
-                                                        length: Math.min(3, totalPages)
-                                                    }, (_, index) => {
-                                                        // Determine the start of the 3-page window
-                                                        const startPage = Math.max(1,
-                                                            Math.min(
-                                                                page - 1,
-                                                                totalPages - 2
-                                                            )
-                                                        );
+                                                        {Array.from({
+                                                            length: Math.min(3, totalPages)
+                                                        }, (_, index) => {
+                                                            // Determine the start of the 3-page window
+                                                            const startPage = Math.max(1,
+                                                                Math.min(
+                                                                    page - 1,
+                                                                    totalPages - 2
+                                                                )
+                                                            );
 
-                                                        const currentPage = startPage + index;
-                                                        return (
-                                                            <button
-                                                                key={currentPage}
-                                                                className={`btn ${page === currentPage ? 'active' : ''}`}
-                                                                onClick={() => handlePageChange(currentPage, 'tab_1_2')}
-                                                            >
-                                                                {currentPage}
-                                                            </button>
-                                                        );
-                                                    })}
+                                                            const currentPage = startPage + index;
+                                                            return (
+                                                                <button
+                                                                    key={currentPage}
+                                                                    className={`btn ${page === currentPage ? 'active' : ''}`}
+                                                                    onClick={() => handlePageChange(currentPage, 'tab_1_2')}
+                                                                >
+                                                                    {currentPage}
+                                                                </button>
+                                                            );
+                                                        })}
 
-                                                    {page < totalPages - 2 && (
-                                                        <>
-                                                            <span className="btn btn-disabled">...</span>
-                                                            <button
-                                                                className="btn"
-                                                                onClick={() => handlePageChange(totalPages, 'tab_1_2')}
-                                                            >
-                                                                {totalPages}
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </>
-                                            )}
+                                                        {page < totalPages - 2 && (
+                                                            <>
+                                                                <span className="btn btn-disabled">...</span>
+                                                                <button
+                                                                    className="btn"
+                                                                    onClick={() => handlePageChange(totalPages, 'tab_1_2')}
+                                                                >
+                                                                    {totalPages}
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
 
-                                            {/* Next Page Button */}
-                                            <button
-                                                className={`btn ${page === totalPages ? 'disabled' : ''}`}
-                                                onClick={() => handlePageChange(page + 1, 'tab_1_2')}
-                                            >
-                                                <i className="ki-outline ki-black-right"></i>
-                                            </button>
+                                                {/* Next Page Button */}
+                                                <button
+                                                    className={`btn ${page === totalPages ? 'disabled' : ''}`}
+                                                    onClick={() => handlePageChange(page + 1, 'tab_1_2')}
+                                                >
+                                                    <i className="ki-outline ki-black-right"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                         <div className={activeTab === 'tab_1_3' ? '' : 'hidden'} id="tab_1_3">

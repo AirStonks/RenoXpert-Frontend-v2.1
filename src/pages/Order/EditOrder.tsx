@@ -277,9 +277,11 @@ function EditOrder() {
                     name: orderDetail.latest_quotation.quotation_name,
                     description: orderDetail.latest_quotation.description,
                     total_amount: orderDetail.latest_quotation.total_amount,
-                    valid_from: orderDetail.latest_quotation.from,
-                    valid_until: orderDetail.latest_quotation.valid_until,
-                    metadata: orderDetail.latest_quotation.packages,
+                    valid_from: orderDetail.latest_quotation.quotation?.valid_from,
+                    valid_until: orderDetail.latest_quotation.quotation?.valid_until,
+                    metadata: orderDetail.latest_quotation.packages
+                        ? JSON.stringify(orderDetail.latest_quotation.packages)
+                        : undefined,
                 };
 
                 setSelectedQuotation(pastQuotation);
@@ -348,7 +350,9 @@ function EditOrder() {
             return;
         }
 
-        if (formData.bonus?.value) formData.bonus.value = Number(formData.bonus.value);
+        if (formData.bonus?.value != null) {
+            formData.bonus.value = formData.bonus.value.toString();
+        }
 
         const newOrder: Order = {
             id: orderDetail.id,
@@ -371,7 +375,7 @@ function EditOrder() {
             internal_remark: formData.internal_remark,
             completion_day: formData.completion_day,
             bonus: formData.bonus,
-            metadata: selectedPackages,
+            metadata: selectedPackages ? JSON.stringify(selectedPackages) : undefined,
         };
 
         try {

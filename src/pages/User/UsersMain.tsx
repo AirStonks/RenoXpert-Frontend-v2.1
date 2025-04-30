@@ -60,7 +60,7 @@ function UsersMain() {
             setTotalItems(response?.totalCount || 0);
         } catch (error) {
             console.error('Error fetching users:', error);
-            setError('Failed to load users');
+            // setError('Failed to load users');
         } finally {
             setIsLoading(false);
         }

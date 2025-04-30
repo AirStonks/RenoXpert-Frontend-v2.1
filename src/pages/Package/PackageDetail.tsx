@@ -353,7 +353,7 @@ function PackageDetail() {
                                         <th className='w-[100px] whitespace-nowrap'>Supply COGS</th>
                                         <th className='w-[100px] whitespace-nowrap'>Install COGS</th>
                                         <th className='w-[100px] whitespace-nowrap'>Total COGS</th>
-                                        <th className='w-[100px] whitespace-nowrap'>Profit</th>
+                                        <th className='w-[100px] whitespace-nowrap'>Margin Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>

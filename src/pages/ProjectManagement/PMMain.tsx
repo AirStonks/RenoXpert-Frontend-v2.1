@@ -34,7 +34,9 @@ function PMMain() {
     const [filterStatus, setFilterStatus] = useState<FilterStatus>('All');
     const [expandedRows, setExpandedRows] = useState<number[]>([]);
     const [viewMode, setViewMode] = useState<ViewMode>('list');
-    const [expandedSections, setExpandedSections] = useState<{ [key: number]: { keyDates: boolean; progress: boolean } }>({});
+    const [expandedSections, setExpandedSections] = useState<{
+        [key: string]: { keyDates: boolean; progress: boolean };
+    }>({});
 
     const notify = (type: 'success' | 'error', message: string) => {
         toast[type](message, {
@@ -67,7 +69,8 @@ function PMMain() {
 
             // Client-side status filtering
             if (status !== 'All') {
-                data = data.filter((progress) => getStatus(progress) === status);
+                // In fetchProjects function
+                data = data.filter((progress: RenoProgress) => getStatus(progress) === status);
             }
 
             setRenoProgress(data);
@@ -126,17 +129,20 @@ function PMMain() {
         fetchProjects(1, size, searchTerm, sortOrder, sortField, status);
     };
 
-    const toggleRowExpansion = (id: number) => {
+    const toggleRowExpansion = (id: string | undefined) => {
+        if (!id) return;
+        const numericId = Number(id);
         setExpandedRows((prev) =>
-            prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+            prev.includes(numericId) ? prev.filter((rowId) => rowId !== numericId) : [...prev, numericId]
         );
         setExpandedSections((prev) => ({
             ...prev,
-            [id]: { keyDates: true, progress: true }, // Default to both sections expanded
+            [id]: { keyDates: true, progress: true },
         }));
     };
 
-    const toggleSection = (id: number, section: 'keyDates' | 'progress') => {
+    const toggleSection = (id: string | undefined, section: 'keyDates' | 'progress') => {
+        if (!id) return; // Guard against undefined
         setExpandedSections((prev) => ({
             ...prev,
             [id]: {
@@ -315,7 +321,7 @@ function PMMain() {
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 e.preventDefault();
-                                                toggleRowExpansion(Number(progress.id));
+                                                toggleRowExpansion(progress.id);
                                             }}
                                             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                             aria-label={expandedRows.includes(Number(progress.id)) ? 'Collapse details' : 'Expand details'}
@@ -546,7 +552,7 @@ function PMMain() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        toggleRowExpansion(Number(progress.id));
+                                                        toggleRowExpansion(progress.id);
                                                     }}
                                                     className="text-gray-500 hover:text-gray-700"
                                                 >
@@ -646,7 +652,7 @@ function PMMain() {
                                                         {/* Key Dates Section */}
                                                         <div className="mb-6">
                                                             <button
-                                                                onClick={() => toggleSection(Number(progress.id), 'keyDates')}
+                                                                onClick={() => toggleSection(progress.id, 'keyDates')}
                                                                 className="flex items-center justify-between w-full text-base font-semibold text-gray-800 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                                                                 aria-label={expandedSections[progress.id]?.keyDates ? 'Collapse Key Dates' : 'Expand Key Dates'}
                                                             >
@@ -686,7 +692,7 @@ function PMMain() {
                                                         {/* Progress Section */}
                                                         <div>
                                                             <button
-                                                                onClick={() => toggleSection(Number(progress.id), 'progress')}
+                                                                onClick={() => toggleSection(progress.id, 'progress')}
                                                                 className="flex items-center justify-between w-full text-base font-semibold text-gray-800 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                                                                 aria-label={expandedSections[progress.id]?.progress ? 'Collapse Progress' : 'Expand Progress'}
                                                             >

@@ -90,6 +90,14 @@ function CreateOrder() {
         });
     };
 
+
+    const handleSelectCustomQuotation = () => {
+        setFormData((prev) => ({ ...prev, quotationId: "0", totalAmount: 0 }));
+        setSelectedQuotation({ id: "0", name: "Custom Quotation", total_amount: 0, metadata: null });
+        setSelectedPackages([]);
+        notify("success", "Custom quotation added.");
+    };
+
     useEffect(() => {
         document.title = "Create Quotation Order | RenoXpert";
 
@@ -268,13 +276,6 @@ function CreateOrder() {
         setProperties([]);
     };
 
-    const handleCustomQuotation = () => {
-        setFormData((prev) => ({ ...prev, quotationId: "0", totalAmount: 0 }));
-        setSelectedQuotation({ id: "0", name: "Custom Quotation", total_amount: 0, metadata: null });
-        setSelectedPackages([]);
-        notify("success", "Custom quotation added.");
-    };
-
     const handleSelectUserById = async (id: number) => {
         try {
             const data = await fetchUser(id);
@@ -346,7 +347,9 @@ function CreateOrder() {
             return;
         }
 
-        if (formData.bonus?.value) formData.bonus.value = Number(formData.bonus.value);
+        if (formData.bonus?.value != null) {
+            formData.bonus.value = formData.bonus.value.toString();
+        }
 
         const newOrder: Order = {
             user_id: selectedUser?.id || "",
@@ -371,7 +374,7 @@ function CreateOrder() {
             internal_remark: formData.internal_remark,
             completion_day: formData.completion_day,
             bonus: formData.bonus,
-            metadata: selectedPackages,
+            metadata: selectedPackages ? JSON.stringify(selectedPackages) : undefined,
         };
 
         try {
@@ -394,7 +397,7 @@ function CreateOrder() {
         }
     };
 
-    const openAddProductModal = (event) => {
+    const openAddProductModal = (event: React.MouseEvent<HTMLButtonElement>) => {
         const id = event.currentTarget.getAttribute("data-id");
         const selectedPackage = selectedPackages.find((pkg) => pkg.id === Number(id));
         if (selectedPackage) {
@@ -939,7 +942,7 @@ function CreateOrder() {
                                     <div className="flex flex-col gap-2 mb-8">
                                         <span className="text-base font-semibold text-gray-900">Select a Quotation</span>
                                         <span className="text-md font-semibold text-gray-900">
-                                            <button className="link" onClick={handleCustomQuotation}>
+                                            <button className="link" onClick={handleSelectCustomQuotation}>
                                                 Create a custom quotation
                                             </button>
                                         </span>

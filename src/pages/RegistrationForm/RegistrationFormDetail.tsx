@@ -169,7 +169,7 @@ function RegistrationFormDetail() {
                             <div className="flex flex-col">
                                 <span className="font-normal">What's your original number of rooms?</span>
                                 <span className="font-semibold">
-                                    {formDetail.questions.quest_1
+                                    {(formDetail.questions.quest_1 as string)
                                         .replace(/_/g, ' ')
                                         .split(' ')
                                         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -181,7 +181,7 @@ function RegistrationFormDetail() {
                             <div className="flex flex-col">
                                 <span className="font-normal">What's the number of bathroom?</span>
                                 <span className="font-semibold">
-                                    {formDetail.questions.quest_2
+                                    {(formDetail.questions.quest_2 as string)
                                         .replace(/_/g, ' ')
                                         .split(' ')
                                         .map(word => word.charAt(0).toUpperCase() + word.slice(1))

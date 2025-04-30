@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import CreatePropertyModal from '../../components/Modals/CreatePropertyModal';
-import PropertyTable from '../../components/Tables/PropertyTable';
 import { useNavigate } from 'react-router-dom';
 import { propertyIndex, removeProperty } from '../../services/api';
 import { Property } from '../../types';
@@ -383,7 +382,6 @@ function PropertyMain() {
                     </div>
                 </div>
 
-                {/* <PropertyTable  /> */}
                 <CreatePropertyModal />
 
                 {/* Call initPropertyTable() function */}

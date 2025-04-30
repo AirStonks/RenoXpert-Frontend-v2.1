@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { DefectInspectionForm, Property, RenoProgress, Sale } from '../../types';
+import { DefectInspectionForm, FormQuestion, Property } from '../../types';
 import KTComponents, { KTStepper, KTSticky } from '../../metronic/core';
 import { Slide, toast } from 'react-toastify';
-import { fetchDIForm, fetchProperties, fetchRenoProgressDetail, liveUpdateDIForm, removeDIFormAttachment, submitDIForm } from '../../services/operationApi';
+import { fetchDIForm, fetchProperties, liveUpdateDIForm, removeDIFormAttachment, submitDIForm } from '../../services/operationApi';
 import Loading from '../../components/Loading';
 import { useNavigate, useParams } from 'react-router-dom';
 import imageCompression from 'browser-image-compression';
@@ -15,25 +15,63 @@ const AWS_S3_URL =
             ? import.meta.env.VITE_STAGING_AWS_S3_URL
             : null
 
-interface FormErrors {
-    [key: string]: string | FormErrors | undefined; // Use string or undefined for error messages
+interface UpdateDIFormData {
+    area: string;
+    sub_area: string | null;
+    question: string;
+    attachment?: File;
+    file_index?: number;
+    value?: string;
+    remark?: string;
 }
 
-const acceptedFileTypes = [
-    'image/jpeg', // jpg
-    'image/png', // png
-    'image/gif', // gif
-    'image/webp', // webp (added for more image formats)
-    'audio/mpeg', // mp3
-    'audio/x-ms-wma', // wma
-    'audio/wav', // wav (added for more audio formats)
-    'audio/ogg', // ogg
-    'video/mpeg', // mpg
-    'video/x-flv', // flv
-    'video/x-msvideo', // avi
-    'video/mp4', // mp4 (added for more video formats)
-    'video/webm', // webm
-];
+interface FormQuestionErrors {
+    value?: string;
+    remark?: string;
+    attachments?: string;
+}
+
+interface BathroomErrors {
+    [key: string]: FormQuestionErrors | undefined;
+}
+
+interface AreaErrors {
+    owner_email?: string; // Explicitly define as string | undefined
+    bathrooms?: {
+        [bathroomKey: string]: BathroomErrors | undefined;
+    };
+    foyer?: { [key: string]: FormQuestionErrors | undefined };
+    kitchen?: { [key: string]: FormQuestionErrors | undefined };
+    yard?: { [key: string]: FormQuestionErrors | undefined };
+    living?: { [key: string]: FormQuestionErrors | undefined };
+    balcony?: { [key: string]: FormQuestionErrors | undefined };
+    hallway?: { [key: string]: FormQuestionErrors | undefined };
+    bedrooms?: { [bedroom: string]: { [key: string]: FormQuestionErrors | undefined } };
+}
+
+interface FormErrors {
+    [key: string]: string | FormErrors | AreaErrors | undefined;
+}
+
+const isAreaErrors = (area: string | AreaErrors | FormErrors | undefined): area is AreaErrors => {
+    return typeof area === 'object' && area !== null && 'bathrooms' in area;
+};
+
+// const acceptedFileTypes = [
+//     'image/jpeg', // jpg
+//     'image/png', // png
+//     'image/gif', // gif
+//     'image/webp', // webp (added for more image formats)
+//     'audio/mpeg', // mp3
+//     'audio/x-ms-wma', // wma
+//     'audio/wav', // wav (added for more audio formats)
+//     'audio/ogg', // ogg
+//     'video/mpeg', // mpg
+//     'video/x-flv', // flv
+//     'video/x-msvideo', // avi
+//     'video/mp4', // mp4 (added for more video formats)
+//     'video/webm', // webm
+// ];
 
 const initInspectionForm: DefectInspectionForm = {
     date: new Date().toLocaleDateString('en-GB', {
@@ -313,19 +351,19 @@ function DefectInspectionFormPage() {
 
             const handleSearchDIForm = async (diFormId: number) => {
                 setLoading(true);
-        
+
                 try {
                     const response = await fetchDIForm(diFormId);
                     const diForm: DefectInspectionForm = response.data;
-        
+
                     if (response?.success) {
-        
+
                         setFormData(diForm);
-        
+
                         handleDynamicBedroomByNumber(diForm.bedroom_count);
                         handleDynamicBathroomByNumber(diForm.bathroom_count);
                     }
-        
+
                 } catch (error) {
                     notify('error', 'Failed to fetch DI Form');
                 } finally {
@@ -389,13 +427,14 @@ function DefectInspectionFormPage() {
         }
     };
 
-    const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = async (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
         const { name, value } = e.target;
 
+        // Handle property fields (e.g., property.property_name)
         if (name.startsWith('property.')) {
             const key = name.split('.')[1];
-
-            // Update form data
             setFormData((prevData) => ({
                 ...prevData,
                 property: {
@@ -403,126 +442,101 @@ function DefectInspectionFormPage() {
                     [key]: value,
                 },
             }));
-
-            // Clear error for the specific property field
             setErrors((prevErrors) => ({
                 ...prevErrors,
                 property: {
-                    ...prevErrors.property,
-                    [key]: ''
-                }
+                    ...(typeof prevErrors.property === 'object' && prevErrors.property !== null
+                        ? prevErrors.property
+                        : {}),
+                    [key]: '',
+                },
             }));
+            return;
+        }
 
-        } else if (name.startsWith('area.')) {
-            const [a, cat] = name.split('.');
+        // Handle area fields (e.g., area.foyer.q1.value, area.bedrooms.bedroom1.q1.value)
+        if (name.startsWith('area.')) {
+            const [, cat] = name.split('.') as [
+                string,
+                keyof DefectInspectionForm['area'], // Restrict to valid area keys
+                ...string[]
+            ];
 
-            if (cat === 'bedrooms' || cat === 'bathrooms') {
-                const [a, cat, rooms, question, val] = name.split('.');
+            const isDynamicArea = cat === 'bedrooms' || cat === 'bathrooms';
+
+            if (isDynamicArea) {
+                const [, , rooms, question, val] = name.split('.') as [
+                    string,
+                    string,
+                    string,
+                    string,
+                    keyof FormQuestion
+                ];
 
                 // Update form data
-                setFormData((prevData) => ({
-                    ...prevData,
-                    area: {
-                        ...prevData.area,
-                        [cat]: {
-                            ...prevData.area?.[cat],
-                            [rooms]: {
-                                ...prevData.area?.[cat]?.[rooms],
-                                [question]: {
-                                    ...prevData.area?.[cat]?.[rooms]?.[question],
-                                    [val]: value,
+                setFormData((prevData) => {
+                    const area = prevData.area || {};
+                    const dynamicArea = (area[cat] || {}) as Record<
+                        string,
+                        Record<string, FormQuestion>
+                    >;
+                    const roomData = dynamicArea[rooms] || {};
+                    const questionData = roomData[question] || { value: '', remark: '' };
+
+                    return {
+                        ...prevData,
+                        area: {
+                            ...area,
+                            [cat]: {
+                                ...dynamicArea,
+                                [rooms]: {
+                                    ...roomData,
+                                    [question]: {
+                                        ...questionData,
+                                        [val]: value,
+                                    },
                                 },
-                            }
-                        },
-                    },
-                }));
-
-                // Clear error for the specific bedroom/bathroom question
-                setErrors((prevErrors) => ({
-                    ...prevErrors,
-                    area: {
-                        ...prevErrors.area,
-                        [cat]: {
-                            ...prevErrors.area?.[cat],
-                            [rooms]: {
-                                ...prevErrors.area?.[cat]?.[rooms],
-                                [question]: {
-                                    ...prevErrors.area?.[cat]?.[rooms]?.[question],
-                                    value: ''
-                                }
-                            }
-                        }
-                    }
-                }));
-
-                try {
-                    const [a, cat, rooms, question, val] = name.split('.');
-
-                    const updateFormData = {
-                        area: cat,
-                        sub_area: rooms,
-                        question: question,
-                        [val]: value,
-                    }
-
-                    if (debounceTimeout.current) {
-                        clearTimeout(debounceTimeout.current);
-                    }
-
-                    debounceTimeout.current = setTimeout(async () => {
-                        const response = await liveUpdateDIForm(Number(formId), updateFormData);
-
-                        console.log(updateFormData);
-
-                        if (response?.success) {
-                            console.log(response?.data);
-                        }
-                    }, 500);
-                } catch (error) {
-                    notify('error', error.response.data.message);
-                }
-
-            } else {
-                const [a, cat, question, val] = name.split('.');
-
-                // Update form data
-                setFormData((prevData) => ({
-                    ...prevData,
-                    area: {
-                        ...prevData.area,
-                        [cat]: {
-                            ...prevData.area?.[cat],
-                            [question]: {
-                                ...prevData.area?.[cat]?.[question],
-                                [val]: value,
                             },
                         },
-                    },
-                }));
+                    };
+                });
 
-                // Clear error for the specific area question
-                setErrors((prevErrors) => ({
-                    ...prevErrors,
-                    area: {
-                        ...prevErrors.area,
-                        [cat]: {
-                            ...prevErrors.area?.[cat],
-                            [question]: {
-                                ...prevErrors.area?.[cat]?.[question],
-                                value: ''
-                            }
-                        }
-                    }
-                }));
+                // Update errors
+                setErrors((prevErrors) => {
+                    const areaErrors = isAreaErrors(prevErrors.area) ? prevErrors.area : {};
+                    const dynamicAreaErrors = (areaErrors[cat] || {}) as Record<
+                        string,
+                        Record<string, FormQuestionErrors>
+                    >;
+                    const roomErrors = dynamicAreaErrors[rooms] || {};
+                    const questionErrors = roomErrors[question] || {};
 
+                    return {
+                        ...prevErrors,
+                        area: {
+                            ...areaErrors,
+                            [cat]: {
+                                ...dynamicAreaErrors,
+                                [rooms]: {
+                                    ...roomErrors,
+                                    [question]: {
+                                        ...questionErrors,
+                                        [val]: '',
+                                    },
+                                },
+                            },
+                        },
+                    };
+                });
+
+                // Debounced API call
                 try {
-                    const [a, cat, question, val] = name.split('.');
-
-                    const updateFormData = {
+                    const updateFormData: UpdateDIFormData = {
                         area: cat,
-                        question: question,
+                        sub_area: rooms,
+                        question,
                         [val]: value,
-                    }
+                    };
 
                     if (debounceTimeout.current) {
                         clearTimeout(debounceTimeout.current);
@@ -530,39 +544,104 @@ function DefectInspectionFormPage() {
 
                     debounceTimeout.current = setTimeout(async () => {
                         const response = await liveUpdateDIForm(Number(formId), updateFormData);
-
-                        console.log(updateFormData);
-
                         if (response?.success) {
                             console.log(response?.data);
+                        } else {
+                            notify('error', response?.message || 'Failed to update form');
                         }
                     }, 500);
                 } catch (error) {
-                    notify('error', error.response.data.message);
+                    notify('error', 'Error updating form');
+                }
+            } else {
+                const [, , question, val] = name.split('.') as [
+                    string,
+                    string,
+                    string,
+                    keyof FormQuestion
+                ];
+
+                // Update form data
+                setFormData((prevData) => {
+                    const area = prevData.area || {};
+                    const staticArea = (area[cat] || {}) as Record<string, FormQuestion>;
+                    const questionData = staticArea[question] || { value: '', remark: '' };
+
+                    return {
+                        ...prevData,
+                        area: {
+                            ...area,
+                            [cat]: {
+                                ...staticArea,
+                                [question]: {
+                                    ...questionData,
+                                    [val]: value,
+                                },
+                            },
+                        },
+                    };
+                });
+
+                // Update errors
+                setErrors((prevErrors) => {
+                    const areaErrors = isAreaErrors(prevErrors.area) ? prevErrors.area : {};
+                    const staticAreaErrors = (areaErrors[cat] || {}) as Record<
+                        string,
+                        FormQuestionErrors
+                    >;
+                    const questionErrors = staticAreaErrors[question] || {};
+
+                    return {
+                        ...prevErrors,
+                        area: {
+                            ...areaErrors,
+                            [cat]: {
+                                ...staticAreaErrors,
+                                [question]: {
+                                    ...questionErrors,
+                                    [val]: '',
+                                },
+                            },
+                        },
+                    };
+                });
+
+                // Debounced API call
+                try {
+                    const updateFormData: UpdateDIFormData = {
+                        area: cat,
+                        sub_area: null, // Explicitly set sub_area to null for static areas
+                        question,
+                        [val]: value,
+                    };
+
+                    if (debounceTimeout.current) {
+                        clearTimeout(debounceTimeout.current);
+                    }
+
+                    debounceTimeout.current = setTimeout(async () => {
+                        const response = await liveUpdateDIForm(Number(formId), updateFormData);
+                        if (response?.success) {
+                            console.log(response?.data);
+                        } else {
+                            notify('error', response?.message || 'Failed to update form');
+                        }
+                    }, 500);
+                } catch (error) {
+                    notify('error', 'Error updating form');
                 }
             }
-        } else {
-            // Update form data
-            setFormData((prevData) => ({
-                ...prevData,
-                [name]: value,
-            }));
-
-            // Clear error for the specific field
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                [name]: ''
-            }));
+            return;
         }
-    };
 
-    const handleOtherPropertyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Handle top-level fields (e.g., owner_email)
         setFormData((prevData) => ({
             ...prevData,
-            property: {
-                ...prevData.property,
-                other_property_name: e.target.value,
-            }
+            [name]: value,
+        }));
+        setErrors((prevErrors) => ({
+            ...prevErrors,
+            [name]: '',
         }));
     };
 
@@ -713,7 +792,7 @@ function DefectInspectionFormPage() {
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             console.log(validationErrors);
-            
+
             notify('error', 'Please check your form error.');
             return;
         } else {
@@ -731,103 +810,8 @@ function DefectInspectionFormPage() {
         }
     }
 
-    const handleDynamicBedroom = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const { value } = e.target;
-        const bedroomCount = parseInt(value);
-
-        setErrors({});
-
-        // Update the bathroom count and dynamically add/remove bedrooms in the form data
-        setFormData((prevFormData) => {
-            const updatedBedrooms = { ...prevFormData.area?.bedrooms };
-
-            // Add or remove bathroom fields based on the new count
-            for (let i = 1; i <= bedroomCount; i++) {
-                if (!updatedBedrooms[`bedroom${i}`]) {
-                    // Add a new bathroom with empty questions (q1, q2, ..., q8)
-                    updatedBedrooms[`bedroom${i}`] = {
-                        q1: { value: '', remark: '' },
-                        q2: { value: '', remark: '' },
-                        q3: { value: '', remark: '' },
-                        q4: { value: '', remark: '' },
-                        q5: { value: '', remark: '' },
-                        q6: { value: '', remark: '' },
-                        q7: { value: '', remark: '' },
-                        q8: { value: '', remark: '' },
-                        q9: { value: '', remark: '' },
-                    };
-                }
-            }
-
-            // Remove bedrooms if the number is decreased
-            Object.keys(updatedBedrooms).forEach((key) => {
-                const bedroomNumber = parseInt(key.replace('bedroom', ''));
-                if (bedroomNumber > bedroomCount) {
-                    delete updatedBedrooms[key];
-                }
-            });
-
-            // Return the updated formData
-            return {
-                ...prevFormData,
-                area: {
-                    ...prevFormData.area,
-                    bedrooms: updatedBedrooms
-                }
-            };
-        });
-    }
-
-    const handleDynamicBathroom = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const { value } = e.target;
-        const bathroomCount = parseInt(value);
-
-        setErrors({});
-
-        // Update the bathroom count and dynamically add/remove bathrooms in the form data
-        setFormData((prevFormData) => {
-            const updatedBathrooms = { ...prevFormData.area?.bathrooms };
-
-            // Add or remove bathroom fields based on the new count
-            for (let i = 1; i <= bathroomCount; i++) {
-                if (!updatedBathrooms[`bathroom${i}`]) {
-                    // Add a new bathroom with empty questions (q1, q2, ..., q8)
-                    updatedBathrooms[`bathroom${i}`] = {
-                        q1: { value: '', remark: '' },
-                        q2: { value: '', remark: '' },
-                        q3: { value: '', remark: '' },
-                        q4: { value: '', remark: '' },
-                        q5: { value: '', remark: '' },
-                        q6: { value: '', remark: '' },
-                        q7: { value: '', remark: '' },
-                        q8: { value: '', remark: '' },
-                        q9: { value: '', remark: '' },
-                    };
-                }
-            }
-
-            // Remove bathrooms if the number is decreased
-            Object.keys(updatedBathrooms).forEach((key) => {
-                const bathroomNumber = parseInt(key.replace('bathroom', ''));
-                if (bathroomNumber > bathroomCount) {
-                    delete updatedBathrooms[key];
-                }
-            });
-
-            // Return the updated formData
-            return {
-                ...prevFormData,
-                bathroom_count: bathroomCount.toString(),
-                area: {
-                    ...prevFormData.area,
-                    bathrooms: updatedBathrooms
-                }
-            };
-        });
-    };
-
     const handleDynamicBedroomByNumber = (value: string | number) => {
-        const bedroomCount = parseInt(value);
+        const bedroomCount = Number(value);
 
         setErrors({});
 
@@ -873,7 +857,7 @@ function DefectInspectionFormPage() {
     }
 
     const handleDynamicBathroomByNumber = (value: string | number) => {
-        const bathroomCount = parseInt(value);
+        const bathroomCount = Number(value);
 
         setErrors({});
 
@@ -919,10 +903,13 @@ function DefectInspectionFormPage() {
         });
     }
 
-    const isAcceptedFileType = (type: string) => acceptedFileTypes.includes(type);
-
-    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, areaKey: string, questionKey: string, dynamicKey?: string) => {
-        setAttanhmentErr(null); // Reset any previous errors
+    const handleFileUpload = async (
+        event: React.ChangeEvent<HTMLInputElement>,
+        areaKey: keyof DefectInspectionForm['area'], // Restrict to valid area keys
+        questionKey: string,
+        dynamicKey?: string
+    ) => {
+        setAttanhmentErr(null);
 
         const fileInput = event.target;
         if (!fileInput.files || fileInput.files.length === 0) {
@@ -931,134 +918,80 @@ function DefectInspectionFormPage() {
 
         try {
             const options = {
-                maxSizeMB: 2, // Max file size (in MB)
-                maxWidthOrHeight: 1920, // Max image width/height
-                useWebWorker: true, // Use a web worker to compress the image in the background
+                maxSizeMB: 2,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
             };
 
+            const compressedFile = await imageCompression(fileInput.files[0], options);
+            const compressedImage = new File([compressedFile], fileInput.files[0].name, {
+                type: fileInput.files[0].type,
+            });
 
-            // Compress the image using browser-image-compression
-            const compressedFile = await imageCompression(event.target.files[0], options);
-
-            const compressedImage = new File(
-                [compressedFile],
-                event.target.files[0].name,
-                { type: event.target.files[0].type }
-            );
-
-            let updatedFormData = {
+            const updatedFormData: UpdateDIFormData = {
                 area: areaKey,
-                sub_area: null,
+                sub_area: dynamicKey || null,
                 question: questionKey,
                 attachment: compressedImage,
-            }
-
-            if (dynamicKey) {
-                updatedFormData = {
-                    area: areaKey,
-                    sub_area: dynamicKey,
-                    question: questionKey,
-                    attachment: event.target.files[0],
-                }
-            }
+            };
 
             const response = await liveUpdateDIForm(Number(formId), updatedFormData);
 
             if (response?.success) {
-                if (dynamicKey) {
-                    const updatedFormData = { ...formData };
-                    const targetArea = updatedFormData.area?.[areaKey]?.[dynamicKey];
-                    const targetQuestion = targetArea?.[questionKey];
+                setFormData((prevData) => {
+                    const area = prevData.area || {};
 
-                    targetQuestion.attachments = response?.data?.area[areaKey][dynamicKey][questionKey]?.attachments;
-                    setFormData(updatedFormData);
-                    notify('success', 'File uploaded successfully.');
-                } else {
-                    const updatedFormData = { ...formData };
-                    const targetArea = updatedFormData.area?.[areaKey];
-                    const targetQuestion = targetArea?.[questionKey];
+                    // Handle dynamic areas (bedrooms, bathrooms)
+                    if (dynamicKey && (areaKey === 'bedrooms' || areaKey === 'bathrooms')) {
+                        const dynamicArea = (area[areaKey] || {}) as Record<
+                            string,
+                            Record<string, FormQuestion>
+                        >;
+                        const roomData = dynamicArea[dynamicKey] || {};
+                        const questionData = roomData[questionKey] || { value: '', remark: '' };
 
-                    targetQuestion.attachments = response?.data?.area[areaKey][questionKey]?.attachments;
-                    setFormData(updatedFormData);
-                    notify('success', 'File uploaded successfully.');
-                }
+                        return {
+                            ...prevData,
+                            area: {
+                                ...area,
+                                [areaKey]: {
+                                    ...dynamicArea,
+                                    [dynamicKey]: {
+                                        ...roomData,
+                                        [questionKey]: {
+                                            ...questionData,
+                                            attachments:
+                                                response.data.area[areaKey]?.[dynamicKey]?.[questionKey]?.attachments,
+                                        },
+                                    },
+                                },
+                            },
+                        };
+                    }
+
+                    // Handle static areas (foyer, kitchen, yard, living, balcony, hallway)
+                    const staticArea = (area[areaKey] || {}) as Record<string, FormQuestion>;
+                    const questionData = staticArea[questionKey] || { value: '', remark: '' };
+
+                    return {
+                        ...prevData,
+                        area: {
+                            ...area,
+                            [areaKey]: {
+                                ...staticArea,
+                                [questionKey]: {
+                                    ...questionData,
+                                    attachments: response.data.area[areaKey]?.[questionKey]?.attachments,
+                                },
+                            },
+                        },
+                    };
+                });
+                notify('success', 'File uploaded successfully.');
             }
-
         } catch (error) {
             notify('error', 'Error uploading file.');
         }
-
-        // const updateFormData = {
-        //     area: cat,
-        //     question: question,
-        //     [val]: value,
-        // }
-
-        // if (event.target.files) {
-        //     // Get the specific area and question dynamically
-        //     const updatedFormData = { ...formData };
-        //     let targetArea = updatedFormData.area?.[areaKey];
-
-        //     if (dynamicKey) {
-        //         // Handle dynamic areas like bedrooms and bathrooms
-        //         targetArea = updatedFormData.area?.[areaKey]?.[dynamicKey];
-        //     }
-
-        //     const targetQuestion = targetArea?.[questionKey];
-
-        //     if (targetQuestion) {
-        //         // Check if the total number of files exceeds 10 for the specific question
-        //         const currentFileCount = targetQuestion?.attachments ? Object.keys(targetQuestion?.attachments).length : 0;
-        //         if (currentFileCount + event.target.files.length > 10) {
-        //             setAttanhmentErr('You can upload a maximum of 10 files.');
-        //             notify('error', 'You can upload a maximum of 10 files.');
-        //             return;
-        //         }
-
-        //         // const newFiles: { [key: string]: { id: string, original_name: string, file_url: string, file_size: string, file: File } } = {};
-
-        //         // for (let i = 0; i < event.target.files.length; i++) {
-        //         //     const uploadedFile = event.target.files[i];
-
-        //         //     // Validate file type (you can adjust this function to support specific file types)
-        //         //     if (!isAcceptedFileType(uploadedFile.type)) {
-        //         //         setAttanhmentErr(`File type not accepted: ${uploadedFile.name}`);
-        //         //         notify('error', `File type not accepted: ${uploadedFile.name}`);
-        //         //         continue; // Skip this file
-        //         //     }
-
-        //         //     // Create a unique ID for the file and generate a preview URL
-        //         //     const fileId = Date.now().toString() + i;
-
-        //         //     // Calculate the file size in KB (you can also use MB by dividing by 1024 again)
-        //         //     const fileSizeInKB = Math.round(uploadedFile.size / 1024);
-
-        //         //     newFiles[fileId] = {
-        //         //         id: fileId,
-        //         //         original_name: uploadedFile.name,
-        //         //         file_url: URL.createObjectURL(uploadedFile),
-        //         //         file_size: `${fileSizeInKB} KB`,  // Display file size
-        //         //         file: uploadedFile
-        //         //     };
-        //         // }
-
-        //         // // Initialize attachments if necessary
-        //         // if (!targetQuestion.attachments) {
-        //         //     targetQuestion.attachments = {};
-        //         // }
-
-        //         // // Merge the new files with existing attachments
-        //         // targetQuestion.attachments = { ...targetQuestion.attachments, ...newFiles };
-
-        //         setFormData(updatedFormData);
-        //     }
-
-        //     // Clear the input file field
-        //     const fileInput = document.querySelector(`input[name="${areaKey}.${dynamicKey ? `${dynamicKey}.` : ''}${questionKey}.attachments"]`) as HTMLInputElement;
-        //     if (fileInput) {
-        //         fileInput.value = ''; // Clear the file input
-        //     }
-        // }
     };
 
     const formatFileSize = (size: number) => {
@@ -1071,87 +1004,74 @@ function DefectInspectionFormPage() {
     };
 
     const handleDelete = async (
-        fileIndex: string, // The ID of the file to be deleted
-        areaKey: string, // The area key for the specific area
-        questionKey: string, // The question key for the specific question
-        dynamicKey?: string, // Optional dynamic key (e.g., for dynamic sections like bedrooms or bathrooms)
+        fileIndex: string,
+        areaKey: keyof DefectInspectionForm['area'], // Restrict to valid area keys
+        questionKey: string,
+        dynamicKey?: string
     ) => {
-        setAttanhmentErr(null); // Reset any previous errors
+        setAttanhmentErr(null);
 
-        let updatedFormData = {
+        const updatedFormData = {
             area: areaKey,
-            sub_area: null,
+            sub_area: dynamicKey || null,
             question: questionKey,
             file_index: Number(fileIndex),
-        }
-
-        if (dynamicKey) {
-            updatedFormData = {
-                area: areaKey,
-                sub_area: dynamicKey,
-                question: questionKey,
-                file_index: Number(fileIndex),
-            }
-        }
+        };
 
         const response = await removeDIFormAttachment(Number(formId), updatedFormData);
 
         if (response?.success) {
-            if (dynamicKey) {
-                const updatedFormData = { ...formData };
-                const targetArea = updatedFormData.area?.[areaKey]?.[dynamicKey];
-                const targetQuestion = targetArea?.[questionKey];
+            setFormData((prevData) => {
+                const area = prevData.area || {};
 
-                targetQuestion.attachments = response?.data?.area[areaKey][dynamicKey][questionKey]?.attachments;
-                setFormData(updatedFormData);
+                // Handle dynamic areas (bedrooms, bathrooms)
+                if (dynamicKey && (areaKey === 'bedrooms' || areaKey === 'bathrooms')) {
+                    const dynamicArea = (area[areaKey] || {}) as Record<
+                        string,
+                        Record<string, FormQuestion>
+                    >;
+                    const roomData = dynamicArea[dynamicKey] || {};
+                    const questionData = roomData[questionKey] || { value: '', remark: '' };
 
-                notify('success', 'File deleted successfully');
-            } else {
-                const updatedFormData = { ...formData };
-                const targetArea = updatedFormData.area?.[areaKey];
-                const targetQuestion = targetArea?.[questionKey];
+                    return {
+                        ...prevData,
+                        area: {
+                            ...area,
+                            [areaKey]: {
+                                ...dynamicArea,
+                                [dynamicKey]: {
+                                    ...roomData,
+                                    [questionKey]: {
+                                        ...questionData,
+                                        attachments:
+                                            response.data.area[areaKey]?.[dynamicKey]?.[questionKey]?.attachments,
+                                    },
+                                },
+                            },
+                        },
+                    };
+                }
 
-                targetQuestion.attachments = response?.data?.area[areaKey][questionKey]?.attachments;
-                setFormData(updatedFormData);
+                // Handle static areas (foyer, kitchen, yard, living, balcony, hallway)
+                const staticArea = (area[areaKey] || {}) as Record<string, FormQuestion>;
+                const questionData = staticArea[questionKey] || { value: '', remark: '' };
 
-                notify('success', 'File deleted successfully');
-            }
+                return {
+                    ...prevData,
+                    area: {
+                        ...area,
+                        [areaKey]: {
+                            ...staticArea,
+                            [questionKey]: {
+                                ...questionData,
+                                attachments: response.data.area[areaKey]?.[questionKey]?.attachments,
+                            },
+                        },
+                    },
+                };
+            });
+            notify('success', 'File deleted successfully');
         }
-
-        // // Get the current formData
-        // const updatedFormData = { ...formData };
-        // let targetArea = updatedFormData.area?.[areaKey];
-
-        // if (dynamicKey) {
-        //     // Handle dynamic areas like bedrooms and bathrooms
-        //     targetArea = updatedFormData.area?.[areaKey]?.[dynamicKey];
-        // }
-
-        // const targetQuestion = targetArea?.[questionKey];
-
-        // if (targetQuestion && targetQuestion.attachments) {
-        //     // Check if the fileId exists in the attachments
-        //     if (targetQuestion.attachments[fileId]) {
-        //         // Remove the file from attachments
-        //         const { [fileId]: deletedFile, ...remainingFiles } = targetQuestion.attachments;
-
-        //         // Update the formData with the remaining files
-        //         targetQuestion.attachments = remainingFiles;
-
-        //         // Update the formData state
-        //         setFormData(updatedFormData);
-
-        //         if (file_url) {
-        //             // const response = await removeFile(file_url);
-        //         }
-        //     } else {
-        //         setAttanhmentErr('File not found.');
-        //         notify('error', 'File not found.');
-        //     }
-        // } else {
-        //     setAttanhmentErr('No attachments available.');
-        //     notify('error', 'No attachments available.');
-        // }
     };
 
     if (loading) return <Loading />;
@@ -1242,18 +1162,20 @@ function DefectInspectionFormPage() {
             <div className="card-body">
                 <div className="" id="stepper_1">
                     <div className="flex flex-col">
-                        <div className="flex flex-col mb-8">
+                        {/* <div className="flex flex-col mb-8">
                             <label className="text-slate-900 mb-2 font-medium" htmlFor="date">Date & Time</label>
                             <div className="flex gap-6">
                                 <div className="badge badge-lg">{formData.date}</div>
                                 <div className="badge badge-lg">{formData.time}</div>
                             </div>
-                        </div>
+                        </div> */}
 
                         <div className="flex flex-col mb-8">
                             <label className="text-slate-900 mb-2 font-medium" htmlFor="owner_email">Owner's Email</label>
                             <input className={`input ${errors.owner_email ? 'border-danger' : ''}`} type="text" name="owner_email" id="owner_email" value={formData.owner_email} onChange={handleChange} />
-                            {errors.owner_email && <span className="text-red-500 text-xs mt-2">{errors.owner_email}</span>}
+                            {typeof errors.owner_email === 'string' && (
+                                <span className="text-red-500 text-xs mt-2">{errors.owner_email}</span>
+                            )}
                         </div>
 
                         <div className="md:flex md:gap-6">
@@ -1334,7 +1256,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>1.1 Entrance door (Frame, leaf, handle, lock, accessories)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.foyer?.q1?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.foyer?.q1?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.foyer?.q1?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.foyer.q1.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -1386,7 +1312,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{formatFileSize(uploadedFile.size)}</span>
@@ -1410,7 +1336,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>1.2 Floor & skirting</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.foyer?.q2?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.foyer?.q2?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.foyer?.q2?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.foyer.q2.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -1462,7 +1392,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -1486,7 +1416,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>1.3 Wall & ceiling</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.foyer?.q3?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.foyer?.q3?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.foyer?.q3?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.foyer.q3.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -1538,7 +1472,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -1562,7 +1496,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>1.4 DB box</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.foyer?.q4?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.foyer?.q4?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.foyer?.q4?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.foyer.q4.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -1614,7 +1552,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -1646,7 +1584,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>2.1 Floor & skirting</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.kitchen?.q1?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.kitchen?.q1?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.kitchen?.q1?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.kitchen.q1.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -1700,7 +1642,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -1724,7 +1666,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>2.2 Wall & ceiling</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.kitchen?.q2?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.kitchen?.q2?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.kitchen?.q2?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.kitchen.q2.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -1778,7 +1724,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -1802,7 +1748,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>2.3 Electrical & wiring (plug point, switches, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.kitchen?.q3?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.kitchen?.q3?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.kitchen?.q3?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.kitchen.q3.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -1856,7 +1806,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -1880,7 +1830,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>2.4 Piping & water flow (Kitchen sink, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.kitchen?.q4?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.kitchen?.q4?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.kitchen?.q4?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.kitchen.q4.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -1934,7 +1888,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -1958,7 +1912,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>2.5 Kitchen cabinet (Kitchen top, drawer, cabinet door, accessories, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.kitchen?.q5?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.kitchen?.q5?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.kitchen?.q5?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.kitchen.q5.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2023,7 +1981,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2047,7 +2005,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>2.6 Electrical appliances (Fridge, microwave, oven, hood & hob, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.kitchen?.q6?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.kitchen?.q6?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.kitchen?.q6?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.kitchen.q6.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2112,7 +2074,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2136,7 +2098,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>2.7 Door (Frame, leaf, handle, accessories, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.kitchen?.q7?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.kitchen?.q7?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.kitchen?.q7?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.kitchen.q7.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2201,7 +2167,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2225,7 +2191,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>2.8 Window (Frame, panel, handle, accessories, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.kitchen?.q8?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.kitchen?.q8?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.kitchen?.q8?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.kitchen.q8.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2290,7 +2260,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2322,7 +2292,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>3.1 Floor & skirting (Floor trap)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.yard?.q1?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.yard?.q1?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.yard?.q1?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.yard.q1.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2387,7 +2361,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2411,7 +2385,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>3.2 Wall & ceiling</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.yard?.q2?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.yard?.q2?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.yard?.q2?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.yard.q2.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2476,7 +2454,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2500,7 +2478,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>3.3 Electrical & wiring (plug point, switches, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.yard?.q3?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.yard?.q3?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.yard?.q3?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.yard.q3.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2565,7 +2547,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2589,7 +2571,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>3.4 Piping & water flow</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.yard?.q4?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.yard?.q4?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.yard?.q4?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.yard.q4.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2654,7 +2640,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2678,7 +2664,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>3.5 Electrical appliances (Washing machine, dryer, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.yard?.q5?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.yard?.q5?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.yard?.q5?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.yard.q5.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2743,7 +2733,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2767,7 +2757,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>3.6 AC ledge (Railing, compressor, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.yard?.q6?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.yard?.q6?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.yard?.q6?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.yard.q6.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2832,7 +2826,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2864,7 +2858,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>4.1 Floor & skirting</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.living?.q1?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.living?.q1?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.living?.q1?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.living.q1.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2918,7 +2916,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -2942,7 +2940,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>4.2 Wall</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.living?.q2?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.living?.q2?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.living?.q2?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.living.q2.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -2996,7 +2998,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3020,7 +3022,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>4.3 Ceiling</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.living?.q3?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.living?.q3?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.living?.q3?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.living.q3.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3074,7 +3080,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3098,7 +3104,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>4.4 Electrical & wiring (plug point, switches, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.living?.q4?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.living?.q4?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.living?.q4?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.living.q4.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3152,7 +3162,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3176,7 +3186,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>4.5 Window (Frame, panel, handle, accessories, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.living?.q5?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.living?.q5?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.living?.q5?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.living.q5.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3241,7 +3255,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3265,7 +3279,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>4.6 Sliding door (Frame, panel, handle, accessories, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.living?.q6?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.living?.q6?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.living?.q6?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.living.q6.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3330,7 +3348,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3354,7 +3372,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>4.7 Air conditioner</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.living?.q7?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.living?.q7?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.living?.q7?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.living.q7.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3419,7 +3441,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3443,7 +3465,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>4.8 Air conditioner turned on for 2 hours or more</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.living?.q8?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.living?.q8?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.living?.q8?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.living.q8.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3497,7 +3523,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3521,7 +3547,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>4.9 Other</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.living?.q9?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.living?.q9?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.living?.q9?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.living.q9.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3586,7 +3616,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3618,7 +3648,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>5.1 Floor & skirting (Floor trap, evenness, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.balcony?.q1?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.balcony?.q1?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.balcony?.q1?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.balcony.q1.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3683,7 +3717,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3707,7 +3741,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>5.2 Wall & ceiling</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.balcony?.q2?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.balcony?.q2?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.balcony?.q2?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.balcony.q2.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3772,7 +3810,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3796,7 +3834,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>5.3 Railing</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.balcony?.q3?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.balcony?.q3?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.balcony?.q3?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.balcony.q3.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3861,7 +3903,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3885,7 +3927,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>5.4 AC ledge</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.balcony?.q4?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.balcony?.q4?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.balcony?.q4?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.balcony.q4.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -3950,7 +3996,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -3982,7 +4028,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>6.1 Floor & skirting</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.hallway?.q1?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.hallway?.q1?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.hallway?.q1?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.hallway.q1.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -4036,7 +4086,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4060,7 +4110,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>6.2 Wall</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.hallway?.q2?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.hallway?.q2?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.hallway?.q2?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.hallway.q2.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -4114,7 +4168,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4138,7 +4192,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>6.3 Ceiling</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.hallway?.q3?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.hallway?.q3?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.hallway?.q3?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.hallway.q3.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -4192,7 +4250,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4216,7 +4274,11 @@ function DefectInspectionFormPage() {
                             <div className="flex flex-col flex-[3]">
                                 <span className='mb-2'>6.4 Electrical & wiring (plug point, switches, etc)</span>
                                 <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                    {errors.area?.hallway?.q4?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.hallway?.q4?.value}</span>}
+                                    {isAreaErrors(errors.area) && errors.area.hallway?.q4?.value && (
+                                        <span className="text-red-500 text-xs mt-2">
+                                            {errors.area.hallway.q4.value}
+                                        </span>
+                                    )}
                                     <label className="form-label flex items-center gap-2.5 text-nowrap">
                                         <input
                                             type="radio"
@@ -4270,7 +4332,7 @@ function DefectInspectionFormPage() {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                     >
-                                                        {uploadedFile.name}
+                                                        {uploadedFile.original_name}
                                                     </a>
                                                     <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                         <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4312,7 +4374,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>1. Floor & skirting</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bedrooms?.[bedroomKey] && (errors.area?.bedrooms?.[bedroomKey].q1?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bedrooms?.[bedroomKey].q1?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bedrooms?.[bedroomKey]?.q1?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bedrooms[bedroomKey].q1.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -4378,7 +4444,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4402,7 +4468,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>2. Wall</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bedrooms?.[bedroomKey] && (errors.area?.bedrooms?.[bedroomKey].q2?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bedrooms?.[bedroomKey].q2?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bedrooms?.[bedroomKey]?.q2?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bedrooms[bedroomKey].q2.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -4468,7 +4538,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4492,7 +4562,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>3. Ceiling</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bedrooms?.[bedroomKey] && (errors.area?.bedrooms?.[bedroomKey].q3?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bedrooms?.[bedroomKey].q3?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bedrooms?.[bedroomKey]?.q3?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bedrooms[bedroomKey].q3.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -4558,7 +4632,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4582,7 +4656,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>4. Electrical & wiring (plug point, switches, etc)</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bedrooms?.[bedroomKey] && (errors.area?.bedrooms?.[bedroomKey].q4?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bedrooms?.[bedroomKey].q4?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bedrooms?.[bedroomKey]?.q4?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bedrooms[bedroomKey].q4.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -4648,7 +4726,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4672,7 +4750,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>5. Door (Frame, panel, handle, accessories, etc)</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bedrooms?.[bedroomKey] && (errors.area?.bedrooms?.[bedroomKey].q5?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bedrooms?.[bedroomKey].q5?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bedrooms?.[bedroomKey]?.q5?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bedrooms[bedroomKey].q5.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -4738,7 +4820,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4762,7 +4844,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>6. Window (Frame, panel, handle, accessories, etc)</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bedrooms?.[bedroomKey] && (errors.area?.bedrooms?.[bedroomKey].q6?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bedrooms?.[bedroomKey].q6?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bedrooms?.[bedroomKey]?.q6?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bedrooms[bedroomKey].q6.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -4828,7 +4914,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4852,7 +4938,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>7. Air conditioner</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bedrooms?.[bedroomKey] && (errors.area?.bedrooms?.[bedroomKey].q7?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bedrooms?.[bedroomKey].q7?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bedrooms?.[bedroomKey]?.q7?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bedrooms[bedroomKey].q7.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -4918,7 +5008,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -4942,7 +5032,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>8. Air conditioner turned on for 2 hours or more</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bedrooms?.[bedroomKey] && (errors.area?.bedrooms?.[bedroomKey].q8?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bedrooms?.[bedroomKey].q8?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bedrooms?.[bedroomKey]?.q8?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bedrooms[bedroomKey].q8.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -4997,7 +5091,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -5021,7 +5115,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>9. Other</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bedrooms?.[bedroomKey] && (errors.area?.bedrooms?.[bedroomKey].q9?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bedrooms?.[bedroomKey].q9?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bedrooms?.[bedroomKey]?.q9?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bedrooms[bedroomKey].q9.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -5087,7 +5185,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -5131,7 +5229,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>1. Floor (Floor trap, etc)</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bathrooms?.[bathroomKey] && (errors.area?.bathrooms?.[bathroomKey]?.q1?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bathrooms?.[bathroomKey]?.q1?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bathrooms?.[bathroomKey]?.q1?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bathrooms[bathroomKey].q1.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -5196,7 +5298,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -5220,7 +5322,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>2. Wall & ceiling</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bathrooms?.[bathroomKey] && (errors.area?.bathrooms?.[bathroomKey]?.q2?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bathrooms?.[bathroomKey]?.q2?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bathrooms?.[bathroomKey]?.q2?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bathrooms[bathroomKey].q2.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -5286,7 +5392,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -5310,7 +5416,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>3. Door (Frame, panel, handle, accessories, etc)</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bathrooms?.[bathroomKey] && (errors.area?.bathrooms?.[bathroomKey]?.q3?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bathrooms?.[bathroomKey]?.q3?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bathrooms?.[bathroomKey]?.q3?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bathrooms[bathroomKey].q3.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -5376,7 +5486,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -5400,7 +5510,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>4. Window (Frame, panel, handle, accessories, etc)</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bathrooms?.[bathroomKey] && (errors.area?.bathrooms?.[bathroomKey]?.q4?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bathrooms?.[bathroomKey]?.q4?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bathrooms?.[bathroomKey]?.q4?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bathrooms[bathroomKey].q4.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -5466,7 +5580,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -5490,7 +5604,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>5. Electrical & wiring (plug point, switches, etc)</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bathrooms?.[bathroomKey] && (errors.area?.bathrooms?.[bathroomKey]?.q5?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bathrooms?.[bathroomKey]?.q5?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bathrooms?.[bathroomKey]?.q5?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bathrooms[bathroomKey].q5.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -5556,7 +5674,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -5580,7 +5698,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>6. Sanitary ware (Basin, bidet, tap, WC, shower, etc)</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bathrooms?.[bathroomKey] && (errors.area?.bathrooms?.[bathroomKey]?.q6?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bathrooms?.[bathroomKey]?.q6?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bathrooms?.[bathroomKey]?.q6?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bathrooms[bathroomKey].q6.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -5646,7 +5768,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -5670,7 +5792,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>7. Piping & water flow (Basin, bidet, tap, WC, shower, etc)</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bathrooms?.[bathroomKey] && (errors.area?.bathrooms?.[bathroomKey]?.q7?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bathrooms?.[bathroomKey]?.q7?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bathrooms?.[bathroomKey]?.q7?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bathrooms[bathroomKey].q7.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -5736,7 +5862,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -5760,7 +5886,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>8. Shower screen (Panel, frame, accessories, etc)</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bathrooms?.[bathroomKey] && (errors.area?.bathrooms?.[bathroomKey]?.q8?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bathrooms?.[bathroomKey]?.q8?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bathrooms?.[bathroomKey]?.q8?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bathrooms[bathroomKey].q8.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -5826,7 +5956,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>
@@ -5850,7 +5980,11 @@ function DefectInspectionFormPage() {
                                         <div className="flex flex-col flex-[3]">
                                             <span className='mb-2'>9. Other</span>
                                             <div className="flex max-sm:flex-wrap max-sm:gap-2 mb-4">
-                                                {errors.area?.bathrooms?.[bathroomKey] && (errors.area?.bathrooms?.[bathroomKey]?.q9?.value && <span className="text-red-500 text-xs mt-2">{errors.area?.bathrooms?.[bathroomKey]?.q9?.value}</span>)}
+                                                {isAreaErrors(errors.area) && errors.area.bathrooms?.[bathroomKey]?.q9?.value && (
+                                                    <span className="text-red-500 text-xs mt-2">
+                                                        {errors.area.bathrooms[bathroomKey].q9.value}
+                                                    </span>
+                                                )}
                                                 <label className="form-label flex items-center gap-2.5 text-nowrap">
                                                     <input
                                                         type="radio"
@@ -5916,7 +6050,7 @@ function DefectInspectionFormPage() {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >
-                                                                    {uploadedFile.name}
+                                                                    {uploadedFile.original_name}
                                                                 </a>
                                                                 <div className="badge badge-sm flex w-fit text-slate-500 text-sm">
                                                                     <span>{uploadedFile.file_url ? formatFileSize(uploadedFile.size) : 'N/A'}</span>

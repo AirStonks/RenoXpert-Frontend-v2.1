@@ -59,33 +59,35 @@ function CreatePackage() {
                 const response = await fetchPackage(packageId);
                 if (response?.success) {
                     const data: Package = response.data;
-                    const transformedProducts = data.products.map((product: any) => ({
-                        SKU: product.SKU,
-                        description: product.description,
+                    const transformedProducts: Product[] = data.products.map((product) => ({
+                        SKU: product.SKU || '',
+                        description: product.description || '',
                         id: product.id,
-                        install: product.pivot.includeInstall,
-                        name: product.name,
-                        price: product.provisioning.supply.retail_price + product.provisioning.install.retail_price,
-                        quantity: product.pivot.quantity,
-                        supply: product.pivot.includeSupply,
-                        visibility: product.pivot.visibility,
+                        install: product.pivot?.includeInstall ?? false,
+                        name: product.name || '',
+                        price: (product.provisioning?.supply?.retail_price || 0) + (product.provisioning?.install?.retail_price || 0),
+                        quantity: product.pivot?.quantity || 1,
+                        supply: product.pivot?.includeSupply ?? false,
+                        visibility: product.pivot?.visibility ?? true,
+                        note: product.pivot?.internal_note || '',
                     }));
 
                     setSelectedProducts(transformedProducts);
                     const calculatedTotalPrice = transformedProducts.reduce(
-                        (total, product) => total + (product.price * product.quantity),
+                        (total, product) => total + ((product.provisioning.install.retail_price + product.provisioning.supply.retail_price) * product.pivot.quantity),
                         0
                     );
                     setTotalPrice(calculatedTotalPrice);
                     setFormData({
                         ...formData,
-                        packageName: data.name,
-                        description: data.description,
-                        description_internal: data.description_internal,
+                        packageName: data.name || '',
+                        description: data.description || '',
+                        description_internal: data.description_internal || '',
                     });
                 }
             } catch (error) {
                 console.error('Error fetching duplicate products:', error);
+                notify('error', 'Failed to load duplicate package data.');
             }
             setLoading(false);
         };
@@ -107,18 +109,24 @@ function CreatePackage() {
     const handleVisibilityToggle = (id: number) => {
         setSelectedProducts((prevProducts) =>
             prevProducts.map((product) =>
-                product.id === id ? { ...product, visibility: !product.visibility } : product
+                product.id === id ? {
+                    ...product,
+                    pivot: {
+                        ...product.pivot,
+                        visibility: !product.pivot.visibility
+                    }
+                } : product
             )
         );
     };
 
-    const handleNoteChange = (id: string | number, value: string) => {
-        setSelectedProducts((prevProducts) =>
-            prevProducts.map((product) =>
-                product.id === id ? { ...product, note: value } : product
-            )
-        );
-    };
+    // const handleNoteChange = (id: string | number, value: string) => {
+    //     setSelectedProducts((prevProducts) =>
+    //         prevProducts.map((product) =>
+    //             product.id === id ? { ...product, note: value } : product
+    //         )
+    //     );
+    // };
 
     const handleSubmit = async () => {
         if (selectedProducts.length === 0) {
@@ -135,16 +143,7 @@ function CreatePackage() {
         }
 
         try {
-            const newProducts = selectedProducts.map((item) => ({
-                id: item.id,
-                name: item.name,
-                SKU: item.SKU,
-                quantity: item.quantity,
-                visibility: item.visibility,
-                internal_note: item.note,
-                supply: item.supply,
-                install: item.install,
-            }));
+            const newProducts = selectedProducts;
 
             const packageData: Package = {
                 name: formData.packageName,
@@ -172,6 +171,7 @@ function CreatePackage() {
                 notify('error', "Product creation unsuccessful. Check the errors below.");
             } else {
                 console.error('Product creation failed:', error);
+                notify('error', "An unexpected error occurred during package creation.");
             }
         }
     };
@@ -188,6 +188,8 @@ function CreatePackage() {
 
     const updateSelectedProducts = (products: Product[]) => {
         setSelectedProducts(products);
+        const newTotalPrice = products.reduce((acc, product) => acc + ((product.pivot.includeSupply ? product.provisioning.supply.retail_price : 0) + (product.pivot.includeInstall ? product.provisioning.install.retail_price : 0) * product.pivot.quantity), 0);
+        setTotalPrice(newTotalPrice);
     };
 
     const updateTotalPrice = (price: number, operator: string) => {
@@ -197,26 +199,32 @@ function CreatePackage() {
     };
 
     const adjustQuantity = (id: number, action: 'increase' | 'decrease') => {
-        setSelectedProducts((prevProducts) => {
-            return prevProducts.map((product) => {
+        setSelectedProducts((prevProducts) =>
+            prevProducts.map((product) => {
                 if (product.id === id) {
-                    const newQty = action === 'increase' ? product.quantity + 1 : Math.max(1, product.quantity - 1);
+                    const newQty = action === 'increase' ? product.pivot.quantity + 1 : Math.max(1, product.pivot.quantity - 1);
                     const operator = action === 'increase' ? '+' : '-';
-                    if (product.quantity > 1 || action === 'increase') {
-                        updateTotalPrice(product.price, operator);
+                    if (product.pivot.quantity > 1 || action === 'increase') {
+                        updateTotalPrice((product.provisioning.install.retail_price + product.provisioning.supply.retail_price), operator);
                     }
-                    return { ...product, quantity: newQty };
+                    return {
+                        ...product,
+                        pivot: {
+                            ...product.pivot,
+                            quantity: newQty
+                        }
+                    };
                 }
                 return product;
-            });
-        });
+            })
+        );
     };
 
     const handleRemoveProduct = (id: number) => {
         setSelectedProducts((prevProducts) => {
             const removedProduct = prevProducts.find((product) => product.id === id);
             if (removedProduct) {
-                updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
+                updateTotalPrice((removedProduct.provisioning.install.retail_price + removedProduct.provisioning.supply.retail_price) * removedProduct.pivot.quantity, '-');
             }
             return prevProducts.filter((product) => product.id !== id);
         });
@@ -235,7 +243,7 @@ function CreatePackage() {
 
     const toggleIsAddon = () => {
         setFormData((prev) => ({ ...prev, is_addon: !prev.is_addon }));
-    }
+    };
 
     return (
         <>
@@ -319,7 +327,6 @@ function CreatePackage() {
                                     error={validationErrors.category}
                                 />
                             </div>
-
                             <div className="flex flex-col gap-2 mb-8">
                                 <label className="text-sm font-medium text-gray-900">Add-On Package</label>
                                 <span className="text-xs text-gray-600 tracking-wide mb-2">
@@ -328,14 +335,12 @@ function CreatePackage() {
                                 <div className="flex gap-2 items-center">
                                     <input
                                         className="checkbox"
-                                        name="is_ready"
+                                        name="is_addon"
                                         type="checkbox"
                                         checked={!!formData.is_addon}
                                         onChange={toggleIsAddon}
                                     />
-                                    <span className="switch-label">
-                                        Enable Add-on Package
-                                    </span>
+                                    <span className="switch-label">Enable Add-on Package</span>
                                 </div>
                             </div>
                         </div>
@@ -361,12 +366,17 @@ function CreatePackage() {
                                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                                 <thead>
                                                     <tr>
-                                                        <th className="w-[50px]"></th> {/* Drag handle column */}
-                                                        <th className="w-[250px]">Product</th>
-                                                        <th className="w-[100px] text-center">Quantity</th>
-                                                        <th className="w-[120px] text-center">Retail Price</th>
-                                                        <th className="w-[120px] text-center">Total Price</th>
-                                                        <th className="w-[60px] text-center">Visibility</th>
+                                                        <th className="w-[50px]"></th>
+                                                        <th className='w-[250px]'>Product</th>
+                                                        <th className='w-[150px] text-center'>Quantity</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Supply RRP</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Install RRP</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Total RRP</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Supply COGS</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Install COGS</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Total COGS</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Margin Amount</th>
+                                                        <th className='w-[100px] text-center'>Visibility</th>
                                                         <th className="w-[60px] text-center">Action</th>
                                                     </tr>
                                                 </thead>

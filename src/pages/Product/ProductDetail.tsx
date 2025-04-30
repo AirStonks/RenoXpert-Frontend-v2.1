@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { archiveProduct, changeProductThumbnail, removeProductPhoto, restoreProduct, uploadProductPhotos } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
+import { Attachment } from "../../types";
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -33,7 +34,7 @@ function ProductDetail() {
 
     const [selectedThumbnail, setselectedThumbnail] = useState(null);
     const [pendingUploadItems, setPendingUploadItems] = useState<File[]>([]);
-    const [documentItems, setDocumentItems] = useState<[]>(null);
+    const [documentItems, setDocumentItems] = useState<Attachment[] | null>(null);
     const [documentManageMode, setDocumentManageMode] = useState(false);
 
     const maxFiles = 10; // Maximum number of files allowed
@@ -130,7 +131,7 @@ function ProductDetail() {
         setIsLoading(false);
     };
 
-    const removeFile = (index) => {
+    const removeFile = (index: number) => {
         setPendingUploadItems((prevItems) => prevItems.filter((_, i) => i !== index));
     };
 

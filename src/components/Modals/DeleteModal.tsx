@@ -42,7 +42,7 @@ function DeleteModal({
 
     const handleSubmit = async () => {
         try {
-            const response = await deleteFunction(item.id); // Call the dynamic delete function
+            const response = await deleteFunction(Number(item.id)); // Call the dynamic delete function
 
             if (response?.success) {
                 notify('success', notifySuccess || 'Item removed successfully.');

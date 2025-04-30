@@ -63,6 +63,7 @@ const EditProduct: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+        
 
         if (name.startsWith('provisioning.supply')) {
             const property = name.split('.')[2];
@@ -106,12 +107,31 @@ const EditProduct: React.FC = () => {
 
         if (!formData?.name) newErrors.name = "Name required";
         if (!formData?.uom) newErrors.uom = "UOM required";
-        if ((formData?.provisioning.supply.retail_price < 0 || formData?.provisioning.supply.retail_price === '') && (formData?.type !== 'roundup')) newErrors.supply_retail_price = "Retail Price required";
-        if ((formData?.provisioning.supply.cogs < 0 || formData?.provisioning.supply.cogs === '') && (formData?.type !== 'roundup')) newErrors.supply_cogs = "Cost of Good Sold required";
-        if ((formData?.provisioning.supply.excluded_price < 0 || formData?.provisioning.supply.excluded_price === '') && (formData?.type !== 'roundup')) newErrors.supply_excluded_price = "Excluded Price required";
-        if ((formData?.provisioning.install.retail_price < 0 || formData?.provisioning.install.retail_price === '') && (formData?.type !== 'roundup')) newErrors.install_retail_price = "Retail Price required";
-        if ((formData?.provisioning.install.cogs < 0 || formData?.provisioning.install.cogs === '') && (formData?.type !== 'roundup')) newErrors.install_cogs = "Cost of Good Sold required";
-        if ((formData?.provisioning.install.excluded_price < 0 || formData?.provisioning.install.excluded_price === '') && (formData?.type !== 'roundup')) newErrors.install_excluded_price = "Excluded Price required";
+
+        // Skip validation for 'roundup' type products
+        if (formData?.type !== 'roundup') {
+            // Supply validations
+            if (formData?.provisioning.supply.retail_price == null || formData.provisioning.supply.retail_price < 0) {
+                newErrors.supply_retail_price = "Retail Price required and must be non-negative";
+            }
+            if (formData?.provisioning.supply.cogs == null || formData.provisioning.supply.cogs < 0) {
+                newErrors.supply_cogs = "Cost of Good Sold required and must be non-negative";
+            }
+            if (formData?.provisioning.supply.excluded_price == null || formData.provisioning.supply.excluded_price < 0) {
+                newErrors.supply_excluded_price = "Excluded Price required and must be non-negative";
+            }
+
+            // Install validations
+            if (formData?.provisioning.install.retail_price == null || formData.provisioning.install.retail_price < 0) {
+                newErrors.install_retail_price = "Retail Price required and must be non-negative";
+            }
+            if (formData?.provisioning.install.cogs == null || formData.provisioning.install.cogs < 0) {
+                newErrors.install_cogs = "Cost of Good Sold required and must be non-negative";
+            }
+            if (formData?.provisioning.install.excluded_price == null || formData.provisioning.install.excluded_price < 0) {
+                newErrors.install_excluded_price = "Excluded Price required and must be non-negative";
+            }
+        }
 
         return newErrors;
     };

@@ -168,24 +168,26 @@ function RenoRegistrationFormDetail() {
                 <div className="flex flex-col mb-8">
                     <span className="text-slate-400 font-medium">What's your original number of rooms?</span>
                     <span className="font-semibold">
-                        {form.questions.quest_1
-                            .replace(/_/g, ' ')
-                            .split(' ')
-                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                            .join(' ')
-                        }
+                        {typeof form.questions.quest_1 === 'string'
+                            ? form.questions.quest_1
+                                .replace(/_/g, ' ')
+                                .split(' ')
+                                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                                .join(' ')
+                            : form.questions.quest_1}
                     </span>
                 </div>
 
                 <div className="flex flex-col mb-8">
                     <span className="text-slate-400 font-medium">What's the number of bathroom?</span>
                     <span className="font-semibold">
-                        {form.questions.quest_2
-                            .replace(/_/g, ' ')
-                            .split(' ')
-                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                            .join(' ')
-                        }
+                        {typeof form.questions.quest_2 === 'string'
+                            ? form.questions.quest_2
+                                .replace(/_/g, ' ')
+                                .split(' ')
+                                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                                .join(' ')
+                            : form.questions.quest_2}
                     </span>
                 </div>
 

@@ -1,14 +1,12 @@
 // src\pages\Sales\SalesMain.tsx
 
 import { useEffect, useRef, useState } from 'react';
-import SalesTable from '../../components/Tables/SalesTable';
 import Loading from '../../components/Loading';
 import { Property, Sale } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { propertyIndex, salesIndex } from '../../services/api';
 // import CreatePropertyModal from '../../components/Modals/CreatePropertyModal';
-// import PropertyTable from '../../components/Tables/PropertyTable';
 
 export type SortOrder = 'asc' | 'desc' | null;
 
@@ -716,7 +714,6 @@ function SalesMain() {
                     </div>
                 </div>
 
-                {/* <SalesTable  /> */}
                 {/* <CreatePropertyModal /> */}
             </div >
         </>

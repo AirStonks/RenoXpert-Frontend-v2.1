@@ -6,7 +6,7 @@ import { createPurchaseOrder, fetchPO, fetchSale, fetchSales, fetchUser, fetchUs
 import IncludePOItemsModal from "./components/IncludePOItemsModal";
 import { Slide, toast } from "react-toastify";
 import IncludePOPackageModal from "./components/IncludePOPackageModal";
-import { DndContext, closestCenter } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { SortablePOPackage } from "./components/SortablePOPackage";
 import Loading from "../../components/Loading";
@@ -38,7 +38,7 @@ function EditPO() {
     const [selectedPOPackageId, setSelectedPOPackageId] = useState('');
     const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-    const [openAccordions, setOpenAccordions] = useState({});
+    const [openAccordions, setOpenAccordions] = useState<{ [key: number]: boolean }>({});
     const [isLoading, setIsLoading] = useState(false);
 
     const handleBackClick = () => {
@@ -215,8 +215,13 @@ function EditPO() {
                     }
                 };
             } else if (saleId) {
+                const saleIdNumber = parseInt(saleId, 10); // Convert string to number
+                if (isNaN(saleIdNumber)) {
+                    notify('error', 'Invalid sale ID.');
+                    return;
+                }
                 try {
-                    const response = await fetchSale(saleId);
+                    const response = await fetchSale(saleIdNumber);
                     updatedSale = {
                         ...response.data,
                         order: {
@@ -529,40 +534,44 @@ function EditPO() {
         }, 0);
     };
 
-    const toggleAccordion = (packageId) => {
+    const toggleAccordion = (packageId: number) => {
         setOpenAccordions(prev => ({
             ...prev,
             [packageId]: !prev[packageId]
         }));
     };
 
-    const handleDragEnd = (event) => {
+    const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
-        if (active.id !== over.id) {
-            if (active.id.startsWith('package-') && over.id.startsWith('package-')) {
-                // Reorder packages
-                const oldIndex = selectedPOPackages.findIndex(pkg => `package-${pkg.package_id}` === active.id);
-                const newIndex = selectedPOPackages.findIndex(pkg => `package-${pkg.package_id}` === over.id);
-                setSelectedPOPackages(arrayMove(selectedPOPackages, oldIndex, newIndex));
-            } else if (active.id.startsWith('item-') && over.id.startsWith('item-')) {
-                // Reorder products within the same package
-                const activeParts = active.id.split('-');
-                const overParts = over.id.split('-');
-                const activePackId = activeParts[2];
-                const overPackId = overParts[2];
-                if (activePackId === overPackId) {
-                    setSelectedPOPackages(prevPackages => {
-                        const packageIndex = prevPackages.findIndex(pkg => Number(pkg.package_id) === Number(activePackId));
-                        const packageItem = prevPackages[packageIndex];
-                        const oldIndex = packageItem.po_items.findIndex(item => `item-${item.product_id}-${activePackId}` === active.id);
-                        const newIndex = packageItem.po_items.findIndex(item => `item-${item.product_id}-${activePackId}` === over.id);
-                        const newPoItems = arrayMove(packageItem.po_items, oldIndex, newIndex);
-                        const updatedPackage = { ...packageItem, po_items: newPoItems };
-                        const newPackages = [...prevPackages];
-                        newPackages[packageIndex] = updatedPackage;
-                        return newPackages;
-                    });
-                }
+        if (!over || active.id === over.id) return;
+
+        // Assert that active.id and over.id are strings
+        const activeId = active.id as string;
+        const overId = over.id as string;
+
+        if (activeId.startsWith('package-') && overId.startsWith('package-')) {
+            // Reorder packages
+            const oldIndex = selectedPOPackages.findIndex(pkg => `package-${pkg.package_id}` === activeId);
+            const newIndex = selectedPOPackages.findIndex(pkg => `package-${pkg.package_id}` === overId);
+            setSelectedPOPackages(arrayMove(selectedPOPackages, oldIndex, newIndex));
+        } else if (activeId.startsWith('item-') && overId.startsWith('item-')) {
+            // Reorder products within the same package
+            const activeParts = activeId.split('-');
+            const overParts = overId.split('-');
+            const activePackId = activeParts[2];
+            const overPackId = overParts[2];
+            if (activePackId === overPackId) {
+                setSelectedPOPackages(prevPackages => {
+                    const packageIndex = prevPackages.findIndex(pkg => Number(pkg.package_id) === Number(activePackId));
+                    const packageItem = prevPackages[packageIndex];
+                    const oldIndex = packageItem.po_items.findIndex(item => `item-${item.product_id}-${activePackId}` === activeId);
+                    const newIndex = packageItem.po_items.findIndex(item => `item-${item.product_id}-${activePackId}` === overId);
+                    const newPoItems = arrayMove(packageItem.po_items, oldIndex, newIndex);
+                    const updatedPackage = { ...packageItem, po_items: newPoItems };
+                    const newPackages = [...prevPackages];
+                    newPackages[packageIndex] = updatedPackage;
+                    return newPackages;
+                });
             }
         }
     };
@@ -966,7 +975,7 @@ function EditPO() {
                                                     handleRemovePOProduct={handleRemovePOProduct}
                                                     handleChangeQty={handleChangeQty}
                                                     openAccordions={openAccordions}
-                                                    toggleAccordion={toggleAccordion}
+                                                    toggleAccordion={() => toggleAccordion}
                                                 />
                                             ))}
                                         </SortableContext>

@@ -8,7 +8,6 @@ import useFetchOwnerOrder from '../../hook/useFetchOwnerOrder';
 import { Link } from 'react-router-dom';
 import { toggleOwnerOrderAddon } from '../../services/ownerApi';
 import ConfirmUnincludeAddon from './components/Modals/ConfirmUnincludeAddon';
-import { between } from '../../metronic/vendors/@form-validation/umd/locales/ar_MA';
 
 const convertToWords = (num: number) => {
     const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
@@ -168,7 +167,7 @@ function OrderOverview() {
             setOpenAccordions(() => {
                 const initialState: { [key: string]: boolean } = {};
                 if (orderDetail) {
-                    JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).forEach((_, index) => {
+                    JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).forEach((item: Package, index: number) => {
                         initialState[`content_${index}`] = false;
                     });
                 }
@@ -180,12 +179,15 @@ function OrderOverview() {
                 property: false
             }));
         }
-    }, [orderDetail]); // Empty dependency array to run only once on mount
+    }, [orderDetail]);
 
     const getCurrentDate = () => {
         const date = new Date();
-        const options = { day: '2-digit', month: 'short', year: 'numeric' };
-        return date.toLocaleDateString('en-GB', options);
+        return date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
     };
 
     const formatDate = (dateStr: string) => {
@@ -250,11 +252,11 @@ function OrderOverview() {
         }
     }
 
-    const handleAgreeTncChange = (event) => {
+    const handleAgreeTncChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setAgreeTnc(event.target.checked);
     };
 
-    const handleAgreeRenoAgreementChange = (event) => {
+    const handleAgreeRenoAgreementChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setAgreeRenoAgreement(event.target.checked);
     };
 
@@ -702,16 +704,11 @@ function OrderOverview() {
                                                         <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
                                                             <h3 className="text-md text-teal-600 font-bold">Bonus:</h3>
                                                             <ul className="text-xs text-gray-900 font-semibold mt-2 space-y-1">
-                                                                {(bonus.description?.split('\n') || ['No Details']).map(
-                                                                    (item, index) => (
-                                                                        <li
-                                                                            key={index}
-                                                                            className="p-2 bg-teal-50 rounded"
-                                                                        >
-                                                                            {item}
-                                                                        </li>
-                                                                    )
-                                                                )}
+                                                                {(bonus.description?.split('\n') || ['No Details']).map((item: string, index: number) => (
+                                                                    <li key={index} className="p-2 bg-teal-50 rounded">
+                                                                        {item}
+                                                                    </li>
+                                                                ))}
                                                             </ul>
                                                             <div className="mt-2">
                                                                 <span className="text-xs text-gray-600 font-semibold">
@@ -931,9 +928,7 @@ function OrderOverview() {
                                                 ? (() => {
                                                     let packageCounter = 0;
                                                     let addonCounter = 0;
-                                                    return JSON.parse(
-                                                        JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))
-                                                    ).map((prodPackage, index) => {
+                                                    return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((prodPackage: Package, index: number) => {
                                                         const isAddon = prodPackage.is_addon;
                                                         const counter = isAddon ? addonCounter++ : packageCounter++;
                                                         const accordionId = `content_${index}`;
@@ -1039,7 +1034,7 @@ function OrderOverview() {
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody>
-                                                                                {prodPackage.products.map((product, idx) => {
+                                                                                {prodPackage.products.map((product: Product, idx: number) => {
                                                                                     const isSupplyAndInstall =
                                                                                         product.pivot.includeSupply ||
                                                                                         product.pivot.includeInstall;
@@ -1119,16 +1114,11 @@ function OrderOverview() {
                                                 <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
                                                     <h3 className="text-md text-teal-600 font-bold">Bonus:</h3>
                                                     <ul className="text-xs text-gray-900 font-semibold mt-2 space-y-1">
-                                                        {(bonus.description?.split('\n') || ['No Details']).map(
-                                                            (item, index) => (
-                                                                <li
-                                                                    key={index}
-                                                                    className="p-2 bg-teal-50 rounded"
-                                                                >
-                                                                    {item}
-                                                                </li>
-                                                            )
-                                                        )}
+                                                        {(bonus.description?.split('\n') || ['No Details']).map((item: string, index: number) => (
+                                                            <li key={index} className="p-2 bg-teal-50 rounded">
+                                                                {item}
+                                                            </li>
+                                                        ))}
                                                     </ul>
                                                     <div className="mt-2">
                                                         <span className="text-xs text-gray-600 font-semibold">
@@ -1296,9 +1286,7 @@ function OrderOverview() {
                                     ? (() => {
                                         let packageCounter = 0;
                                         let addonCounter = 0;
-                                        return JSON.parse(
-                                            JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))
-                                        ).map((prodPackage, index) => {
+                                        return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((prodPackage: Package, index: number) => {
                                             const isAddon = prodPackage.is_addon;
                                             const counter = isAddon ? addonCounter++ : packageCounter++;
                                             const accordionId = `content_${index}`;
@@ -1400,7 +1388,7 @@ function OrderOverview() {
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                    {prodPackage.products.map((product, idx) => {
+                                                                    {prodPackage.products.map((product: Product, idx: number) => {
                                                                         const isSupplyAndInstall =
                                                                             product.pivot.includeSupply || product.pivot.includeInstall;
 

@@ -141,7 +141,7 @@ export const fetchRPMDIForm = async (formId: number) => {
     }
 }
 
-export const liveUpdateDIForm = async (formId: number, formData) => {
+export const liveUpdateDIForm = async (formId: number, formData: any) => {
     try {
         const response = await axios.post(API_URL + `op/reno/defect-inspection-forms/${formId}/save`, formData, {
             headers: {
@@ -156,7 +156,7 @@ export const liveUpdateDIForm = async (formId: number, formData) => {
     }
 }
 
-export const removeDIFormAttachment = async (formId: number, formData) => {
+export const removeDIFormAttachment = async (formId: number, formData: any) => {
     try {
         // op/reno/defect-inspection-forms/{id}/attachment/remove
         const response = await axios.post(API_URL + `op/reno/defect-inspection-forms/${formId}/attachment/remove`, formData, {
@@ -244,7 +244,7 @@ export const fetchExistsUser = async (phone_no: string) => {
     }
 };
 
-export const submitRegistrationForm = async (formData) => {
+export const submitRegistrationForm = async (formData: any) => {
     try {
         const response = await axios.post(API_URL + `owner/reno-registration-form/overview/submit`, formData, {
             headers: {

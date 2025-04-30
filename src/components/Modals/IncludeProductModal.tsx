@@ -133,41 +133,43 @@ function IncludeProductModal({
         if (!selectBtn) return;
 
         const id = Number(selectBtn.dataset.id);
-        const productName = selectBtn.dataset.name;
-        const SKU = selectBtn.dataset.sku;
         const productPrice = parseFloat(selectBtn.dataset.price || '0');
-        const productDescription = selectBtn.dataset.desc;
 
         const productIndex = selectedProducts.findIndex(product => product.id === id);
+
+        // get selected product
+        const product = products.find(product => product.id === id);
 
         let updatedProducts = [...selectedProducts];
 
         if (productIndex > -1) {
             // Remove product
-            const productQuantity = updatedProducts[productIndex].quantity;
+            const productQuantity = updatedProducts[productIndex].pivot.quantity;
             updatedProducts = updatedProducts.filter(product => product.id !== id);
             selectBtn.dataset.action = 'select';
             selectBtn.className = 'btn btn-primary btn-sm';
             selectBtn.innerText = 'Select';
-            updateTotalPrice(productPrice * productQuantity, '-');
+            updateTotalPrice((product.provisioning.supply.retail_price + product.provisioning.install.retail_price) * productQuantity, '-');
         } else {
             // Add product
             updatedProducts.push({
-                id,
-                name: productName || '',
-                SKU,
-                quantity: 1,
-                visibility: true,
-                price: productPrice,
-                description: productDescription,
-                supply: true,
-                install: true,
+                ...product,
+                pivot: {
+                    ...product?.pivot,
+                    visibility: true,
+                    quantity: 1,
+                    includeSupply: true,
+                    includeInstall: true,
+                }
             });
             selectBtn.dataset.action = 'remove';
             selectBtn.className = 'btn btn-danger btn-sm';
             selectBtn.innerText = 'Remove';
             updateTotalPrice(productPrice, '+');
         }
+
+        console.log(updatedProducts);
+        
 
         updateSelectedProducts(updatedProducts);
     };

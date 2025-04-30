@@ -6,10 +6,17 @@ import { useNavigate } from 'react-router-dom';
 import { KTSticky } from '../../../metronic/core';
 
 interface TableColumn {
-    field: keyof RenoProgress;
+    field: string; // Change from keyof RenoProgress to string
     header: string;
     sortable?: boolean;
     groupable?: boolean;
+}
+
+interface GroupedData {
+    key: string;
+    name: string;
+    items: RenoProgress[];
+    count: number;
 }
 
 type GroupBy = string | null;
@@ -148,7 +155,7 @@ const PMAdvanceTable = () => {
     }
 
     // Add this header row right after opening the group content div
-    const renderGroupContent = (group) => (
+    const renderGroupContent = (group: GroupedData) => (
         <div className="p-4 space-y-2">
             {group.items.map(item => renderTableRow(item, group.key))}
         </div>

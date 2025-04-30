@@ -48,7 +48,7 @@ export const user = async () => {
     }
 };
 
-export const changePassword = async (formData) => {
+export const changePassword = async (formData: any) => {
     try {
         const response = await axios.post(API_URL + 'change-password', formData, {
             headers: {
@@ -237,6 +237,28 @@ export const fetchData = async () => {
         handle401Error(error as AxiosError);
     }
 };
+
+export const fetchContacts = async () => {
+    try {
+        const response = await axios.get(API_URL + 'contacts', {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
+export const fetchContact = async (contactId: number) => {
+    try {
+        const response = await axios.get(API_URL + `contacts/${contactId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
 
 export const productIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
@@ -653,7 +675,7 @@ export const quotationIndexArchived = async (size: number = 5, page: number = 1,
     }
 };
 
-export const createQuotation = async (quotationData: Quotation, selectedPackages) => {
+export const createQuotation = async (quotationData: Quotation, selectedPackages: any) => {
     try {
         const dataToSend = {
             ...quotationData,

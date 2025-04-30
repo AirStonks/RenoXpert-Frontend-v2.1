@@ -20,8 +20,15 @@ const API_URL =
                 ? import.meta.env.VITE_LOCAL_API_URL
                 : null;
 
+type FurnishingCategory = 'foyer_entrance' | 'kitchen' | 'yard' | 'dining' | 'living' | 'bedrooms' | 'bathrooms';
+
 interface FormErrors {
-    [key: string]: string | FormErrors | undefined; // Use string or undefined for error messages
+    [key: string]: string | undefined;
+}
+
+interface Option {
+    value: string;
+    label: string;
 }
 
 interface UploadedFile {
@@ -344,7 +351,9 @@ function OwnerRenoRegistrationForm() {
         return formatted;
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
         const { name, value } = e.target;
 
         // Special handling for IC input
@@ -363,7 +372,7 @@ function OwnerRenoRegistrationForm() {
             return;
         }
 
-        // Rest of your existing handleChange logic
+        // Handle questions
         if (name.startsWith('questions.')) {
             const property = name.split('.')[1];
             setFormData((prevData) => ({
@@ -374,50 +383,83 @@ function OwnerRenoRegistrationForm() {
                 },
             }));
         } else if (name.startsWith('furnishing.')) {
-            const [a, cat, rooms, q] = name.split('.');
-            console.log(cat);
+            const parts = name.split('.');
+            if (parts.length === 4) {
+                const [, cat, room, q] = parts as [string, FurnishingCategory, string, string];
+                if (cat === 'bedrooms' || cat === 'bathrooms') {
+                    setFormData((prevData) => {
+                        // Define specific types for bedrooms and bathrooms
+                        type Bedroom = {
+                            bedframe?: string;
+                            wardrobe?: string;
+                            study_table?: string;
+                            writing_chair?: string;
+                            curtain?: string;
+                            lights?: string;
+                            fan?: string;
+                            ac?: string;
+                            other?: string;
+                            remark?: string;
+                        };
 
-            if (cat === 'bedrooms' || cat === 'bathrooms') {
-                setFormData((prevData) => ({
-                    ...prevData,
-                    furnishing: {
-                        ...prevData.furnishing,
-                        [cat]: {
-                            ...prevData.furnishing?.[cat],
-                            [rooms]: {
-                                ...prevData.furnishing?.[cat]?.[rooms],
-                                [q]: value
-                            },
-                        }
-                    }
-                }))
-            } else {
-                const [furnish, category, property] = name.split('.');
-                console.log(furnish);
+                        type Bathroom = {
+                            water_heater?: string;
+                            bidet?: string;
+                            mirror?: string;
+                            shower_screen?: string;
+                            lights?: string;
+                            other?: string;
+                            remark?: string;
+                        };
+
+                        // Use the appropriate type for the category
+                        const currentCategory =
+                            cat === 'bedrooms'
+                                ? ((prevData.furnishing?.[cat] || {}) as Record<string, Bedroom>)
+                                : ((prevData.furnishing?.[cat] || {}) as Record<string, Bathroom>);
+
+                        return {
+                            ...prevData,
+                            furnishing: {
+                                ...prevData.furnishing,
+                                [cat]: {
+                                    ...currentCategory,
+                                    [room]: {
+                                        ...(currentCategory[room] || {}),
+                                        [q]: value,
+                                    },
+                                },
+                            } as OwnerRegistrationForm['furnishing'],
+                        };
+                    });
+                }
+            } else if (parts.length === 3) {
+                const [, category, property] = parts as [string, FurnishingCategory, string];
                 setFormData((prevData) => ({
                     ...prevData,
                     furnishing: {
                         ...prevData.furnishing,
                         [category]: {
-                            ...prevData.furnishing[category],
+                            ...(prevData.furnishing?.[category] || {}),
                             [property]: value,
                         },
-                    },
+                    } as OwnerRegistrationForm['furnishing'],
                 }));
             }
         } else {
-
             setFormData((prevData) => ({
                 ...prevData,
                 [name]: value,
             }));
         }
 
+        // Clear errors for the field
         setErrors((prevErrors) => ({
             ...prevErrors,
             [name]: '',
         }));
 
+        // Handle property_name logic
         if (name === 'property_name' && value !== 'other') {
             setFormData((prevData) => ({
                 ...prevData,
@@ -627,6 +669,7 @@ function OwnerRenoRegistrationForm() {
         }
 
         // Dynamic bedroom validations
+        // Dynamic bedroom validations
         if (formData.questions.quest_1) {
             const bedroomCount = Number(formData.questions.quest_1);
 
@@ -635,7 +678,7 @@ function OwnerRenoRegistrationForm() {
                 const currentBedroom = formData.furnishing?.bedrooms?.[bedroomKey];
 
                 if (currentBedroom) {
-                    const bedroomErrors: FormErrors = {};
+                    const bedroomErrors: { [key: string]: string } = {};
 
                     if (!currentBedroom.bedframe) bedroomErrors[bedroomKey] = 'Please fill in all';
                     if (!currentBedroom.wardrobe) bedroomErrors[bedroomKey] = 'Please fill in all';
@@ -648,7 +691,7 @@ function OwnerRenoRegistrationForm() {
                     if (!currentBedroom.other) bedroomErrors[bedroomKey] = 'Please fill in all';
 
                     if (Object.keys(bedroomErrors).length > 0) {
-                        newErrors[bedroomKey] = bedroomErrors[bedroomKey];
+                        newErrors[bedroomKey] = bedroomErrors[bedroomKey]; // string
                     }
                 }
             }
@@ -660,31 +703,33 @@ function OwnerRenoRegistrationForm() {
 
             for (let i = 1; i <= bathroomCount; i++) {
                 const bathroomKey = `bathroom${i}`;
-                const currentBedroom = formData.furnishing?.bathrooms?.[bathroomKey];
+                const currentBathroom = formData.furnishing?.bathrooms?.[bathroomKey];
 
-                if (currentBedroom) {
-                    const bathroomErrors: FormErrors = {};
+                if (currentBathroom) {
+                    const bathroomErrors: { [key: string]: string } = {};
 
-                    if (!currentBedroom.water_heater) bathroomErrors[bathroomKey] = 'Please fill in all';
-                    if (!currentBedroom.bidet) bathroomErrors[bathroomKey] = 'Please fill in all';
-                    if (!currentBedroom.mirror) bathroomErrors[bathroomKey] = 'Please fill in all';
-                    if (!currentBedroom.shower_screen) bathroomErrors[bathroomKey] = 'Please fill in all';
-                    if (!currentBedroom.lights) bathroomErrors[bathroomKey] = 'Please fill in all';
-                    if (!currentBedroom.other) bathroomErrors[bathroomKey] = 'Please fill in all';
+                    if (!currentBathroom.water_heater) bathroomErrors[bathroomKey] = 'Please fill in all';
+                    if (!currentBathroom.bidet) bathroomErrors[bathroomKey] = 'Please fill in all';
+                    if (!currentBathroom.mirror) bathroomErrors[bathroomKey] = 'Please fill in all';
+                    if (!currentBathroom.shower_screen) bathroomErrors[bathroomKey] = 'Please fill in all';
+                    if (!currentBathroom.lights) bathroomErrors[bathroomKey] = 'Please fill in all';
+                    if (!currentBathroom.other) bathroomErrors[bathroomKey] = 'Please fill in all';
 
                     if (Object.keys(bathroomErrors).length > 0) {
-                        newErrors[bathroomKey] = bathroomErrors[bathroomKey];
+                        newErrors[bathroomKey] = bathroomErrors[bathroomKey]; // string
                     }
                 }
             }
         }
 
-        notify('error', 'Please check your form error.');
+        if (Object.keys(newErrors).length > 0) {
+            notify('error', 'Please check your form error.');
+        }
 
         return newErrors;
     };
 
-    const handleOtherPropertyChange = (e) => {
+    const handleOtherPropertyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData((prevData) => ({ ...prevData, other_property_name: e.target.value }));
     };
 
@@ -786,15 +831,18 @@ function OwnerRenoRegistrationForm() {
         setErrors({});
         handleDeleteAll();
 
-        // Reset all select elements to their initial values
         const selectElements = document.querySelectorAll('select');
         selectElements.forEach((select: HTMLSelectElement) => {
-            select.value = initialFormData[select.name as keyof OwnerRegistrationForm] || '';
+            const name = select.name as keyof OwnerRegistrationForm;
+            const value = initialFormData[name];
+            if (typeof value === 'string') {
+                select.value = value || '';
+            }
         });
 
         const fileInput = document.querySelector('input[name="attachments"]') as HTMLInputElement;
         if (fileInput) {
-            fileInput.value = ''; // Clear the file input
+            fileInput.value = '';
         }
 
         if (owner) {
@@ -855,21 +903,14 @@ function OwnerRenoRegistrationForm() {
 
             if (res.data.status === 'verified') {
                 notify('success', 'OTP has been verified successfully.');
-                // Append other form data from your state (formData)
-                for (const key in formData) {
-                    if (formData.hasOwnProperty(key)) {
-                        const value = formData[key];
 
-                        // Check if the value is an object
-                        if (typeof value === 'object' && value !== null) {
-                            // Convert the object to a JSON string
-                            formDataToSend.append(key, JSON.stringify(value));
-                        } else {
-                            // Append the value as is
-                            formDataToSend.append(key, value);
-                        }
+                // Iterate over formData keys with proper typing
+                (Object.keys(formData) as Array<keyof OwnerRegistrationForm>).forEach((key) => {
+                    const value = formData[key];
+                    if (value !== undefined && value !== null) {
+                        formDataToSend.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
                     }
-                }
+                });
 
                 // Append files to the FormData
                 files.forEach((file) => {
@@ -884,7 +925,6 @@ function OwnerRenoRegistrationForm() {
                     } else {
                         console.log('error');
                     }
-
                 } catch (error) {
                     console.log(error);
                 }
@@ -896,18 +936,17 @@ function OwnerRenoRegistrationForm() {
         }
     };
 
-    const getLabel = (value, options) => {
-        return options.find(option => option.value === value)?.label || 'Unknown';
+    const getLabel = (value: string | number, options: Option[]) => {
+        return options.find(option => option.value === String(value))?.label || 'Unknown';
     };
 
-    const getPropertyLabel = (id) => {
-
-        if (formData.property_name === 'other') {
+    const getPropertyLabel = (propertyName: string) => {
+        if (propertyName === 'other') {
             return "(Other) " + formData.other_property_name;
         }
 
-        return properties.find(property => Number(property.id) === Number(id))?.name || 'Unknown';
-    }
+        return properties?.find(property => property.id === propertyName)?.name || 'Unknown';
+    };
 
     if (loading) return <Loading />;
 
@@ -3341,7 +3380,6 @@ function OwnerRenoRegistrationForm() {
                                                                             onChange={handleChange}
                                                                         />
                                                                     </div>
-
                                                                     {errors[bathroomKey] && <span className="text-red-500 text-sm mt-2">{errors[bathroomKey]}</span>}
                                                                 </div>
                                                             </div>

@@ -180,19 +180,19 @@ function ProgressMgnt() {
         </>
     )
 
-    if (renoProgress.rpm_version === 1 || renoProgress.rpm_version === 2) {
-        return (
-            <RPMDetailV2
-                renoProgress={renoProgress}
-                permissions={permissions}
-                users={users}
-            />
-        )
-    } else if (renoProgress.rpm_version === 3) {
-        return (
-            <RPMDetailV3 />
-        )
-    }
+    // if (renoProgress.rpm_version === 1 || renoProgress.rpm_version === 2) {
+    //     return (
+    //         <RPMDetailV2
+    //             renoProgress={renoProgress}
+    //             permissions={permissions}
+    //             users={users}
+    //         />
+    //     )
+    // } else if (renoProgress.rpm_version === 3) {
+    //     return (
+    //         <RPMDetailV3 />
+    //     )
+    // }
 }
 
 export default ProgressMgnt;

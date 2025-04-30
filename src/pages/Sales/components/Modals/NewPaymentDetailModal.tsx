@@ -12,7 +12,28 @@ interface NewPaymentDetailModalProps {
     refetchSale: () => void;
 }
 
-const initFormData = {
+interface FormData {
+    transaction_no: string;
+    payment_method: string;
+    payment_channel: string;
+    amount: number;
+    payment_date: string;
+    receiving_account: string;
+    remark: string;
+    bank: string;
+}
+
+interface Attachment {
+    name: string;
+    size: number;
+    // Add other required properties
+}
+
+interface Payment extends FormData {
+    attachments: Attachment[];
+}
+
+const initFormData: FormData = {
     transaction_no: '',
     payment_method: '',
     payment_channel: '',
@@ -21,7 +42,7 @@ const initFormData = {
     receiving_account: '',
     remark: '',
     bank: '',
-}
+};
 
 const paymentOptions = {
     online: [
@@ -56,7 +77,6 @@ const bankOptions = [
     { value: "HSBC Amanah Malaysia Berhad", label: "HSBC Amanah Malaysia Berhad" },
     { value: "HSBC Bank Malaysia Berhad", label: "HSBC Bank Malaysia Berhad" },
     { value: "Kuwait Finance House", label: "Kuwait Finance House" },
-    { value: "Kuwait Finance House", label: "Kuwait Finance House" },
     { value: "Malayan Banking (Maybank) Berhad", label: "Malayan Banking (Maybank) Berhad" },
     { value: "OCBC Bank (Malaysia) Berhad", label: "OCBC Bank (Malaysia) Berhad" },
     { value: "Public Bank Berhad", label: "Public Bank Berhad" },
@@ -76,10 +96,10 @@ const receivingAccOptions = [
 const maxFiles = 10;
 
 function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPaymentDetailModalProps) {
-    const [formData, setFormData] = useState(initFormData);
+    const [formData, setFormData] = useState<FormData>(initFormData);
     const [pendingUploadItems, setPendingUploadItems] = useState<File[]>([]);
     const [dragging, setDragging] = useState(false);
-    const [documentItems, setDocumentItems] = useState<[]>([]);
+    const [documentItems, setDocumentItems] = useState<File[]>([]);
     const [isInvalidDetail, setIsInvalidDetail] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -115,7 +135,7 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
 
         setFormData((prevData) => ({
             ...prevData,
-            [name]: value
+            [name]: value,
         }));
     };
 
@@ -124,20 +144,19 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
     }, [formData]);
 
     const checkFormValidation = () => {
-        const requiredFields = [
+        const requiredFields: (keyof FormData)[] = [
             'transaction_no',
             'payment_channel',
             'payment_method',
             'amount',
             'payment_date',
             'receiving_account',
-            'bank'
+            'bank',
         ];
 
-        const hasEmptyFields = requiredFields.some(field => {
+        const hasEmptyFields = requiredFields.some((field) => {
             const value = formData[field];
 
-            // Handle different types of values
             if (value === null || value === undefined) {
                 return true;
             }
@@ -147,7 +166,7 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
             }
 
             if (typeof value === 'number') {
-                return value <= 0; // Assuming 0 is not a valid amount
+                return value <= 0;
             }
 
             return false;
@@ -168,7 +187,7 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
         setPendingUploadItems(newPendingUploadItems);
     };
 
-    const handleDragOver = (event) => {
+    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         setDragging(true);
     };
@@ -177,19 +196,19 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
         setDragging(false);
     };
 
-    const handleDrop = (event) => {
+    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
-        const droppedFiles = Array.from(event.dataTransfer.files);
+        const droppedFiles: File[] = Array.from(event.dataTransfer.files);
 
         if (pendingUploadItems.length + droppedFiles.length + documentItems.length <= maxFiles) {
-            setPendingUploadItems((prevItems) => [...prevItems, ...droppedFiles]);
+            setPendingUploadItems((prevItems: File[]) => [...prevItems, ...droppedFiles]);
         } else {
             notify('error', `You can only upload up to ${maxFiles} files.`);
         }
         setDragging(false);
     };
 
-    const removeFile = (index) => {
+    const removeFile = (index: number) => {
         setPendingUploadItems((prevItems) => prevItems.filter((_, i) => i !== index));
     };
 
@@ -211,29 +230,25 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
             return;
         }
 
-        const updatedFormData = {
+        const attachments: Attachment[] = pendingUploadItems.map((file) => ({
+            name: file.name,
+            size: file.size,
+            // Map other required properties
+        }));
+
+        const updatedFormData: Payment = {
             ...formData,
-            attachments: pendingUploadItems,
-        }
+            attachments,
+        };
 
         try {
             const response = await saveInvoiceDetail(invoiceId, updatedFormData);
             if (response?.success) {
-
-                // Close modal
                 const modalEl = document.querySelector('#new_payment_detail_modal') as HTMLElement;
                 const modal = KTModal.getInstance(modalEl);
                 modal.hide();
 
-                // // Display back invoiceDetail modal
-                // const invoiceModalEl = document.querySelector('#payment_invoice_modal') as HTMLElement;
-                // const invoiceModal = KTModal.getInstance(invoiceModalEl);
-                // invoiceModal.show();
-
-                // Refetch the invoice
                 refetchInvoice();
-
-                // Refetch sale
                 refetchSale();
 
                 notify('success', 'Successfully created payment detail.');
@@ -242,7 +257,7 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
             notify('error', 'Failed to create payment detail.');
         }
         setIsLoading(false);
-    }
+    };
 
     return (
         <>
@@ -277,7 +292,6 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                             <label className='mb-2 text-sm font-medium text-gray-900'>
                                 Payment Channel
                             </label>
-
                             <span className="text-xs text-gray-600 tracking-wide mb-4">
                                 Select a payment channel for this invoice.
                             </span>
@@ -307,18 +321,16 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                             </div>
                         </div>
 
-                        {formData.payment_channel != '' && (
+                        {formData.payment_channel !== '' && (
                             <>
                                 {/* Payment Method */}
                                 <div className="flex flex-col mb-8">
                                     <label className='mb-2 text-sm font-medium text-gray-900'>
                                         Payment Method
                                     </label>
-
                                     <span className="text-xs text-gray-600 tracking-wide mb-2">
                                         Select a payment method for this invoice.
                                     </span>
-
                                     <Dropdown
                                         options={formData.payment_channel === "online" ? paymentOptions.online : paymentOptions.offline}
                                         name="payment_method"
@@ -343,7 +355,6 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                                     <label className='mb-2 text-sm font-medium text-gray-900'>
                                         Payment Date
                                     </label>
-
                                     <span className="text-xs text-gray-600 tracking-wide mb-4">
                                         Select a date of when the payment was made.
                                     </span>
@@ -361,11 +372,9 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                                     <label className='mb-2 text-sm font-medium text-gray-900'>
                                         Bank
                                     </label>
-
                                     <span className="text-xs text-gray-600 tracking-wide mb-2">
                                         Select a bank for this invoice.
                                     </span>
-
                                     <Dropdown
                                         options={bankOptions}
                                         name="bank"
@@ -379,11 +388,9 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                                     <label className='mb-2 text-sm font-medium text-gray-900'>
                                         Receiving Account
                                     </label>
-
                                     <span className="text-xs text-gray-600 tracking-wide mb-2">
                                         The receiving account for this invoice.
                                     </span>
-
                                     <Dropdown
                                         options={receivingAccOptions}
                                         name="receiving_account"
@@ -407,8 +414,7 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                                         rows={5}
                                         onChange={handleChange}
                                         value={formData.remark || ''}
-                                    >
-                                    </textarea>
+                                    />
                                 </div>
 
                                 {/* Attachments */}
@@ -416,17 +422,15 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                                     <label className='mb-2 text-sm font-medium text-gray-900'>
                                         Attachments
                                     </label>
-
                                     <span className="text-xs text-gray-600 tracking-wide mb-4">
                                         Upload files to attach to this invoice.
                                     </span>
-
                                     <label
                                         className={`flex bg-center w-full p-1 lg:p-2 bg-no-repeat bg-[length:550px] border border-gray-300 rounded-xl border-dashed branding-bg mb-4 
-                                    ${dragging ? 'border-primary border-1 bg-gray-100' : ''}`}
-                                        onDragOver={handleDragOver}
+                                            ${dragging ? 'border-primary border-1 bg-gray-100' : ''}`}
+                                        onDragOver={() => handleDragOver}
                                         onDragLeave={handleDragLeave}
-                                        onDrop={handleDrop}
+                                        onDrop={() => handleDrop}
                                         htmlFor="file-upload"
                                     >
                                         <div className="flex flex-col place-items-center place-content-center text-center rounded-xl w-full cursor-pointer">
@@ -448,7 +452,6 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                                                     </div>
                                                 </div>
                                             </div>
-
                                             <input
                                                 type="file"
                                                 id="file-upload"
@@ -461,7 +464,6 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                                             >
                                                 Click or Drag & Drop
                                             </span>
-
                                             <span className="text-2xs text-gray-700 text-nowrap">
                                                 max size: 50MB | max files: {maxFiles}
                                             </span>
@@ -506,7 +508,6 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                                                             </span>
                                                         </div>
                                                     </div>
-
                                                     <button
                                                         className="absolute top-2 right-2 text-md text-red-600 hover:text-red-800"
                                                         onClick={() => removeFile(index)}
@@ -541,7 +542,7 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
                 </div>
             </div>
         </>
-    )
+    );
 }
 
 export default NewPaymentDetailModal;

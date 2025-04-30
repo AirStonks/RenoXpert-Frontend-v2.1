@@ -2,14 +2,20 @@ import { useEffect, useState } from "react";
 import { Slide, toast } from "react-toastify";
 import { changePassword } from "../../services/api";
 
+interface ValidationErrors {
+    old_pass?: string[];
+    new_pass?: string[];
+    confirm_pass?: string[];
+}
+
 function ChangePassword() {
     const [formData, setFormData] = useState({
         old_pass: '',
         new_pass: '',
         confirm_pass: ''
     });
-    
-    const [validationErrors, setValidationErrors] = useState({});
+
+    const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
     const [isLoading, setIsLoading] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
