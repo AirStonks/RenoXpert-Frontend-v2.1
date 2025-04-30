@@ -128,7 +128,7 @@ function EditPackage() {
 
             const response = await updatePackage(packageData);
             if (response?.success) {
-                notify('success', "Package Created Successfully!");
+                notify('success', "Package Updated Successfully!");
                 navigate('/packages');
             }
         } catch (error) {
