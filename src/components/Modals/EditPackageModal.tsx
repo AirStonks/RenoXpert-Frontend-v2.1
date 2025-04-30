@@ -48,8 +48,6 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
     const handleSubmit = async () => {
         const storedProducts = localStorage.getItem('include_prod_selected_products');
 
-        let addProducts: Product[] = [];
-
         try {
             let newProducts: Product[] = [];
             if (storedProducts) {
@@ -138,14 +136,10 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
         }
     }, [packageDetail, setTotalPrice]);
 
-    const updateSelectedProducts = (products) => {
+    const updateSelectedProducts = (products: Product[]) => {
         setSelectedProducts(products);
-        localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
     };
 
-    const updateLocalStorage = (products) => {
-        localStorage.setItem('include_prod_selected_products', JSON.stringify(products));
-    };
 
     const updateTotalPrice = (price: number, operator: string) => {
 
@@ -177,7 +171,6 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
                 }
                 return product;
             });
-            updateLocalStorage(updatedProducts); // Update localStorage
             return updatedProducts;
         });
     };
@@ -190,7 +183,6 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
                 // Update total price based on the removed product
                 updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
             }
-            updateLocalStorage(updatedProducts); // Update localStorage
             return updatedProducts;
         });
     };
@@ -201,10 +193,9 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
 
         // Set the localStorage for exists package
         packageDetail.products.map((product) => {
-            selectedProducts.push({ id: product.id, name: product.name, quantity: product.pivot.quantity, price: product.product_retail_price, description: product.description });
+            selectedProducts.push(product);
         });
 
-        localStorage.setItem('include_prod_selected_products', JSON.stringify(selectedProducts));
     }
 
 

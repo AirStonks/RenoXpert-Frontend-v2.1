@@ -221,17 +221,17 @@ function CreateProduct() {
         const installCogs = Number(formData?.provisioning.install.cogs);
         const installExcluded = Number(formData?.provisioning.install.excluded_price);
 
-        if ((supplyRetail <= 0 || isNaN(supplyRetail)) && formData?.type !== 'roundup')
+        if ((supplyRetail < 0 || isNaN(supplyRetail)) && formData?.type !== 'roundup')
             newErrors.supply_retail_price = "Retail Price required";
-        if ((supplyCogs <= 0 || isNaN(supplyCogs)) && formData?.type !== 'roundup')
+        if ((supplyCogs < 0 || isNaN(supplyCogs)) && formData?.type !== 'roundup')
             newErrors.supply_cogs = "Cost of Good Sold required";
-        if ((supplyExcluded <= 0 || isNaN(supplyExcluded)) && formData?.type !== 'roundup')
+        if ((supplyExcluded < 0 || isNaN(supplyExcluded)) && formData?.type !== 'roundup')
             newErrors.supply_excluded_price = "Excluded Price required";
-        if ((installRetail <= 0 || isNaN(installRetail)) && formData?.type !== 'roundup')
+        if ((installRetail < 0 || isNaN(installRetail)) && formData?.type !== 'roundup')
             newErrors.install_retail_price = "Retail Price required";
-        if ((installCogs <= 0 || isNaN(installCogs)) && formData?.type !== 'roundup')
+        if ((installCogs < 0 || isNaN(installCogs)) && formData?.type !== 'roundup')
             newErrors.install_cogs = "Cost of Good Sold required";
-        if ((installExcluded <= 0 || isNaN(installExcluded)) && formData?.type !== 'roundup')
+        if ((installExcluded < 0 || isNaN(installExcluded)) && formData?.type !== 'roundup')
             newErrors.install_excluded_price = "Excluded Price required";
 
         return newErrors;

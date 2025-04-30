@@ -183,7 +183,7 @@ function EditRegistrationForm() {
     const { id } = useParams<{ id: string }>();
     const formId = id ? parseInt(id, 10) : null;
 
-    const { formDetail, loading: fetchLoading, error } = useFetchRegistrationForm(formId, 'true');
+    const { formDetail, loading: fetchLoading, error } = useFetchRegistrationForm(formId, true);
     const [formData, setFormData] = useState<OwnerRegistrationForm | null>(null);
     const [properties, setProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState<boolean>(true); // Local loading state

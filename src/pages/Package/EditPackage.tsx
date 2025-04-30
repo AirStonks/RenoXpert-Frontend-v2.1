@@ -12,15 +12,6 @@ import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableProductRow } from './components/SortableProductRow';
 
-// Define a local Product interface that extends the base Product
-interface LocalProduct extends Product {
-    quantity: number;
-    visibility: boolean;
-    price: number;
-    product_retail_price?: string | number;
-    note?: string;
-}
-
 function EditPackage() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -39,7 +30,7 @@ function EditPackage() {
     });
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-    const [selectedProducts, setSelectedProducts] = useState<LocalProduct[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
     const [totalPrice, setTotalPrice] = useState<number>(0);
 
     const handleBackClick = () => {
@@ -70,23 +61,12 @@ function EditPackage() {
                 category: packageDetail.category,
                 is_addon: packageDetail.is_addon,
                 packagePrice: 0,
-                products: [],
+                products: packageDetail.products,
             });
 
-            const transformedProducts: LocalProduct[] = packageDetail.products.map(({ id, name, SKU, pivot, provisioning, description }) => ({
-                id,
-                name,
-                SKU,
-                quantity: pivot.quantity,
-                visibility: pivot.visibility,
-                price: provisioning.install.retail_price + provisioning.supply.retail_price,
-                product_retail_price: provisioning.install.retail_price + provisioning.supply.retail_price,
-                description,
-            }));
-
-            setSelectedProducts(transformedProducts);
-            const initialTotalPrice = transformedProducts.reduce(
-                (acc, product) => acc + (product.price * product.quantity),
+            setSelectedProducts(packageDetail.products);
+            const initialTotalPrice = packageDetail.products.reduce(
+                (acc, product) => acc + ((product.provisioning.supply.retail_price + product.provisioning.install.retail_price) * product.pivot.quantity),
                 0
             );
             setTotalPrice(initialTotalPrice);
@@ -104,50 +84,56 @@ function EditPackage() {
     const handleVisibilityToggle = (id: number) => {
         setSelectedProducts((prevProducts) =>
             prevProducts.map((product) =>
-                product.id === id ? { ...product, visibility: !product.visibility } : product
+                product.id === id ? {
+                    ...product,
+                    pivot: {
+                        ...product.pivot,
+                        visibility: !product.pivot.visibility
+                    }
+                } : product
             )
         );
     };
 
-    const handleNoteChange = (id: string | number, value: string) => {
-        setSelectedProducts((prevProducts) =>
-            prevProducts.map((product) =>
-                product.id === id ? { ...product, note: value } : product
-            )
-        );
-    };
+    // const handleNoteChange = (id: string | number, value: string) => {
+    //     setSelectedProducts((prevProducts) =>
+    //         prevProducts.map((product) =>
+    //             product.id === id ? { ...product, note: value } : product
+    //         )
+    //     );
+    // };
 
     const handleSubmit = async () => {
         if (selectedProducts.length === 0) {
             notify('error', "Please select at least one product.");
             return;
         }
+        if (!formData.packageName) {
+            notify('error', "Please enter a package name.");
+            return;
+        }
+        if (!formData.category) {
+            notify('error', "Please select a category.");
+            return;
+        }
 
         try {
-            const newProducts = selectedProducts.map((item) => ({
-                id: item.id,
-                name: item.name,
-                quantity: item.quantity,
-                visibility: item.visibility,
-                product_retail_price: parseFloat(item.product_retail_price?.toString() || item.price.toString()),
-            }));
+            const newProducts = selectedProducts;
 
             const packageData: Package = {
-                id: packageDetail.id,
                 name: formData.packageName,
                 total_price: formData.packagePrice,
                 description: formData.description,
+                products: newProducts,
                 description_internal: formData.description_internal,
                 category: formData.category,
                 is_addon: formData.is_addon,
-                products: newProducts,
             };
 
-            const response = await updatePackage(packageData);
-
+            const response = await createPackage(packageData);
             if (response?.success) {
-                notify('success', "Package Updated Successfully!");
-                navigate('/packages/' + packageData.id);
+                notify('success', "Package Created Successfully!");
+                navigate('/packages');
             }
         } catch (error) {
             if (error.response?.status === 422) {
@@ -157,9 +143,10 @@ function EditPackage() {
                     return acc;
                 }, {} as Record<string, string>);
                 setValidationErrors(formattedErrors);
-                notify('error', "Product update unsuccessful. Check the errors below.");
+                notify('error', "Product creation unsuccessful. Check the errors below.");
             } else {
-                console.error('Product update failed:', error);
+                console.error('Product creation failed:', error);
+                notify('error', "An unexpected error occurred during package creation.");
             }
         }
     };
@@ -174,9 +161,9 @@ function EditPackage() {
         }
     };
 
-    const updateSelectedProducts = (products: LocalProduct[]) => {
+    const updateSelectedProducts = (products: Product[]) => {
         setSelectedProducts(products);
-        const newTotalPrice = products.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+        const newTotalPrice = products.reduce((acc, product) => acc + ((product.pivot.includeSupply ? product.provisioning.supply.retail_price : 0) + (product.pivot.includeInstall ? product.provisioning.install.retail_price : 0) * product.pivot.quantity), 0);
         setTotalPrice(newTotalPrice);
     };
 
@@ -190,12 +177,18 @@ function EditPackage() {
         setSelectedProducts((prevProducts) =>
             prevProducts.map((product) => {
                 if (product.id === id) {
-                    const newQty = action === 'increase' ? product.quantity + 1 : Math.max(1, product.quantity - 1);
+                    const newQty = action === 'increase' ? product.pivot.quantity + 1 : Math.max(1, product.pivot.quantity - 1);
                     const operator = action === 'increase' ? '+' : '-';
-                    if (product.quantity > 1 || action === 'increase') {
-                        updateTotalPrice(product.price, operator);
+                    if (product.pivot.quantity > 1 || action === 'increase') {
+                        updateTotalPrice((product.provisioning.install.retail_price + product.provisioning.supply.retail_price), operator);
                     }
-                    return { ...product, quantity: newQty };
+                    return {
+                        ...product,
+                        pivot: {
+                            ...product.pivot,
+                            quantity: newQty
+                        }
+                    };
                 }
                 return product;
             })
@@ -206,7 +199,7 @@ function EditPackage() {
         setSelectedProducts((prevProducts) => {
             const removedProduct = prevProducts.find((product) => product.id === id);
             if (removedProduct) {
-                updateTotalPrice(removedProduct.price * removedProduct.quantity, '-');
+                updateTotalPrice((removedProduct.provisioning.install.retail_price + removedProduct.provisioning.supply.retail_price) * removedProduct.pivot.quantity, '-');
             }
             return prevProducts.filter((product) => product.id !== id);
         });
@@ -243,7 +236,7 @@ function EditPackage() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="left-column flex flex-col flex-[3] gap-4">
+                <div className="left-column flex flex-col flex-[1] gap-4">
                     <div className="card">
                         <div className="card-body">
                             <div className="flex flex-col">
@@ -333,7 +326,7 @@ function EditPackage() {
                     </div>
                 </div>
 
-                <div className="flex flex-col right-column flex-[7] gap-8">
+                <div className="flex flex-col right-column flex-[4] gap-8">
                     <div className="card">
                         <div className="card-body">
                             <h2 className="text-xl mb-4 font-semibold text-gray-900">Products</h2>
@@ -353,11 +346,16 @@ function EditPackage() {
                                                 <thead>
                                                     <tr>
                                                         <th className="w-[50px]"></th> {/* Drag handle column */}
-                                                        <th className="w-[250px]">Product</th>
-                                                        <th className="w-[100px] text-center">Quantity</th>
-                                                        <th className="w-[120px] text-center">Retail Price</th>
-                                                        <th className="w-[120px] text-center">Total Price</th>
-                                                        <th className="w-[60px] text-center">Visibility</th>
+                                                        <th className='w-[250px]'>Product</th>
+                                                        <th className='w-[150px] text-center'>Quantity</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Supply RRP</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Install RRP</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Total RRP</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Supply COGS</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Install COGS</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Total COGS</th>
+                                                        <th className='w-[100px] whitespace-nowrap'>Margin Amount</th>
+                                                        <th className='w-[100px] text-center'>Visibility</th>
                                                         <th className="w-[60px] text-center">Action</th>
                                                     </tr>
                                                 </thead>

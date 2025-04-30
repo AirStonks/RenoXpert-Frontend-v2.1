@@ -2199,7 +2199,7 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
                                                             <div className="flex flex-col">
                                                                 <a
                                                                     className="flex items-center gap-2 text-sm text-gray-900 hover:text-green-600 transition-colors duration-200"
-                                                                    href={item.file_url || AWS_S3_URL + item.file_url}
+                                                                    href={AWS_S3_URL + item.file_url}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                 >

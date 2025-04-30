@@ -308,7 +308,7 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                                                                 data-intdesc={pkg.description_internal}
                                                                 data-cat={pkg.category}
                                                                 data-addon={pkg.is_addon}
-                                                                onClick={(e) => handleSelectPackage(e.target)}
+                                                                onClick={(e) => handleSelectPackage(e.target as HTMLButtonElement)}
                                                             >
                                                                 {buttonText}
                                                             </button>

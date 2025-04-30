@@ -28,7 +28,7 @@ const APP_URL =
 const getCurrentDate = () => {
     const date = new Date();
     const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    return date.toLocaleDateString('en-GB', options);
+    return date.toLocaleDateString('en-GB', options as Intl.DateTimeFormatOptions);
 };
 
 const formatDate = (dateStr: string) => {
@@ -264,11 +264,11 @@ function OrderDetail() {
         }));
     };
 
-    const handleAgreeTncChange = (event) => {
+    const handleAgreeTncChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setAgreeTnc(event.target.checked);
     };
 
-    const handleAgreeRenoAgreementChange = (event) => {
+    const handleAgreeRenoAgreementChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setAgreeRenoAgreement(event.target.checked);
     };
 
@@ -664,27 +664,6 @@ function OrderDetail() {
             </div>
         </div>
     );
-
-    function getProductDescription(product) {
-        const { description, pivot } = product;
-        const { includeSupply, includeInstall } = pivot;
-
-        if (!description) return "";
-
-        if (includeSupply && includeInstall) {
-            return `Supply and Installation of ${description}`;
-        }
-
-        if (includeSupply) {
-            return `Supply of ${description}`;
-        }
-
-        if (includeInstall) {
-            return `Installation of ${description}`;
-        }
-
-        return "";
-    }
 
     const discount = selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0;
     const nettAmount = totalExcludedAddonAmount - discount;
@@ -1546,10 +1525,14 @@ function OrderDetail() {
                                                                                                     : 0);
 
                                                                                             return product.pivot.includeSupply || product.pivot.includeInstall
-                                                                                                ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(
-                                                                                                    undefined,
-                                                                                                    { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-                                                                                                )}%`
+                                                                                                ? totalRRP !== 0
+                                                                                                    ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(
+                                                                                                        undefined,
+                                                                                                        { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                                                                                                    )}%`
+                                                                                                    : totalCOGS > 0
+                                                                                                        ? "-100.00%"  // If RRP is 0 and COGS > 0, indicate a full loss
+                                                                                                        : "0.00%"      // If both RRP and COGS are 0, margin is 0%
                                                                                                 : "";
                                                                                         })()
                                                                                         : ""}

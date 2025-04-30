@@ -41,6 +41,20 @@ export interface Role {
     updated_at?: string;
 }
 
+export interface Contact {
+    id?: number;
+    name?: string;
+    email?: string;
+    phone_no?: string;
+    alt_phone_no?: string;
+    race?: string;
+    gender?: string;
+    nationality?: string;
+    description?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface User {
     id?: string;
     name?: string;
@@ -85,16 +99,16 @@ export interface ResourceItem {
 
 export interface Product {
     id?: number;
-    name: string;
+    name?: string;
     SKU?: string;
     supplier_name?: string;
     pm_category_id?: number;
     pm_category?: string | number;
     pivot?: {
-        visibility: boolean;
-        quantity: number;
-        included: boolean;
-        isOriginal: boolean;
+        visibility?: boolean;
+        quantity?: number;
+        included?: boolean;
+        isOriginal?: boolean;
         internal_note?: string;
         includeSupply?: boolean;
         includeInstall?: boolean;
@@ -119,7 +133,6 @@ export interface Product {
         thumbnail?: Attachment;
         photos?: Attachment[];
     }
-    price?: number;
     color?: string;
     material?: string;
     width?: string;
@@ -1248,7 +1261,7 @@ export interface KeyManagement {
         value: Array<{
             name?: string,
             remark?: string,
-            attachment?: [],
+            attachment?: Attachment,
         }>
         remark?: string,
         quantity?: number  // Added quantity field

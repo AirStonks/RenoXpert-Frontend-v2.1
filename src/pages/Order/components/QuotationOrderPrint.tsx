@@ -4,11 +4,12 @@ import useFetchOrder from '../../../hook/useFetchOrder';
 import { styles } from '../styles/quotationPrintStyle';
 import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import { Order } from '../../../types';
 
 const getCurrentDate = () => {
     const date = new Date();
     const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    return date.toLocaleDateString('en-GB', options);
+    return date.toLocaleDateString('en-GB', options as Intl.DateTimeFormatOptions);
 };
 
 const formatDate = (dateStr: string) => {
@@ -43,7 +44,7 @@ const categoryOptions = [
     { value: "others", label: "Others" },
 ];
 
-const QuotationOrderPDF = ({ orderDetail }) => {
+const QuotationOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; quantity: number }[]>([]);
     const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
 
@@ -56,7 +57,7 @@ const QuotationOrderPDF = ({ orderDetail }) => {
             let category;
             if (quotationPackage.is_addon === true) {
                 addonCounter += 1;
-                category = `Add-on Option ${addonCounter} (${quotationPackage.name})`;
+                category = `Add-on Option ${addonCounter}(${quotationPackage.name})`;
             } else {
                 category = quotationPackage.category;
             }
@@ -84,11 +85,11 @@ const QuotationOrderPDF = ({ orderDetail }) => {
                     acc[category] = { total_price: 0, quantity: 0 };
                 }
                 acc[category].total_price += categoryTotal;
-                acc[category].quantity += quotationPackage.quantity;
+                acc[category].quantity += quotationPackage.quantity || 0; // Fix: Use quotationPackage instead of pkg
             }
 
             return acc;
-        }, {} as Record<string, { total_price: number, quantity: number }>);
+        }, {} as Record<string, { total_price: number; quantity: number }>);
 
         // Calculate filtered total_amount
         const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0);
@@ -107,7 +108,6 @@ const QuotationOrderPDF = ({ orderDetail }) => {
         ];
 
         setPackageCategories(sortedCategories);
-
     }, [orderDetail?.latest_quotation?.packages]);
 
     useEffect(() => {
@@ -158,18 +158,22 @@ const QuotationOrderPDF = ({ orderDetail }) => {
 
     // Calculate totals based on package unitPrice and qty
     const totalItems = orderDetail.latest_quotation.packages.reduce((sum, item) => sum + item.quantity, 0);
-    const categoryTotals = orderDetail.latest_quotation.packages.reduce((acc, pkg) => {
-        const category = pkg.category;
-        const categoryTotal = pkg.total_price * (pkg.quantity || 1);
+    const categoryTotals = orderDetail.latest_quotation.packages.reduce(
+        (acc: Record<string, { total_price: number; quantity: number }>, pkg) => {
+            const category = pkg.category ?? 'Others'; // Fallback to 'Others' if category is undefined
+            const categoryTotal = (pkg.total_price ?? 0) * (pkg.quantity ?? 1);
 
-        if (!acc[category]) {
-            acc[category] = { total_price: 0, quantity: 0 };
-        }
-        acc[category].total_price += categoryTotal;
-        acc[category].quantity += pkg.quantity;
+            if (!acc[category]) {
+                acc[category] = { total_price: 0, quantity: 0 };
+            }
+            acc[category].total_price += categoryTotal;
+            acc[category].quantity += pkg.quantity ?? 0;
 
-        return acc;
-    }, {});
+            return acc;
+        },
+        {}
+    );
+
 
     const totalPriceBeforeDiscount = Object.values(categoryTotals).reduce((sum, cat) => sum + cat.total_price, 0);
     const totalPrice = orderDetail.latest_quotation?.bonus ? (totalPriceBeforeDiscount - Number(orderDetail.latest_quotation?.bonus?.value)) : totalPriceBeforeDiscount;
@@ -283,7 +287,7 @@ const QuotationOrderPDF = ({ orderDetail }) => {
                                             </View>
                                         </View>
                                         {pkg.products.map((product) => (
-                                            (product.pivot.visibility == true && product.pivot.includeInstall == true || product.pivot.includeSupply == true) && (
+                                            (product.pivot.visibility == true && (product.pivot.includeInstall == true || product.pivot.includeSupply == true)) && (
                                                 <View style={styles.itemRow} key={product.id}>
                                                     <View style={{ flex: 2 }}>
                                                         <Text style={styles.itemTd}>
@@ -359,7 +363,7 @@ const QuotationOrderPDF = ({ orderDetail }) => {
             </View>
             <Text
                 style={styles.pageNumber}
-                render={({ pageNumber, totalPages }) => `${pageNumber}`}
+                render={({ pageNumber }) => `${pageNumber}`}
                 fixed
             />
         </Page >

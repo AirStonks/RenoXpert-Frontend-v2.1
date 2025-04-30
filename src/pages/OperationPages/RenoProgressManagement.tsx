@@ -19,6 +19,15 @@ const AWS_S3_URL =
 const headerData = { title: 'Reno Progress', backUrl: '/op/home' }
 const maxFiles = 10; // Maximum number of files allowed
 
+const statusWeights: { [key: string]: number } = {
+    not_started: 0,
+    started: 0.25,
+    in_progress: 0.75,
+    completed: 1,
+    not_available: 1,
+    submitted: 1,
+};
+
 interface AttachmentTaskLabel {
     phase: string;
     job: string;
@@ -123,7 +132,7 @@ function RenoProgressManagement() {
     };
 
     // Handle drag over event
-    const handleDragOver = (event) => {
+    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         setDragging(true); // Set dragging state to true when dragging over
     };
@@ -134,7 +143,7 @@ function RenoProgressManagement() {
     };
 
     // Handle drop event
-    const handleDrop = (event) => {
+    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         const droppedFiles = event.dataTransfer.files;
         if (pendingUploadItems.length + droppedFiles.length + documentItems.length <= maxFiles) {
@@ -201,8 +210,8 @@ function RenoProgressManagement() {
             const compressedFile = await imageCompression(event.target.files[0], options);
 
             const compressedImage = new File(
-                [compressedFile], 
-                event.target.files[0].name, 
+                [compressedFile],
+                event.target.files[0].name,
                 { type: event.target.files[0].type }
             );
 
@@ -366,27 +375,13 @@ function RenoProgressManagement() {
     }
 
     const calculateJobProgress = (job: PhaseJob) => {
-        // Define the status weightages
-        const statusWeights = {
-            not_started: 0,
-            started: 0.25,
-            in_progress: 0.75,
-            completed: 1,
-            not_available: 1,
-            submitted: 1,
-        };
-
-        // Calculate the weighted sum of task statuses using task_weightage
         const weightedSum = job.tasks.reduce((sum, task) => {
-            const statusWeight = statusWeights[task.status] || 0;
-            const taskWeight = task.task_weightage || 1; // Use task_weightage or default to 1 if not provided
-            return sum + (taskWeight * statusWeight);
+            const statusWeight = statusWeights[task.status] ?? 0; // Use nullish coalescing for safety
+            const taskWeight = task.task_weightage ?? 1;
+            return sum + taskWeight * statusWeight;
         }, 0);
 
-        // Calculate total task weight (sum of all task weights)
-        const totalWeight = job.tasks.reduce((sum, task) => sum + (task.task_weightage || 1), 0); // Default to 1 if task_weightage is not present
-
-        // Return the progress percentage (multiply by 100 to get percentage)
+        const totalWeight = job.tasks.reduce((sum, task) => sum + (task.task_weightage ?? 1), 0);
         return totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0;
     };
 
@@ -443,7 +438,7 @@ function RenoProgressManagement() {
                     </div>
                     <div className="flex gap-3">
                         <Link
-                            to={`/reno/defect-inspection-form?progressId=${renoProgressId}`}
+                            to={`/reno/defect-inspection-form/${renoProgress?.defect_inspection_form?.id}`}
                             className="btn btn-info btn-sm"
                         >
                             DI Form
@@ -464,7 +459,11 @@ function RenoProgressManagement() {
                     {renoProgress &&
                         renoProgress.phases.map((phase, phaseIndex) => {
                             let currentPhase = '';
-                            let currentPhaseCompletion = '';
+                            let currentPhaseCompletion: keyof Pick<
+                                RenoProgress,
+                                'pre_reno_completion' | 'p1_completion' | 'p2a_completion' | 'p2b_completion' | 'iot_completion' | 'post_reno_completion'
+                            >;
+                            
                             if (phaseIndex === 0) {
                                 currentPhase = 'pre_reno';
                                 currentPhaseCompletion = 'pre_reno_completion';
@@ -727,9 +726,9 @@ function RenoProgressManagement() {
                         <label
                             className={`flex bg-center w-full p-1 lg:p-2 bg-no-repeat bg-[length:550px] border border-gray-300 rounded-xl border-dashed branding-bg mb-4 
                                 ${dragging ? 'border-primary border-1 bg-gray-100' : ''}`} // Add custom styles when dragging
-                            onDragOver={handleDragOver}
+                            onDragOver={() => handleDragOver}
                             onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
+                            onDrop={() => handleDrop}
                             htmlFor="file-upload"
                         >
                             <div className="flex flex-col place-items-center place-content-center text-center rounded w-full">

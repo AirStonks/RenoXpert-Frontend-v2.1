@@ -1,4 +1,4 @@
-// src\components\Modals\OrderDetailModal.tsx
+// src\components\Modals\SaleInvoicesModal.tsx
 
 import { useEffect } from "react";
 import Loading from "../Loading";

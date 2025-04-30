@@ -33,7 +33,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
         initPackageTable(1, 10, '', null, '');
 
     }, []);
-    
+
     const initPackageTable = async (
         page: number,
         size: number,
@@ -146,16 +146,11 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
 
         if (selectBtn) {
             const id = selectBtn.dataset.id;
-            const packageName = selectBtn.dataset.name;
-            const packagePrice = parseFloat(selectBtn.dataset.price);
-            const packageDescription = selectBtn.dataset.desc;
-            const packageInternalDescription = selectBtn.dataset.int_desc;
-            const packageCategory = selectBtn.dataset.cat;
 
             // Retrieve the current selected prodPackages from localStorage
             const storedPackages = localStorage.getItem('include_packages');
-            const selectedPackages = storedPackages ? JSON.parse(storedPackages) : [];
-            const packagesData = localStorage.getItem('packages_data');
+            const selectedPackages: Package[] = storedPackages ? JSON.parse(storedPackages) : [];
+            const packagesData: Package[] = JSON.parse(localStorage.getItem('packages_data'));
 
             /// Check if the prodPackage ID is already selected
             const packageIndex = selectedPackages.findIndex(prodPackage => prodPackage.id === Number(id));
@@ -169,17 +164,11 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                 selectBtn.innerText = 'Select';
             } else {
                 // If it is not selected, add it
-                const selectedPackage = JSON.parse(packagesData).find(prodPackage => prodPackage.id === Number(id));
+                const selectedPackage = packagesData.find(prodPackage => prodPackage.id === Number(id));
 
                 selectedPackages.push({
-                    id: Number(id),
-                    name: packageName,
-                    description: packageDescription,
-                    description_internal: packageInternalDescription,
-                    category: packageCategory,
-                    total_price: packagePrice,
+                    ...selectedPackage,
                     quantity: 1,
-                    products: selectedPackage.products
                 });
 
                 // selectedPackages.push(selectedPackage);
@@ -305,7 +294,7 @@ function IncludePackageModal({ selectedPackages, updateSelectedPackages, previou
                                                                 data-desc={pkg.description}
                                                                 data-int_desc={pkg.description_internal}
                                                                 data-cat={pkg.category}
-                                                                onClick={(e) => handleSelectPackage(e.target)}
+                                                                onClick={(e) => handleSelectPackage(e.target as HTMLButtonElement)}
                                                             >
                                                                 {buttonText}
                                                             </button>

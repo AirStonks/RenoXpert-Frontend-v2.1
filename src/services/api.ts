@@ -238,6 +238,28 @@ export const fetchData = async () => {
     }
 };
 
+export const fetchContacts = async () => {
+    try {
+        const response = await axios.get(API_URL + 'contacts', {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
+export const fetchContact = async (contactId: number) => {
+    try {
+        const response = await axios.get(API_URL + `contacts/${contactId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
 export const productIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
         const response = await axios.get(API_URL + 'products', {

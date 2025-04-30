@@ -8,7 +8,6 @@ import useFetchOwnerOrder from '../../hook/useFetchOwnerOrder';
 import { Link } from 'react-router-dom';
 import { toggleOwnerOrderAddon } from '../../services/ownerApi';
 import ConfirmUnincludeAddon from './components/Modals/ConfirmUnincludeAddon';
-import { between } from '../../metronic/vendors/@form-validation/umd/locales/ar_MA';
 
 const convertToWords = (num: number) => {
     const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];

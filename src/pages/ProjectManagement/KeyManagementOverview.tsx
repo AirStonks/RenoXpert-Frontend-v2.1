@@ -5,7 +5,7 @@ import Loading from "../../components/Loading";
 import { KTAccordion } from "../../metronic/core";
 import { Link } from "react-router-dom";
 import useFetchRenoProgress from "../../hook/useFetchRenoProgress";
-import { KeyManagement, User, Attachment } from "../../types"; // Assuming types are exported from index.ts
+import { Attachment } from "../../types"; // Assuming types are exported from index.ts
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -18,7 +18,7 @@ const AWS_S3_URL =
 interface MetadataValue {
     name?: string;
     remark?: string;
-    attachment?: Attachment[];
+    attachment?: Attachment;
 }
 
 // Define keys for labelMap
@@ -85,41 +85,45 @@ const AccordionItem = ({ title, id, items, itemQty }: AccordionItemProps) => {
                     {items.length === 0 ? (
                         <div className="col-span-full text-center text-gray-500">No items available</div>
                     ) : (
-                        items.map((item, index: number) => (
-                            <div className="card rounded-lg overflow-hidden" key={index}>
-                                <div className="card-body p-0">
-                                    <div className="flex flex-col sm:flex-row">
-                                        <div className="w-24 h-24 mr-1">
-                                            {item.attachment && item.attachment.length > 0 && item.attachment[0]?.file_url ? (
-                                                <a
-                                                    href={AWS_S3_URL + item.attachment[0].file_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    <img
-                                                        src={AWS_S3_URL + item.attachment[0].file_url}
-                                                        alt={item.name || "Item"}
-                                                        className="w-24 h-24 object-cover"
-                                                    />
-                                                </a>
-                                            ) : (
-                                                <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
-                                                    No Image
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="w-full sm:w-3/4 p-2">
-                                            <h3 className="font-semibold mb-2 text-gray-900">
-                                                {item.name || "N/A"}
-                                            </h3>
-                                            <p className="text-xs text-gray-600">
-                                                Remark: {item.remark || "N/A"}
-                                            </p>
+                        items.map((item, index: number) => {
+                            console.log(item);
+
+                            return (
+                                <div className="card rounded-lg overflow-hidden" key={index}>
+                                    <div className="card-body p-0">
+                                        <div className="flex flex-col sm:flex-row">
+                                            <div className="w-24 h-24 mr-1">
+                                                {item.attachment && item.attachment?.file_url ? (
+                                                    <a
+                                                        href={AWS_S3_URL + item.attachment.file_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        <img
+                                                            src={AWS_S3_URL + item.attachment.file_url}
+                                                            alt={item.name || "Item"}
+                                                            className="w-24 h-24 object-cover"
+                                                        />
+                                                    </a>
+                                                ) : (
+                                                    <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
+                                                        No Image
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="w-full sm:w-3/4 p-2">
+                                                <h3 className="font-semibold mb-2 text-gray-900">
+                                                    {item.name || "N/A"}
+                                                </h3>
+                                                <p className="text-xs text-gray-600">
+                                                    Remark: {item.remark || "N/A"}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
+                            )
+                        })
                     )}
                 </div>
             </div>

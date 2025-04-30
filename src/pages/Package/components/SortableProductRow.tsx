@@ -36,7 +36,9 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
             <td>
                 <div className="flex flex-col">
                     <span>{product.name}</span>
-                    <span className="text-xs text-slate-400 font-semibold">SKU: {product.SKU || '-'}</span>
+                    <div className="inline-block">
+                        <span className="text-xs text-slate-400 font-semibold badge badge-xs badge-pill">SKU: {product.SKU || '-'}</span>
+                    </div>
                     <span className="text-xs text-slate-400">{product.description}</span>
                 </div>
             </td>
@@ -44,22 +46,61 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
                 <button onClick={() => adjustQuantity(product.id!, 'decrease')}>
                     <i className="ki-solid ki-minus-squared"></i>
                 </button>
-                <span className="mx-2 text-base">{pivot.quantity}</span>
+                <span className="mx-2 text-base">
+                    {product.pivot.quantity}
+                </span>
                 <button onClick={() => adjustQuantity(product.id!, 'increase')}>
                     <i className="ki-solid ki-plus-squared"></i>
                 </button>
             </td>
-            <td>
+            <td className='whitespace-nowrap text-gray-500 font-medium text-xs'>
                 RM {(product.provisioning?.supply?.retail_price || 0).toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                 })}
             </td>
-            <td>
-                RM {((product.provisioning?.supply?.retail_price || 0) * pivot.quantity).toLocaleString(undefined, {
+            <td className='whitespace-nowrap text-gray-500 font-medium text-xs'>
+                RM {((product.provisioning?.install?.retail_price || 0) * pivot.quantity).toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                 })}
+            </td>
+            <td className='whitespace-nowrap font-semibold text-success'>
+                RM {(((product.provisioning?.install?.retail_price || 0) + (product.provisioning?.supply?.retail_price || 0)) * pivot.quantity).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                })}
+            </td>
+            <td className='whitespace-nowrap text-gray-500 font-medium text-xs'>
+                RM {((product.provisioning?.supply?.cogs || 0) * pivot.quantity).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                })}
+            </td>
+            <td className='whitespace-nowrap text-gray-500 font-medium text-xs'>
+                RM {((product.provisioning?.install?.cogs || 0) * pivot.quantity).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                })}
+            </td>
+            <td className='whitespace-nowrap font-semibold text-danger'>
+                RM {(((product.provisioning?.supply?.cogs || 0) + (product.provisioning?.install?.cogs || 0)) * pivot.quantity).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                })}</td>
+            <td className='whitespace-nowrap'>
+                {product.pivot.included
+                    ? (() => {
+                        const totalRRP = (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
+                        const totalCOGS = (product.provisioning.supply.cogs * product.pivot.quantity) + (product.provisioning.install.cogs * product.pivot.quantity);
+                        const marginAmount = totalRRP - totalCOGS;
+
+                        return `RM ${marginAmount.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        })}`
+                    })()
+                    : ""}
             </td>
             <td className="text-center">
                 <label className="switch flex justify-center">

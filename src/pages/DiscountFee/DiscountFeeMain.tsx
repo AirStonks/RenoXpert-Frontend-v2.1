@@ -5,6 +5,7 @@ import AddDiscountFeeModal from '../../components/Modals/AddDiscountFeeModal';
 import { DiscountFee } from '../../types';
 import { discountFeeIndex } from '../../services/api';
 import Loading from '../../components/Loading';
+import { SortOrder } from '../OTPRequestList';
 
 function DiscountFeeMain() {
     const [discountFee, setDiscountFee] = useState<DiscountFee[]>([]); // Initialize as an empty array
@@ -365,7 +366,6 @@ function DiscountFeeMain() {
                     </div>
                 </div>
 
-                {/* <DiscountFeesTable /> */}
                 <AddDiscountFeeModal
                     refreshTableFunction={handleRefreshTable}
                 />

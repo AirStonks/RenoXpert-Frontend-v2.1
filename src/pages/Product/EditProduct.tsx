@@ -63,6 +63,7 @@ const EditProduct: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+        
 
         if (name.startsWith('provisioning.supply')) {
             const property = name.split('.')[2];

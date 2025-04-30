@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { fetchRegistrationForm } from '../services/api';
 import { OwnerRegistrationForm } from '../types';
 
-const useFetchRegistrationForm = (formId: number | null, originalForm: string = 'false') => {
+const useFetchRegistrationForm = (formId: number | null, originalForm: boolean = false) => {
     const [formDetail, setFormDetail] = useState<OwnerRegistrationForm | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);

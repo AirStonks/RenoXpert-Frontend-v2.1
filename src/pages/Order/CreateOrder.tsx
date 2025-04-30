@@ -90,6 +90,14 @@ function CreateOrder() {
         });
     };
 
+
+    const handleSelectCustomQuotation = () => {
+        setFormData((prev) => ({ ...prev, quotationId: "0", totalAmount: 0 }));
+        setSelectedQuotation({ id: "0", name: "Custom Quotation", total_amount: 0, metadata: null });
+        setSelectedPackages([]);
+        notify("success", "Custom quotation added.");
+    };
+
     useEffect(() => {
         document.title = "Create Quotation Order | RenoXpert";
 
@@ -266,13 +274,6 @@ function CreateOrder() {
         setSelectedProperty(property);
         setSearchPropertyTerm("");
         setProperties([]);
-    };
-
-    const handleCustomQuotation = () => {
-        setFormData((prev) => ({ ...prev, quotationId: "0", totalAmount: 0 }));
-        setSelectedQuotation({ id: "0", name: "Custom Quotation", total_amount: 0, metadata: null });
-        setSelectedPackages([]);
-        notify("success", "Custom quotation added.");
     };
 
     const handleSelectUserById = async (id: number) => {
@@ -941,7 +942,7 @@ function CreateOrder() {
                                     <div className="flex flex-col gap-2 mb-8">
                                         <span className="text-base font-semibold text-gray-900">Select a Quotation</span>
                                         <span className="text-md font-semibold text-gray-900">
-                                            <button className="link" onClick={handleCustomQuotation}>
+                                            <button className="link" onClick={handleSelectCustomQuotation}>
                                                 Create a custom quotation
                                             </button>
                                         </span>
