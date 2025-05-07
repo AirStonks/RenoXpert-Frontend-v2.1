@@ -594,7 +594,7 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                                                 <Text style={additionalStyles.smallerItemTh}>Description</Text>
                                             </View>
                                             <View style={{ flex: 0.6, textAlign: "center" }}>
-                                                <Text style={additionalStyles.smallerItemTh}>QTY</Text>
+                                                <Text style={{ ...additionalStyles.smallerItemTh, textAlign: "center"  }}>QTY</Text>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
                                                 <Text style={additionalStyles.smallerItemTh}>Supply RRP</Text>
