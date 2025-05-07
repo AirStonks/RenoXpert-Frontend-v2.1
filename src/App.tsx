@@ -80,6 +80,7 @@ import RenoProgressPhaseAttachments from './pages/OwnerPages/RenoProgressPhaseAt
 import ProductArchive from './pages/Product/ProductArchive';
 import PackageArchive from './pages/Package/PackageArchive';
 import QuotationArchive from './pages/Quotation/QuotationArchive';
+import KeyManagementForm from './pages/OwnerPages/KeyManagementForm';
 import KeyManagementOverview from './pages/ProjectManagement/KeyManagementOverview';
 import UpdateKeyManagement from './pages/ProjectManagement/UpdateKeyManagement';
 import Test2 from './pages/Test2/Test2';
@@ -97,9 +98,7 @@ import POInvoicePrint from './pages/PO/components/POInvoicePrint';
 import DIFormMain from './pages/ProjectManagement/DIFormMain';
 import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
 import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
-import Error404 from './pages/Errors/Error404';
-import DIReport from './pages/ProjectManagement/DIReport';
-
+import DetailedOrderPrint from './pages/Order/components/DetailedOrderPrint';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -154,9 +153,12 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
         { path: '/orders/:id/ver/:verId', element: <PreviousOrderDetail />, layout: ProtectedLayout },
         { path: '/orders/create', element: <CreateOrder />, layout: ProtectedLayout },
+        // { path: '/orders/quotation/edit/:id', element: <EditNewOrderQuotation />, layout: ProtectedLayout },
         { path: '/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },
+        // { path: '/orders/edit/:id/quotation/edit/:quoteId', element: <EditOrderQuotation />, layout: ProtectedLayout },
         { path: '/preview/owner/order/overview/id/:id', element: <OrderPreview />, layout: null },
         { path: '/orders/print/:id', element: <QuotationOrderPrint />, layout: null },
+        { path: '/orders/print/:id/internal', element: <DetailedOrderPrint />, layout: null },
         { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },
         { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
         { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
@@ -177,7 +179,6 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/key-management/update', element: <UpdateKeyManagement />, layout: ProtectedLayout },
         { path: '/di-forms', element: <DIFormMain />, layout: ProtectedLayout },
-        { path: '/di-forms/:id', element: <DIReport />, layout: ProtectedLayout },
         { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
         { path: '/users/:id', element: <UserDetail />, layout: ProtectedLayout },
         { path: '/users/internal/add', element: <AddInternalUser />, layout: ProtectedLayout },
@@ -200,6 +201,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
         { path: '/owner', element: <OwnerHome />, layout: OwnerProtectedLayout },
         { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
+        { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
         { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
         { path: '/owner/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
         { path: '/owner/reno-registration-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
@@ -214,7 +216,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/op/login', element: <OperationLogin />, layout: null },
         { path: '/op/home', element: <OperationHome />, layout: OperationProtectedLayout },
         { path: '/op', element: <OperationHome />, layout: OperationProtectedLayout },
-        { path: '/reno/defect-inspection-form/:id', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
+        { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
         { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
         { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
         { path: '/op/form/submit/success', element: <OpFormSubmitSuccess />, layout: OperationProtectedLayout },
@@ -227,11 +229,9 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
     // General
     [
         { path: '/test', element: <Test />, layout: null },
-        // { path: '/test2', element: <Test2 />, layout: null },
+        { path: '/test2', element: <Test2 />, layout: null },
         { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
         { path: '/di-form/report', element: <PublicDIReport />, layout: null },
-        // Add catch-all route for 404
-        { path: '*', element: <Error404 />, layout: null },
     ],
 ];
 
@@ -242,7 +242,12 @@ const routes: RouteObject[] = routeCat.flat().map(({ path, element, layout: Layo
 }));
 
 // Create router with future flags
-const router = createBrowserRouter(routes);
+const router = createBrowserRouter(routes, {
+    future: {
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+    },
+});
 
 function App() {
     useEffect(() => {
