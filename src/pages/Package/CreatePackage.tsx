@@ -59,18 +59,7 @@ function CreatePackage() {
                 const response = await fetchPackage(packageId);
                 if (response?.success) {
                     const data: Package = response.data;
-                    const transformedProducts: Product[] = data.products.map((product) => ({
-                        SKU: product.SKU || '',
-                        description: product.description || '',
-                        id: product.id,
-                        install: product.pivot?.includeInstall ?? false,
-                        name: product.name || '',
-                        price: (product.provisioning?.supply?.retail_price || 0) + (product.provisioning?.install?.retail_price || 0),
-                        quantity: product.pivot?.quantity || 1,
-                        supply: product.pivot?.includeSupply ?? false,
-                        visibility: product.pivot?.visibility ?? true,
-                        note: product.pivot?.internal_note || '',
-                    }));
+                    const transformedProducts: Product[] = data.products;
 
                     setSelectedProducts(transformedProducts);
                     const calculatedTotalPrice = transformedProducts.reduce(

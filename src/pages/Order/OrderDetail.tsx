@@ -1476,6 +1476,7 @@ function OrderDetail() {
                                                                             <th className="w-[10px] text-center">Install</th>
                                                                             <th className="w-[10px] text-center"></th>
                                                                             <th className="w-[450px]">Product</th>
+                                                                            <th className="w-[160px] text-center">Supplier</th>
                                                                             <th className="w-[100px] text-center">Quantity</th>
                                                                             <th className="w-[100px] whitespace-nowrap">Supply RRP</th>
                                                                             <th className="w-[100px] whitespace-nowrap">Install RRP</th>
@@ -1536,6 +1537,9 @@ function OrderDetail() {
                                                                                                     .join(" and ") + (product.description ? " " + product.description : "")}
                                                                                         </span>
                                                                                     </div>
+                                                                                </td>
+                                                                                <td className="text-center">
+                                                                                    <span>{product.supplier_name ? product.supplier_name : "-"}</span>
                                                                                 </td>
                                                                                 <td className="text-center text-lg">
                                                                                     <span className="mx-2 text-base">
@@ -1660,6 +1664,7 @@ function OrderDetail() {
                                                                     </tbody>
                                                                     <tfoot>
                                                                         <tr className="bg-gray-500">
+                                                                            <td></td>
                                                                             <td></td>
                                                                             <td></td>
                                                                             <td></td>
