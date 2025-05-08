@@ -2254,10 +2254,8 @@ function OrderDetail() {
                                                                                             product.pivot.includeSupply ||
                                                                                             product.pivot.includeInstall;
 
-                                                                                        const isVisible = product.pivot.visibility;
-
                                                                                         if (product.pivot.visibility) {
-                                                                                            if (isSupplyAndInstall && isVisible) {
+                                                                                            if (isSupplyAndInstall) {
                                                                                                 return (
                                                                                                     <tr
                                                                                                         key={idx}
