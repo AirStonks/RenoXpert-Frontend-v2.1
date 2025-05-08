@@ -216,7 +216,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/op/login', element: <OperationLogin />, layout: null },
         { path: '/op/home', element: <OperationHome />, layout: OperationProtectedLayout },
         { path: '/op', element: <OperationHome />, layout: OperationProtectedLayout },
-        { path: '/reno/defect-inspection-form', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
+        { path: '/reno/defect-inspection-form/:id', element: <DefectInspectionFormPage />, layout: OperationProtectedLayout },
         { path: '/reno/qc-form', element: <QCFormPage />, layout: OperationProtectedLayout },
         { path: '/reno/qc-forms/:id/detail', element: <QCFormDetail />, layout: OperationProtectedLayout },
         { path: '/op/form/submit/success', element: <OpFormSubmitSuccess />, layout: OperationProtectedLayout },
