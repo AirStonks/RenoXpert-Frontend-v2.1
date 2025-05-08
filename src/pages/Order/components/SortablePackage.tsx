@@ -140,6 +140,7 @@ export const SortablePackage: React.FC<SortablePackageProps> = ({
                                     <th className="w-[10px] text-center">Supply</th>
                                     <th className="w-[10px] text-center">Install</th>
                                     <th className="w-[250px]">Product</th>
+                                    <th className="w-[150px]">Supplier</th>
                                     <th className="w-[100px] text-center">Quantity</th>
                                     <th className="w-[100px] text-center">Unit Price</th>
                                     <th className="w-[100px] text-center">Discount</th>

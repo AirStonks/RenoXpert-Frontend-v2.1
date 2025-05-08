@@ -65,6 +65,9 @@ export const SortableProductRowForPackage: React.FC<SortableProductRowForPackage
                     <span className="text-xs text-slate-400">{product.description}</span>
                 </div>
             </td>
+            <td>
+                <span>{product.supplier_name ? product.supplier_name : "-"}</span>
+            </td>
             <td className="text-center text-lg">
                 <button
                     data-action="decrease"

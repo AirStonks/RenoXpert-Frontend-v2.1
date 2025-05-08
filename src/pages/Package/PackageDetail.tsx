@@ -343,6 +343,7 @@ function PackageDetail() {
                                 <thead>
                                     <tr>
                                         <th className="w-[250px]">Product</th>
+                                        <th className="w-[200px]">Supplier</th>
                                         <th className="w-[50px] text-center">Quantity</th>
                                         <th className="w-[100px] text-center">Visibility</th>
                                         <th className="w-[100px] whitespace-nowrap">Supply RRP</th>
@@ -368,6 +369,9 @@ function PackageDetail() {
                                                     </div>
                                                     <span className="text-xs text-slate-400">{product.description}</span>
                                                 </div>
+                                            </td>
+                                            <td>
+                                                <span>{product.supplier_name ? product.supplier_name : '-'}</span>
                                             </td>
                                             <td className="text-center text-lg">
                                                 <span className="mx-2 text-base">{product.pivot.quantity}</span>
