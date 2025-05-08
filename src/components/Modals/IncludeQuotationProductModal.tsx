@@ -266,6 +266,13 @@ function IncludeQuotationProductModal({ selectedPackages, setSelectedPackages, s
                                         </div>
                                     </th>
                                     <th
+                                        className='min-w-[150px] text-center hover:bg-gray-50'
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            Supplier
+                                        </div>
+                                    </th>
+                                    <th
                                         className='min-w-[150px] text-center cursor-pointer hover:bg-gray-50'
                                         onClick={() => handleSort('pm_category_id')}
                                     >
@@ -314,6 +321,9 @@ function IncludeQuotationProductModal({ selectedPackages, setSelectedPackages, s
                                                         <span className="text-xs text-slate-500 font-semibold">SKU: {product.SKU || '-'}</span>
                                                         <span className="text-xs text-slate-400">{product.description || ''}</span>
                                                     </div>
+                                                </td>
+                                                <td className='text-center'>
+                                                    <span>{product.supplier_name ? product.supplier_name : '-'}</span>
                                                 </td>
                                                 <td className='text-center capitalize'>{product.pm_category}</td>
                                                 <td className='text-center capitalize'>

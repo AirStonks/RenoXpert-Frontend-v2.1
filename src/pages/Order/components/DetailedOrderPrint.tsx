@@ -593,6 +593,9 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                                             <View style={{ flex: 2.5 }}>
                                                 <Text style={additionalStyles.smallerItemTh}>Description</Text>
                                             </View>
+                                            <View style={{ flex: 1, textAlign: "center" }}>
+                                                <Text style={{ ...additionalStyles.smallerItemTh, textAlign: "center"  }}>Supplier</Text>
+                                            </View>
                                             <View style={{ flex: 0.6, textAlign: "center" }}>
                                                 <Text style={{ ...additionalStyles.smallerItemTh, textAlign: "center"  }}>QTY</Text>
                                             </View>
@@ -662,6 +665,9 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                                                         <Text style={additionalStyles.smallerItemTd}>{product.name}</Text>
                                                         <Text style={additionalStyles.smallerItemTdSecondary}>{product.description}</Text>
                                                     </View>
+                                                    <View style={{ flex: 1, textAlign: "center" }}>
+                                                        <Text style={additionalStyles.smallerItemTd}>{product.supplier_name ? product.supplier_name : "-"}</Text>
+                                                    </View>
                                                     <View style={{ flex: 0.6, textAlign: "center" }}>
                                                         <Text style={additionalStyles.smallerItemTd}>{product.pivot.quantity}</Text>
                                                     </View>
@@ -723,6 +729,9 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                                                 <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>Total</Text>
                                             </View>
                                             <View style={{ flex: 2.5 }}>
+                                                <Text style={additionalStyles.smallerItemTd}></Text>
+                                            </View>
+                                            <View style={{ flex: 1 }}>
                                                 <Text style={additionalStyles.smallerItemTd}></Text>
                                             </View>
                                             <View style={{ flex: 0.6 }}>
