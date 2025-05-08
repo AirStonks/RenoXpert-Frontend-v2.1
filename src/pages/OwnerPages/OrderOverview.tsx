@@ -1039,37 +1039,39 @@ function OrderOverview() {
                                                                                         product.pivot.includeSupply ||
                                                                                         product.pivot.includeInstall;
 
-                                                                                    if (isSupplyAndInstall) {
-                                                                                        return (
-                                                                                            <tr
-                                                                                                key={idx}
-                                                                                                className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''
-                                                                                                    }`}
-                                                                                            >
-                                                                                                <td className="py-3 px-2 text-gray-700 text-left">
-                                                                                                    {product.pivot.includeSupply &&
-                                                                                                        product.pivot.includeInstall
-                                                                                                        ? 'Supply & Install'
-                                                                                                        : product.pivot.includeSupply
-                                                                                                            ? 'Supply'
-                                                                                                            : 'Install'}
-                                                                                                </td>
-                                                                                                <td className="p-3">
-                                                                                                    <div className="flex flex-col">
-                                                                                                        <span className="font-medium text-gray-900">
-                                                                                                            {product.name}
-                                                                                                        </span>
-                                                                                                        <span className="text-2xs text-gray-600露: 'inherit' text-gray-600 mt-1">
-                                                                                                            {product.description || '-'}
-                                                                                                        </span>
-                                                                                                    </div>
-                                                                                                </td>
-                                                                                                <td className="p-3 text-gray-700">
-                                                                                                    {product.pivot.quantity} {product.uom}
-                                                                                                    {product.pivot.quantity > 1 ? 's' : ''}
-                                                                                                </td>
-                                                                                            </tr>
-                                                                                        );
+                                                                                    if (product.pivot.visibility) {
+                                                                                        if (isSupplyAndInstall) {
+                                                                                            return (
+                                                                                                <tr
+                                                                                                    key={idx}
+                                                                                                    className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''
+                                                                                                        }`}
+                                                                                                >
+                                                                                                    <td className="py-3 px-2 text-gray-700 text-left">
+                                                                                                        {product.pivot.includeSupply &&
+                                                                                                            product.pivot.includeInstall
+                                                                                                            ? 'Supply & Install'
+                                                                                                            : product.pivot.includeSupply
+                                                                                                                ? 'Supply'
+                                                                                                                : 'Install'}
+                                                                                                    </td>
+                                                                                                    <td className="p-3">
+                                                                                                        <div className="flex flex-col">
+                                                                                                            <span className="font-medium text-gray-900">
+                                                                                                                {product.name}
+                                                                                                            </span>
+                                                                                                            <span className="text-2xs text-gray-600露: 'inherit' text-gray-600 mt-1">
+                                                                                                                {product.description || '-'}
+                                                                                                            </span>
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td className="p-3 text-gray-700">
+                                                                                                        {product.pivot.quantity} {product.uom}
+                                                                                                        {product.pivot.quantity > 1 ? 's' : ''}
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            );
+                                                                                        }
                                                                                     }
                                                                                     return null;
                                                                                 })}
@@ -1392,37 +1394,39 @@ function OrderOverview() {
                                                                         const isSupplyAndInstall =
                                                                             product.pivot.includeSupply || product.pivot.includeInstall;
 
-                                                                        if (isSupplyAndInstall) {
-                                                                            return (
-                                                                                <tr
-                                                                                    key={idx}
-                                                                                    className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''
-                                                                                        }`}
-                                                                                >
-                                                                                    <td className="py-3 px-2 text-gray-700 text-left">
-                                                                                        {product.pivot.includeSupply &&
-                                                                                            product.pivot.includeInstall
-                                                                                            ? 'Supply & Install'
-                                                                                            : product.pivot.includeSupply
-                                                                                                ? 'Supply'
-                                                                                                : 'Install'}
-                                                                                    </td>
-                                                                                    <td className="p-3">
-                                                                                        <div className="flex flex-col">
-                                                                                            <span className="font-medium text-gray-900">
-                                                                                                {product.name}
-                                                                                            </span>
-                                                                                            <span className="text-2xs text-gray-600 mt-1">
-                                                                                                {product.description || '-'}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td className="p-3 text-gray-700">
-                                                                                        {product.pivot.quantity} {product.uom}
-                                                                                        {product.pivot.quantity > 1 ? 's' : ''}
-                                                                                    </td>
-                                                                                </tr>
-                                                                            );
+                                                                        if (product.pivot.visibility) {
+                                                                            if (isSupplyAndInstall) {
+                                                                                return (
+                                                                                    <tr
+                                                                                        key={idx}
+                                                                                        className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''
+                                                                                            }`}
+                                                                                    >
+                                                                                        <td className="py-3 px-2 text-gray-700 text-left">
+                                                                                            {product.pivot.includeSupply &&
+                                                                                                product.pivot.includeInstall
+                                                                                                ? 'Supply & Install'
+                                                                                                : product.pivot.includeSupply
+                                                                                                    ? 'Supply'
+                                                                                                    : 'Install'}
+                                                                                        </td>
+                                                                                        <td className="p-3">
+                                                                                            <div className="flex flex-col">
+                                                                                                <span className="font-medium text-gray-900">
+                                                                                                    {product.name}
+                                                                                                </span>
+                                                                                                <span className="text-2xs text-gray-600 mt-1">
+                                                                                                    {product.description || '-'}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td className="p-3 text-gray-700">
+                                                                                            {product.pivot.quantity} {product.uom}
+                                                                                            {product.pivot.quantity > 1 ? 's' : ''}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                );
+                                                                            }
                                                                         }
                                                                         return null;
                                                                     })}
