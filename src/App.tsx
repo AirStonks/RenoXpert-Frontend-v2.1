@@ -176,6 +176,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/reno-progress/progress-tracker', element: <PMProgressTrack />, layout: ProtectedLayout },
         { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
+        { path: '/di-forms/:id', element: <DefectInspectionReport />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/key-management/update', element: <UpdateKeyManagement />, layout: ProtectedLayout },
         { path: '/di-forms', element: <DIFormMain />, layout: ProtectedLayout },

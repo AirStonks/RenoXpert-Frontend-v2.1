@@ -445,31 +445,57 @@ function PMMain() {
                                             Progress
                                         </h3>
                                         <div className="space-y-2 text-sm">
-                                            {[
-                                                { label: 'Pre-Reno', value: progress.pre_reno_completion },
-                                                { label: 'P1', value: progress.p1_completion },
-                                                { label: 'P2-A', value: progress.p2a_completion },
-                                                { label: 'P2-B', value: progress.p2b_completion },
-                                                { label: 'IOT', value: progress.iot_completion },
-                                                { label: 'Post-Reno', value: progress.post_reno_completion },
-                                                {
-                                                    label: 'Overall',
-                                                    value: getOverallCompletion(progress) / 100,
-                                                },
-                                            ].map(({ label, value }) => (
-                                                <div key={label} className="flex items-center gap-2">
-                                                    <span className="w-24 text-gray-700 dark:text-gray-300">{label}:</span>
-                                                    <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                                                        <div
-                                                            className="bg-green-500 h-full rounded-full"
-                                                            style={{ width: `${value * 100}%` }}
-                                                        ></div>
+                                            {progress.rpm_version === 3 ? (
+                                                progress.completion?.jobs ? (
+                                                    [
+                                                        ...progress.completion.jobs.map((job) => ({
+                                                            label: job.job_name,
+                                                            value: job.completion_percentage,
+                                                        }))
+                                                    ].map(({ label, value }) => (
+                                                        <div key={label} className="flex items-center gap-2">
+                                                            <span className="w-24 text-gray-700 dark:text-gray-300 whitespace-nowrap">{label}:</span>
+                                                            <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                                                                <div
+                                                                    className="bg-green-500 h-full rounded-full"
+                                                                    style={{ width: `${value * 100}%` }}
+                                                                ></div>
+                                                            </div>
+                                                            <span className="text-xs text-gray-600 dark:text-gray-300">
+                                                                {(value * 100).toFixed(2)}%
+                                                            </span>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="text-gray-600 dark:text-gray-300">No job data available</div>
+                                                )
+                                            ) : (
+                                                [
+                                                    { label: 'Pre-Reno', value: progress.pre_reno_completion },
+                                                    { label: 'P1', value: progress.p1_completion },
+                                                    { label: 'P2-A', value: progress.p2a_completion },
+                                                    { label: 'P2-B', value: progress.p2b_completion },
+                                                    { label: 'IOT', value: progress.iot_completion },
+                                                    { label: 'Post-Reno', value: progress.post_reno_completion },
+                                                    {
+                                                        label: 'Overall',
+                                                        value: getOverallCompletion(progress) / 100,
+                                                    },
+                                                ].map(({ label, value }) => (
+                                                    <div key={label} className="flex items-center gap-2">
+                                                        <span className="w-24 text-gray-700 dark:text-gray-300">{label}:</span>
+                                                        <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                                                            <div
+                                                                className="bg-green-500 h-full rounded-full"
+                                                                style={{ width: `${value * 100}%` }}
+                                                            ></div>
+                                                        </div>
+                                                        <span className="text-xs text-gray-600 dark:text-gray-300">
+                                                            {(value * 100).toFixed(2)}%
+                                                        </span>
                                                     </div>
-                                                    <span className="text-xs text-gray-600 dark:text-gray-300">
-                                                        {(value * 100).toFixed(2)}%
-                                                    </span>
-                                                </div>
-                                            ))}
+                                                ))
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -624,13 +650,27 @@ function PMMain() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <div className="relative w-[75%] bg-gray-200 rounded-full h-2">
-                                                    <div
-                                                        className="absolute top-0 left-0 h-full bg-green-500 rounded-full"
-                                                        style={{ width: `${getOverallCompletion(progress)}%` }}
-                                                    ></div>
-                                                </div>
-                                                <span className="text-xs">{getOverallCompletion(progress).toFixed(2)}%</span>
+                                                {progress.rpm_version === 3 ? (
+                                                    <>
+                                                        <div className="relative w-[75%] bg-gray-200 rounded-full h-2">
+                                                            <div
+                                                                className="absolute top-0 left-0 h-full bg-green-500 rounded-full"
+                                                                style={{ width: `${progress.completion.overall_completion * 100}%` }}
+                                                            ></div>
+                                                        </div>
+                                                        <span className="text-xs">{(progress.completion.overall_completion * 100).toFixed(2)}%</span>
+                                                    </>
+                                                ) :
+                                                    <>
+                                                        <div className="relative w-[75%] bg-gray-200 rounded-full h-2">
+                                                            <div
+                                                                className="absolute top-0 left-0 h-full bg-green-500 rounded-full"
+                                                                style={{ width: `${getOverallCompletion(progress)}%` }}
+                                                            ></div>
+                                                        </div>
+                                                        <span className="text-xs">{getOverallCompletion(progress).toFixed(2)}%</span>
+                                                    </>
+                                                }
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Link
@@ -705,34 +745,63 @@ function PMMain() {
                                                             </button>
                                                             {expandedSections[progress.id]?.progress && (
                                                                 <div className="mt-4 space-y-3 text-sm">
-                                                                    {[
-                                                                        { label: 'Pre-Reno', value: progress.pre_reno_completion },
-                                                                        { label: 'P1', value: progress.p1_completion },
-                                                                        { label: 'P2-A', value: progress.p2a_completion },
-                                                                        { label: 'P2-B', value: progress.p2b_completion },
-                                                                        { label: 'IOT', value: progress.iot_completion },
-                                                                        { label: 'Post-Reno', value: progress.post_reno_completion },
-                                                                        {
-                                                                            label: 'Overall',
-                                                                            value: getOverallCompletion(progress) / 100,
-                                                                        },
-                                                                    ].map(({ label, value }) => (
-                                                                        <div key={label} className="flex items-center gap-3 group">
-                                                                            <span className="w-20 font-medium text-gray-700">{label}:</span>
-                                                                            <div className="flex-1 relative">
-                                                                                <div className="bg-gray-200 rounded-full h-3">
-                                                                                    <div
-                                                                                        className="bg-teal-500 h-full rounded-full transition-all duration-300 group-hover:shadow-md"
-                                                                                        style={{ width: `${value * 100}%` }}
-                                                                                    ></div>
+                                                                    {progress.rpm_version === 3 ? (
+                                                                        progress.completion?.jobs ? (
+                                                                            [
+                                                                                ...progress.completion.jobs.map((job) => ({
+                                                                                    label: job.job_name,
+                                                                                    value: job.completion_percentage,
+                                                                                }))
+                                                                            ].map(({ label, value }) => (
+                                                                                <div key={label} className="flex items-center gap-3 group">
+                                                                                    <span className="w-32 font-medium text-gray-700 whitespace-nowrap">{label}:</span>
+                                                                                    <div className="flex-1 relative">
+                                                                                        <div className="bg-gray-200 rounded-full h-3">
+                                                                                            <div
+                                                                                                className="bg-teal-500 h-full rounded-full transition-all duration-300 group-hover:shadow-md"
+                                                                                                style={{ width: `${value * 100}%` }}
+                                                                                            ></div>
+                                                                                        </div>
+                                                                                        <div className="absolute top-[-2rem] left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                                                                                            {(value * 100).toFixed(2)}%
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <span className="w-12 text-xs text-gray-600">{(value * 100).toFixed(2)}%</span>
                                                                                 </div>
-                                                                                <div className="absolute top-[-2rem] left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                                                                                    {(value * 100).toFixed(2)}%
+                                                                            ))
+                                                                        ) : (
+                                                                            <div className="text-gray-600">No job data available</div>
+                                                                        )
+                                                                    ) : (
+                                                                        [
+                                                                            { label: 'Pre-Reno', value: progress.pre_reno_completion },
+                                                                            { label: 'P1', value: progress.p1_completion },
+                                                                            { label: 'P2-A', value: progress.p2a_completion },
+                                                                            { label: 'P2-B', value: progress.p2b_completion },
+                                                                            { label: 'IOT', value: progress.iot_completion },
+                                                                            { label: 'Post-Reno', value: progress.post_reno_completion },
+                                                                            {
+                                                                                label: 'Overall',
+                                                                                value: getOverallCompletion(progress) / 100,
+                                                                            },
+                                                                        ].map(({ label, value }) => (
+                                                                            <div key={label} className="flex items-center gap-3 group">
+                                                                                <span className="w-20 font-medium text-gray-700">{label}:</span>
+                                                                                <div className="flex-1 relative">
+                                                                                    <div className="bg-gray-200 rounded-full h-3">
+                                                                                        <div
+                                                                                            className="bg-teal-500 h-full rounded-full transition-all duration-300 group-hover:shadow-md"
+                                                                                            style={{ width: `${value * 100}%` }}
+                                                                                        ></div>
+                                                                                    </div>
+                                                                                    <div className="absolute top-[-2rem] left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                                                                                        {(value * 100).toFixed(2)}%
+                                                                                    </div>
                                                                                 </div>
+                                                                                <span className="w-12 text-xs text-gray-600">{(value * 100).toFixed(2)}%</span>
                                                                             </div>
-                                                                            <span className="w-12 text-xs text-gray-600">{(value * 100).toFixed(2)}%</span>
-                                                                        </div>
-                                                                    ))}
+                                                                        ))
+                                                                    )}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -750,66 +819,69 @@ function PMMain() {
                                 </tr>
                             )}
                         </tbody>
-                    </table>
-                </div>
-            )}
+                    </table >
+                </div >
+            )
+            }
 
             {/* Pagination */}
-            {!isLoading && renoProgress.length > 0 && (
-                <div className="flex flex-col md:flex-row items-center justify-between mt-6 bg-white p-4 rounded-lg shadow-md">
-                    <div className="flex items-center gap-2 mb-4 md:mb-0">
-                        <span>Show</span>
-                        <select
-                            value={size}
-                            onChange={(e) => handleSizeChange(parseInt(e.target.value))}
-                            className="border rounded-lg px-3 py-1"
-                        >
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="30">30</option>
-                            <option value="50">50</option>
-                        </select>
-                        <span>per page</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <span>
-                            {(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}
-                        </span>
-                        <div className="flex gap-2">
-                            <button
-                                disabled={page === 1}
-                                onClick={() => handlePageChange(page - 1)}
-                                className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+            {
+                !isLoading && renoProgress.length > 0 && (
+                    <div className="flex flex-col md:flex-row items-center justify-between mt-6 bg-white p-4 rounded-lg shadow-md">
+                        <div className="flex items-center gap-2 mb-4 md:mb-0">
+                            <span>Show</span>
+                            <select
+                                value={size}
+                                onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                                className="border rounded-lg px-3 py-1"
                             >
-                                Previous
-                            </button>
-                            {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
-                                const startPage = Math.max(1, Math.min(page - 2, totalPages - 4));
-                                const currentPage = startPage + index;
-                                return (
-                                    <button
-                                        key={currentPage}
-                                        onClick={() => handlePageChange(currentPage)}
-                                        className={`px-3 py-1 border rounded-lg ${page === currentPage ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
-                                            }`}
-                                    >
-                                        {currentPage}
-                                    </button>
-                                );
-                            })}
-                            <button
-                                disabled={page === totalPages}
-                                onClick={() => handlePageChange(page + 1)}
-                                className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
-                            >
-                                Next
-                            </button>
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                                <option value="50">50</option>
+                            </select>
+                            <span>per page</span>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <span>
+                                {(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}
+                            </span>
+                            <div className="flex gap-2">
+                                <button
+                                    disabled={page === 1}
+                                    onClick={() => handlePageChange(page - 1)}
+                                    className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+                                >
+                                    Previous
+                                </button>
+                                {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                                    const startPage = Math.max(1, Math.min(page - 2, totalPages - 4));
+                                    const currentPage = startPage + index;
+                                    return (
+                                        <button
+                                            key={currentPage}
+                                            onClick={() => handlePageChange(currentPage)}
+                                            className={`px-3 py-1 border rounded-lg ${page === currentPage ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
+                                                }`}
+                                        >
+                                            {currentPage}
+                                        </button>
+                                    );
+                                })}
+                                <button
+                                    disabled={page === totalPages}
+                                    onClick={() => handlePageChange(page + 1)}
+                                    className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+                                >
+                                    Next
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
 
 
         // <div className="flex justify-between items-center flex-wrap mb-6">

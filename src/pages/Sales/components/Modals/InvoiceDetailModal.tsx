@@ -124,9 +124,6 @@ function InvoiceDetailModal({ invoiceId, refetchSale }: InvoiceDetailModalProps)
     } else if (!invoice) {
         content = <div>Invoice not found</div>;
     } else {
-        // const discounts = JSON.parse(JSON.parse(JSON.stringify(invoiceDetail.discountsData)));
-        console.log(invoiceDetail);
-
 
         content = (
             <div className="flex flex-wrap gap-4">
