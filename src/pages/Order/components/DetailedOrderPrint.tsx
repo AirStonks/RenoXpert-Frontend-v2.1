@@ -594,10 +594,10 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                                                 <Text style={additionalStyles.smallerItemTh}>Description</Text>
                                             </View>
                                             <View style={{ flex: 1, textAlign: "center" }}>
-                                                <Text style={{ ...additionalStyles.smallerItemTh, textAlign: "center"  }}>Supplier</Text>
+                                                <Text style={{ ...additionalStyles.smallerItemTh, textAlign: "center" }}>Supplier</Text>
                                             </View>
                                             <View style={{ flex: 0.6, textAlign: "center" }}>
-                                                <Text style={{ ...additionalStyles.smallerItemTh, textAlign: "center"  }}>QTY</Text>
+                                                <Text style={{ ...additionalStyles.smallerItemTh, textAlign: "center" }}>QTY</Text>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
                                                 <Text style={additionalStyles.smallerItemTh}>Supply RRP</Text>
@@ -857,6 +857,14 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                 </View>
             </View>
             <Text style={styles.pageNumber} render={({ pageNumber }) => `${pageNumber}`} fixed />
+
+
+            <Text
+                style={styles.watermark}
+                fixed
+            >
+                SAMPLE ONLY
+            </Text>
         </Page>
     )
 
