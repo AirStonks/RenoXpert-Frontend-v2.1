@@ -5,6 +5,7 @@ import { Slide, toast } from "react-toastify";
 import { saveInvoiceDetail } from "../../../../services/api";
 import { KTModal } from "../../../../metronic/core";
 import Loading from "../../../../components/Loading";
+import { Payment } from "../../../../types";
 
 interface NewPaymentDetailModalProps {
     invoiceId: number | null;
@@ -23,15 +24,6 @@ interface FormData {
     bank: string;
 }
 
-interface Attachment {
-    name: string;
-    size: number;
-    // Add other required properties
-}
-
-interface Payment extends FormData {
-    attachments: Attachment[];
-}
 
 const initFormData: FormData = {
     transaction_no: '',
@@ -230,19 +222,14 @@ function NewPaymentDetailModal({ invoiceId, refetchInvoice, refetchSale }: NewPa
             return;
         }
 
-        const attachments: Attachment[] = pendingUploadItems.map((file) => ({
-            name: file.name,
-            size: file.size,
-            // Map other required properties
-        }));
+        const attachments: File[] = pendingUploadItems;
 
         const updatedFormData: Payment = {
-            ...formData,
-            attachments,
+            ...formData
         };
 
         try {
-            const response = await saveInvoiceDetail(invoiceId, updatedFormData);
+            const response = await saveInvoiceDetail(invoiceId, updatedFormData, attachments);
             if (response?.success) {
                 const modalEl = document.querySelector('#new_payment_detail_modal') as HTMLElement;
                 const modal = KTModal.getInstance(modalEl);
