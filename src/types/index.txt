@@ -1007,14 +1007,6 @@ export interface RenoProgress {
     sale_id?: string,
     sales_no?: string,
     sale?: Sale,
-    completion?: {
-        jobs?: {
-            job_id: number;
-            job_name: string;
-            completion_percentage: number;
-        }[];
-        overall_completion?: number;
-    }
     phases?: ProgressPhase[],
     property?: {
         id?: string,
@@ -1154,31 +1146,12 @@ export interface RPMJob {
 export interface RPMTask {
     id?: string,
     job_id?: string,
-    job?: RPMJob,
-    task_qc?: RPMTaskQC[],
     space_type?: string,
     room_name?: string,
     item_name?: string,
     priority?: number,
     task_weightage?: number,
     sequence?: number,
-    is_visible?: boolean,
-    internal_comment?: string,
-    owner_comment?: string,
-    internal_attachments?: Attachment[],
-    owner_attachments?: Attachment[],
-    status?: string,
-    completed_at?: string,
-    created_at?: string,
-    updated_at?: string,
-    created_by?: User;
-    updated_by?: User;
-}
-
-export interface RPMTaskQC {
-    id?: string,
-    task_id?: string,
-    task?: RPMTask,
     is_visible?: boolean,
     internal_comment?: string,
     owner_comment?: string,

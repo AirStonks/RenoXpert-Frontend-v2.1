@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import KTComponents from "../../metronic/core";
 import useFetchRenoProgress from "../../hook/useFetchRenoProgress";
@@ -12,6 +12,7 @@ import RPMDetailV2 from "./components/RPMDetailV2";
 import RPMDetailV3 from "./components/RPMDetailV3";
 import DIRLinkManagementModal from "./components/Modals/DIRLinkManagementModal";
 import ProjectDateManagementModal from "./components/Modals/ProjectDateManagementModal";
+import AccessPermissionModal from "./components/Modals/AccessPermissionModal";
 
 function ProgressMgnt() {
     const navigate = useNavigate();
@@ -43,13 +44,11 @@ function ProgressMgnt() {
 
         const initFunctions = async () => {
             if (renoProgressDetail) {
-                await setRenoProgress(renoProgressDetail); // Assign renoProgressDetail to renoProgress
+                setRenoProgress(renoProgressDetail); // Assign renoProgressDetail to renoProgress
                 await getPermissions();
-
-                // handleSearchRenoProgress(renoProgressDetail.id);
             }
 
-            await new Promise(resolve => setTimeout(resolve, 1));
+            // await new Promise(resolve => setTimeout(resolve, 1));
 
             KTComponents.init();
         }
@@ -108,17 +107,26 @@ function ProgressMgnt() {
             {/* Loading Overlay */}
             {isLoading && <Loading />}
 
-            <div className="flex justify-between items-center flex-wrap mb-6">
+            <div className="flex justify-between items-center flex-wrap my-6">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
                         <i className="ki-solid ki-arrow-left"></i>
                     </button>
+                </div>
+                <div className="flex gap-3">
                     <span className="text-2xl font-bold text-gray-900">
                         Reno Progress Detail
                     </span>
                 </div>
                 <div className="flex gap-3">
-                    <span className="badge badge-xs badge-outline">v{renoProgress.rpm_version}</span>
+                    <span
+                        className={`badge badge-xs badge-outline cursor-default ${renoProgress.rpm_version === 3
+                            ? 'bg-gradient-to-r from-gray-200 to-yellow-300 font-bold shadow-2xl border-yellow-200 rounded-full uppercase px-3 py-1.5 text-slate-500'
+                            : ''
+                            }`}
+                    >
+                        v{renoProgress.rpm_version}
+                    </span>
                     <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
                         <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
                             <i className="ki-filled ki-dots-vertical"></i>
@@ -138,6 +146,21 @@ function ProgressMgnt() {
                                     </span>
                                 </button>
                             </div>
+                            {renoProgress.rpm_version === 3 && (
+                                <div className="menu-item">
+                                    <button
+                                        className="menu-link"
+                                        data-modal-toggle="#access-permission-modal"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <i className="ki-filled ki-lock text-lg"></i>
+                                                <span>Access Permission</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            )}
                             <div className="menu-item">
                                 {/* <Link
                                 to={/purchase-orders/print/payment-voucher/${poId}}
@@ -156,43 +179,45 @@ function ProgressMgnt() {
                 </div>
             </div>
 
-            {renoProgress.rpm_version === 1 || renoProgress.rpm_version === 2 ?
-                <RPMDetailV2
-                    renoProgress={renoProgress}
-                    setRenoProgress={setRenoProgress}
-                    permissions={permissions}
-                    users={users}
-                    setUsers={setUsers}
-                />
-                :
-                null
-            }
+            {renoProgress.rpm_version === 1 || renoProgress.rpm_version === 2 ? (
+                <>
+                    <RPMDetailV2
+                        renoProgress={renoProgress}
+                        setRenoProgress={setRenoProgress}
+                        permissions={permissions}
+                        users={users}
+                        setUsers={setUsers}
+                    />
 
-            <DIRLinkManagementModal
-                diForm={renoProgress.defect_inspection_form}
-                setDiForm={handleUpdateDIForm}
-            />
+                    <DIRLinkManagementModal
+                        diForm={renoProgress.defect_inspection_form}
+                        setDiForm={handleUpdateDIForm}
+                    />
 
-            <ProjectDateManagementModal
-                renoProgress={renoProgress}
-                setRenoProgress={setRenoProgress}
-            />
+                    <ProjectDateManagementModal
+                        renoProgress={renoProgress}
+                        setRenoProgress={setRenoProgress}
+                    />
+                </>
+            ) : (
+                <>
+                    <RPMDetailV3
+                        renoProgress={renoProgress}
+                        setRenoProgress={setRenoProgress}
+                    />
+
+                    <AccessPermissionModal
+                        permissions={permissions}
+                        setPermissions={setPermissions}
+                        renoProgress={renoProgress}
+                        setRenoProgress={setRenoProgress}
+                        users={users}
+                        setUsers={setUsers}
+                    />
+                </>
+            )}
         </>
     )
-
-    // if (renoProgress.rpm_version === 1 || renoProgress.rpm_version === 2) {
-    //     return (
-    //         <RPMDetailV2
-    //             renoProgress={renoProgress}
-    //             permissions={permissions}
-    //             users={users}
-    //         />
-    //     )
-    // } else if (renoProgress.rpm_version === 3) {
-    //     return (
-    //         <RPMDetailV3 />
-    //     )
-    // }
 }
 
 export default ProgressMgnt;

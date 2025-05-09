@@ -328,6 +328,7 @@ function DIFormMain() {
                                                 {diForm.status === 'submitted' && (
                                                     <Link
                                                         to={`/di-forms/${diForm.id}`}
+                                                        state={{ fromUrl: '/di-forms' }}
                                                         className="text-green-500 hover:underline dark:text-green-400 dark:hover:text-green-300"
                                                     >
                                                         View Report
@@ -501,6 +502,7 @@ function DIFormMain() {
                                                         {(diForm.status === 'submitted' || diForm.status === 'not_submitted') && (
                                                             <Link
                                                                 to={`/di-forms/${diForm.id}`}
+                                                                state={{ fromUrl: '/di-forms' }}
                                                                 className="text-green-500 hover:underline"
                                                             >
                                                                 View Report

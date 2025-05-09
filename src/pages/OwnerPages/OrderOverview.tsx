@@ -1394,6 +1394,7 @@ function OrderOverview() {
                                                                         const isSupplyAndInstall =
                                                                             product.pivot.includeSupply || product.pivot.includeInstall;
 
+
                                                                         if (product.pivot.visibility) {
                                                                             if (isSupplyAndInstall) {
                                                                                 return (
