@@ -16,8 +16,8 @@ export const styles = StyleSheet.create({
         color: "#000000", // Black color
         opacity: 0.1, // Semi-transparent
         transform: "rotate(-45deg)", // Rotate for diagonal effect
-        top: "42%", // Center vertically
-        left: "12%", // Adjust horizontally
+        top: "36%", // Center vertically
+        left: "10%", // Adjust horizontally
         fontWeight: "bold",
         textAlign: "center",
     },
