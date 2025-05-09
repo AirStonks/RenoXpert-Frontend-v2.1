@@ -366,6 +366,14 @@ const QuotationOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                 render={({ pageNumber }) => `${pageNumber}`}
                 fixed
             />
+
+
+            <Text
+                style={styles.watermark}
+                fixed
+            >
+                SAMPLE ONLY
+            </Text>
         </Page >
     );
 

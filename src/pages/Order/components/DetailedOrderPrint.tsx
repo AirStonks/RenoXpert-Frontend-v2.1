@@ -857,14 +857,6 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                 </View>
             </View>
             <Text style={styles.pageNumber} render={({ pageNumber }) => `${pageNumber}`} fixed />
-
-
-            <Text
-                style={styles.watermark}
-                fixed
-            >
-                SAMPLE ONLY
-            </Text>
         </Page>
     )
 

@@ -12,7 +12,7 @@ export const styles = StyleSheet.create({
     // Add the watermark style
     watermark: {
         position: "absolute",
-        fontSize: 140, // Large size for visibility
+        fontSize: 128, // Large size for visibility
         color: "#000000", // Black color
         opacity: 0.1, // Semi-transparent
         transform: "rotate(-45deg)", // Rotate for diagonal effect
