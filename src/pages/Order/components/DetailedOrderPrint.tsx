@@ -567,6 +567,7 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                         const counter = isAddon ? addonCounter++ : packageCounter++
                         const isIncluded = pkg.is_addon_included
                         const totals = calculatePackageTotals(pkg.products)
+                        const grandTotal = totals.totalRRP * (pkg.quantity || 1)
 
                         if (!isAddon || (isAddon && isIncluded)) {
                             return (
@@ -590,61 +591,83 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                                             <View style={{ flex: 0.8 }}>
                                                 <Text style={additionalStyles.smallerItemTh}>S.o.W</Text>
                                             </View>
-                                            <View style={{ flex: 2.5 }}>
+                                            <View style={{ flex: 2.5, paddingRight: 5 }}>
                                                 <Text style={additionalStyles.smallerItemTh}>Description</Text>
                                             </View>
-                                            <View style={{ flex: 1, textAlign: "center" }}>
+                                            <View style={{ flex: 1, textAlign: "center", borderLeftWidth: 0.5, borderRightWidth: 0.5, borderColor: "#000" }}>
                                                 <Text style={{ ...additionalStyles.smallerItemTh, textAlign: "center" }}>Supplier</Text>
                                             </View>
                                             <View style={{ flex: 0.6, textAlign: "center" }}>
                                                 <Text style={{ ...additionalStyles.smallerItemTh, textAlign: "center" }}>QTY</Text>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
-                                                <Text style={additionalStyles.smallerItemTh}>Supply RRP</Text>
+                                                <View style={additionalStyles.smallerItemTh}>
+                                                    <Text>Supply</Text>
+                                                    <Text>RRP</Text>
+                                                </View>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
-                                                <Text style={additionalStyles.smallerItemTh}>Install RRP</Text>
+                                                <View style={additionalStyles.smallerItemTh}>
+                                                    <Text>Install</Text>
+                                                    <Text>RRP</Text>
+                                                </View>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
-                                                <Text style={additionalStyles.smallerItemTh}>Total RRP</Text>
+                                                <View style={[additionalStyles.smallerItemTh, { color: "green", fontWeight: "bold" }]}>
+                                                    <Text>Total</Text>
+                                                    <Text>RRP</Text>
+                                                </View>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
-                                                <Text style={additionalStyles.smallerItemTh}>Supply COGS</Text>
+                                                <View style={additionalStyles.smallerItemTh}>
+                                                    <Text>Supply</Text>
+                                                    <Text>COGS</Text>
+                                                </View>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
-                                                <Text style={additionalStyles.smallerItemTh}>Install COGS</Text>
+                                                <View style={additionalStyles.smallerItemTh}>
+                                                    <Text>Install</Text>
+                                                    <Text>COGS</Text>
+                                                </View>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
-                                                <Text style={additionalStyles.smallerItemTh}>Total COGS</Text>
+                                                <View style={[additionalStyles.smallerItemTh, { color: "red", fontWeight: "bold" }]}>
+                                                    <Text>Total</Text>
+                                                    <Text>COGS</Text>
+                                                </View>
                                             </View>
                                             <View style={{ flex: 0.6 }}>
-                                                <Text style={additionalStyles.smallerItemTh}>Margin %</Text>
+                                                <View style={additionalStyles.smallerItemTh}>
+                                                    <Text>Margin</Text>
+                                                    <Text>%</Text>
+                                                </View>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
-                                                <Text style={additionalStyles.smallerItemTh}>Margin Amount</Text>
+                                                <View style={additionalStyles.smallerItemTh}>
+                                                    <Text>Margin</Text>
+                                                </View>
                                             </View>
                                         </View>
 
                                         {pkg.products.map((product) => {
-                                            // Calculate margins for each product
                                             const supplyRRP = product.pivot.includeSupply
                                                 ? product.provisioning.supply.retail_price * product.pivot.quantity
-                                                : 0
+                                                : 0;
                                             const installRRP = product.pivot.includeInstall
                                                 ? product.provisioning.install.retail_price * product.pivot.quantity
-                                                : 0
-                                            const totalRRP = supplyRRP + installRRP
+                                                : 0;
+                                            const totalRRP = supplyRRP + installRRP;
 
                                             const supplyCOGS = product.pivot.includeSupply
                                                 ? product.provisioning.supply.cogs * product.pivot.quantity
-                                                : 0
+                                                : 0;
                                             const installCOGS = product.pivot.includeInstall
                                                 ? product.provisioning.install.cogs * product.pivot.quantity
-                                                : 0
-                                            const totalCOGS = supplyCOGS + installCOGS
+                                                : 0;
+                                            const totalCOGS = supplyCOGS + installCOGS;
 
-                                            const marginAmount = totalRRP - totalCOGS
-                                            const marginPercent = totalRRP > 0 ? (marginAmount / totalRRP) * 100 : 0
+                                            const marginAmount = totalRRP - totalCOGS;
+                                            const marginPercent = totalRRP > 0 ? (marginAmount / totalRRP) * 100 : 0;
 
                                             return (
                                                 <View style={styles.itemRow} key={product.id}>
@@ -661,12 +684,14 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                                                                             : "-"}
                                                         </Text>
                                                     </View>
-                                                    <View style={{ flex: 2.5 }}>
+                                                    <View style={{ flex: 2.5, paddingRight: 5 }}>
                                                         <Text style={additionalStyles.smallerItemTd}>{product.name}</Text>
                                                         <Text style={additionalStyles.smallerItemTdSecondary}>{product.description}</Text>
                                                     </View>
-                                                    <View style={{ flex: 1, textAlign: "center" }}>
-                                                        <Text style={additionalStyles.smallerItemTd}>{product.supplier_name ? product.supplier_name : "-"}</Text>
+                                                    <View style={{ flex: 1, textAlign: "center", borderLeftWidth: 0.5, borderRightWidth: 0.5, borderColor: "#000" }}>
+                                                        <Text style={additionalStyles.smallerItemTd}>
+                                                            {product.supplier_name ? product.supplier_name : "-"}
+                                                        </Text>
                                                     </View>
                                                     <View style={{ flex: 0.6, textAlign: "center" }}>
                                                         <Text style={additionalStyles.smallerItemTd}>{product.pivot.quantity}</Text>
@@ -674,64 +699,88 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                                                     <View style={{ flex: 0.8 }}>
                                                         <Text style={additionalStyles.smallerItemTd}>
                                                             {product.pivot.includeSupply
-                                                                ? `RM ${supplyRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                ? `RM ${supplyRRP.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}`
                                                                 : "-"}
                                                         </Text>
                                                     </View>
                                                     <View style={{ flex: 0.8 }}>
                                                         <Text style={additionalStyles.smallerItemTd}>
                                                             {product.pivot.includeInstall
-                                                                ? `RM ${installRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                ? `RM ${installRRP.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}`
                                                                 : "-"}
                                                         </Text>
                                                     </View>
                                                     <View style={{ flex: 0.8 }}>
-                                                        <Text style={additionalStyles.smallerItemTd}>
-                                                            {`RM ${totalRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                        <Text style={[additionalStyles.smallerItemTd, { color: "green", fontWeight: "bold" }]}>
+                                                            {`RM ${totalRRP.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}`}
                                                         </Text>
                                                     </View>
                                                     <View style={{ flex: 0.8 }}>
                                                         <Text style={additionalStyles.smallerItemTd}>
                                                             {product.pivot.includeSupply
-                                                                ? `RM ${supplyCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                ? `RM ${supplyCOGS.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}`
                                                                 : "-"}
                                                         </Text>
                                                     </View>
                                                     <View style={{ flex: 0.8 }}>
                                                         <Text style={additionalStyles.smallerItemTd}>
                                                             {product.pivot.includeInstall
-                                                                ? `RM ${installCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                ? `RM ${installCOGS.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}`
                                                                 : "-"}
                                                         </Text>
                                                     </View>
                                                     <View style={{ flex: 0.8 }}>
-                                                        <Text style={additionalStyles.smallerItemTd}>
-                                                            {`RM ${totalCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                        <Text style={[additionalStyles.smallerItemTd, { color: "red", fontWeight: "bold" }]}>
+                                                            {`RM ${totalCOGS.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}`}
                                                         </Text>
                                                     </View>
                                                     <View style={{ flex: 0.6 }}>
                                                         <Text style={additionalStyles.smallerItemTd}>
-                                                            {`${marginPercent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`}
+                                                            {`${marginPercent.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}%`}
                                                         </Text>
                                                     </View>
                                                     <View style={{ flex: 0.8 }}>
                                                         <Text style={additionalStyles.smallerItemTd}>
-                                                            {`RM ${marginAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                            {`RM ${marginAmount.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}`}
                                                         </Text>
                                                     </View>
                                                 </View>
-                                            )
+                                            );
                                         })}
 
-                                        {/* Package Totals Row */}
+                                        {/* Sub-total Row */}
                                         <View style={[styles.itemRow, { backgroundColor: "#f3f4f6" }]}>
                                             <View style={{ flex: 0.8 }}>
-                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>Total</Text>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>Sub-total</Text>
                                             </View>
                                             <View style={{ flex: 2.5 }}>
                                                 <Text style={additionalStyles.smallerItemTd}></Text>
                                             </View>
-                                            <View style={{ flex: 1 }}>
+                                            <View style={{ flex: 1, paddingRight: 5 }}>
                                                 <Text style={additionalStyles.smallerItemTd}></Text>
                                             </View>
                                             <View style={{ flex: 0.6 }}>
@@ -739,44 +788,150 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                                             </View>
                                             <View style={{ flex: 0.8 }}>
                                                 <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
-                                                    {`RM ${totals.supplyRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    {`RM ${totals.supplyRRP.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
                                                 </Text>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
                                                 <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
-                                                    {`RM ${totals.installRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    {`RM ${totals.installRRP.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
+                                                </Text>
+                                            </View>
+                                            <View style={{ flex: 0.8 }}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold", color: "green" }]}>
+                                                    {`RM ${totals.totalRRP.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
                                                 </Text>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
                                                 <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
-                                                    {`RM ${totals.totalRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    {`RM ${totals.supplyCOGS.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
                                                 </Text>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
                                                 <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
-                                                    {`RM ${totals.supplyCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    {`RM ${totals.installCOGS.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
                                                 </Text>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
-                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
-                                                    {`RM ${totals.installCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                </Text>
-                                            </View>
-                                            <View style={{ flex: 0.8 }}>
-                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
-                                                    {`RM ${totals.totalCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold", color: "red" }]}>
+                                                    {`RM ${totals.totalCOGS.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
                                                 </Text>
                                             </View>
                                             <View style={{ flex: 0.6 }}>
                                                 <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
                                                     {totals.totalRRP > 0
-                                                        ? `${(((totals.totalRRP - totals.totalCOGS) / totals.totalRRP) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
+                                                        ? `${(((totals.totalRRP - totals.totalCOGS) / totals.totalRRP) * 100).toLocaleString(undefined, {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}%`
                                                         : "0.00%"}
                                                 </Text>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
                                                 <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
-                                                    {`RM ${(totals.totalRRP - totals.totalCOGS).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                    {`RM ${(totals.totalRRP - totals.totalCOGS).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
+                                                </Text>
+                                            </View>
+                                        </View>
+
+                                        {/* Grand Total Row */}
+                                        <View style={[styles.itemRow, { backgroundColor: "#e5e7eb" }]}>
+                                            <View style={{ flex: 0.8 }}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>Grand Total</Text>
+                                            </View>
+                                            <View style={{ flex: 2.5 }}>
+                                                <Text style={additionalStyles.smallerItemTd}></Text>
+                                            </View>
+                                            <View style={{ flex: 1, paddingRight: 5 }}>
+                                                <Text style={additionalStyles.smallerItemTd}></Text>
+                                            </View>
+                                            <View style={{ flex: 0.6, alignItems: "center" }}>
+                                                <Text style={additionalStyles.smallerItemTd}>{pkg.quantity}</Text>
+                                            </View>
+                                            <View style={{ flex: 0.8 }}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
+                                                    {`RM ${(totals.supplyRRP * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
+                                                </Text>
+                                            </View>
+                                            <View style={{ flex: 0.8 }}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
+                                                    {`RM ${(totals.installRRP * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
+                                                </Text>
+                                            </View>
+                                            <View style={{ flex: 0.8 }}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold", color: "green"}]}>
+                                                    {`RM ${grandTotal.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
+                                                </Text>
+                                            </View>
+                                            <View style={{ flex: 0.8 }}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
+                                                    {`RM ${(totals.supplyCOGS * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
+                                                </Text>
+                                            </View>
+                                            <View style={{ flex: 0.8 }}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
+                                                    {`RM ${(totals.installCOGS * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
+                                                </Text>
+                                            </View>
+                                            <View style={{ flex: 0.8 }}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold", color: "red" }]}>
+                                                    {`RM ${(totals.totalCOGS * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
+                                                </Text>
+                                            </View>
+                                            <View style={{ flex: 0.6 }}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
+                                                    {grandTotal > 0
+                                                        ? `${(((grandTotal - (totals.totalCOGS * (pkg.quantity || 1))) / grandTotal) * 100).toLocaleString(undefined, {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}%`
+                                                        : "0.00%"}
+                                                </Text>
+                                            </View>
+                                            <View style={{ flex: 0.8 }}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold" }]}>
+                                                    {`RM ${(grandTotal - (totals.totalCOGS * (pkg.quantity || 1))).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}`}
                                                 </Text>
                                             </View>
                                         </View>
@@ -856,6 +1011,7 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                     </View>
                 </View>
             </View>
+
             <Text style={styles.pageNumber} render={({ pageNumber }) => `${pageNumber}`} fixed />
         </Page>
     )
@@ -885,6 +1041,8 @@ const additionalStyles = StyleSheet.create({
         padding: 3,
         textAlign: "left",
         color: "#1f2937",
+        flexDirection: "column", // Stack children vertically
+        display: "flex",
     },
     smallerItemTd: {
         fontSize: 5,

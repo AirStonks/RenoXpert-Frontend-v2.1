@@ -1245,7 +1245,26 @@ export const markInvoiceAsPaid = async (invoiceId: number) => {
 
 export const saveInvoiceDetail = async (invoiceId: number, paymentDetail: Payment) => {
     try {
-        const response = await axios.post(API_URL + `invoices/${invoiceId}/payment/save`, paymentDetail, {
+
+        const formData = new FormData();
+        formData.append('invoice_id', String(invoiceId));
+        formData.append('transaction_no', String(paymentDetail.transaction_no));
+        formData.append('amount', String(paymentDetail.amount));
+        formData.append('payment_method', String(paymentDetail.payment_method));
+        formData.append('payment_channel', String(paymentDetail.payment_channel));
+        formData.append('payment_date', String(paymentDetail.payment_date));
+        formData.append('bank', String(paymentDetail.bank));
+        formData.append('receiving_account', String(paymentDetail.receiving_account));
+        formData.append('remark', String(paymentDetail.remark));
+        formData.append('currency', String(paymentDetail.currency));
+        formData.append('description', String(paymentDetail.description));
+        formData.append('status', String(paymentDetail.status));
+
+        paymentDetail.attachments.forEach(file => {
+            formData.append('attachments[]', file as File);  // 'attachments[]' because your backend expects an array
+        });
+
+        const response = await axios.post(API_URL + `invoices/${invoiceId}/payment/save`, formData, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
