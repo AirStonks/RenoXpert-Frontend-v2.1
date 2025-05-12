@@ -9,7 +9,7 @@ function Header(props: HeaderProps) {
     const location = useLocation();
 
     return (
-        <div className="flex w-full items-center px-2 mb-6">
+        <div className="flex w-full items-center px-2">
             <span className="flex-none">
                 <Link
                     to={location.state?.from ?? props.backUrl}

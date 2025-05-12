@@ -135,6 +135,7 @@ const getFileIcon = (type: string) => "https://picsum.photos/200/200";
 
 interface TaskDetailDrawerProps {
     selectedTask: RPMTask | null;
+    selectedSection?: string;
     onClose: () => void;
     onSave: (comment_type: "internal" | "external", taskId: string, comment: string) => void;
     onAttachmentChanges?: (updatedRPMTask: RPMTask, taskId: string) => void;
@@ -145,6 +146,7 @@ interface TaskDetailDrawerProps {
 
 export const TaskDetailDrawer = ({
     selectedTask,
+    selectedSection,
     onClose,
     onSave,
     onAttachmentChanges,
@@ -415,7 +417,7 @@ export const TaskDetailDrawer = ({
                         <div className="space-y-6 mt-2 overflow-y-auto flex-grow">
                             <div className="space-y-2">
                                 <h3 className="text-xl font-semibold text-gray-900">
-                                    {selectedTask.room_name ? `${selectedTask.room_name} - ` : ""} {selectedTask.item_name}
+                                    {selectedTask.room_name ? `${selectedTask.room_name} - ` : `${selectedSection} - `} {selectedTask.item_name}
                                 </h3>
                                 <div className="flex items-center gap-4 rounded-lg bg-slate-200 p-2">
                                     <TaskStatusBadge
