@@ -107,7 +107,7 @@ function ProgressMgnt() {
             {/* Loading Overlay */}
             {isLoading && <Loading />}
 
-            <div className="flex justify-between items-center flex-wrap my-6">
+            <div className="flex justify-between items-center flex-wrap my-2">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
                         <i className="ki-solid ki-arrow-left"></i>

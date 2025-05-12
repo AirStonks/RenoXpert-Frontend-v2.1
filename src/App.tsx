@@ -99,6 +99,7 @@ import DIFormMain from './pages/ProjectManagement/DIFormMain';
 import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
 import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
 import DetailedOrderPrint from './pages/Order/components/DetailedOrderPrint';
+import PMMainV3 from './pages/ProjectManagement/PMMainV3';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -173,6 +174,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
         { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
         { path: '/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
+        { path: '/reno-progress/overview/v3', element: <PMMainV3 />, layout: ProtectedLayout },
         { path: '/reno-progress/progress-tracker', element: <PMProgressTrack />, layout: ProtectedLayout },
         { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },

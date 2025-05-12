@@ -127,8 +127,7 @@ export const TaskStatusBadge = ({ status, isStatic = false, onStatusChange }: Ta
                 onClick={isStatic ? undefined : handleBadgeClick}
                 onKeyDown={isStatic ? undefined : handleKeyDown}
                 tabIndex={isStatic ? -1 : 0}
-                className={`${getStatusColor(status)} flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full ${isStatic ? "cursor-default" : "cursor-pointer hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    } transition-all duration-200`}
+                className={`${getStatusColor(status)} flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${isStatic ? "cursor-default" : "cursor-pointer hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"} transition-all duration-200`}
                 role={isStatic ? undefined : "button"}
                 aria-expanded={isStatic ? undefined : isDropdownOpen}
                 aria-haspopup={isStatic ? undefined : "listbox"}
@@ -136,12 +135,7 @@ export const TaskStatusBadge = ({ status, isStatic = false, onStatusChange }: Ta
                 {getStatusIcon(status)}
                 <span className="capitalize">{status.replace(/-/g, " ")}</span>
                 {!isStatic && (
-                    <svg
-                        className={`h-4 w-4 ml-1 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
+                    <svg className="h-3 w-3 ml-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 )}

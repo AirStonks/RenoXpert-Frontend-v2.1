@@ -1247,6 +1247,8 @@ export const saveInvoiceDetail = async (invoiceId: number, paymentDetail: Paymen
     try {
 
         const formData = new FormData();
+
+        
         
         formData.append('invoice_id', String(invoiceId));
         formData.append('transaction_no', String(paymentDetail.transaction_no));
@@ -1261,8 +1263,10 @@ export const saveInvoiceDetail = async (invoiceId: number, paymentDetail: Paymen
         attachments.forEach(file => {
             formData.append('attachments[]', file as File);  // 'attachments[]' because your backend expects an array
         });
+        console.log(attachments);
+        console.log(formData);
 
-        const response = await axios.post(API_URL + `invoices/${invoiceId}/payment/save`, paymentDetail, {
+        const response = await axios.post(API_URL + `invoices/${invoiceId}/payment/save`, formData, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
@@ -1746,7 +1750,7 @@ export const removeRPMExternalAttachment = async (rpmTaskId: number, attachmentI
     }
 }
 
-export const renoProgressIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
+export const renoProgressIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true, rpm_version: number = null) => {
     try {
         const response = await axios.get(API_URL + 'reno-progress', {
             headers: getAuthHeaders(),
@@ -1757,6 +1761,7 @@ export const renoProgressIndex = async (size: number = 5, page: number = 1, sear
                 sortOrder: order,
                 sortField: field,
                 head: isHead,
+                rpm_version: rpm_version,
             }
         });
         return response.data;

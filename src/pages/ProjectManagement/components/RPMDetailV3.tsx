@@ -5,6 +5,7 @@ import { DefectCard } from './rpm/defect-card';
 import { PermitCard } from './rpm/permit-card';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { PostRenoCard } from './rpm/post-reno-card';
+import { RenoPorgressDetailCard } from './rpm/reno-progress-detail';
 
 const statusColors = {
     'Not Started': 'bg-gray-100 text-gray-800',
@@ -20,6 +21,7 @@ interface Props {
 
 function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
     const [selectedTask, setSelectedTask] = useState<RPMTask | null>(null);
+    const [selectedSection, setSelctedSection] = useState<string | null>(null);
 
     const getStatusKey = (status: string | undefined) => {
         if (!status) return 'Not Available';
@@ -66,28 +68,39 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
             {
                 label: 'Sales',
                 status: 'Completed', // Always Completed
+                date: '22/05/2025'
             },
             {
                 label: 'Defect & Permit',
                 status: defectAndPermitStatus,
                 // status: 'Completed',
+                date: '28/05/2025'
             },
             {
                 label: 'Renovation',
                 status: renovationStatus,
                 // status: 'Completed',
+                date: '10/06/2025'
             },
             {
                 label: 'QC',
                 status: 'Not Started',
+                date: '01/07/2025'
             },
             {
                 label: 'Cleaning',
                 status: 'Not Started',
+                date: '08/07/2025'
             },
             {
-                label: 'Handover',
+                label: 'Contractor Handover',
                 status: 'Not Started',
+                date: '10/07/2025'
+            },
+            {
+                label: 'Owner Handover',
+                status: 'Not Started',
+                date: '12/07/2025'
             },
         ];
     }, [renoProgress]); // Recompute when renoProgress changes
@@ -177,7 +190,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
 
     return (
         <>
-            <div className="flex flex-col gap-4 p-4 h-screen">
+            <div className="flex flex-col gap-2 p-4 py-2 h-screen">
                 <div className="flex flex-col items-center">
                     <div className="flex flex-col sm:flex-row justify-between w-full relative">
                         {overallStatusSteps.map((step, index) => (
@@ -187,16 +200,16 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                 role="region"
                                 aria-label={`Step ${index + 1}: ${step.label} - ${step.status}`}
                             >
-                                <div className="relative flex w-10 h-10">
+                                <div className="relative flex w-8 h-8">
                                     {step.status === 'In Progress' && (
                                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-400 opacity-75"></span>
                                     )}
                                     <span
-                                        className={`relative inline-flex w-10 h-10 rounded-full items-center justify-center text-white font-medium transition-all duration-200 ${step.status === 'Completed'
-                                            ? 'bg-green-500'
-                                            : step.status === 'In Progress'
-                                                ? 'bg-yellow-500'
-                                                : 'bg-gray-300'
+                                        className={`relative inline-flex w-8 h-8 rounded-full items-center justify-center text-white font-medium transition-all duration-200 ${step.status === 'Completed'
+                                                ? 'bg-green-500'
+                                                : step.status === 'In Progress'
+                                                    ? 'bg-yellow-500'
+                                                    : 'bg-gray-300'
                                             } hover:scale-110`}
                                     >
                                         {index + 1}
@@ -205,22 +218,26 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                 <div className="text-sm mt-2 text-center">
                                     <div className="font-semibold">{step.label}</div>
                                     <div
-                                        className={`text-xs mt-1 px-2 py-1 rounded ${step.status === 'Completed'
-                                            ? 'text-green-800'
-                                            : step.status === 'In Progress'
-                                                ? 'text-yellow-800'
-                                                : 'text-gray-800'
+                                        className={`text-xs px-2 rounded ${step.status === 'Completed'
+                                                ? 'text-green-800'
+                                                : step.status === 'In Progress'
+                                                    ? 'text-yellow-800'
+                                                    : 'text-gray-800'
                                             }`}
                                     >
                                         {step.status}
                                     </div>
+                                    <div
+                                        className="text-sm font-medium mt-1 badge badge-sm badge-pill"
+                                    >
+                                        {step.date}
+                                    </div>
                                 </div>
                                 {index < overallStatusSteps.length - 1 && (
                                     <div
-                                        className={`hidden sm:block absolute h-1 top-5 w-[calc(100%-2.5rem)] left-1/2 ${step.status === 'Completed' ||
-                                            overallStatusSteps[index + 1].status === 'Completed'
-                                            ? 'bg-green-500'
-                                            : 'bg-gray-300'
+                                        className={`hidden sm:block absolute h-1 top-4 w-[calc(100%-2.5rem)] left-1/2 ${step.status === 'Completed' || overallStatusSteps[index + 1].status === 'Completed'
+                                                ? 'bg-green-500'
+                                                : 'bg-gray-300'
                                             }`}
                                         style={{ transform: 'translateX(0)', marginLeft: '1.25rem', zIndex: -1 }}
                                     />
@@ -231,6 +248,10 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                 </div>
 
                 <div className="flex gap-4 justify-center">
+
+                    <RenoPorgressDetailCard
+                        renoProgress={renoProgress}
+                    />
 
                     {overallStatusSteps[2].status !== 'Completed' && (
                         <>
@@ -263,7 +284,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                     )}
                 </div>
 
-                <div className="relative my-8">
+                {/* <div className="relative my-8">
                     <hr className="border-t border-gray-300" />
                     <button
                         onClick={() => {
@@ -275,9 +296,9 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 focus:outline-none"
                         aria-label="Scroll to RPM Job Section"
                     >
-                        ↓ Scroll to Project Management Jobs ↓
+                        ↓ Click to Scroll to Project Management Jobs ↓
                     </button>
-                </div>
+                </div> */}
 
                 <div
                     id="rpm-job-section"
@@ -399,7 +420,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                         </div>
                     </div>
 
-                    <div className="flex flex-col flex-[2] w-full gap-8">
+                    <div className="flex flex-col flex-[1] w-full gap-8">
                         <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-[200px] h-max">
                             <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
                                 <h3 className="text-lg font-semibold">Living + Dining</h3>
@@ -426,7 +447,10 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                                         <td
                                                             className={`p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline" : ""
                                                                 }`}
-                                                            onClick={() => task && setSelectedTask(task)}
+                                                            onClick={() => {
+                                                                task && setSelectedTask(task);
+                                                                setSelctedSection("Living + Dining");
+                                                            }}
                                                         >
                                                             {task ? getStatusKey(task.status) : "-"}
                                                         </td>
@@ -465,7 +489,10 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                                         <td
                                                             className={`p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline" : ""
                                                                 }`}
-                                                            onClick={() => task && setSelectedTask(task)}
+                                                            onClick={() => {
+                                                                task && setSelectedTask(task);
+                                                                setSelctedSection("Kitchen");
+                                                            }}
                                                         >
                                                             {task ? getStatusKey(task.status) : "-"}
                                                         </td>
@@ -504,7 +531,10 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                                         <td
                                                             className={`p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline" : ""
                                                                 }`}
-                                                            onClick={() => task && setSelectedTask(task)}
+                                                            onClick={() => {
+                                                                task && setSelectedTask(task);
+                                                                setSelctedSection("Electrical");
+                                                            }}
                                                         >
                                                             {task ? getStatusKey(task.status) : "-"}
                                                         </td>
@@ -526,6 +556,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
 
             <TaskDetailDrawer
                 selectedTask={selectedTask}
+                selectedSection={selectedSection}
                 onClose={() => setSelectedTask(null)}
                 onSave={handleUpdateComment}
                 onAttachmentChanges={handleAttachmentUpdate}
