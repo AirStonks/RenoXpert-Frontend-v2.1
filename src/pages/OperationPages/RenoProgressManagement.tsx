@@ -51,19 +51,19 @@ function RenoProgressManagement() {
             ) : (
                 <>
                     {/* Section still in development, display comming soon */}
-                    <div className="flex p-12 justify-center h-screen">
+                    {/* <div className="flex p-12 justify-center h-screen">
                         <div className="text-xl font-bold text-gray-800">
                             Reno Progress V3 still in development. Comming Soon
                         </div>
-                    </div>
+                    </div> */}
 
                     
 
 
-                    {/* <RPMV3
+                    <RPMV3
                         renoProgress={renoProgress}
                         setRenoProgress={setRenoProgress}
-                    /> */}
+                    />
                 </>
             )}
         </>
