@@ -115,7 +115,7 @@ function ProgressMgnt() {
                 </div>
                 <div className="flex gap-3">
                     <span className="text-2xl font-bold text-gray-900">
-                        Reno Progress Detail
+                        Reno Progress Detail for {renoProgress.property.name} [{renoProgress.sale.order.block}-{renoProgress.sale.order.floor}-{renoProgress.sale.order.unit_no}] ({renoProgress.sale.order.user.name})
                     </span>
                 </div>
                 <div className="flex gap-3">

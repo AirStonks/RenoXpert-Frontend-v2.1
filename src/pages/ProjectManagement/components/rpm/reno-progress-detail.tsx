@@ -7,9 +7,8 @@ interface Props {
 }
 
 const formatDate = (date: string) => {
-    // date = "16/04/2025" (DD/MM/YYYY)
     if (date) {
-        const [day, month, year] = date.split('/').map(Number);
+        const [year, month, day] = date.split(/\/|-/).map(Number); // Split on '/' or '-'
         const parsedDate = new Date(year, month - 1, day); // Month is 0-based in JS
         if (isNaN(parsedDate.getTime())) {
             return 'Invalid Date';
@@ -19,7 +18,6 @@ const formatDate = (date: string) => {
             month: 'short',
             year: 'numeric'
         });
-        // Split the formatted date, uppercase the month, and reassemble
         const [dayStr, monthStr, yearStr] = formattedDate.split(' ');
         return `${dayStr} ${monthStr.toUpperCase()} ${yearStr}`;
     } else {
@@ -44,7 +42,7 @@ export const RenoPorgressDetailCard = ({ renoProgress }: Props) => {
                         <div className="flex items-center justify-between">
                             <span className="font-medium text-sm">Sales Date</span>
                         </div>
-                        <p className="text-xs text-gray-600 mt-0.5">{formatDate(renoProgress.sale.created_at)}</p>
+                        <p className="text-xs text-gray-600 mt-0.5">{formatDate(renoProgress.date_management.sales_date)}</p>
                     </li>
                     <li className="p-2 rounded-lg bg-white shadow-sm">
                         <div className="flex items-center justify-between">
@@ -73,7 +71,7 @@ export const RenoPorgressDetailCard = ({ renoProgress }: Props) => {
                         <div className="flex items-center justify-between">
                             <span className="font-medium text-sm">Delivery Date</span>
                         </div>
-                        <p className="text-[10px] text-gray-500 mt-0.5">N/A</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">{formatDate(renoProgress.date_management.oh_date)}</p>
                     </li>
                 </ul>
             </div>
