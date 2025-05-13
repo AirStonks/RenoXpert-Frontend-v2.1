@@ -131,59 +131,57 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
             </div>
 
             <div className="flex flex-col items-center w-full px-4 py-2">
-            <div className="flex flex-row items-center justify-between w-full max-w-md">
-                {overallStatusSteps.map((step, index) => (
-                    <div
-                        key={index}
-                        className="flex flex-col items-center relative flex-1"
-                        role="region"
-                        aria-label={`Step ${index + 1}: ${step.label} - ${step.status}`}
-                    >
-                        {/* Step Circle */}
-                        <div className="relative w-5 h-5">
-                            {step.status === 'In Progress' && (
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-300 opacity-50"></span>
+                <div className="flex flex-row items-center justify-between w-full max-w-md">
+                    {overallStatusSteps.map((step, index) => (
+                        <div
+                            key={index}
+                            className="flex flex-col items-center relative flex-1"
+                            role="region"
+                            aria-label={`Step ${index + 1}: ${step.label} - ${step.status}`}
+                        >
+                            {/* Step Circle */}
+                            <div className="relative w-5 h-5">
+                                {step.status === 'In Progress' && (
+                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-300 opacity-50"></span>
+                                )}
+                                <span
+                                    className={`relative inline-flex w-5 h-5 rounded-full items-center justify-center text-xs text-white font-semibold transition-transform duration-200 ${step.status === 'Completed'
+                                            ? 'bg-green-600'
+                                            : step.status === 'In Progress'
+                                                ? 'bg-yellow-500'
+                                                : 'bg-gray-400'
+                                        } hover:scale-105`}
+                                >
+                                    {index + 1}
+                                </span>
+                            </div>
+
+                            {/* Compact Label and Status */}
+                            <div className="mt-1 text-center whitespace-nowrap">
+                                <span className="text-xs text-gray-800 font-medium">{step.label}</span>
+                                <span
+                                    className={`text-xs mx-1 ${step.status === 'Completed'
+                                            ? 'text-green-600'
+                                            : step.status === 'In Progress'
+                                                ? 'text-yellow-500'
+                                                : 'text-gray-500'
+                                        }`}
+                                >
+                                    {step.status}
+                                </span>
+                            </div>
+
+                            {/* Subtle Connecting Line */}
+                            {index < overallStatusSteps.length - 1 && (
+                                <div
+                                    className="absolute top-2.5 left-1/2 w-full h-px bg-gray-200"
+                                    style={{ zIndex: -1, transform: 'translateX(-50%)' }}
+                                />
                             )}
-                            <span
-                                className={`relative inline-flex w-5 h-5 rounded-full items-center justify-center text-xs text-white font-semibold transition-transform duration-200 ${
-                                    step.status === 'Completed'
-                                        ? 'bg-green-600'
-                                        : step.status === 'In Progress'
-                                        ? 'bg-yellow-500'
-                                        : 'bg-gray-400'
-                                } hover:scale-105`}
-                            >
-                                {index + 1}
-                            </span>
                         </div>
-
-                        {/* Compact Label and Status */}
-                        <div className="mt-1 text-center whitespace-nowrap">
-                            <span className="text-xs text-gray-800 font-medium">{step.label}</span>
-                            <span
-                                className={`text-xs mx-1 ${
-                                    step.status === 'Completed'
-                                        ? 'text-green-600'
-                                        : step.status === 'In Progress'
-                                        ? 'text-yellow-500'
-                                        : 'text-gray-500'
-                                }`}
-                            >
-                                {step.status}
-                            </span>
-                        </div>
-
-                        {/* Subtle Connecting Line */}
-                        {index < overallStatusSteps.length - 1 && (
-                            <div
-                                className="absolute top-2.5 left-1/2 w-full h-px bg-gray-200"
-                                style={{ zIndex: -1, transform: 'translateX(-50%)' }}
-                            />
-                        )}
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
-        </div>
         </div>
     )
 }

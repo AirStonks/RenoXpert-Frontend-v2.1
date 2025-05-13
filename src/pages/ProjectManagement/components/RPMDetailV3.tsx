@@ -19,9 +19,15 @@ interface Props {
     setRenoProgress: React.Dispatch<React.SetStateAction<RenoProgress | null>>;
 }
 
+const formatDate = (date: string) => {
+    if (!date) return ''; // Handle undefined or null dates
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
+};
+
 function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
     const [selectedTask, setSelectedTask] = useState<RPMTask | null>(null);
-    const [selectedSection, setSelctedSection] = useState<string | null>(null);
+    const [selectedSection, setSelectedSection] = useState<string | null>(null);
 
     const getStatusKey = (status: string | undefined) => {
         if (!status) return 'Not Available';
@@ -32,29 +38,29 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
         return 'Not Available';
     };
 
-    // Helper function to get job completion percentage by job name
-    const getJobCompletion = (jobName: string): number => {
-        // Find the RPMJob with the matching job_name from rpm_jobs array
-        const job = renoProgress.rpm_jobs?.find(
-            (job) => job.name === jobName
-        );
-
-        // If job not found or no tasks, return 0
-        if (!job || !job.rpm_tasks || job.rpm_tasks.length === 0) {
-            return 0;
-        }
-
-        // Check if all tasks in the job have status "completed"
-        const allTasksCompleted = job.rpm_tasks.every(
-            (task) => task.status?.toLowerCase() === "completed" || task.status?.toLowerCase() === "not-available"
-        );
-
-        // Return 100 if all tasks are completed, otherwise 0
-        return allTasksCompleted ? 1 : 0;
-    };
-
     // Compute steps dynamically using useMemo to avoid unnecessary recalculations
     const overallStatusSteps = useMemo(() => {
+        // Helper function to get job completion percentage by job name
+        const getJobCompletion = (jobName: string): number => {
+            // Find the RPMJob with the matching job_name from rpm_jobs array
+            const job = renoProgress.rpm_jobs?.find(
+                (job) => job.name === jobName
+            );
+
+            // If job not found or no tasks, return 0
+            if (!job || !job.rpm_tasks || job.rpm_tasks.length === 0) {
+                return 0;
+            }
+
+            // Check if all tasks in the job have status "completed"
+            const allTasksCompleted = job.rpm_tasks.every(
+                (task) => task.status?.toLowerCase() === "completed" || task.status?.toLowerCase() === "not-available"
+            );
+
+            // Return 100 if all tasks are completed, otherwise 0
+            return allTasksCompleted ? 1 : 0;
+        };
+
         // Determine Defect & Permit status
         const defectAndPermitStatus =
             getJobCompletion('Defect') === 1 && getJobCompletion('Permit') === 1
@@ -68,66 +74,75 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
             {
                 label: 'Sales',
                 status: 'Completed', // Always Completed
-                date: '22/05/2025'
+                date: renoProgress.date_management.sales_date ? formatDate(renoProgress.date_management.sales_date) : 'N/A'
             },
             {
                 label: 'Defect & Permit',
                 status: defectAndPermitStatus,
                 // status: 'Completed',
-                date: '28/05/2025'
+                date: renoProgress.date_management.defect_permit_date ? formatDate(renoProgress.date_management.defect_permit_date) : 'TBC'
             },
             {
                 label: 'Renovation',
                 status: renovationStatus,
                 // status: 'Completed',
-                date: '10/06/2025'
+                date: renoProgress.date_management.reno_date ? formatDate(renoProgress.date_management.reno_date) : 'TBC'
             },
             {
                 label: 'QC',
                 status: 'Not Started',
-                date: '01/07/2025'
+                date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.qc_date) : 'TBC'
             },
             {
                 label: 'Cleaning',
                 status: 'Not Started',
-                date: '08/07/2025'
+                date: renoProgress.date_management.cleaning_date ? formatDate(renoProgress.date_management.cleaning_date) : 'TBC'
             },
             {
                 label: 'Contractor Handover',
                 status: 'Not Started',
-                date: '10/07/2025'
+                date: renoProgress.date_management.ch_date ? formatDate(renoProgress.date_management.ch_date) : 'TBC'
             },
             {
                 label: 'Owner Handover',
                 status: 'Not Started',
-                date: '12/07/2025'
+                date: renoProgress.date_management.oh_date ? formatDate(renoProgress.date_management.oh_date) : 'TBC'
             },
         ];
     }, [renoProgress]); // Recompute when renoProgress changes
 
     const handleStatusChange = useCallback(
-        (updatedRPMTask: RPMTask, newStatus: string) => {
-            setSelectedTask(updatedRPMTask);
-            setRenoProgress((prevRenoProgress) => {
-                if (!prevRenoProgress) return prevRenoProgress;
+        (updatedData: RPMTask | RenoProgress, newStatus: string) => {
+            if ('job_id' in updatedData) {
+                // Treat as RPMTask
+                setSelectedTask(updatedData);
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
 
-                const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
-                    if (rpmJob.id === updatedRPMTask?.job_id) {
-                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
-                            if (rpmTask.id === updatedRPMTask?.id) {
-                                return { ...rpmTask, status: newStatus };
-                            }
-                            return rpmTask;
-                        });
-                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
-                    }
-                    return rpmJob;
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        if (rpmJob.id === updatedData.job_id) {
+                            const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                                if (rpmTask.id === updatedData.id) {
+                                    return { ...rpmTask, status: newStatus };
+                                }
+                                return rpmTask;
+                            });
+                            return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                        }
+                        return rpmJob;
+                    });
+
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
                 });
-
-                return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
-            });
+            } else if ('rpm_jobs' in updatedData) {
+                setRenoProgress(updatedData);
+                setSelectedTask({
+                    ...selectedTask,
+                    status: "completed"
+                });
+            }
         },
-        [setRenoProgress]
+        [selectedTask, setRenoProgress]
     );
 
     const handleUpdateComment = useCallback(
@@ -206,10 +221,10 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                     )}
                                     <span
                                         className={`relative inline-flex w-8 h-8 rounded-full items-center justify-center text-white font-medium transition-all duration-200 ${step.status === 'Completed'
-                                                ? 'bg-green-500'
-                                                : step.status === 'In Progress'
-                                                    ? 'bg-yellow-500'
-                                                    : 'bg-gray-300'
+                                            ? 'bg-green-500'
+                                            : step.status === 'In Progress'
+                                                ? 'bg-yellow-500'
+                                                : 'bg-gray-300'
                                             } hover:scale-110`}
                                     >
                                         {index + 1}
@@ -219,10 +234,10 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                     <div className="font-semibold">{step.label}</div>
                                     <div
                                         className={`text-xs px-2 rounded ${step.status === 'Completed'
-                                                ? 'text-green-800'
-                                                : step.status === 'In Progress'
-                                                    ? 'text-yellow-800'
-                                                    : 'text-gray-800'
+                                            ? 'text-green-800'
+                                            : step.status === 'In Progress'
+                                                ? 'text-yellow-800'
+                                                : 'text-gray-800'
                                             }`}
                                     >
                                         {step.status}
@@ -236,8 +251,8 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                 {index < overallStatusSteps.length - 1 && (
                                     <div
                                         className={`hidden sm:block absolute h-1 top-4 w-[calc(100%-2.5rem)] left-1/2 ${step.status === 'Completed' || overallStatusSteps[index + 1].status === 'Completed'
-                                                ? 'bg-green-500'
-                                                : 'bg-gray-300'
+                                            ? 'bg-green-500'
+                                            : 'bg-gray-300'
                                             }`}
                                         style={{ transform: 'translateX(0)', marginLeft: '1.25rem', zIndex: -1 }}
                                     />
@@ -307,7 +322,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                     <div className="flex flex-col flex-[3] w-full gap-8">
                         <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-0 h-max">
                             <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                                <h3 className="text-lg font-semibold">Room Furniture</h3>
+                                <h3 className="text-lg font-semibold">Room & Furnitures</h3>
                             </div>
                             <div className="p-4 overflow-x-auto">
                                 <table className="w-full text-sm">
@@ -362,7 +377,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                             </div>
                         </div>
 
-                        <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-[200px] h-max">
+                        <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-0 h-max">
                             <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
                                 <h3 className="text-lg font-semibold">Bathroom Section</h3>
                             </div>
@@ -423,7 +438,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                     <div className="flex flex-col flex-[1] w-full gap-8">
                         <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-[200px] h-max">
                             <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                                <h3 className="text-lg font-semibold">Living + Dining</h3>
+                                <h3 className="text-lg font-semibold">Dining, Yard, Foyer</h3>
                             </div>
                             <div className="p-4 overflow-auto">
                                 <table className="w-full text-sm">
@@ -435,7 +450,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                     </thead>
                                     <tbody>
                                         {(() => {
-                                            const diningJob = renoProgress.rpm_jobs.find((job) => job.job_category === "living_dining");
+                                            const diningJob = renoProgress.rpm_jobs.find((job) => job.job_category === "dining_yard_foyer");
                                             if (!diningJob) return null;
 
                                             return diningJob.rpm_tasks.map((task) => {
@@ -449,7 +464,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                                                 }`}
                                                             onClick={() => {
                                                                 task && setSelectedTask(task);
-                                                                setSelctedSection("Living + Dining");
+                                                                setSelectedSection("Dining, Yard, Foyer");
                                                             }}
                                                         >
                                                             {task ? getStatusKey(task.status) : "-"}
@@ -491,7 +506,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                                                 }`}
                                                             onClick={() => {
                                                                 task && setSelectedTask(task);
-                                                                setSelctedSection("Kitchen");
+                                                                setSelectedSection("Kitchen");
                                                             }}
                                                         >
                                                             {task ? getStatusKey(task.status) : "-"}
@@ -507,7 +522,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
 
                         <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-[200px] h-max">
                             <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                                <h3 className="text-lg font-semibold">Electrical</h3>
+                                <h3 className="text-lg font-semibold">Electrical Appliances</h3>
                             </div>
                             <div className="p-4 overflow-auto">
                                 <table className="w-full text-sm">
@@ -533,7 +548,49 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                                                 }`}
                                                             onClick={() => {
                                                                 task && setSelectedTask(task);
-                                                                setSelctedSection("Electrical");
+                                                                setSelectedSection("Electrical");
+                                                            }}
+                                                        >
+                                                            {task ? getStatusKey(task.status) : "-"}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            });
+                                        })()}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-[200px] h-max">
+                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
+                                <h3 className="text-lg font-semibold">Living</h3>
+                            </div>
+                            <div className="p-4 overflow-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="bg-gray-100">
+                                            <th className="p-2 text-left w-1/3">Item Name</th>
+                                            <th className="p-2 text-center w-1/3">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(() => {
+                                            const livingJob = renoProgress.rpm_jobs.find((job) => job.job_category === "living");
+                                            if (!livingJob) return null;
+
+                                            return livingJob.rpm_tasks.map((task) => {
+                                                const status = getStatusKey(task?.status);
+
+                                                return (
+                                                    <tr key={task.id} className="border-b hover:bg-gray-50">
+                                                        <td className="p-2 w-1/3">{task.item_name}</td>
+                                                        <td
+                                                            className={`p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline" : ""
+                                                                }`}
+                                                            onClick={() => {
+                                                                task && setSelectedTask(task);
+                                                                setSelectedSection("Living");
                                                             }}
                                                         >
                                                             {task ? getStatusKey(task.status) : "-"}
@@ -557,7 +614,10 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
             <TaskDetailDrawer
                 selectedTask={selectedTask}
                 selectedSection={selectedSection}
-                onClose={() => setSelectedTask(null)}
+                onClose={() => {
+                    setSelectedTask(null)
+                    setSelectedSection(null)
+                }}
                 onSave={handleUpdateComment}
                 onAttachmentChanges={handleAttachmentUpdate}
                 taskName="Renovation Task"

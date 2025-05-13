@@ -1073,6 +1073,15 @@ export interface RenoProgress {
     p2b_completion?: number,
     iot_completion?: number,
     post_reno_completion?: number,
+    date_management?: {
+        sales_date?: string,
+        defect_permit_date?: string,
+        reno_date?: string,
+        qc_date?: string,
+        cleaning_date?: string,
+        ch_date?: string,
+        oh_date?: string,
+    }
     remaining_percentage?: number,
     paid_percentage?: number,
     resource_id?: string,

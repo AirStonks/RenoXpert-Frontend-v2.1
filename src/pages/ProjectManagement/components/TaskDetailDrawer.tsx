@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from "react";
 import { TaskStatusBadge } from "./rpm/task-status-badge";
-import { RPMTask, Attachment } from "../../../types";
+import { RPMTask, Attachment, RenoProgress } from "../../../types";
 import { changeRPMTaskStatus, removeRPMExternalAttachment, removeRPMInternalAttachment, updateRPMExternalComment, updateRPMInternalComment, uploadRPMExternalAttachment, uploadRPMInternalAttachment } from "../../../services/api";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -141,7 +141,7 @@ interface TaskDetailDrawerProps {
     onAttachmentChanges?: (updatedRPMTask: RPMTask, taskId: string) => void;
     taskName: string;
     statusOptions?: string[];
-    onStatusChange?: (updatedRPMTask: RPMTask, newStatus: string) => void;
+    onStatusChange?: (updatedData: RPMTask | RenoProgress, newStatus: string) => void;
 }
 
 export const TaskDetailDrawer = ({
@@ -166,10 +166,10 @@ export const TaskDetailDrawer = ({
 
         try {
             const response = await changeRPMTaskStatus(Number(selectedTask?.id), newStatus);
-            const updatedRPMTask: RPMTask = response.data;
+            const data: RPMTask | RenoProgress = response.data;
 
             if (response?.success) {
-                onStatusChange?.(updatedRPMTask, newStatus);
+                onStatusChange?.(data, newStatus);
                 notify("success", "Status updated successfully");
                 return;
             }
@@ -417,7 +417,7 @@ export const TaskDetailDrawer = ({
                         <div className="space-y-6 mt-2 overflow-y-auto flex-grow">
                             <div className="space-y-2">
                                 <h3 className="text-xl font-semibold text-gray-900">
-                                    {selectedTask.room_name ? `${selectedTask.room_name} - ` : `${selectedSection} - `} {selectedTask.item_name}
+                                    {selectedTask.room_name ? `${selectedTask.room_name} - ` : selectedSection && `${selectedSection} - `} {selectedTask.item_name}
                                 </h3>
                                 <div className="flex items-center gap-4 rounded-lg bg-slate-200 p-2">
                                     <TaskStatusBadge
