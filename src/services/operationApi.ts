@@ -371,3 +371,129 @@ export const changeTaskStatus = async (renoProgressId: number, taskId: number, s
         throw error;
     }
 }
+
+
+
+
+
+
+export const changeRPMTaskStatus = async (rpmTaskId: number, status: string) => {
+    try {
+        const response = await axios.get(API_URL + `rpm-task/${rpmTaskId}/status/${status}`, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const updateRPMInternalComment = async (rpmTaskId: number, comment: string) => {
+    try {
+        const response = await axios.put(API_URL + `rpm-task/${rpmTaskId}/comment/internal`, { internal_comment: comment }, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const updateRPMExternalComment = async (rpmTaskId: number, comment: string) => {
+    try {
+        const response = await axios.put(API_URL + `rpm-task/${rpmTaskId}/comment/external`, { owner_comment: comment }, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const uploadRPMInternalAttachment = async (rpmTaskId: number, files: File[]) => {
+    try {
+        // Create a new FormData instance
+        const formData = new FormData();
+
+        // Append each file to the FormData object
+        files.forEach(file => {
+            formData.append('internal_attachments[]', file);  // 'attachments[]' because your backend expects an array
+        });
+
+        // Make the API request
+        const response = await axios.post(API_URL + `rpm-task/${rpmTaskId}/attachment/internal/upload`,
+            formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handleOperation401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+}
+
+export const uploadRPMExternalAttachment = async (rpmTaskId: number, files: File[]) => {
+    try {
+        // Create a new FormData instance
+        const formData = new FormData();
+
+        // Append each file to the FormData object
+        files.forEach(file => {
+            formData.append('owner_attachments[]', file);  // 'attachments[]' because your backend expects an array
+        });
+
+        // Make the API request
+        const response = await axios.post(API_URL + `rpm-task/${rpmTaskId}/attachment/external/upload`,
+            formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handleOperation401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+}
+
+export const removeRPMInternalAttachment = async (rpmTaskId: number, attachmentIndex: number) => {
+    try {
+        const response = await axios.get(API_URL + `rpm-task/${rpmTaskId}/attachment/internal/${attachmentIndex}/remove`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const removeRPMExternalAttachment = async (rpmTaskId: number, attachmentIndex: number) => {
+    try {
+        const response = await axios.get(API_URL + `rpm-task/${rpmTaskId}/attachment/external/${attachmentIndex}/remove`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
