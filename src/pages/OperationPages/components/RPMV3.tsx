@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { RenoProgress } from '../../../types';
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
+import { RenoProgress, RPMTask } from '../../../types';
 import { Slide, toast } from 'react-toastify';
 import { KTAccordion } from '../../../metronic/core/components/accordion/accordion';
 import {
@@ -13,6 +13,7 @@ import {
     LightBulbIcon,
 } from '@heroicons/react/24/outline';
 import { TaskStatusBadge } from '../../ProjectManagement/components/rpm/task-status-badge';
+import { TaskDetailDrawer } from './TaskDetailDrawer';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -25,6 +26,14 @@ const formatDate = (date: string) => {
     if (!date) return ''; // Handle undefined or null dates
     const [year, month, day] = date.split('-');
     return `${day}/${month}/${year}`;
+};
+
+const statusColors = {
+    'Not Started': 'bg-gray-100 text-gray-800',
+    'Pending': 'bg-amber-100 text-amber-800',
+    'In Progress': 'bg-blue-100 text-blue-800',
+    'Completed': 'bg-green-100 text-green-800',
+    'Not Available': 'bg-red-100 text-red-800',
 };
 
 interface RPMV3Props {
@@ -45,6 +54,9 @@ const jobCategories = [
 ];
 
 function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
+    const [selectedTask, setSelectedTask] = useState<RPMTask | null>(null);
+    const [selectedSection, setSelectedSection] = useState<string | null>(null);
+
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('vp'); // Default active tab
     const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown visibility
@@ -53,6 +65,15 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
     // Find the active category details (name and icon) based on job_category
     const activeCategory = jobCategories.find(cat => cat.category === activeTab) || jobCategories[0];
     const ActiveTabIcon = activeCategory.icon;
+
+    const getStatusKey = (status: string | undefined) => {
+        if (!status) return 'Not Available';
+        if (status.toLowerCase() === 'not-started') return 'Not Started';
+        if (status.toLowerCase() === 'pending') return 'Pending';
+        if (status.toLowerCase() === 'in-progress') return 'In Progress';
+        if (status.toLowerCase() === 'completed') return 'Completed';
+        return 'Not Available';
+    };
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -177,10 +198,102 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
         }
     }, [renoProgress]);
 
+    const handleStatusChange = useCallback(
+        (updatedData: RPMTask | RenoProgress, newStatus: string) => {
+            if ('job_id' in updatedData) {
+                // Treat as RPMTask
+                setSelectedTask(updatedData);
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        if (rpmJob.id === updatedData.job_id) {
+                            const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                                if (rpmTask.id === updatedData.id) {
+                                    return { ...rpmTask, status: newStatus };
+                                }
+                                return rpmTask;
+                            });
+                            return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                        }
+                        return rpmJob;
+                    });
+
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+                });
+            } else if ('rpm_jobs' in updatedData) {
+                setRenoProgress(updatedData);
+                setSelectedTask({
+                    ...selectedTask,
+                    status: "completed"
+                });
+            }
+        },
+        [selectedTask, setRenoProgress]
+    );
+
+    const handleUpdateComment = useCallback(
+        (comment_type: 'internal' | 'external', taskId: string, comment: string) => {
+            setRenoProgress((prevRenoProgress) => {
+                if (!prevRenoProgress) return prevRenoProgress;
+                const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                    const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                        if (rpmTask.id === taskId) {
+                            if (comment_type === 'internal') {
+                                return { ...rpmTask, internal_comment: comment };
+                            } else if (comment_type === 'external') {
+                                return { ...rpmTask, owner_comment: comment };
+                            }
+                        }
+                        return rpmTask;
+                    });
+                    return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                });
+                console.log({ ...prevRenoProgress, rpm_jobs: updatedRPMJobs });
+
+                return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+            });
+
+            setSelectedTask((prevSelectedTask) => {
+                if (!prevSelectedTask) return prevSelectedTask;
+                if (prevSelectedTask.id === taskId) {
+                    if (comment_type === 'internal') {
+                        return { ...prevSelectedTask, internal_comment: comment };
+                    } else if (comment_type === 'external') {
+                        return { ...prevSelectedTask, owner_comment: comment };
+                    }
+                }
+                return prevSelectedTask;
+            });
+        },
+        [setRenoProgress]
+    );
+
+    const handleAttachmentUpdate = useCallback(
+        (updatedRPMTask: RPMTask, taskId: string) => {
+            setRenoProgress((prevRenoProgress) => {
+                if (!prevRenoProgress) return prevRenoProgress;
+                const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                    const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                        if (rpmTask.id === taskId) {
+                            return updatedRPMTask;
+                        }
+                        return rpmTask;
+                    });
+                    return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                });
+                console.log({ ...prevRenoProgress, rpm_jobs: updatedRPMJobs });
+                return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+            });
+
+            setSelectedTask(updatedRPMTask);
+        }, [setRenoProgress]
+    );
+
     return (
         <div className="flex flex-col w-full py-2 space-y-2">
             {/* General Info Card - Sticky */}
-            <div className="sticky top-4 z-10 bg-white border rounded-xl" data-accordion="true">
+            <div className="sticky top-4 z-40 bg-white border rounded-xl" data-accordion="true">
                 <div className="card accordion-item w-full" data-accordion-item="true" id="accordion_1_item_1">
                     <button className="accordion-toggle p-4" data-accordion-toggle="#accordion_1_content_1">
                         <div className="flex space-x-3 items-center">
@@ -279,12 +392,13 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                 </div>
             </section>
 
+
             {/* Tabs Section */}
             <section className="space-y-2">
                 <div className="relative card border border-gray-200 rounded-lg" ref={dropdownRef}>
                     {/* Section Header with Dropdown Toggle */}
                     <button
-                        className="w-full p-4 flex justify-between items-center bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-4 flex justify-between items-center rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ease-in-out"
                         onClick={toggleDropdown}
                         aria-expanded={isDropdownOpen}
                         aria-controls="dropdown-menu"
@@ -294,76 +408,170 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                             <span className="text-sm font-bold text-gray-900">{activeCategory.name}</span>
                         </div>
                         <ChevronDownIcon
-                            className={`h-5 w-5 text-gray-600 transform transition-transform duration-300 ease-in-out ${isDropdownOpen ? 'rotate-180' : ''
+                            className={`h-5 w-5 text-gray-600 transform transition-transform duration-200 ease-in-out ${isDropdownOpen ? 'rotate-180' : ''
                                 }`}
                         />
                     </button>
 
                     {/* Dropdown Menu */}
-                    {isDropdownOpen && (
-                        <div
-                            id="dropdown-menu"
-                            className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 w-full transition-all duration-300 ease-in-out transform origin-top"
-                            style={{
-                                opacity: isDropdownOpen ? 1 : 0,
-                                transform: isDropdownOpen ? 'scaleY(1)' : 'scaleY(0)',
-                                visibility: isDropdownOpen ? 'visible' : 'hidden',
-                            }}
-                        >
-                            {jobCategories.map((cat) => {
-                                const CategoryIcon = cat.icon;
-                                return (
-                                    <button
-                                        key={cat.category}
-                                        className={`w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-blue-50 flex items-center space-x-2 transition-colors duration-150 ${activeTab === cat.category ? 'bg-blue-50 font-semibold text-blue-600' : ''
-                                            }`}
-                                        onClick={() => handleTabSelect(cat.category)}
-                                        onKeyDown={(e) => handleKeyDown(e, cat.category)}
-                                        role="menuitem"
-                                        tabIndex={0}
-                                    >
-                                        <CategoryIcon className="h-5 w-5 text-gray-600" />
-                                        <span>{cat.name}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
+                    <div
+                        id="dropdown-menu"
+                        className={`absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 w-full transition-all duration-200 ease-in-out transform origin-top ${isDropdownOpen ? 'opacity-100 scale-y-100 visible' : 'opacity-0 scale-y-95 pointer-events-none'
+                            }`}
+                    >
+                        {jobCategories.map((cat) => {
+                            const CategoryIcon = cat.icon;
+                            return (
+                                <button
+                                    key={cat.category}
+                                    className={`w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-blue-50 flex items-center space-x-2 transition-colors duration-150 ease-in-out ${activeTab === cat.category ? 'bg-blue-50 font-semibold text-blue-600' : ''
+                                        }`}
+                                    onClick={() => handleTabSelect(cat.category)}
+                                    onKeyDown={(e) => handleKeyDown(e, cat.category)}
+                                    role="menuitem"
+                                    tabIndex={0}
+                                >
+                                    <CategoryIcon className="h-5 w-5 text-gray-600" />
+                                    <span>{cat.name}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
-                <div className="shadow-md rounded-lg overflow-hidden bg-white w-full">
-                    <div className="bg-gray-200 border-b border-gray-200 p-2 px-4">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm font-semibold">{activeCategory.name}</span>
+                {/* Content Section */}
+                {['room_furnitures', 'bathroom'].includes(activeTab) ? (
+                    <div className="shadow-lg rounded-xl overflow-hidden bg-white w-full max-w-[calc(100vw-2rem)] mx-auto">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-base font-semibold text-gray-800">
+                                    {activeCategory.name}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Table Container */}
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="bg-gray-50 text-gray-600">
+                                        <th className="p-3 text-left text-xs font-medium uppercase tracking-wide sticky left-0 bg-gray-50 z-10 min-w-[150px] border-r border-gray-200 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]">
+                                            Item Name
+                                        </th>
+                                        {(() => {
+                                            const p2aJob = renoProgress.rpm_jobs.find(
+                                                (job) => job.job_category === activeTab
+                                            );
+                                            if (!p2aJob) return null;
+                                            const rooms = Array.from(
+                                                new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean))
+                                            );
+                                            return rooms.map((room) => (
+                                                <th
+                                                    key={room}
+                                                    className="p-3 text-center text-xs font-medium uppercase tracking-wide min-w-[120px]"
+                                                >
+                                                    {room}
+                                                </th>
+                                            ));
+                                        })()}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(() => {
+                                        const p2aJob = renoProgress.rpm_jobs.find(
+                                            (job) => job.job_category === activeTab
+                                        );
+                                        if (!p2aJob) return null;
+
+                                        const items = Array.from(new Set(p2aJob.rpm_tasks.map((task) => task.item_name)));
+
+                                        return items.map((item) => {
+                                            const rooms = Array.from(
+                                                new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean))
+                                            );
+
+                                            return (
+                                                <tr
+                                                    key={item}
+                                                    className="border-b border-gray-100 hover:bg-gray-50 transition-all duration-200 ease-in-out transform hover:scale-[1.005]"
+                                                >
+                                                    <td className="p-3 text-3xs text-gray-700 sticky left-0 bg-white z-10 font-medium border-r border-gray-200 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]">
+                                                        {item}
+                                                    </td>
+                                                    {rooms.map((room) => {
+                                                        const task = p2aJob.rpm_tasks.find(
+                                                            (t) => t.room_name === room && t.item_name === item
+                                                        );
+                                                        const statusKey = getStatusKey(task?.status);
+
+                                                        return (
+                                                            <td
+                                                                key={`${room}-${item}`}
+                                                                className={`p-3 text-center text-3xs min-w-[120px] ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline" : ""}`}
+                                                                onClick={() => task && setSelectedTask(task)}
+                                                            >
+                                                                {task ? getStatusKey(task.status) : "-"}
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr>
+                                            );
+                                        });
+                                    })()}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div className="p-2">
-                        <div>
-                            <ul className="space-y-1">
-                                {renoProgress.rpm_jobs
-                                    .find((job) => job.job_category === activeTab)
-                                    ?.rpm_tasks.map((task) => (
-                                        <li
-                                            key={task.id}
-                                            className="p-2 rounded-lg bg-white shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <span className="font-medium text-2xs">{task.item_name}</span>
-                                                <TaskStatusBadge status={task.status} />
-                                            </div>
-                                            <p className="text-3xs text-gray-500 mt-0.5">
-                                                Updated: {task.updated_at || "N/A"} by {task.updated_by?.name || "N/A"}
-                                            </p>
-                                        </li>
-                                    )) || (
-                                        <li className="p-2 text-2xs text-gray-500">No tasks available</li>
-                                    )}
-                            </ul>
+                ) : (
+                    <div className="shadow-md rounded-lg overflow-hidden bg-white w-full">
+                        <div className="bg-gray-200 border-b border-gray-200 p-2 px-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-semibold">{activeCategory.name}</span>
+                            </div>
+                        </div>
+                        <div className="p-2">
+                            <div>
+                                <ul className="space-y-1">
+                                    {renoProgress.rpm_jobs
+                                        .find((job) => job.job_category === activeTab)
+                                        ?.rpm_tasks.map((task) => (
+                                            <li
+                                                key={task.id}
+                                                className="p-2 rounded-lg bg-white shadow-sm hover:shadow-md transition-all duration-200 ease-in-out cursor-pointer"
+                                                onClick={() => task && setSelectedTask(task)}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-medium text-2xs">{task.item_name}</span>
+                                                    <TaskStatusBadge status={task.status} isStatic={true} />
+                                                </div>
+                                                <p className="text-3xs text-gray-500 mt-0.5">
+                                                    Updated: {task.updated_at || 'N/A'} by {task.updated_by?.name || 'N/A'}
+                                                </p>
+                                            </li>
+                                        )) || <li className="p-2 text-2xs text-gray-500">No tasks available</li>}
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </section>
-        </div>
+
+            <TaskDetailDrawer
+                selectedTask={selectedTask}
+                selectedSection={selectedSection}
+                onClose={() => {
+                    setSelectedTask(null)
+                    setSelectedSection(null)
+                }}
+                onSave={handleUpdateComment}
+                onAttachmentChanges={handleAttachmentUpdate}
+                taskName="Task"
+                onStatusChange={handleStatusChange}
+            />
+
+        </div >
     );
 }
 
