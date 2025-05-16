@@ -6,7 +6,6 @@ import {
     HomeIcon,
     PhoneIcon,
     UserIcon,
-    ChevronDownIcon,
     DocumentCheckIcon,
     DocumentTextIcon,
     TableCellsIcon,
@@ -14,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { TaskStatusBadge } from '../../ProjectManagement/components/rpm/task-status-badge';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
+import { BottomNav } from './bottom-nav-bar';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -58,7 +58,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
     const [selectedSection, setSelectedSection] = useState<string | null>(null);
 
     const [isLoading, setIsLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('vp'); // Default active tab
+    const [activeTab, setActiveTab] = useState('room_furnitures'); // Default active tab
     const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown visibility
     const dropdownRef = useRef<HTMLDivElement>(null); // Ref for dropdown container
 
@@ -324,68 +324,92 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
             </div>
 
             {/* Progress Stepper */}
-            <section className="card" aria-labelledby="progress-heading">
-                <div className="flex flex-row border border-gray-200 rounded-lg overflow-hidden">
-                    <div className="flex items-center justify-center p-4 bg-white border-b md:border-b-0 md:border-r border-gray-200 md:w-1/3">
-                        <div className="relative w-24 h-24">
-                            <svg className="w-full h-full" viewBox="0 0 100 100">
-                                <circle
-                                    className="text-gray-200"
-                                    strokeWidth="8"
-                                    stroke="currentColor"
-                                    fill="transparent"
-                                    r="44"
-                                    cx="50"
-                                    cy="50"
-                                />
-                                <circle
-                                    className="text-green-500"
-                                    strokeWidth="8"
-                                    stroke="currentColor"
-                                    fill="transparent"
-                                    r="44"
-                                    cx="50"
-                                    cy="50"
-                                    strokeDasharray={`${progressPercentage * 2.76} ${276 - progressPercentage * 2.76}`}
-                                    strokeDashoffset="0"
-                                    strokeLinecap="round"
-                                    transform="rotate(-90 50 50)"
-                                />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="text-center">
-                                    <span className="text-lg font-bold">{completedSteps} of {totalSteps}</span>
+            <section className="flex" aria-labelledby="progress-heading">
+                <div className=" overflow-x-auto w-full max-w-[calc(100vw-2rem)]">
+                    <div className="flex flex-row space-x-4 min-w-max">
+                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
+                            <div className="flex flex-row border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="flex items-center justify-center p-4 bg-white border-b md:border-b-0 md:border-r border-gray-200 md:w-1/3">
+                                    <div className="relative w-24 h-24">
+                                        <svg className="w-full h-full" viewBox="0 0 100 100">
+                                            <circle
+                                                className="text-gray-200"
+                                                strokeWidth="8"
+                                                stroke="currentColor"
+                                                fill="transparent"
+                                                r="44"
+                                                cx="50"
+                                                cy="50"
+                                            />
+                                            <circle
+                                                className="text-green-500"
+                                                strokeWidth="8"
+                                                stroke="currentColor"
+                                                fill="transparent"
+                                                r="44"
+                                                cx="50"
+                                                cy="50"
+                                                strokeDasharray={`${progressPercentage * 2.76} ${276 - progressPercentage * 2.76}`}
+                                                strokeDashoffset="0"
+                                                strokeLinecap="round"
+                                                transform="rotate(-90 50 50)"
+                                            />
+                                        </svg>
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="text-center">
+                                                <span className="text-lg font-bold">{completedSteps} of {totalSteps}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-white md:w-2/3">
+                                    <div className="flex items-center mb-2">
+                                        <h2 id="progress-heading" className="text-sm font-bold mr-3">
+                                            {currentStep.label}
+                                        </h2>
+                                        <span className="badge badge-xs badge-pill badge-warning badge-outline">
+                                            {currentStep.status}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="flex flex-col sm:flex-row sm:items-center">
+                                            <span className="text-gray-500 text-sm">Due Date:</span>
+                                            <span className="font-medium text-gray-700 text-xs">{currentStep.date}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <div className="flex flex-col sm:flex-row sm:items-center">
+                                                <span className="text-gray-500 text-sm font-semibold text-blue-600">CHD:</span>
+                                                <span className="font-medium text-blue-700 flex items-center text-xs">
+                                                    {renoProgress.date_management.ch_date ? formatDate(renoProgress.date_management.ch_date) : 'TBC'}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row sm:items-center">
+                                                <span className="text-gray-500 text-sm font-semibold text-green-600">OHD:</span>
+                                                <span className="font-medium text-gray-700 flex items-center text-xs">
+                                                    {renoProgress.date_management.oh_date ? formatDate(renoProgress.date_management.oh_date) : 'TBC'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="p-4 bg-white md:w-2/3">
-                        <div className="flex items-center mb-2">
-                            <h2 id="progress-heading" className="text-sm font-bold mr-3">
-                                {currentStep.label}
-                            </h2>
-                            <span className="badge badge-xs badge-pill badge-warning badge-outline">
-                                {currentStep.status}
-                            </span>
-                        </div>
-                        <div className="space-y-1">
-                            <div className="flex flex-col sm:flex-row sm:items-center">
-                                <span className="text-gray-500 text-sm">Due Date:</span>
-                                <span className="font-medium text-gray-700 text-xs">{currentStep.date}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <div className="flex flex-col sm:flex-row sm:items-center">
-                                    <span className="text-gray-500 text-sm font-semibold text-blue-600">CHD:</span>
-                                    <span className="font-medium text-blue-700 flex items-center text-xs">
-                                        {renoProgress.date_management.ch_date ? formatDate(renoProgress.date_management.ch_date) : 'TBC'}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col sm:flex-row sm:items-center">
-                                    <span className="text-gray-500 text-sm font-semibold text-green-600">OHD:</span>
-                                    <span className="font-medium text-gray-700 flex items-center text-xs">
-                                        {renoProgress.date_management.oh_date ? formatDate(renoProgress.date_management.oh_date) : 'TBC'}
-                                    </span>
-                                </div>
+                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
+                            <div className="p-4">
+                                <h3 className="text-sm font-bold">VP Status</h3>
+                                {/* <div className="flex flex-col">
+                                    <ul className='space-y-1'>
+                                        <li className="p-2 rounded-lg bg-white shadow-sm hover:shadow-md transition-all duration-200 ease-in-out cursor-pointer">
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-medium text-2xs">{task.item_name}</span>
+                                                <TaskStatusBadge status={task.status} isStatic={true} />
+                                            </div>
+                                            <p className="text-3xs text-gray-500 mt-0.5">
+                                                Updated: {task.updated_at || 'N/A'} by {task.updated_by?.name || 'N/A'}
+                                            </p>
+                                        </li>
+                                    </ul>
+                                </div> */}
                             </div>
                         </div>
                     </div>
@@ -393,68 +417,24 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
             </section>
 
 
-            {/* Tabs Section */}
-            <section className="space-y-2">
-                <div className="relative card border border-gray-200 rounded-lg" ref={dropdownRef}>
-                    {/* Section Header with Dropdown Toggle */}
-                    <button
-                        className="w-full p-4 flex justify-between items-center rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ease-in-out"
-                        onClick={toggleDropdown}
-                        aria-expanded={isDropdownOpen}
-                        aria-controls="dropdown-menu"
-                    >
-                        <div className="flex items-center space-x-2">
-                            <ActiveTabIcon className="h-5 w-5 text-gray-600" />
-                            <span className="text-sm font-bold text-gray-900">{activeCategory.name}</span>
-                        </div>
-                        <ChevronDownIcon
-                            className={`h-5 w-5 text-gray-600 transform transition-transform duration-200 ease-in-out ${isDropdownOpen ? 'rotate-180' : ''
-                                }`}
-                        />
-                    </button>
-
-                    {/* Dropdown Menu */}
-                    <div
-                        id="dropdown-menu"
-                        className={`absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 w-full transition-all duration-200 ease-in-out transform origin-top ${isDropdownOpen ? 'opacity-100 scale-y-100 visible' : 'opacity-0 scale-y-95 pointer-events-none'
-                            }`}
-                    >
-                        {jobCategories.map((cat) => {
-                            const CategoryIcon = cat.icon;
-                            return (
-                                <button
-                                    key={cat.category}
-                                    className={`w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-blue-50 flex items-center space-x-2 transition-colors duration-150 ease-in-out ${activeTab === cat.category ? 'bg-blue-50 font-semibold text-blue-600' : ''
-                                        }`}
-                                    onClick={() => handleTabSelect(cat.category)}
-                                    onKeyDown={(e) => handleKeyDown(e, cat.category)}
-                                    role="menuitem"
-                                    tabIndex={0}
-                                >
-                                    <CategoryIcon className="h-5 w-5 text-gray-600" />
-                                    <span>{cat.name}</span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Content Section */}
+            {/* Task Section */}
+            <section className="space-y-2 h-full max-h-[calc(100vw-2rem)]">
+                {/* Task List Section */}
                 {['room_furnitures', 'bathroom'].includes(activeTab) ? (
                     <div className="shadow-lg rounded-xl overflow-hidden bg-white w-full max-w-[calc(100vw-2rem)] mx-auto">
                         {/* Header */}
                         <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-base font-semibold text-gray-800">
+                                <span className="text-sm font-semibold text-gray-800">
                                     {activeCategory.name}
                                 </span>
                             </div>
                         </div>
 
                         {/* Table Container */}
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto overflow-y-auto h-full max-h-[calc(100vw-2rem)]">
                             <table className="w-full text-sm">
-                                <thead>
+                                <thead className="sticky top-0 z-20">
                                     <tr className="bg-gray-50 text-gray-600">
                                         <th className="p-3 text-left text-xs font-medium uppercase tracking-wide sticky left-0 bg-gray-50 z-10 min-w-[150px] border-r border-gray-200 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]">
                                             Item Name
@@ -470,7 +450,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                             return rooms.map((room) => (
                                                 <th
                                                     key={room}
-                                                    className="p-3 text-center text-xs font-medium uppercase tracking-wide min-w-[120px]"
+                                                    className="p-3 text-center text-xs font-medium uppercase tracking-wide min-w-[120px] bg-gray-50"
                                                 >
                                                     {room}
                                                 </th>
@@ -525,13 +505,17 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                         </div>
                     </div>
                 ) : (
-                    <div className="shadow-md rounded-lg overflow-hidden bg-white w-full">
-                        <div className="bg-gray-200 border-b border-gray-200 p-2 px-4">
+                    // Task List Section
+                    <div className="shadow-lg rounded-xl overflow-hidden bg-white w-full max-w-[calc(100vw-2rem)] mx-auto">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-semibold">{activeCategory.name}</span>
+                                <span className="text-sm font-semibold text-gray-800">
+                                    {activeCategory.name}
+                                </span>
                             </div>
                         </div>
-                        <div className="p-2">
+                        <div className="p-2 overflow-y-auto h-full max-h-[calc(100vw-2rem)]">
                             <div>
                                 <ul className="space-y-1">
                                     {renoProgress.rpm_jobs
@@ -571,7 +555,12 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                 onStatusChange={handleStatusChange}
             />
 
-        </div >
+            <BottomNav
+                activeItem={activeTab}
+                setActiveItem={setActiveTab}
+            />
+
+        </div>
     );
 }
 

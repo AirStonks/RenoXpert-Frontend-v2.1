@@ -8,6 +8,9 @@ import useFetchOwnerOrder from '../../hook/useFetchOwnerOrder';
 import { Link } from 'react-router-dom';
 import { toggleOwnerOrderAddon } from '../../services/ownerApi';
 import ConfirmUnincludeAddon from './components/Modals/ConfirmUnincludeAddon';
+import { CreditCardIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import PaymentInfoModal from './components/Modals/PaymentInfoModal';
+import AgreePartitionRiskModal from './components/Modals/AgreePartitionRiskModal';
 
 const convertToWords = (num: number) => {
     const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
@@ -52,6 +55,7 @@ function OrderOverview() {
 
     const [agreeTnc, setAgreeTnc] = useState(false);
     const [agreeRenoAgreement, setAgreeRenoAgreement] = useState(false);
+    const [agreePartitionRisk, setAgreePartitionRisk] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -139,16 +143,18 @@ function OrderOverview() {
         // Update orderDetail with filtered total_amount (assuming you can modify it)
         setOrderDetail(prev => ({
             ...prev,
-            total_amount: filteredTotalAmount
+            total_amount: orderDetail.f_1 ? orderDetail.total_amount : filteredTotalAmount
         }));
 
-    }, [orderDetail?.latest_quotation]);
+    }, [orderDetail?.latest_quotation, orderDetail?.total_amount, orderDetail?.f_1]);
 
     useEffect(() => {
         if (orderDetail) {
             const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(orderDetail?.latest_quotation?.metadata)));
 
-            const totalAmount = orderDetail.final_amount > 0 ? orderDetail.final_amount : packages.reduce((total, pkg) => {
+
+
+            const totalAmount = orderDetail.f_1 ? orderDetail.total_amount : packages.reduce((total, pkg) => {
                 // Skip if package is not an addon or not included
                 if (pkg.is_addon === true && pkg.is_addon_included === false) {
                     return total;
@@ -259,6 +265,20 @@ function OrderOverview() {
     const handleAgreeRenoAgreementChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setAgreeRenoAgreement(event.target.checked);
     };
+
+    const handleAgreePartitionRisk = () => {
+        // If not check, show modal
+        if (!agreePartitionRisk) {
+            const modalEl = document.querySelector('#agree_partition_risk_modal') as HTMLElement;
+            const modal = KTModal.getInstance(modalEl);
+
+            modal.show();
+        } else {
+            // If check, uncheck
+            setAgreePartitionRisk(!agreePartitionRisk);
+
+        }
+    }
 
     const handleAgreeOrder = async () => {
         navigate('/confirm/order/otp/verify', {
@@ -510,7 +530,7 @@ function OrderOverview() {
 
     );
 
-    const isButtonDisabled = !(agreeTnc && agreeRenoAgreement);
+    const isButtonDisabled = !(agreeTnc && agreeRenoAgreement && agreePartitionRisk);
 
     return (
         <>
@@ -574,7 +594,7 @@ function OrderOverview() {
                             <div className="overflow-x-auto">
                                 {/* Progress Bar */}
                                 {orderDetail.status === 'confirmed' && (
-                                    <div className="flex flex-col mb-6">
+                                    <div className="flex flex-col mb-4">
                                         <div className="flex flex-col sm:flex-row justify-between items-center mb-2">
                                             <span className="text-md text-gray-900 font-semibold">
                                                 {(100 - orderDetail.sale.remaining_percentage * 100).toFixed(2)}%
@@ -619,140 +639,114 @@ function OrderOverview() {
                                     </div>
                                 )}
 
-                                <div className="flex flex-col md:flex-row gap-4 mb-6">
-                                    {/* Quotation Detail */}
-                                    <div className="card flex-1 bg-white shadow-sm rounded-lg">
-                                        <div className="card-header p-4 flex justify-between items-center">
-                                            <h2 className="card-title text-md font-semibold">
-                                                Quotation Order Detail
-                                            </h2>
-                                            <span
-                                                className={`badge badge-sm p-2 capitalize badge-outline ${orderDetail.status === 'confirmed'
-                                                    ? 'badge-success'
-                                                    : orderDetail.status === 'voided'
-                                                        ? 'badge-danger'
-                                                        : ''
-                                                    }`}
-                                            >
-                                                {orderDetail.status === 'confirmed'
-                                                    ? 'Sale'
-                                                    : orderDetail.status}
-                                            </span>
-                                        </div>
-                                        <div className="card-body p-4">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <span className="text-2xs text-gray-600">QUO Number:</span>
-                                                    <p className="text-xs text-gray-900 font-semibold">
-                                                        {orderDetail.order_no}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-2xs text-gray-600">Date Created:</span>
-                                                    <p className="text-xs text-gray-900 font-semibold">
-                                                        {formatDate(orderDetail.created_at)}
-                                                    </p>
-                                                </div>
+                                <div className="card mb-4 shadow-sm rounded-md">
+                                    <div className="card-body p-2 px-4 flex justify-around items-center">
+                                        <span className="text-xs text-gray-600">Quote: QUO-2500031</span>
+                                        <span className="text-xs text-gray-600">Date: 16 Apr 2025</span>
+                                        {orderDetail.status !== 'released' &&
+                                            <div className="flex flex-col">
+                                                {/* Quotation Status */}
+                                                <span
+                                                    className={`badge badge-xs p-2 capitalize badge-outline ${orderDetail.status === 'confirmed'
+                                                        ? 'badge-success'
+                                                        : orderDetail.status === 'voided'
+                                                            ? 'badge-danger'
+                                                            : ''
+                                                        }`}
+                                                >
+                                                    {orderDetail.status === 'confirmed'
+                                                        ? 'Sale'
+                                                        : orderDetail.status}
+                                                </span>
                                             </div>
-                                            {orderDetail.status !== 'confirmed' && (
-                                                <div className="grid grid-cols-1 gap-4 mt-2">
-                                                    <div>
-                                                        <span className="text-sm text-gray-600">Total Amount:</span>
-                                                        <p className="text-md text-gray-900 font-bold">
-                                                            RM{' '}
-                                                            {(
-                                                                (orderDetail.final_amount > 0
-                                                                    ? orderDetail.final_amount
-                                                                    : totalExcludedAddonAmount) - (bonus?.value || 0)
-                                                            ).toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })}
-                                                        </p>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col md:flex-row gap-4 mb-2">
+                                    {/* Quotation Detail */}
+                                    {orderDetail.status !== 'confirmed' ? (
+                                        <div className="card w-full">
+                                            <div className="card-body p-4">
+                                                <div className="flex flex-col">
+                                                    <div className="flex items-center gap-1 mb-3">
+                                                        <CreditCardIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
+                                                        <span className="text-2xs font-semibold text-gray-700">Monthly Instalment (T&C)</span>
+                                                    </div>
+                                                    <div className="flex">
+                                                        <div className="flex flex-col items-start">
+                                                            <p className="text-lg text-[#d71e42] font-bold">
+                                                                RM{' '}
+                                                                {(
+                                                                    (((totalExcludedAddonAmount - (bonus?.value || 0)) / 0.86) / 60)
+                                                                ).toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 0,
+                                                                    maximumFractionDigits: 0,
+                                                                })}
+                                                                <span className="text-sm text-gray-600">/month </span>
+                                                                <span className='text-xs text-gray-600'>for 60 months</span>
+                                                            </p>
+                                                            <p className='italic text-gray-600 text-2xs flex  items-center'>
+                                                                <span>(Terms apply)</span>
+                                                                <button
+                                                                    className='mx-1'
+                                                                    data-modal-toggle="#payment_info_modal"
+                                                                >
+                                                                    <InformationCircleIcon
+                                                                        className="w-4 h-4 text-yellow-500"
+                                                                        aria-label="Payment Icon"
+                                                                    />
+                                                                </button>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <hr className='my-4' />
+
+                                                    <div className="flex">
+
+                                                        <div className="flex items-start">
+                                                            <span className="text-xs text-gray-600">
+                                                                <strong>Or</strong> pay one-time: RM{' '}
+                                                                {(
+                                                                    totalExcludedAddonAmount - (bonus?.value || 0)
+                                                                ).toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}{' '}
+                                                                <span className="italic">
+                                                                    (optional)
+                                                                </span>
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            )}
-                                            {orderDetail.status === 'confirmed' && (
-                                                <>
-                                                    {!orderDetail.f_1 && (
-                                                        <div className="mt-4 p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg">
-                                                            <h3 className="text-md text-purple-600 font-bold flex items-center gap-2">
-                                                                Summary
-                                                            </h3>
-                                                            <div className="mt-2 space-y-2">
-                                                                {packageCategories.map((category, index) => (
-                                                                    <div
-                                                                        key={index}
-                                                                        className="flex justify-between p-2 bg-white rounded shadow-sm"
-                                                                    >
-                                                                        <span className="text-xs text-gray-600">
-                                                                            Total {category.category}
-                                                                        </span>
-                                                                        <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                                            RM{' '}
-                                                                            {category.total_price.toLocaleString(undefined, {
-                                                                                minimumFractionDigits: 2,
-                                                                                maximumFractionDigits: 2,
-                                                                            })}
-                                                                        </span>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    {bonus && (
-                                                        <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
-                                                            <h3 className="text-md text-teal-600 font-bold">Bonus:</h3>
-                                                            <ul className="text-xs text-gray-900 font-semibold mt-2 space-y-1">
-                                                                {(bonus.description?.split('\n') || ['No Details']).map((item: string, index: number) => (
-                                                                    <li key={index} className="p-2 bg-teal-50 rounded">
-                                                                        {item}
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
-                                                            <div className="mt-2">
-                                                                <span className="text-xs text-gray-600 font-semibold">
-                                                                    Discount:
-                                                                </span>
-                                                                <p className="text-md text-teal-600 font-bold">
-                                                                    RM{' '}
-                                                                    {bonus.value.toLocaleString(undefined, {
-                                                                        minimumFractionDigits: 2,
-                                                                        maximumFractionDigits: 2,
-                                                                    })}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
-                                                        <h3 className="text-md text-blue-600 font-bold">
-                                                            Total Amount:
-                                                        </h3>
-                                                        <p className="text-md text-gray-900 font-semibold">
-                                                            RM{' '}
-                                                            {(
-                                                                (orderDetail.final_amount > 0
-                                                                    ? orderDetail.final_amount
-                                                                    : totalExcludedAddonAmount) - (bonus?.value || 0)
-                                                            ).toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })}
-                                                        </p>
-                                                        {bonus && (
-                                                            <p className="text-xs text-gray-900">
-                                                                Original Price: RM{' '}
-                                                                {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="card w-full">
+                                            <div className="card-body p-4">
+                                                <div className="flex flex-col">
+                                                    <div className="flex items-center gap-1 mb-3">
+                                                        <CreditCardIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
+                                                        <span className="text-2xs font-semibold text-gray-700">Total Amount</span>
+                                                    </div>
+                                                    <div className="flex">
+                                                        <div className="flex flex-col items-start">
+                                                            <p className="text-lg text-[#d71e42] font-bold">
+                                                                RM {(
+                                                                    totalExcludedAddonAmount - (bonus?.value || 0)
+                                                                ).toLocaleString(undefined, {
                                                                     minimumFractionDigits: 2,
                                                                     maximumFractionDigits: 2,
                                                                 })}
                                                             </p>
-                                                        )}
+                                                        </div>
                                                     </div>
-                                                </>
-                                            )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     {/* Property */}
                                     <div className="accordion-item flex-1 border rounded-xl shadow-sm">
@@ -928,16 +922,19 @@ function OrderOverview() {
                                                 ? (() => {
                                                     let packageCounter = 0;
                                                     let addonCounter = 0;
-                                                    return JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata))).map((prodPackage: Package, index: number) => {
-                                                        const isAddon = prodPackage.is_addon;
+                                                    const packages = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)));
+
+                                                    const regularPackages = packages.filter((prodPackage: Package) => !prodPackage.is_addon);
+                                                    const addonPackages = packages.filter((prodPackage: Package) => prodPackage.is_addon);
+
+                                                    const renderPackage = (prodPackage: Package, index: number, isAddon: boolean) => {
                                                         const counter = isAddon ? addonCounter++ : packageCounter++;
                                                         const accordionId = `content_${index}`;
                                                         const isOpen = openAccordions[accordionId] !== false;
 
                                                         return (
                                                             <div
-                                                                className={`accordion-item border rounded-xl w-full shadow-sm ${isAddon ? 'bg-blue-50 border-blue-300' : ''
-                                                                    }`}
+                                                                className={`accordion-item border rounded-xl w-full shadow-sm ${isAddon ? 'bg-blue-50 border-blue-300' : ''}`}
                                                                 key={index}
                                                             >
                                                                 <button
@@ -946,7 +943,7 @@ function OrderOverview() {
                                                                 >
                                                                     <div className="flex items-center flex-grow text-left w-full">
                                                                         <div className="flex flex-col w-full">
-                                                                            {prodPackage.is_addon ? (
+                                                                            {isAddon ? (
                                                                                 <>
                                                                                     <div className="flex justify-between">
                                                                                         <span className="font-medium text-gray-700 text-2xs">
@@ -970,7 +967,7 @@ function OrderOverview() {
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex items-center space-x-4">
-                                                                        {prodPackage.is_addon ? (
+                                                                        {isAddon ? (
                                                                             <div className="flex flex-col gap-2">
                                                                                 <label className="switch switch-lg">
                                                                                     <input
@@ -988,8 +985,7 @@ function OrderOverview() {
                                                                                 </label>
                                                                                 <div className="inline-block">
                                                                                     <span
-                                                                                        className={`badge ${isAddon ? 'bg-white border-blue-300' : ''
-                                                                                            }`}
+                                                                                        className={`badge ${isAddon ? 'bg-white border-blue-300' : ''}`}
                                                                                     >
                                                                                         x{prodPackage.quantity}
                                                                                     </span>
@@ -1003,14 +999,12 @@ function OrderOverview() {
                                                                             </div>
                                                                         )}
                                                                         <i
-                                                                            className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'
-                                                                                } text-gray-600 text-xs transition-transform duration-300`}
+                                                                            className={`ki-outline ${isOpen ? 'ki-down' : 'ki-right'} text-gray-600 text-xs transition-transform duration-300`}
                                                                         ></i>
                                                                     </div>
                                                                 </button>
                                                                 <div
-                                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[9999px]' : 'max-h-0'
-                                                                        }`}
+                                                                    className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[9999px]' : 'max-h-0'}`}
                                                                 >
                                                                     <div className="p-4">
                                                                         <h2 className="text-xs font-semibold text-gray-800 mb-3">
@@ -1019,8 +1013,7 @@ function OrderOverview() {
                                                                         <table className="w-full text-xs text-left border-collapse">
                                                                             <thead>
                                                                                 <tr
-                                                                                    className={`border-b ${isAddon ? 'bg-white border-blue-300' : 'bg-gray-100'
-                                                                                        }`}
+                                                                                    className={`border-b ${isAddon ? 'bg-white border-blue-300' : 'bg-gray-100'}`}
                                                                                 >
                                                                                     <th className="p-3 font-medium text-gray-700">
                                                                                         S.o.W
@@ -1044,8 +1037,7 @@ function OrderOverview() {
                                                                                             return (
                                                                                                 <tr
                                                                                                     key={idx}
-                                                                                                    className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''
-                                                                                                        }`}
+                                                                                                    className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? ' border-blue-300' : ''}`}
                                                                                                 >
                                                                                                     <td className="py-3 px-2 text-gray-700 text-left">
                                                                                                         {product.pivot.includeSupply &&
@@ -1060,7 +1052,7 @@ function OrderOverview() {
                                                                                                             <span className="font-medium text-gray-900">
                                                                                                                 {product.name}
                                                                                                             </span>
-                                                                                                            <span className="text-2xs text-gray-600露: 'inherit' text-gray-600 mt-1">
+                                                                                                            <span className="text-2xs text-gray-600 mt-1">
                                                                                                                 {product.description || '-'}
                                                                                                             </span>
                                                                                                         </div>
@@ -1081,7 +1073,26 @@ function OrderOverview() {
                                                                 </div>
                                                             </div>
                                                         );
-                                                    });
+                                                    };
+
+                                                    return (
+                                                        <>
+                                                            {regularPackages.map((prodPackage: Package, index: number) =>
+                                                                renderPackage(prodPackage, index, false)
+                                                            )}
+                                                            {addonPackages.length > 0 && (
+                                                                <div className="mt-2 ml-1 flex items-center gap-1">
+                                                                    <InformationCircleIcon className="h-5 w-5 text-yellow-600" />
+                                                                    <p className="text-sm text-gray-600 italic">
+                                                                        Feel free to toggle on/ off of the add-on optional package to explore more!
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                            {addonPackages.map((prodPackage: Package, index: number) =>
+                                                                renderPackage(prodPackage, regularPackages.length + index, true)
+                                                            )}
+                                                        </>
+                                                    );
                                                 })()
                                                 : null}
                                             <hr className="my-4" />
@@ -1276,6 +1287,19 @@ function OrderOverview() {
                                                 </span>
                                             </label>
                                         ))}
+                                        <label className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                name='agree_partition_risk'
+                                                checked={agreePartitionRisk || orderDetail.status === 'confirmed'}
+                                                onClick={handleAgreePartitionRisk}
+                                                disabled={orderDetail.status === 'confirmed'}
+                                            />
+                                            <span className="text-xs">
+                                                I understand and acknowledge the risk of Partioning
+                                            </span>
+                                        </label>
                                     </div>
                                 )}
                             </div>
@@ -1551,6 +1575,12 @@ function OrderOverview() {
             <ConfirmUnincludeAddon
                 pkg={selectedConfirmPkg}
                 onSubmit={handleToggleAddonPackage}
+            />
+
+            <PaymentInfoModal />
+
+            <AgreePartitionRiskModal
+                onChange={setAgreePartitionRisk}
             />
 
             {/* <div className="fixed bottom-10 right-6">
