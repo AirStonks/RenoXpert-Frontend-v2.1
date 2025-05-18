@@ -8,9 +8,10 @@ import useFetchOwnerOrder from '../../hook/useFetchOwnerOrder';
 import { Link } from 'react-router-dom';
 import { toggleOwnerOrderAddon } from '../../services/ownerApi';
 import ConfirmUnincludeAddon from './components/Modals/ConfirmUnincludeAddon';
-import { CreditCardIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowRightCircleIcon, CreditCardIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import PaymentInfoModal from './components/Modals/PaymentInfoModal';
 import AgreePartitionRiskModal from './components/Modals/AgreePartitionRiskModal';
+import { CalendarDateRangeIcon } from '@heroicons/react/24/solid';
 
 const convertToWords = (num: number) => {
     const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
@@ -48,6 +49,8 @@ function OrderOverview() {
     const [orderDetail, setOrderDetail] = useState<Order>(null);
     const [selectedConfirmPkg, setSelectedConfirmPkg] = useState<Package>(null);
     const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
+
+    const [selectedPlan, setSelectedPlan] = useState<string>('60');
 
 
     const [activeTab, setActiveTab] = useState('tab_1_1');
@@ -213,6 +216,11 @@ function OrderOverview() {
         document.title = "Order Overview | RenoXpert";
         KTComponent.init();
     }, []);
+
+    const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedPlan = e.target.value;
+        setSelectedPlan(selectedPlan);
+    }
 
     const handleToggleAddonPackage = async (packageId: number) => {
         try {
@@ -639,85 +647,231 @@ function OrderOverview() {
                                     </div>
                                 )}
 
-                                <div className="card mb-4 shadow-sm rounded-md">
-                                    <div className="card-body p-2 px-4 flex justify-around items-center">
-                                        <span className="text-xs text-gray-600">Quote: QUO-2500031</span>
-                                        <span className="text-xs text-gray-600">Date: 16 Apr 2025</span>
-                                        {orderDetail.status !== 'released' &&
-                                            <div className="flex flex-col">
-                                                {/* Quotation Status */}
-                                                <span
-                                                    className={`badge badge-xs p-2 capitalize badge-outline ${orderDetail.status === 'confirmed'
-                                                        ? 'badge-success'
-                                                        : orderDetail.status === 'voided'
-                                                            ? 'badge-danger'
-                                                            : ''
-                                                        }`}
-                                                >
-                                                    {orderDetail.status === 'confirmed'
-                                                        ? 'Sale'
-                                                        : orderDetail.status}
-                                                </span>
+                                {/* Property */}
+                                <div className="accordion-item flex-1 card mb-4 shadow-sm rounded-md">
+                                    <button
+                                        className="flex items-center justify-between gap-4 w-full text-2xs p-0 py-2 rounded-xl md:cursor-default md:hover:bg-transparent transition duration-200 focus:outline-none"
+                                        onClick={() => window.innerWidth < 768 && toggleAccordion('property')}
+                                    >
+                                        <div className="card-body p-0 px-4 flex justify-around items-center">
+                                            <span className="text-xs text-gray-600">Quote: QUO-2500031</span>
+                                            <span className="text-xs text-gray-600">Date: 16 Apr 2025</span>
+                                            {orderDetail.status !== 'released' &&
+                                                <div className="flex flex-col">
+                                                    {/* Quotation Status */}
+                                                    <span
+                                                        className={`badge badge-xs p-2 capitalize badge-outline ${orderDetail.status === 'confirmed'
+                                                            ? 'badge-success'
+                                                            : orderDetail.status === 'voided'
+                                                                ? 'badge-danger'
+                                                                : ''
+                                                            }`}
+                                                    >
+                                                        {orderDetail.status === 'confirmed'
+                                                            ? 'Sale'
+                                                            : orderDetail.status}
+                                                    </span>
+                                                </div>
+                                            }
+                                            <i
+                                                className={`ki-outline ${openAccordions['property'] !== false ? 'ki-down' : 'ki-right'
+                                                    } text-gray-600 text-xs transition-transform duration-300 md:hidden`}
+                                            ></i>
+                                        </div>
+                                    </button>
+                                    <div
+                                        className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${openAccordions['property'] !== false
+                                            ? 'max-h-screen'
+                                            : 'max-h-0 md:max-h-screen'
+                                            }`}
+                                    >
+                                        <div className="p-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {[
+                                                    { label: 'Name', value: orderDetail.property.name },
+                                                    {
+                                                        label: 'Unit',
+                                                        value: `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}`,
+                                                    },
+                                                    { label: 'Unit Type', value: orderDetail.unit_type || '-' },
+                                                    {
+                                                        label: 'Partition',
+                                                        value: orderDetail.include_partition ? 'Yes' : 'No',
+                                                    },
+                                                ].map(({ label, value }) => (
+                                                    <div key={label}>
+                                                        <span className="text-xs text-gray-600">{label}:</span>
+                                                        <p className="text-xs text-gray-900 font-semibold">
+                                                            {value}
+                                                        </p>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        }
+                                            <div className="mt-4">
+                                                <span className="text-xs text-gray-600">Address:</span>
+                                                <p className="text-xs text-gray-900">
+                                                    {[
+                                                        orderDetail.property.address,
+                                                        orderDetail.property.street,
+                                                        orderDetail.property.postcode,
+                                                        orderDetail.property.city,
+                                                        orderDetail.property.state,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(', ')}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div className="flex flex-col md:flex-row gap-4 mb-2">
-                                    {/* Quotation Detail */}
+                                    {/* Easy Payment Plan */}
                                     {orderDetail.status !== 'confirmed' ? (
-                                        <div className="card w-full">
+                                        <div className="card w-full bg-white rounded-lg shadow-md">
                                             <div className="card-body p-4">
                                                 <div className="flex flex-col">
-                                                    <div className="flex items-center gap-1 mb-3">
-                                                        <CreditCardIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
-                                                        <span className="text-2xs font-semibold text-gray-700">Monthly Instalment (T&C)</span>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-1 mb-2">
+                                                            <CreditCardIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
+                                                            <span className="text-xs font-semibold text-gray-700">Easy Payment Plan</span>
+                                                        </div>
+                                                        <select
+                                                            className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
+                                                            id="payment_plan"
+                                                            value={selectedPlan}
+                                                            onChange={handlePlanChange}
+                                                            name="payment_plan"
+                                                        >
+                                                            <option value="36">36 months</option>
+                                                            <option value="60">60 months</option>
+                                                        </select>
                                                     </div>
+
                                                     <div className="flex">
                                                         <div className="flex flex-col items-start">
                                                             <p className="text-lg text-[#d71e42] font-bold">
                                                                 RM{' '}
                                                                 {(
-                                                                    (((totalExcludedAddonAmount - (bonus?.value || 0)) / 0.86) / 60)
+                                                                    ((totalExcludedAddonAmount - (bonus?.value || 0)) *
+                                                                        (selectedPlan === '60' ? 1.14 : 1.105)) /
+                                                                    Number(selectedPlan)
                                                                 ).toLocaleString(undefined, {
                                                                     minimumFractionDigits: 0,
                                                                     maximumFractionDigits: 0,
                                                                 })}
                                                                 <span className="text-sm text-gray-600">/month </span>
-                                                                <span className='text-xs text-gray-600'>for 60 months</span>
+                                                                <span className="text-xs text-gray-600">
+                                                                    for {selectedPlan === '60' ? '60' : '36'} months
+                                                                </span>
                                                             </p>
-                                                            <p className='italic text-gray-600 text-2xs flex  items-center'>
-                                                                <span>(Terms apply)</span>
+                                                            <p className="italic text-gray-600 text-xs flex items-center">
+                                                                <span>(Terms & Conditions)</span>
                                                                 <button
-                                                                    className='mx-1'
+                                                                    className="mx-1"
                                                                     data-modal-toggle="#payment_info_modal"
                                                                 >
                                                                     <InformationCircleIcon
                                                                         className="w-4 h-4 text-yellow-500"
-                                                                        aria-label="Payment Icon"
+                                                                        aria-label="Payment Info"
                                                                     />
                                                                 </button>
                                                             </p>
                                                         </div>
                                                     </div>
 
-                                                    <hr className='my-4' />
+                                                    <div
+                                                        className="flex items-start justify-between mt-4"
+                                                    >
+                                                        <span className="text-xs text-gray-600">
+                                                            <strong>Or</strong> pay one-time:  RM{' '}
+                                                            {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </span>
+                                                        <button
+                                                            className="md:hidden italic underline text-blue-600 text-xs"
+                                                            onClick={() => toggleAccordion('amount_breakdown')}
+                                                        >
+                                                            {openAccordions['amount_breakdown'] ? 'Hide Details' : 'See Details'}
+                                                        </button>
+                                                    </div>
 
-                                                    <div className="flex">
-
-                                                        <div className="flex items-start">
-                                                            <span className="text-xs text-gray-600">
-                                                                <strong>Or</strong> pay one-time: RM{' '}
-                                                                {(
-                                                                    totalExcludedAddonAmount - (bonus?.value || 0)
-                                                                ).toLocaleString(undefined, {
-                                                                    minimumFractionDigits: 2,
-                                                                    maximumFractionDigits: 2,
-                                                                })}{' '}
-                                                                <span className="italic">
-                                                                    (optional)
-                                                                </span>
-                                                            </span>
+                                                    {/* Accordion content with conditional border-top */}
+                                                    <div
+                                                        className={`overflow-hidden transition-all duration-300 ease-in-out mt-1 ${openAccordions['amount_breakdown']
+                                                            ? 'max-h-screen border-t border-gray-200 pt-3'
+                                                            : 'max-h-0 md:max-h-screen md:border-t md:border-gray-200 md:pt-3'
+                                                            }`}
+                                                    >
+                                                        <div className="mt-2 space-y-4">
+                                                            <div className="flex flex-col">
+                                                                {packageCategories.map((category, index) => (
+                                                                    <div
+                                                                        key={index}
+                                                                        className="flex justify-between space-y-2"
+                                                                    >
+                                                                        <span className="text-xs text-gray-600">
+                                                                            Total {category.category}
+                                                                        </span>
+                                                                        <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                                            RM{' '}
+                                                                            {category.total_price.toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            {bonus && (
+                                                                <div className="">
+                                                                    <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
+                                                                    <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
+                                                                        {(bonus.description?.split('\n') || ['No Details']).map((item: string, index: number) => (
+                                                                            <p key={index} className="mb-1 last:mb-0">
+                                                                                {item}
+                                                                            </p>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className="mt-2">
+                                                                        <span className="text-xs text-gray-600 font-semibold">
+                                                                            Total Discount:
+                                                                        </span>
+                                                                        <p className="text-md text-teal-600 font-bold">
+                                                                            RM{' '}
+                                                                            {bonus.value.toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            <div className="">
+                                                                <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
+                                                                <p className="text-sm text-gray-900 font-semibold">
+                                                                    RM{' '}
+                                                                    {(
+                                                                        (orderDetail.final_amount > 0
+                                                                            ? orderDetail.final_amount
+                                                                            : totalExcludedAddonAmount) - (bonus?.value || 0)
+                                                                    ).toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                </p>
+                                                                {bonus && (
+                                                                    <p className="text-xs text-gray-900">
+                                                                        Original Price: RM{' '}
+                                                                        {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 2,
+                                                                            maximumFractionDigits: 2,
+                                                                        })}
+                                                                    </p>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -747,64 +901,6 @@ function OrderOverview() {
                                             </div>
                                         </div>
                                     )}
-
-                                    {/* Property */}
-                                    <div className="accordion-item flex-1 border rounded-xl shadow-sm">
-                                        <button
-                                            className="flex items-center justify-between gap-4 w-full text-2xs p-4 rounded-xl md:cursor-default md:hover:bg-transparent transition duration-200 focus:outline-none"
-                                            onClick={() => window.innerWidth < 768 && toggleAccordion('property')}
-                                        >
-                                            <h2 className="text-md font-semibold">Property</h2>
-                                            <i
-                                                className={`ki-outline ${openAccordions['property'] !== false ? 'ki-down' : 'ki-right'
-                                                    } text-gray-600 text-xs transition-transform duration-300 md:hidden`}
-                                            ></i>
-                                        </button>
-                                        <div
-                                            className={`border-t overflow-hidden transition-all duration-300 ease-in-out ${openAccordions['property'] !== false
-                                                ? 'max-h-screen'
-                                                : 'max-h-0 md:max-h-screen'
-                                                }`}
-                                        >
-                                            <div className="p-4">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    {[
-                                                        { label: 'Name', value: orderDetail.property.name },
-                                                        {
-                                                            label: 'Unit',
-                                                            value: `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}`,
-                                                        },
-                                                        { label: 'Unit Type', value: orderDetail.unit_type || '-' },
-                                                        {
-                                                            label: 'Partition',
-                                                            value: orderDetail.include_partition ? 'Yes' : 'No',
-                                                        },
-                                                    ].map(({ label, value }) => (
-                                                        <div key={label}>
-                                                            <span className="text-xs text-gray-600">{label}:</span>
-                                                            <p className="text-xs text-gray-900 font-semibold">
-                                                                {value}
-                                                            </p>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <div className="mt-4">
-                                                    <span className="text-xs text-gray-600">Address:</span>
-                                                    <p className="text-xs text-gray-900">
-                                                        {[
-                                                            orderDetail.property.address,
-                                                            orderDetail.property.street,
-                                                            orderDetail.property.postcode,
-                                                            orderDetail.property.city,
-                                                            orderDetail.property.state,
-                                                        ]
-                                                            .filter(Boolean)
-                                                            .join(', ')}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
 
                                 <hr className="my-4" />
@@ -1097,84 +1193,18 @@ function OrderOverview() {
                                                 : null}
                                             <hr className="my-4" />
 
-                                            {!orderDetail.f_1 && (
-                                                <div className="p-4 bg-gray-50 border-l-4 border-purple-500 rounded-lg">
-                                                    <h3 className="text-md text-purple-600 font-bold flex items-center gap-2">
-                                                        Summary
-                                                    </h3>
-                                                    <div className="mt-2 space-y-2">
-                                                        {packageCategories.map((category, index) => (
-                                                            <div
-                                                                key={index}
-                                                                className="flex justify-between p-2 gap-2 bg-white rounded shadow-sm"
-                                                            >
-                                                                <span className="text-xs text-gray-600">
-                                                                    Total {category.category}
-                                                                </span>
-                                                                <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                                    RM{' '}
-                                                                    {category.total_price.toLocaleString(undefined, {
-                                                                        minimumFractionDigits: 2,
-                                                                        maximumFractionDigits: 2,
-                                                                    })}
-                                                                </span>
+                                            <div className='card mb-4 shadow-sm rounded-md'>
+
+                                                <div className="card-body p-4">
+                                                    <div className="flex flex-col mb-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-1 mb-2">
+                                                                <CalendarDateRangeIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
+                                                                <span className="text-xs font-semibold text-gray-700">Progressive Payment of the Contract Sum</span>
                                                             </div>
-                                                        ))}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                            {bonus && (
-                                                <div className="mt-4 p-4 bg-gray-100 border-l-4 border-teal-500 rounded-lg">
-                                                    <h3 className="text-md text-teal-600 font-bold">Bonus:</h3>
-                                                    <ul className="text-xs text-gray-900 font-semibold mt-2 space-y-1">
-                                                        {(bonus.description?.split('\n') || ['No Details']).map((item: string, index: number) => (
-                                                            <li key={index} className="p-2 bg-teal-50 rounded">
-                                                                {item}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                    <div className="mt-2">
-                                                        <span className="text-xs text-gray-600 font-semibold">
-                                                            Discount:
-                                                        </span>
-                                                        <p className="text-md text-teal-600 font-bold">
-                                                            RM{' '}
-                                                            {bonus.value.toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            <div className="mt-4 p-4 bg-gray-100 border-l-4 border-blue-500 rounded-lg">
-                                                <h3 className="text-md text-blue-600 font-bold">Total Amount:</h3>
-                                                <p className="text-md text-gray-900 font-semibold">
-                                                    RM{' '}
-                                                    {(
-                                                        (orderDetail.final_amount > 0
-                                                            ? orderDetail.final_amount
-                                                            : totalExcludedAddonAmount) - (bonus?.value || 0)
-                                                    ).toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    })}
-                                                </p>
-                                                {bonus && (
-                                                    <p className="text-xs text-gray-900">
-                                                        Original Price: RM{' '}
-                                                        {totalExcludedAddonAmount.toLocaleString(undefined, {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2,
-                                                        })}
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <div className="mt-6 p-4 bg-gray-100 border-l-4 border-indigo-500 rounded-lg">
-                                                <h3 className="text-md text-indigo-600 font-bold mb-3 flex items-center gap-2">
-                                                    Progressive Payment of the Contract Sum
-                                                </h3>
-                                                <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+
                                                     <table className="w-full text-xs text-gray-700 font-medium border-collapse">
                                                         <thead>
                                                             <tr className="bg-gray-50 border-b border-gray-200">

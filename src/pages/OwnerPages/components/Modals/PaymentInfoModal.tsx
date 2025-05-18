@@ -3,7 +3,7 @@ import React from 'react'
 function PaymentInfoModal() {
     return (
         <div className="modal p-6 text-xs" data-modal="true" id="payment_info_modal">
-            <div className="modal-content modal-center-y max-h-[95%] bg-white rounded-lg shadow-xl">
+            <div className="modal-content modal-center-y max-h-[95%] max-w-2xl bg-white rounded-lg shadow-xl">
                 <div className="modal-header p-1 px-3 border-b border-gray-200 flex justify-between items-center">
                     <span className="text-sm text-gray-900 font-bold">Payment Information</span>
                     <button

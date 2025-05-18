@@ -3,6 +3,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { Product } from "../../../types";
 
 interface SortableProductRowForPackageProps {
+    number: number;
     product: Product;
     packId: number;
     toggleProperty: (id: number, packId: number, property: "supply" | "install") => void;
@@ -11,6 +12,7 @@ interface SortableProductRowForPackageProps {
 }
 
 export const SortableProductRowForPackage: React.FC<SortableProductRowForPackageProps> = ({
+    number,
     product,
     packId,
     toggleProperty,
@@ -36,6 +38,9 @@ export const SortableProductRowForPackage: React.FC<SortableProductRowForPackage
         >
             <td>
                 <span {...listeners} style={{ cursor: "move" }}>☰</span>
+            </td>
+            <td>
+                <span>{number}.</span>
             </td>
             <td>
                 <div className="flex flex-col items-center">

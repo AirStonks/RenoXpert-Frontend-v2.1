@@ -22,7 +22,7 @@ function AgreePartitionRiskModal({ onChange }: AgreePartitionRiskModalProps) {
 
     return (
         <div className="modal p-6 text-xs" data-modal="true" id="agree_partition_risk_modal">
-            <div className="modal-content modal-center-y max-h-[90%] bg-white rounded-lg shadow-xl">
+            <div className="modal-content modal-center-y max-h-[90%] max-w-2xl bg-white rounded-lg shadow-xl">
                 <div className="modal-header p-1 px-3 border-b border-gray-200 flex justify-between items-center">
                     <span className="text-sm text-gray-900 font-bold">Understand and Acknowledgement</span>
                     <button
