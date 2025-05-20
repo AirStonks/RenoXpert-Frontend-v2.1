@@ -4,7 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import KTComponents from "../../metronic/core";
 import useFetchRenoProgress from "../../hook/useFetchRenoProgress";
 import { DefectInspectionForm, Permission, RenoProgress, User } from "../../types";
-import { permissionIndex } from "../../services/api";
+import { fetchOldVersionRenoProgress, permissionIndex } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import ClipboardJS from "clipboard";
 import Loading from "../../components/Loading";
@@ -13,6 +13,7 @@ import RPMDetailV3 from "./components/RPMDetailV3";
 import DIRLinkManagementModal from "./components/Modals/DIRLinkManagementModal";
 import ProjectDateManagementModal from "./components/Modals/ProjectDateManagementModal";
 import AccessPermissionModal from "./components/Modals/AccessPermissionModal";
+import ConvertRenoProgressModal from "./components/Modals/ConvertRenoProgressModal";
 
 function ProgressMgnt() {
     const navigate = useNavigate();
@@ -20,6 +21,7 @@ function ProgressMgnt() {
     const { id } = useParams<{ id: string }>();
     const renoProgressId = id ? parseInt(id, 10) : null;
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isOldVersion, setIsOldVersion] = useState<boolean>(false);
 
     const { renoProgressDetail, loading, error } = useFetchRenoProgress(renoProgressId);
     const [renoProgress, setRenoProgress] = useState<RenoProgress | null>(null);
@@ -39,12 +41,31 @@ function ProgressMgnt() {
         });
     };
 
+
     useEffect(() => {
         document.title = "Project Detail | RenoXpert";
 
         const initFunctions = async () => {
             if (renoProgressDetail) {
-                setRenoProgress(renoProgressDetail); // Assign renoProgressDetail to renoProgress
+                // if header have /old-ver
+                if (window.location.href.includes('/old-ver')) {
+                    setIsLoading(true);
+                    try {
+                        const response = await fetchOldVersionRenoProgress(renoProgressId);
+                        const oldRenoProgress: RenoProgress = response.data;
+
+                        if (response?.data) {
+                            setRenoProgress(oldRenoProgress); // Assign renoProgressDetail to renoProgress
+                            setIsOldVersion(true);
+                        }
+                    } catch (error) {
+                        setRenoProgress(renoProgressDetail);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                } else {
+                    setRenoProgress(renoProgressDetail); // Assign renoProgressDetail to renoProgress
+                }
                 await getPermissions();
             }
 
@@ -79,7 +100,7 @@ function ProgressMgnt() {
             clipboard.destroy();
         };
 
-    }, [renoProgressDetail]); // This effect runs when renoProgressDetail changes
+    }, [renoProgressDetail, renoProgressId]); // This effect runs when renoProgressDetail changes
 
     const handleBackClick = () => {
         if (state) {
@@ -107,6 +128,12 @@ function ProgressMgnt() {
             {/* Loading Overlay */}
             {isLoading && <Loading />}
 
+            {isOldVersion && (
+                <div className="badge badge-warning badge-lg text-xl badge-outline w-full font-semibold">
+                    You are viewing an old version of the Reno Progress, PLEASE DO NOT PERFORM ANY ACTIONS HERE.
+                </div>
+            )}
+
             <div className="flex justify-between items-center flex-wrap my-2">
                 <div className="flex gap-4 items-center">
                     <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
@@ -127,6 +154,16 @@ function ProgressMgnt() {
                     >
                         v{renoProgress.rpm_version}
                     </span>
+                    {renoProgress.rpm_version !== 3 && !isOldVersion && (
+                        <div className="flex">
+                            <button
+                                className="btn btn-sm btn-primary"
+                                data-modal-toggle="#reno-progress-convert-modal"
+                            >
+                                Convert to v3
+                            </button>
+                        </div>
+                    )}
                     <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
                         <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
                             <i className="ki-filled ki-dots-vertical"></i>
@@ -156,6 +193,21 @@ function ProgressMgnt() {
                                             <div className="flex gap-2 items-center">
                                                 <i className="ki-filled ki-lock text-lg"></i>
                                                 <span>Access Permission</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            )}
+                            {renoProgress.is_converted && !isOldVersion && (
+                                <div className="menu-item">
+                                    <button
+                                        className="menu-link"
+                                        onClick={() => window.open('/reno-progress/' + renoProgress.id + '/old-ver', '_blank')}
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <i className="ki-filled ki-archive text-lg"></i>
+                                                <span>View Old Version in new tab</span>
                                             </div>
                                         </span>
                                     </button>
@@ -197,6 +249,10 @@ function ProgressMgnt() {
                     <ProjectDateManagementModal
                         renoProgress={renoProgress}
                         setRenoProgress={setRenoProgress}
+                    />
+
+                    <ConvertRenoProgressModal
+                        renoProgressId={Number(renoProgress.id)}
                     />
                 </>
             ) : (

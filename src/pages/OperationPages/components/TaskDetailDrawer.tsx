@@ -397,8 +397,7 @@ export const TaskDetailDrawer = ({
     return (
         <>
             <div
-                className={`fixed top-0 right-0 w-5/12 h-full bg-white shadow-lg z-50 transform transition-all duration-300 ease-in-out ${selectedTask ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
-                    }`}
+                className={`fixed bottom-0 right-0 w-full h-5/6 bg-white shadow-lg z-50 transform transition-all duration-300 ease-in-out ${selectedTask ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
                 style={{ visibility: selectedTask ? "visible" : "hidden" }}
                 role="dialog"
                 aria-labelledby="drawer-title"

@@ -539,6 +539,7 @@ function PMMain() {
                                         )}
                                     </div>
                                 </th>
+                                <th className="px-4 py-3">Version</th>
                                 <th className="px-4 py-3">Details</th>
                             </tr>
                         </thead>
@@ -564,6 +565,9 @@ function PMMain() {
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="h-2 bg-gray-200 rounded w-16"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-6 bg-gray-200 rounded w-20"></div>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="h-6 bg-gray-200 rounded w-20"></div>
@@ -671,6 +675,16 @@ function PMMain() {
                                                         <span className="text-xs">{getOverallCompletion(progress).toFixed(2)}%</span>
                                                     </>
                                                 }
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span
+                                                    className={`badge badge-xs badge-outline cursor-default ${progress.rpm_version === 3
+                                                        ? 'bg-gradient-to-r from-gray-200 to-yellow-300 font-bold shadow-2xl border-yellow-200 rounded-full uppercase px-3 py-1.5 text-slate-500'
+                                                        : ''
+                                                        }`}
+                                                >
+                                                    v{progress.rpm_version}
+                                                </span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Link

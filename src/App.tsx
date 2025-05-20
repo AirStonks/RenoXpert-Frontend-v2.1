@@ -177,6 +177,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/reno-progress/overview/v3', element: <PMMainV3 />, layout: ProtectedLayout },
         { path: '/reno-progress/progress-tracker', element: <PMProgressTrack />, layout: ProtectedLayout },
         { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
+        { path: '/reno-progress/:id/old-ver', element: <ProgressMgnt />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
         { path: '/di-forms/:id', element: <DefectInspectionReport />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
@@ -204,7 +205,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
         { path: '/owner', element: <OwnerHome />, layout: OwnerProtectedLayout },
         { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
-        { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
+        // { path: '/otp/verify', element: <OTPVerifyPage />, layout: null },
         { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
         { path: '/owner/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
         { path: '/owner/reno-registration-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
@@ -232,7 +233,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
     // General
     [
         { path: '/test', element: <Test />, layout: null },
-        { path: '/test2', element: <Test2 />, layout: null },
+        // { path: '/test2', element: <Test2 />, layout: null },
         { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
         { path: '/di-form/report', element: <PublicDIReport />, layout: null },
     ],
@@ -247,8 +248,8 @@ const routes: RouteObject[] = routeCat.flat().map(({ path, element, layout: Layo
 // Create router with future flags
 const router = createBrowserRouter(routes, {
     future: {
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
+        // v7_startTransition: true,
+        // v7_relativeSplatPath: true,
     },
 });
 

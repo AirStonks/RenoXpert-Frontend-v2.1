@@ -137,6 +137,7 @@ export const SortablePackage: React.FC<SortablePackageProps> = ({
                             <thead>
                                 <tr>
                                     <th className="w-[30px]"></th> {/* Drag handle column */}
+                                    <th className="w-[30px]">No.</th> {/* Drag handle column */}
                                     <th className="w-[10px] text-center">Supply</th>
                                     <th className="w-[10px] text-center">Install</th>
                                     <th className="w-[250px]">Product</th>
@@ -154,8 +155,9 @@ export const SortablePackage: React.FC<SortablePackageProps> = ({
                                     items={prodPackage.products.map((prod) => `product-${prod.id}-${prodPackage.id}`)}
                                     strategy={verticalListSortingStrategy}
                                 >
-                                    {prodPackage.products.map((product) => (
+                                    {prodPackage.products.map((product, index) => (
                                         <SortableProductRowForPackage
+                                            number={index + 1}
                                             key={product.id}
                                             product={product}
                                             packId={prodPackage.id}

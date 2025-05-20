@@ -976,6 +976,21 @@ export const reReleaseOrder = async (orderId: number) => {
     }
 }
 
+export const voidOrder = async (orderId: number) => {
+    try {
+        const response = await axios.get(API_URL + `orders/${orderId}/void`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
 export const removeOrder = async (orderId: number) => {
     try {
         const response = await axios.delete(API_URL + `orders/${orderId}`, {
@@ -1248,8 +1263,8 @@ export const saveInvoiceDetail = async (invoiceId: number, paymentDetail: Paymen
 
         const formData = new FormData();
 
-        
-        
+
+
         formData.append('invoice_id', String(invoiceId));
         formData.append('transaction_no', String(paymentDetail.transaction_no));
         formData.append('amount', String(paymentDetail.amount));
@@ -1423,6 +1438,30 @@ export const fetchRenoProgress = async (renoProgressId: number) => {
         throw error; // Ensure to throw the error if needed
     }
 };
+
+export const fetchOldVersionRenoProgress = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/old-ver`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const constconvertRenoProgressToV3 = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/convert/v3`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
 
 export const toggleTaskSupply = async (renoProgressId: number, taskId: number) => {
     try {
