@@ -8,9 +8,10 @@ import { OrderQuotation, Package, Product } from "../../types";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
-import { releaseOrder, reReleaseOrder, updateOrderInternalRemark } from "../../services/api";
+import { releaseOrder, reReleaseOrder, updateOrderInternalRemark, voidOrder } from "../../services/api";
 import ConfirmOrderModal from "./components/ConfirmOrderModal";
 import ReReleaseOrderModal from "./components/ReReleaseOrderModal";
+import VoidQuotationModal from "./components/VoidQuotationModal";
 
 const APP_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -331,6 +332,29 @@ function OrderDetail() {
                 modal.hide();
 
                 notify('success', 'Order re-released successfully!');
+                refetch();
+            }
+
+        } catch (error) {
+            notify('error', 'Failed to re-release order.');
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const handleVoidQuotation = async () => {
+        setIsLoading(true);
+
+        try {
+            const response = await voidOrder(orderId);
+
+            if (response?.success) {
+
+                const modalEl = document.querySelector('#void_quotation_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+                modal.hide();
+
+                notify('success', 'Order voided successfully!');
                 refetch();
             }
 
@@ -798,6 +822,21 @@ function OrderDetail() {
                                     </span>
                                 </Link>
                             </div>
+                            {orderDetail?.status === 'released' &&
+                                <div className="menu-item">
+                                    <button
+                                        className="menu-link"
+                                        data-modal-toggle="#void_quotation_modal"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center text-red-600">
+                                                <i className="ki-filled ki-cross-square text-lg"></i>
+                                                <span>Void Quotation</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -2799,6 +2838,10 @@ function OrderDetail() {
 
             <ReReleaseOrderModal
                 handleConfirm={handleReReleaseOrder}
+            />
+
+            <VoidQuotationModal
+                handleConfirm={handleVoidQuotation}
             />
 
             <div className="tooltip" id="final_pricing_tooltip">

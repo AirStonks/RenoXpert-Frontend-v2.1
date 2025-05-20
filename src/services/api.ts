@@ -976,6 +976,21 @@ export const reReleaseOrder = async (orderId: number) => {
     }
 }
 
+export const voidOrder = async (orderId: number) => {
+    try {
+        const response = await axios.get(API_URL + `orders/${orderId}/void`, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
 export const removeOrder = async (orderId: number) => {
     try {
         const response = await axios.delete(API_URL + `orders/${orderId}`, {
