@@ -8,7 +8,7 @@ import {
     fetchRegistrationForm,
     updateOrder,
 } from "../../services/api";
-import { User, Order, Property, Quotation, OwnerRegistrationForm, Package } from "../../types";
+import { User, Order, Property, OwnerRegistrationForm, Package, OrderQuotation } from "../../types";
 import { KTAccordion, KTTooltip } from "../../metronic/core";
 import { Slide, toast } from "react-toastify";
 import useFetchOrder from "../../hook/useFetchOrder";
@@ -56,6 +56,9 @@ function EditOrder() {
     const [isLoading, setIsLoading] = useState(false);
     const { orderDetail, loading, error } = useFetchOrder(orderId);
 
+    const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; cogs: number; quantity: number }[]>([]);
+    const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
+
     const [formData, setFormData] = useState({
         userId: "",
         propertyId: "",
@@ -82,7 +85,7 @@ function EditOrder() {
 
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
-    const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
+    const [selectedQuotation, setSelectedQuotation] = useState<OrderQuotation | null>(null);
     const [selectedPackageId, setSelectedPackageId] = useState("");
 
     const notify = (type: "success" | "error", message: string) => {
@@ -146,6 +149,107 @@ function EditOrder() {
     useEffect(() => {
         if (selectedPackages.length > 0) recalculateTotalAmount();
         else setFormData((prev) => ({ ...prev, totalAmount: 0 }));
+
+        if (!selectedPackages) return;
+
+        let addonCounter = 0; // To number each add-on uniquely
+
+        const packages: Package[] = selectedPackages;
+        console.log(packages);
+
+        const categoryTotals = packages.reduce((acc, quotationPackage) => {
+            let category;
+            if (quotationPackage.is_addon === true) {
+                addonCounter += 1;
+                category = `Add-on Option ${addonCounter} (${quotationPackage.name})`;
+            } else {
+                category = quotationPackage.category;
+            }
+
+            const categoryData = quotationPackage.products.reduce(
+                (data, product) => {
+                    // Calculate retail prices (existing logic)
+                    let supplyPrice = 0;
+                    if (product.pivot.includeSupply) {
+                        supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
+                    } else {
+                        supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
+                    }
+
+                    let installPrice = 0;
+                    if (product.pivot.includeInstall) {
+                        installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
+                    } else {
+                        installPrice = (product.provisioning.install.retail_price - product.provisioning.install.excluded_price) || 0;
+                    }
+
+                    // Calculate COGS
+                    let supplyCogs = 0;
+                    if (product.pivot.includeSupply) {
+                        supplyCogs = (product.provisioning.supply.cogs * product.pivot.quantity) || 0;
+                    }
+
+                    let installCogs = 0;
+                    if (product.pivot.includeInstall) {
+                        installCogs = (product.provisioning.install.cogs * product.pivot.quantity) || 0;
+                    }
+
+                    return {
+                        total_price: data.total_price + supplyPrice + installPrice,
+                        cogs: data.cogs + supplyCogs + installCogs,
+                    };
+                },
+                { total_price: 0, cogs: 0 }
+            );
+
+            const categoryTotalPrice = categoryData.total_price * (quotationPackage.quantity || 1);
+            const categoryCogs = categoryData.cogs * (quotationPackage.quantity || 1);
+
+            if (!(quotationPackage.is_addon === true && quotationPackage.is_addon_included === false)) {
+                if (!acc[category]) {
+                    acc[category] = { total_price: 0, cogs: 0, quantity: 0 };
+                }
+                acc[category].total_price += categoryTotalPrice;
+                acc[category].cogs += categoryCogs;
+                acc[category].quantity += quotationPackage.quantity;
+            }
+
+            return acc;
+        }, {} as Record<string, { total_price: number; cogs: number; quantity: number }>);
+
+        // Calculate filtered total_amount (based on total_price)
+        const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0);
+
+        // Calculate total COGS
+        const filteredTotalCogs = Object.values(categoryTotals).reduce((sum, { cogs }) => sum + cogs, 0);
+
+        const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, cogs, quantity }]) => ({
+            category: category.startsWith('Add-on Option')
+                ? category
+                : categoryOptions.find(option => option.value === category)?.label || category,
+            total_price,
+            cogs,
+            quantity,
+        }));
+
+        const sortedCategories = [
+            ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')),
+            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option')),
+        ];
+
+        const totalAmount = formData.finalAmount > 0 ? formData.finalAmount : selectedPackages.reduce((total, pkg) => {
+            // Skip if package is not an addon or not included
+            if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                return total;
+            }
+
+            // Use final_amount if available, otherwise use total_price
+            return total + (pkg.total_price * (pkg.quantity || 1));
+        }, 0);
+
+        setTotalExcludedAddonAmount(totalAmount);
+
+        setPackageCategories(sortedCategories);
 
     }, [selectedPackages]);
 
@@ -261,7 +365,7 @@ function EditOrder() {
             let storedPackages = localStorage.getItem("include_packages");
 
             if (orderDetail.latest_quotation.quotation) {
-                const latestQuotation = orderDetail.latest_quotation.quotation;
+                const latestQuotation = orderDetail.latest_quotation;
                 latestQuotation.metadata = orderDetail.latest_quotation.metadata;
 
                 if (!storedPackages) {
@@ -272,13 +376,11 @@ function EditOrder() {
                 setSelectedQuotation(latestQuotation);
                 setSelectedPackages(JSON.parse(storedPackages || "[]"));
             } else {
-                const pastQuotation: Quotation = {
+                const pastQuotation: OrderQuotation = {
                     id: orderDetail.latest_quotation.id,
-                    name: orderDetail.latest_quotation.quotation_name,
+                    quotation_name: orderDetail.latest_quotation.quotation_name,
                     description: orderDetail.latest_quotation.description,
                     total_amount: orderDetail.latest_quotation.total_amount,
-                    valid_from: orderDetail.latest_quotation.quotation?.valid_from,
-                    valid_until: orderDetail.latest_quotation.quotation?.valid_until,
                     metadata: orderDetail.latest_quotation.packages
                         ? JSON.stringify(orderDetail.latest_quotation.packages)
                         : undefined,
@@ -294,7 +396,7 @@ function EditOrder() {
 
     const handleCustomQuotation = () => {
         setFormData((prev) => ({ ...prev, quotationId: "0", totalAmount: 0 }));
-        setSelectedQuotation({ id: "0", name: "Custom Quotation", total_amount: 0, metadata: null });
+        setSelectedQuotation({ id: "0", quotation_name: "Custom Quotation", total_amount: 0, metadata: null });
         setSelectedPackages([]);
         notify("success", "Custom quotation added.");
     };
@@ -1033,7 +1135,7 @@ function EditOrder() {
                             <div className="card">
                                 <div className="card-body quotation-info flex justify-between items-center gap-4">
                                     <div className="flex flex-col">
-                                        <span className="text-lg font-semibold text-gray-900">{selectedQuotation.name}</span>
+                                        <span className="text-lg font-semibold text-gray-900">{selectedQuotation.quotation_name}</span>
                                         <span className="text-base font-normal text-gray-800">
                                             Price: RM{" "}
                                             {(formData.totalAmount - (Number(formData.bonus?.value) || 0)).toLocaleString(undefined, {
@@ -1050,6 +1152,171 @@ function EditOrder() {
                                     </div>
                                 </div>
                             </div>
+                            {selectedPackages && (() => {
+
+                                const calculateQuotationMargin = () => {
+                                    // Calculate total retail price
+                                    const totalRetailPrice = orderDetail.final_amount ? orderDetail.final_amount : selectedPackages.reduce((total, pkg) => {
+                                        if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                                            return total;
+                                        }
+
+                                        const packageRetail = pkg.products.reduce((pkgTotal, product) => {
+                                            let supplyPrice = 0;
+                                            if (product.pivot.includeSupply) {
+                                                supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
+                                            } else {
+                                                supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
+                                            }
+
+                                            let installPrice = 0;
+                                            if (product.pivot.includeInstall) {
+                                                installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
+                                            } else {
+                                                installPrice = (product.provisioning.install.retail_price - product.provisioning.install.excluded_price) || 0;
+                                            }
+
+                                            return pkgTotal + (supplyPrice + installPrice);
+                                        }, 0);
+                                        return total + (packageRetail * (pkg.quantity || 1));
+                                    }, 0);
+
+                                    const totalDiscountPrice = Number(selectedQuotation.bonus?.value || 0);
+
+                                    // Calculate total COGS (Cost of Goods Sold)
+                                    const totalCogs = selectedPackages.reduce((total, pkg) => {
+                                        if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                                            return total;
+                                        }
+
+                                        const packageCogs = pkg.products.reduce((pkgTotal, product) => {
+                                            const supplyCogs = product.pivot.includeSupply
+                                                ? product.provisioning.supply.cogs * product.pivot.quantity
+                                                : 0;
+                                            const installCogs = product.pivot.includeInstall
+                                                ? product.provisioning.install.cogs * product.pivot.quantity
+                                                : 0;
+                                            return pkgTotal + (supplyCogs + installCogs);
+                                        }, 0);
+                                        return total + (packageCogs * (pkg.quantity || 1));
+                                    }, 0);
+
+                                    // Calculate margin in amount
+                                    const marginInAmount = totalRetailPrice - totalCogs;
+
+                                    // Calculate margin in percentage
+                                    const marginInPercentage = totalRetailPrice > 0
+                                        ? (marginInAmount / totalRetailPrice) * 100
+                                        : 0;
+
+                                    return {
+                                        totalCogs,
+                                        marginInAmount,
+                                        marginInPercentage
+                                    };
+                                };
+
+                                const { totalCogs, marginInAmount, marginInPercentage } = calculateQuotationMargin();
+
+                                const discount = formData.bonus ? Number(formData.bonus.value) : 0;
+                                const nettAmount = totalExcludedAddonAmount - discount;
+                                const nettMargin = nettAmount - totalCogs;
+                                const nettMarginPercentage = nettAmount > 0 ? (nettMargin / nettAmount) * 100 : 0;
+
+                                return (
+                                    <div className="card w-full">
+                                        <div className="card-header flex justify-between items-center">
+                                            <h3 className="card-title">Summary Pricing</h3>
+                                        </div>
+                                        <div className="card-group pt-3.5 pb-3.5">
+                                            <table className="table-auto w-full">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="text-sm text-gray-600 pb-3 text-left">Category</th>
+                                                        <th className="text-sm text-gray-600 pb-3 text-right">Total Price</th>
+                                                        <th className="text-sm text-gray-600 pb-3 text-right">COGS</th>
+                                                        <th className="text-sm text-gray-600 pb-3 text-right">Nett Margin</th>
+                                                        <th className="text-sm text-gray-600 pb-3 text-right">Margin %</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {packageCategories.map((category, index) => {
+                                                        const categoryMargin = category.total_price - category.cogs;
+                                                        const categoryMarginPercentage =
+                                                            category.total_price > 0 ? (categoryMargin / category.total_price) * 100 : 0;
+
+                                                        return (
+                                                            <tr key={index}>
+                                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">{category.category}</td>
+                                                                <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
+                                                                    RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                </td>
+                                                                <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
+                                                                    RM {category.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                </td>
+                                                                <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
+                                                                    RM {categoryMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                </td>
+                                                                <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
+                                                                    {categoryMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                    {/* Totals Row */}
+                                                    <tr className="border-t">
+                                                        <td className="text-sm text-gray-600 font-bold pt-3 pe-4 lg:pe-8">Total</td>
+                                                        <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                            RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                            RM {totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                            RM {marginInAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                            {marginInPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                                        </td>
+                                                    </tr>
+                                                    {/* Bonus/Discount Row (if applicable) */}
+                                                    {(formData.bonus && (Number(formData.bonus.value) > 0)) && (
+                                                        <tr>
+                                                            <td className="text-sm text-gray-600 pt-3 whitespace-nowrap">Bonus/Discount</td>
+                                                            <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
+                                                                - RM {Number(formData.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                            <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">-</td>
+                                                            <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
+                                                                - RM {Number(formData.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                            <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
+                                                                - {(marginInPercentage - nettMarginPercentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                    {/* Nett Amount Row */}
+                                                    <tr>
+                                                        <td className="text-sm text-gray-600 font-bold pt-3 pe-4 lg:pe-8">Nett Amount</td>
+                                                        <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                            RM {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                            RM {(totalCogs).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                            RM {nettMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                            {nettMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                             <div className="card mb-6">
                                 <div className="card-body">
                                     <div className="flex justify-between items-center flex-wrap mb-2">

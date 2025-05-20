@@ -256,7 +256,7 @@ export interface OrderQuotation {
     quotation?: Quotation,
     total_amount?: number,
     description?: string,
-    version: number,
+    version?: number,
     packages?: Package[],
     bonus?: {
         description?: string,
@@ -1091,6 +1091,7 @@ export interface RenoProgress {
     permissions?: User[],
     completed_at?: string,
     rpm_version?: number,
+    is_converted?: boolean,
     created_at?: string,
     updated_at?: string,
 }

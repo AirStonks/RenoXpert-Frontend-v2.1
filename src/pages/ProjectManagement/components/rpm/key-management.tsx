@@ -22,10 +22,6 @@ export const KeyManagementCard = ({ keyManagementJob }: Props) => {
         alert("Redirecting to Defect Inspection Form...");
     };
 
-    const handleSave = useCallback((taskId: string, comment: string, attachments: Attachment[]) => {
-        console.log(`Saving task ${taskId} with comment: ${comment} and attachments:`, attachments);
-    }, []);
-
     return (
         <>
             <div className="shadow-md rounded-xl overflow-hidden bg-white w-full">
@@ -71,7 +67,7 @@ export const KeyManagementCard = ({ keyManagementJob }: Props) => {
             <TaskDetailDrawer
                 selectedTask={selectedTask}
                 onClose={() => setSelectedTask(null)}
-                onSave={(taskId, comment, attachments) => handleSave(taskId, comment, attachments)}
+                onSave={() => { }}
                 taskName="Key Management"
             />
         </>

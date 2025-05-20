@@ -36,11 +36,11 @@ const AttachmentComponent = ({ attachment, taskId, index, editMode, onAttachment
                 const data: RPMTask = response.data;
 
                 if (response?.success) {
-                    onAttachmentChanges(data, taskId);
+                    onAttachmentChanges?.(data, taskId);
                     if (editMode.section === "internal") {
-                        updateEditedAttachments(data.internal_attachments);
+                        updateEditedAttachments?.(data.internal_attachments || []);
                     } else {
-                        updateEditedAttachments(data.owner_attachments);
+                        updateEditedAttachments?.(data.owner_attachments || []);
                     }
                     notify("success", "Attachment removed successfully");
                     return;
@@ -243,12 +243,12 @@ export const TaskDetailDrawer = ({
                     const data: RPMTask = response.data;
 
                     if (response.success) {
-                        onAttachmentChanges?.(data, selectedTask?.id);
+                        onAttachmentChanges?.(data, selectedTask?.id || "");
 
                         if (section === "internal") {
-                            setEditedAttachments(data.internal_attachments);
+                            setEditedAttachments(data.internal_attachments || []);
                         } else {
-                            setEditedAttachments(data.owner_attachments);
+                            setEditedAttachments(data.owner_attachments || []);
                         }
                         notify("success", "Attachments added successfully");
                         return;
@@ -286,22 +286,40 @@ export const TaskDetailDrawer = ({
     );
 
     const handleDrop = useCallback(
-        (e: React.DragEvent<HTMLDivElement>, section: "internal" | "external") => {
+        async (e: React.DragEvent<HTMLDivElement>, section: "internal" | "external") => {
             e.preventDefault();
             setIsDragOver({ section: null });
+
             if (editMode.section === section && editMode.taskId === selectedTask?.id && e.dataTransfer.files) {
-                const files = Array.from(e.dataTransfer.files);
-                const newAttachments = files
-                    .filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/"))
-                    .map((file, index) => {
-                        const id = `${editedAttachments.length + index + 1}`;
-                        const type = file.type.startsWith("image/") ? "image" : "video";
-                        return { id, original_name: file.name, file_url: URL.createObjectURL(file), file, size: file.size };
-                    });
-                setEditedAttachments((prev) => [...prev, ...newAttachments]);
+                try {
+                    const files = Array.from(e.dataTransfer.files);
+                    let response;
+
+                    if (section === "internal") {
+                        response = await uploadRPMInternalAttachment(Number(selectedTask?.id), files);
+                    } else {
+                        response = await uploadRPMExternalAttachment(Number(selectedTask?.id), files);
+                    }
+
+                    const data: RPMTask = response.data;
+
+                    if (response.success) {
+                        onAttachmentChanges?.(data, selectedTask?.id || "");
+
+                        if (section === "internal") {
+                            setEditedAttachments(data.internal_attachments || []);
+                        } else {
+                            setEditedAttachments(data.owner_attachments || []);
+                        }
+                        notify("success", "Attachments added successfully");
+                        return;
+                    }
+                } catch (error) {
+                    notify("error", "Failed to add attachments: " + error);
+                }
             }
         },
-        [editMode, selectedTask, editedAttachments]
+        [editMode, selectedTask, onAttachmentChanges]
     );
 
     const renderAttachmentsSection = (section: "internal" | "external") => (
@@ -340,7 +358,7 @@ export const TaskDetailDrawer = ({
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                                 {editedAttachments.map((attachment, index) => (
                                     <AttachmentComponent
-                                        key={attachment.id}
+                                        key={attachment.id || `attachment-${section}-${index}`}
                                         attachment={attachment}
                                         taskId={selectedTask?.id || ""}
                                         index={index}
