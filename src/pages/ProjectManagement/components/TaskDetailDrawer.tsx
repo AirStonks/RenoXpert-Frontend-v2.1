@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from "react";
 import { RPMTask, Attachment, RenoProgress } from "../../../types";
-import { changeRPMTaskStatus, removeRPMExternalAttachment, removeRPMInternalAttachment, updateRPMExternalComment, updateRPMInternalComment, uploadRPMExternalAttachment, uploadRPMInternalAttachment } from "../../../services/operationApi";
+import { changeRPMTaskStatus, removeRPMExternalAttachment, removeRPMInternalAttachment, updateRPMExternalComment, updateRPMInternalComment, uploadRPMExternalAttachment, uploadRPMInternalAttachment } from "../../../services/api";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { TaskStatusBadge } from "../../ProjectManagement/components/rpm/task-status-badge";
