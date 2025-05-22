@@ -64,6 +64,7 @@ const bankOptions = [
     { value: "CIMB Bank Berhad", label: "CIMB Bank Berhad" },
     { value: "CIMB Islamic Bank Berhad", label: "CIMB Islamic Bank Berhad" },
     { value: "Citibank Berhad", label: "Citibank Berhad" },
+    { value: "GX Bank Berhad", label: "GX Bank Berhad" },
     { value: "Hong Leong Bank Berhad", label: "Hong Leong Bank Berhad" },
     { value: "Hong Leong Islamic Bank Berhad", label: "Hong Leong Islamic Bank Berhad" },
     { value: "HSBC Amanah Malaysia Berhad", label: "HSBC Amanah Malaysia Berhad" },
