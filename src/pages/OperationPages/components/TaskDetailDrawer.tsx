@@ -3,7 +3,7 @@ import { RPMTask, Attachment, RenoProgress } from "../../../types";
 import { changeRPMTaskStatus, removeRPMExternalAttachment, removeRPMInternalAttachment, updateRPMExternalComment, updateRPMInternalComment, uploadRPMExternalAttachment, uploadRPMInternalAttachment } from "../../../services/operationApi";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
-import { TaskStatusBadge } from "../../ProjectManagement/components/rpm/task-status-badge";
+import { TaskStatusBadge } from "../../../components/task-status-badge";
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import Loading from "../../components/Loading";
 import useFetchOwnerRenoProgress from "../../hook/useFetchOwnerRenoProgress";
 import { Link } from "react-router-dom";
 import { KTAccordion } from '../../metronic/core/components/accordion/accordion';
-import { PhaseJob } from "../../types";
+import { PhaseJob, RenoProgress } from "../../types";
+import RPMV2 from "./components/RPMV2";
+import RPMV3 from "./components/RPMV3";
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -13,18 +15,28 @@ const AWS_S3_URL =
             ? import.meta.env.VITE_STAGING_AWS_S3_URL
             : null
 
+
 function RenoProgressDetail() {
     const { id } = useParams<{ id: string }>();
     const renoProgressId = id ? parseInt(id, 10) : null;
-
     const { renoProgressDetail, loading, error } = useFetchOwnerRenoProgress(renoProgressId);
+
+    const [renoProgress, setRenoProgress] = useState<RenoProgress>(null);
 
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         document.title = "Reno Progress | RenoXpert";
-        KTAccordion.init();
-    });
+
+        const initFunctions = async () => {
+            if (renoProgressDetail) {
+                setRenoProgress(renoProgressDetail); // Assign renoProgressDetail to renoProgress
+                KTAccordion.init();
+            }
+        }
+
+        initFunctions();
+    }, [renoProgressDetail]);
 
     // const calculateJobProgress = (job: PhaseJob) => {
     //     // Define the status weightages
@@ -53,197 +65,40 @@ function RenoProgressDetail() {
     //     return totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0;
     // };
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    if (loading) return <Loading />;
+    if (error) return <div>Error: {error}</div>;
+    if (!renoProgress) return <div>An unexpected error occured</div>;
 
     return (
         <>
             {/* Loading Overlay */}
             {isLoading || loading && <Loading />}
 
-            <div className="flex w-full px-2">
-                <div className="card w-full">
-                    <div className="card-header flex justify-between">
-                        <div className="flex gap-4 justify-center">
-                            <Link
-                                to={'/owner/home'}
-                                className="ki-solid ki-arrow-left items-center">
-                            </Link>
-                            <span className="text-lg font-semibold">Reno Progress</span>
+            {renoProgress.rpm_version === 1 || renoProgress.rpm_version === 2 ? (
+                <>
+                    <RPMV2
+                        renoProgress={renoProgress}
+                        setRenoProgress={setRenoProgress}
+                    />
+                </>
+            ) : (
+                <>
+                    {/* Section still in development, display comming soon */}
+                    {/* <div className="flex p-12 justify-center h-screen">
+                        <div className="text-xl font-bold text-gray-800">
+                            Reno Progress V3 still in development. Comming Soon
                         </div>
-                    </div>
-                    <div className="card-body flex flex-col gap-4">
-                        {renoProgressDetail &&
-                            <>
-                                <div className="flex flex-col">
-                                    <span className="text-md font-semibold block mb-2">
-                                        Overall Progress: {(((renoProgressDetail.pre_reno_completion * 0.2) + (renoProgressDetail.p1_completion * 0.7) + (renoProgressDetail.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                    </span>
-                                    <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300"
-                                            style={{
-                                                width: `${(((renoProgressDetail.pre_reno_completion * 0.2) + (renoProgressDetail.p1_completion * 0.7) + (renoProgressDetail.post_reno_completion * 0.1)) * 100)}%`,
-                                                height: '8px'
-                                            }}
-                                        />
-                                    </div>
-                                </div>
+                    </div> */}
 
-                                <div className="flex">
-                                    <div className="flex flex-col gap-1 flex-1">
-                                        <span className="text-md font-semibold">Property:</span>
-                                        <span className="text-md">{renoProgressDetail.property.name}</span>
-                                    </div>
 
-                                    <div className="flex flex-col gap-1 flex-1">
-                                        <span className="text-md font-semibold">Unit:</span>
-                                        <span className="text-md">{renoProgressDetail.property.block}-{renoProgressDetail.property.floor}-{renoProgressDetail.property.unit_no}</span>
-                                    </div>
-                                </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <span className="font-semibold text-sm">Contractual Date:</span>
-                                    <div className="flex gap-4">
-                                        <span className="badge">
-                                            {renoProgressDetail.contractual_start_date
-                                                ? new Date(renoProgressDetail.contractual_start_date).toLocaleDateString('en-GB', {
-                                                    day: '2-digit',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })
-                                                : '-'}
-                                        </span>
-                                        <span>to</span>
-                                        <span className="badge">
-                                            {renoProgressDetail.contractual_end_date
-                                                ? new Date(renoProgressDetail.contractual_end_date).toLocaleDateString('en-GB', {
-                                                    day: '2-digit',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })
-                                                : '-'}
-                                        </span>
-                                    </div>
-                                </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <span className="font-semibold text-sm">Contractor Date:</span>
-                                    <div className="flex gap-4">
-                                        <span className="badge">
-                                            {renoProgressDetail.contractor_start_date
-                                                ? new Date(renoProgressDetail.contractor_start_date).toLocaleDateString('en-GB', {
-                                                    day: '2-digit',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })
-                                                : '-'}
-                                        </span>
-                                        <span>to</span>
-                                        <span className="badge">
-                                            {renoProgressDetail.contractor_end_date
-                                                ? new Date(renoProgressDetail.contractor_end_date).toLocaleDateString('en-GB', {
-                                                    day: '2-digit',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })
-                                                : '-'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            {/* <div className="flex w-full px-2">
-                <div className="card w-full">
-                    <div className="card-header flex">
-                        <span className="text-lg font-semibold">Acceptance Form</span>
-                    </div>
-                    <div className="card-body flex flex-col">
-                        <span className="text-sm text-gray-600 mb-4">This is the final step of overall works. Click the below button to fill in and submit the Reno Acceptance Form.</span>
-                        <Link
-                            to={'/reno/accept-form/' + renoProgressId}
-                            className="btn btn-info btn-sm justify-center"
-                        >
-                            Proceed to Reno Acceptance
-                        </Link>
-                    </div>
-                </div>
-            </div> */}
-
-            <div className="flex flex-col gap-4 w-full px-2" data-accordion="true">
-
-                <span className="text-lg font-semibold px-1">Progress</span>
-
-                {renoProgressDetail &&
-                    renoProgressDetail.phases.map((phase, phaseIndex) => {
-                        let phaseName = '';
-                        let phaseCompletion = 0;
-
-                        if (phaseIndex === 0) {
-                            phaseName = 'Pre-Reno';
-                            phaseCompletion = renoProgressDetail.pre_reno_completion || 0;
-                        } else if (phaseIndex === 1) {
-                            phaseName = 'Reno';
-                            phaseCompletion = renoProgressDetail.p1_completion || 0; // Use p1_completion instead of reno_completion
-                        } else if (phaseIndex === 2) {
-                            phaseName = 'Post-Reno';
-                            phaseCompletion = renoProgressDetail.post_reno_completion || 0;
-                        }
-
-                        return (
-                            <div className="flex flex-col gap-5" key={phaseIndex}>
-                                <div className="card accordion-item border rounded-xl w-full" data-accordion-item="true" id={phase.id}>
-                                    <button className="accordion-toggle p-4" data-accordion-toggle={"#package_content_" + phase.id}>
-                                        <div className="flex flex-col items-start">
-                                            <span className="text-sm text-gray-900 font-medium">{phase.name}</span>
-                                        </div>
-                                        <div className="flex">
-                                            <div className="flex mr-24"></div>
-                                            <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                            <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
-                                        </div>
-                                    </button>
-                                    <div className="accordion-content hidden border-t" id={"package_content_" + phase.id}>
-                                        <div className="w-full max-w-6xl mx-auto px-4 md:px-6">
-                                            <div className="flex flex-col justify-center divide-y divide-slate-200 [&>*]:py-4">
-                                                <div className="w-full max-w-3xl mx-auto">
-                                                    <div className="flex flex-col gap-2">
-                                                        <div className="flex justify-between items-center">
-                                                            <span className="text-sm font-semibold block">
-                                                                Phase Completion: {(phaseCompletion * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                                            </span>
-                                                            <Link
-                                                                to={`/owner/reno/progress/${renoProgressId}/phase/${phaseIndex}/attachments`}
-                                                                className="btn btn-info btn-xs"
-                                                            >
-                                                                View Photos
-                                                            </Link>
-                                                        </div>
-                                                        <div className="w-full bg-gray-200 rounded-full h-[8px] mb-1 relative overflow-hidden">
-                                                            <div
-                                                                className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-300"
-                                                                style={{
-                                                                    width: `${phaseCompletion * 100}%`,
-                                                                    height: '8px'
-                                                                }}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {/* Rest of the JSX for jobs and tasks remains unchanged */}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-            </div>
+                    <RPMV3
+                        renoProgress={renoProgress}
+                        setRenoProgress={setRenoProgress}
+                    />
+                </>
+            )}
         </>
     )
 }

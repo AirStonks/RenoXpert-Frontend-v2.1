@@ -13,9 +13,9 @@ import {
 } from '@heroicons/react/24/outline';
 import { TaskStatusBadge } from '../../../components/task-status-badge';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
-import { BottomNav } from './bottom-nav-bar';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, ExclamationTriangleIcon, QuestionMarkCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { BottomNav } from './bottom-nav-bar';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -37,6 +37,8 @@ const statusColors = {
     'Completed': 'bg-green-100 text-green-800',
     'Not Available': 'bg-red-100 text-red-800',
 };
+
+const headerData = { title: 'Reno Progress', backUrl: '/' }
 
 interface RPMV3Props {
     renoProgress: RenoProgress;
@@ -116,6 +118,7 @@ const getStatusKey = (status: string | undefined) => {
 };
 
 function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
+    const location = useLocation();
     const [selectedTask, setSelectedTask] = useState<RPMTask | null>(null);
     const [selectedSection, setSelectedSection] = useState<string | null>(null);
 
@@ -353,9 +356,23 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
     );
 
     return (
-        <div className="flex flex-col w-full py-2 space-y-2">
+        <div className="flex flex-col w-full py-2 space-y-2 max-w-4xl">
+
+
+            <div className="flex w-full items-center px-2">
+                <span className="flex-none">
+                    <Link
+                        to={location.state?.from ?? headerData.backUrl}
+                        className="ki-solid ki-arrow-left items-center">
+                    </Link>
+                </span>
+                <span className="flex-grow text-center font-bold">
+                    {headerData.title}
+                </span>
+            </div>
+
             {/* General Info Card - Sticky */}
-            <div className="sticky top-4 z-40 bg-white border rounded-xl" data-accordion="true">
+            <div className="sticky top-4 z-40 bg-white border rounded-xl mx-2" data-accordion="true">
                 <div className="card accordion-item w-full" data-accordion-item="true" id="accordion_1_item_1">
                     <button className="accordion-toggle p-4" data-accordion-toggle="#accordion_1_content_1">
                         <div className="flex space-x-3 items-center">
@@ -386,10 +403,10 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
             </div>
 
             {/* Progress Section */}
-            <section className="flex" aria-labelledby="progress-heading">
+            <section className="flex mx-auto max-w-4xl" aria-labelledby="progress-heading">
                 <div className=" overflow-x-auto w-full max-w-[calc(100vw-2rem)]">
                     <div className="flex flex-row space-x-4 min-w-max h-full">
-                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden max-w-4xl">
                             <div className="flex flex-row border border-gray-200 rounded-lg overflow-hidden h-full">
                                 <div className="flex items-center justify-center p-4 bg-white border-b md:border-b-0 md:border-r border-gray-200 md:w-1/3">
                                     <div className="relative w-24 h-24">
@@ -461,13 +478,16 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                     <div className="flex flex-col">
                                         <ul className='space-y-1'>
                                             <li className="py-2">
-                                                <div className="flex items-center justify-between">
+                                                <button
+                                                    className="flex items-center justify-between w-full"
+                                                    onClick={() => task && setSelectedTask(task)}
+                                                >
                                                     <span className="font-medium text-2xs">{task.item_name}</span>
                                                     <div className={`${getStatusColor(task.status)} badge badge-xs badge-pill space-x-1`}>
                                                         <span>{getStatusIcon(task.status)}</span>
                                                         <span>{getStatusKey(task.status)}</span>
                                                     </div>
-                                                </div>
+                                                </button>
                                             </li>
                                         </ul>
                                     </div>
@@ -481,13 +501,16 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                     <div className="flex flex-col">
                                         <ul className='space-y-1'>
                                             <li className="py-2">
-                                                <div className="flex items-center justify-between">
+                                                <button
+                                                    className="flex items-center justify-between w-full"
+                                                    onClick={() => task && setSelectedTask(task)}
+                                                >
                                                     <span className="font-medium text-2xs">{task.item_name}</span>
                                                     <div className={`${getStatusColor(task.status)} badge badge-xs badge-pill space-x-1`}>
                                                         <span>{getStatusIcon(task.status)}</span>
                                                         <span>{getStatusKey(task.status)}</span>
                                                     </div>
-                                                </div>
+                                                </button>
                                             </li>
                                         </ul>
                                     </div>
@@ -501,13 +524,16 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                     <div className="flex flex-col">
                                         <ul className='space-y-1'>
                                             <li className="py-2">
-                                                <div className="flex items-center justify-between">
+                                                <button
+                                                    className="flex items-center justify-between w-full"
+                                                    onClick={() => task && setSelectedTask(task)}
+                                                >
                                                     <span className="font-medium text-2xs">{task.item_name}</span>
                                                     <div className={`${getStatusColor(task.status)} badge badge-xs badge-pill space-x-1`}>
                                                         <span>{getStatusIcon(task.status)}</span>
                                                         <span>{getStatusKey(task.status)}</span>
                                                     </div>
-                                                </div>
+                                                </button>
                                             </li>
                                         </ul>
                                     </div>
@@ -516,162 +542,134 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                         </div>
                     </div>
                 </div>
-            </section>
-
-            {/* Defect Inspection Form (If available) */}
-            {renoProgress.rpm_jobs.find((job) => job.job_category === 'defect')
-                .rpm_tasks.find((task) => task.item_name === 'Defect Inspection')
-                .status !== 'completed' && (
-                    <div className="card w-full rounded-lg">
-                        <div className="card-body p-3 space-y-2">
-                            <h3 className='flex items-center space-x-2'>
-                                <div className="h-5 w-5">
-                                    <ExclamationTriangleIcon className='absolute w-5 h-5 text-warning animate-ping' />
-                                    <ExclamationTriangleIcon className='relative w-5 h-5 text-warning' />
-                                </div>
-                                <span className='text-sm text-gray-900 font-semibold'>Reminder</span>
-                            </h3>
-
-                            <p className='text-2xs text-gray-700'>
-                                This Unit has not been submitted the DI Form. To do defect inspection, please click the button below.
-                            </p>
-
-                            <Link
-                                to={`/reno/defect-inspection-form/${renoProgress.defect_inspection_form.id}`}
-                                className='btn btn-xs btn-info'
-                            >
-                                DI Form
-                            </Link>
-                        </div>
-                    </div>
-                )
-            }
-
+            </section >
 
             {/* Task Section */}
-            <section className="space-y-2 h-full max-h-[calc(100vw-2rem)]">
+            < section className="space-y-2 h-full max-h-[calc(100vw-2rem)]" >
                 {/* Task List Section */}
-                {['room_furnitures', 'bathroom'].includes(activeTab) ? (
-                    <div className="shadow-lg rounded-xl overflow-hidden bg-white w-full max-w-[calc(100vw-2rem)] mx-auto">
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-semibold text-gray-800">
-                                    {activeCategory.name}
-                                </span>
+                {
+                    ['room_furnitures', 'bathroom'].includes(activeTab) ? (
+                        <div className="shadow-lg rounded-xl overflow-hidden bg-white w-full max-w-[calc(100vw-2rem)] mx-auto">
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-semibold text-gray-800">
+                                        {activeCategory.name}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Table Container */}
-                        <div className="overflow-x-auto overflow-y-auto h-full max-h-[calc(100vw-2rem)]">
-                            <table className="w-full text-sm">
-                                <thead className="sticky top-0 z-20">
-                                    <tr className="bg-gray-50 text-gray-600">
-                                        <th className="p-3 text-left text-xs font-medium uppercase tracking-wide sticky left-0 bg-gray-50 z-10 min-w-[150px] border-r border-gray-200 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]">
-                                            Item Name
-                                        </th>
+                            {/* Table Container */}
+                            <div className="overflow-x-auto overflow-y-auto h-full max-h-[calc(100vw-2rem)]">
+                                <table className="w-full text-sm">
+                                    <thead className="sticky top-0 z-20">
+                                        <tr className="bg-gray-50 text-gray-600">
+                                            <th className="p-3 text-left text-xs font-medium uppercase tracking-wide sticky left-0 bg-gray-50 z-10 min-w-[150px] border-r border-gray-200 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]">
+                                                Item Name
+                                            </th>
+                                            {(() => {
+                                                const p2aJob = renoProgress.rpm_jobs.find(
+                                                    (job) => job.job_category === activeTab
+                                                );
+                                                if (!p2aJob) return null;
+                                                const rooms = Array.from(
+                                                    new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean))
+                                                );
+                                                return rooms.map((room) => (
+                                                    <th
+                                                        key={room}
+                                                        className="p-3 text-center text-xs font-medium uppercase tracking-wide min-w-[120px] bg-gray-50"
+                                                    >
+                                                        {room}
+                                                    </th>
+                                                ));
+                                            })()}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
                                         {(() => {
                                             const p2aJob = renoProgress.rpm_jobs.find(
                                                 (job) => job.job_category === activeTab
                                             );
                                             if (!p2aJob) return null;
-                                            const rooms = Array.from(
-                                                new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean))
-                                            );
-                                            return rooms.map((room) => (
-                                                <th
-                                                    key={room}
-                                                    className="p-3 text-center text-xs font-medium uppercase tracking-wide min-w-[120px] bg-gray-50"
-                                                >
-                                                    {room}
-                                                </th>
-                                            ));
+
+                                            const items = Array.from(new Set(p2aJob.rpm_tasks.map((task) => task.item_name)));
+
+                                            return items.map((item) => {
+                                                const rooms = Array.from(
+                                                    new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean))
+                                                );
+
+                                                return (
+                                                    <tr
+                                                        key={item}
+                                                        className="border-b border-gray-100 hover:bg-gray-50 transition-all duration-200 ease-in-out transform hover:scale-[1.005]"
+                                                    >
+                                                        <td className="p-3 text-3xs text-gray-700 sticky left-0 bg-white z-10 font-medium border-r border-gray-200 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]">
+                                                            {item}
+                                                        </td>
+                                                        {rooms.map((room) => {
+                                                            const task = p2aJob.rpm_tasks.find(
+                                                                (t) => t.room_name === room && t.item_name === item
+                                                            );
+                                                            const statusKey = getStatusKey(task?.status);
+
+                                                            return (
+                                                                <td
+                                                                    key={`${room}-${item}`}
+                                                                    className={`p-3 text-center text-3xs min-w-[120px] ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline" : ""}`}
+                                                                    onClick={() => task && setSelectedTask(task)}
+                                                                >
+                                                                    {task ? getStatusKey(task.status) : "-"}
+                                                                </td>
+                                                            );
+                                                        })}
+                                                    </tr>
+                                                );
+                                            });
                                         })()}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(() => {
-                                        const p2aJob = renoProgress.rpm_jobs.find(
-                                            (job) => job.job_category === activeTab
-                                        );
-                                        if (!p2aJob) return null;
-
-                                        const items = Array.from(new Set(p2aJob.rpm_tasks.map((task) => task.item_name)));
-
-                                        return items.map((item) => {
-                                            const rooms = Array.from(
-                                                new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean))
-                                            );
-
-                                            return (
-                                                <tr
-                                                    key={item}
-                                                    className="border-b border-gray-100 hover:bg-gray-50 transition-all duration-200 ease-in-out transform hover:scale-[1.005]"
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : (
+                        // Task List Section
+                        <div className="shadow-lg rounded-xl overflow-hidden bg-white w-full max-w-[calc(100vw-2rem)] mx-auto">
+                            {/* Header */}
+                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-semibold text-gray-800">
+                                        {activeCategory.name}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="p-2 overflow-y-auto h-full max-h-[calc(100vw-2rem)]">
+                                <div>
+                                    <ul className="space-y-1">
+                                        {renoProgress.rpm_jobs
+                                            .find((job) => job.job_category === activeTab)
+                                            ?.rpm_tasks.map((task) => (
+                                                <li
+                                                    key={task.id}
+                                                    className="p-2 rounded-lg bg-white shadow-sm hover:shadow-md transition-all duration-200 ease-in-out cursor-pointer"
+                                                    onClick={() => task && setSelectedTask(task)}
                                                 >
-                                                    <td className="p-3 text-3xs text-gray-700 sticky left-0 bg-white z-10 font-medium border-r border-gray-200 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]">
-                                                        {item}
-                                                    </td>
-                                                    {rooms.map((room) => {
-                                                        const task = p2aJob.rpm_tasks.find(
-                                                            (t) => t.room_name === room && t.item_name === item
-                                                        );
-                                                        const statusKey = getStatusKey(task?.status);
-
-                                                        return (
-                                                            <td
-                                                                key={`${room}-${item}`}
-                                                                className={`p-3 text-center text-3xs min-w-[120px] ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline" : ""}`}
-                                                                onClick={() => task && setSelectedTask(task)}
-                                                            >
-                                                                {task ? getStatusKey(task.status) : "-"}
-                                                            </td>
-                                                        );
-                                                    })}
-                                                </tr>
-                                            );
-                                        });
-                                    })()}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                ) : (
-                    // Task List Section
-                    <div className="shadow-lg rounded-xl overflow-hidden bg-white w-full max-w-[calc(100vw-2rem)] mx-auto">
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-semibold text-gray-800">
-                                    {activeCategory.name}
-                                </span>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="font-medium text-2xs">{task.item_name}</span>
+                                                        <TaskStatusBadge status={task.status} isStatic={true} />
+                                                    </div>
+                                                    <p className="text-3xs text-gray-500 mt-0.5">
+                                                        Updated: {task.updated_at || 'N/A'} by {task.updated_by?.name || 'N/A'}
+                                                    </p>
+                                                </li>
+                                            )) || <li className="p-2 text-2xs text-gray-500">No tasks available</li>}
+                                    </ul>
+                                </div>
                             </div>
                         </div>
-                        <div className="p-2 overflow-y-auto h-full max-h-[calc(100vw-2rem)]">
-                            <div>
-                                <ul className="space-y-1">
-                                    {renoProgress.rpm_jobs
-                                        .find((job) => job.job_category === activeTab)
-                                        ?.rpm_tasks.map((task) => (
-                                            <li
-                                                key={task.id}
-                                                className="p-2 rounded-lg bg-white shadow-sm hover:shadow-md transition-all duration-200 ease-in-out cursor-pointer"
-                                                onClick={() => task && setSelectedTask(task)}
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-medium text-2xs">{task.item_name}</span>
-                                                    <TaskStatusBadge status={task.status} isStatic={true} />
-                                                </div>
-                                                <p className="text-3xs text-gray-500 mt-0.5">
-                                                    Updated: {task.updated_at || 'N/A'} by {task.updated_by?.name || 'N/A'}
-                                                </p>
-                                            </li>
-                                        )) || <li className="p-2 text-2xs text-gray-500">No tasks available</li>}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </section>
+                    )
+                }
+            </section >
 
             <TaskDetailDrawer
                 selectedTask={selectedTask}
@@ -691,7 +689,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                 setActiveItem={setActiveTab}
             />
 
-        </div>
+        </div >
     );
 }
 
