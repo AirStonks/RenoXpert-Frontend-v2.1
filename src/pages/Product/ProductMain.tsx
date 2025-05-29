@@ -8,6 +8,8 @@ import Loading from '../../components/Loading';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -221,7 +223,7 @@ function ProductMain() {
                     </span>
                     <div className="flex gap-3 flex-wrap">
                         <Link
-                            to="/inventory"
+                            to={LOCAL_PATH_PREFIX + "inventory"}
                             className="btn btn-sm btn-info"
                         >
                             Go to Product Inventory
@@ -251,7 +253,7 @@ function ProductMain() {
                                 </div>
                                 <div className="menu-item">
                                     <Link
-                                        to={'/products/archives'}
+                                        to={LOCAL_PATH_PREFIX + 'products/archives'}
                                         className="menu-link"
                                         data-modal-toggle="#archive_product_modal"
                                     >
@@ -455,7 +457,7 @@ function ProductMain() {
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
                                                     <Link
-                                                        to={`/products/${product.id}`}
+                                                        to={LOCAL_PATH_PREFIX + `products/${product.id}`}
                                                         className="btn-view btn btn-sm btn-secondary"
                                                     >
                                                         View

@@ -4,6 +4,8 @@ import { Slide, toast } from "react-toastify";
 import { retrieveJobAttachments, retrieveRenoProgressPhaseAttachments } from "../../services/ownerApi";
 import Loading from "../../components/Loading";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -33,7 +35,7 @@ function RenoProgressPhaseAttachments() {
     };
 
     const handleBackClick = () => {
-        navigate('/owner/reno/progress/' + renoProgressId); // Go back to the previous route
+        navigate(LOCAL_PATH_PREFIX + 'reno/progress/' + renoProgressId); // Go back to the previous route
     };
 
     useEffect(() => {

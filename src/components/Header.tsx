@@ -3,6 +3,8 @@ import { useUser } from '../context/UserContext';
 import Loading from './Loading';
 import { Link } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function Header() {
 
     const { currentUser, loading, error } = useUser();
@@ -1676,7 +1678,7 @@ function Header() {
                                 </div>
                                 <div className="menu-item">
                                     <Link
-                                        to={'/profile/change-password'}
+                                        to={LOCAL_PATH_PREFIX + 'profile/change-password'}
                                         className="menu-link"
                                     >
                                         <span className="menu-icon">

@@ -19,6 +19,8 @@ type FilterStatus = 'All' | 'Submitted' | 'Not Submitted';
 type SortField = 'property.property_name' | 'submitted_at' | 'id';
 type ViewMode = 'card' | 'list';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function DIFormMain() {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
     const navigate = useNavigate();
@@ -327,8 +329,8 @@ function DIFormMain() {
                                                 )}
                                                 {diForm.status === 'submitted' && (
                                                     <Link
-                                                        to={`/di-forms/${diForm.id}`}
-                                                        state={{ fromUrl: '/di-forms' }}
+                                                        to={LOCAL_PATH_PREFIX + `di-forms/${diForm.id}`}
+                                                        state={{ fromUrl: LOCAL_PATH_PREFIX + 'di-forms' }}
                                                         className="text-green-500 hover:underline dark:text-green-400 dark:hover:text-green-300"
                                                     >
                                                         View Report
@@ -501,8 +503,8 @@ function DIFormMain() {
                                                         )}
                                                         {(diForm.status === 'submitted' || diForm.status === 'not_submitted') && (
                                                             <Link
-                                                                to={`/di-forms/${diForm.id}`}
-                                                                state={{ fromUrl: '/di-forms' }}
+                                                                to={LOCAL_PATH_PREFIX + `di-forms/${diForm.id}`}
+                                                                state={{ fromUrl: LOCAL_PATH_PREFIX + 'di-forms' }}
                                                                 className="text-green-500 hover:underline"
                                                             >
                                                                 View Report
@@ -515,8 +517,8 @@ function DIFormMain() {
                                             <td className="px-4 py-3">
                                                 {diForm.reno_progress_id && (
                                                     <Link
-                                                        to={`/reno-progress/${diForm.reno_progress_id}`}
-                                                        state={{ fromUrl: '/di-forms' }}
+                                                        to={LOCAL_PATH_PREFIX + `reno-progress/${diForm.reno_progress_id}`}
+                                                        state={{ fromUrl: LOCAL_PATH_PREFIX + 'di-forms' }}
                                                         className="text-orange-500 hover:underline"
                                                     >
                                                         View RPM

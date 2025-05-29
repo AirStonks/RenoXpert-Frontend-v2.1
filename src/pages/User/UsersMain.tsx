@@ -9,6 +9,8 @@ import { useUser } from "../../context/UserContext";
 import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 type SortOrder = 'asc' | 'desc' | null;
 
 function UsersMain() {
@@ -164,14 +166,14 @@ function UsersMain() {
                 </div>
                 <div className="flex gap-2">
                     <Link
-                        to={'/users/add'}
+                        to={LOCAL_PATH_PREFIX + 'users/add'}
                         className="btn btn-info btn-sm"
                     >
                         Add User
                     </Link>
                     
                     <Link
-                        to={'/users/internal/add'}
+                        to={LOCAL_PATH_PREFIX + 'users/internal/add'}
                         className="btn btn-warning btn-sm"
                     >
                         Add Internal User
@@ -305,7 +307,7 @@ function UsersMain() {
                                         <td>
                                             <div className="flex justify-around gap-2">
                                                 <Link
-                                                    to={'/users/' + user.id}
+                                                    to={LOCAL_PATH_PREFIX + 'users/' + user.id}
                                                     className="btn btn-sm btn-light"
                                                 >
                                                     View

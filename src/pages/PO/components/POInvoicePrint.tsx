@@ -7,6 +7,13 @@ import { Invoice, POPackage, PurchaseOrder } from '../../../types';
 import { useEffect, useState } from 'react';
 import { styles } from '../styles/poInvoicePrintStyle';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 const getCurrentDate = () => {
     const date = new Date();
     const options = { day: '2-digit', month: 'short', year: 'numeric' };
@@ -27,7 +34,7 @@ const PoPDF = ({ invoiceDetail, poDetail }: { invoiceDetail: Invoice; poDetail: 
     const COMPANY_CITY_STATE = "Subang Jaya, Selangor, 46500";
     const COMPANY_MOBILE = "03-58789831";
     const COMPANY_EMAIL = "sales@renoxpert.my";
-    const COMPANY_LOGO_URL = "/public/app/RenoExpert_logo-01.jpg";
+    const COMPANY_LOGO_URL = MEDIA_URL + "app/RenoExpert_logo-01.jpg";
 
     const ITEM_TITLE = invoiceDetail.status === 'paid' ? "Receipt" : "Invoice";
     const ITEM_NUMBER = invoiceDetail.invoice_no;
@@ -222,7 +229,7 @@ function POInvoicePrint() {
                 <div className="flex items-center gap-4 mb-6">
                     {/* Back */}
                     <Link
-                        to={'/purchase-orders/' + poId + '/invoices'}
+                        to={LOCAL_PATH_PREFIX + 'purchase-orders/' + poId + '/invoices'}
                         className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
                     >
                         <i className="ki-solid ki-arrow-left text-2xl"></i>

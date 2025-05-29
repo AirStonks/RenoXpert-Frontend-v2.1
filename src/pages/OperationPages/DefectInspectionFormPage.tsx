@@ -8,6 +8,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import imageCompression from 'browser-image-compression';
 import { BuildingOfficeIcon, HomeIcon, SparklesIcon } from '@heroicons/react/24/outline'; // Using Heroicons
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/op/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -801,7 +803,7 @@ function DefectInspectionFormPage() {
 
                 if (response?.success) {
                     notify('success', 'Form successfully submitted.');
-                    navigate('/op/form/submit/success');
+                    navigate(LOCAL_PATH_PREFIX + 'form/submit/success');
                 }
 
             } catch (error) {

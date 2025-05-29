@@ -4,6 +4,13 @@ import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import Loading from '../../components/Loading';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 function PaymentError() {
     const [errorData, setErrorData] = useState(null);
     const location = useLocation();
@@ -31,8 +38,8 @@ function PaymentError() {
             <div className="flex flex-col items-center justify-center h-[95%]">
 
                 <div className="mb-10">
-                    <img alt="image" className="dark:hidden max-h-[160px]" src="/public/media/illustrations/6.svg" />
-                    <img alt="image" className="light:hidden max-h-[160px]" src="/public/media/illustrations/6.svg" />
+                    <img alt="image" className="dark:hidden max-h-[160px]" src={`${MEDIA_URL}illustrations/6.svg`} />
+                    <img alt="image" className="light:hidden max-h-[160px]" src={`${MEDIA_URL}illustrations/6.svg`} />
                 </div>
                 <span className="badge badge-primary badge-outline mb-3">
                     Error Code: {errorData.errorCode}

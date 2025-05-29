@@ -5,6 +5,13 @@ import ClipboardJS from "clipboard";
 import { User } from "../../types";
 import { addUser } from "../../services/api";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 interface ValidationErrors {
     name_first?: string[];
     name_last?: string[];
@@ -43,8 +50,8 @@ const salutationOptions = [
 ];
 
 const countryOptions = [
-    { code: '60', name: 'Malaysia', flag: '/public/media/flags/malaysia.svg' },
-    { code: '65', name: 'Singapore', flag: '/public/media/flags/singapore.svg' },
+    { code: '60', name: 'Malaysia', flag: MEDIA_URL + 'flags/malaysia.svg' },
+    { code: '65', name: 'Singapore', flag: MEDIA_URL + 'flags/singapore.svg' },
 ];
 
 function AddUser() {
@@ -86,7 +93,7 @@ function AddUser() {
     };
 
     const handleBackClick = () => {
-        navigate('/users');
+        navigate(LOCAL_PATH_PREFIX + 'users');
     }
 
     useEffect(() => {
@@ -246,7 +253,7 @@ function AddUser() {
                     console.log('yes');
 
                     setIsLoading(false);
-                    navigate('/users/' + response.data.id);
+                    navigate(LOCAL_PATH_PREFIX + 'users/' + response.data.id);
                     return
                 } else {
 

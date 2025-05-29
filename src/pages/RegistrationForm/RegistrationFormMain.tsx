@@ -7,13 +7,15 @@ import { OwnerRegistrationForm } from "../../types";
 import { approveRegistrationForm, registrationFormIndex, rejectRegistrationForm } from "../../services/api";
 import { Link } from "react-router-dom";
 
-const APP_URL =
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const CLIENT_URL =
     import.meta.env.VITE_APP_ENV === "production"
-        ? import.meta.env.VITE_APP_URL
+        ? import.meta.env.VITE_CLIENT_URL
         : import.meta.env.VITE_APP_ENV === "staging"
-            ? import.meta.env.VITE_STAGING_APP_URL
+            ? import.meta.env.VITE_STAGING_CLIENT_URL
             : import.meta.env.VITE_APP_ENV === "local"
-                ? import.meta.env.VITE_LOCAL_APP_URL
+                ? 'localhost:5173/owner/'
                 : null;
 
 type SortOrder = 'asc' | 'desc' | null;
@@ -209,7 +211,7 @@ function RegistrationFormMain() {
                     <div className="flex gap-3 flex-wrap">
                         <button
                             className="btn btn-sm btn-outline btn-info copy-link flex justify-center gap-2"
-                            data-clipboard-text={`${APP_URL}owner/reno-registration-form`}
+                            data-clipboard-text={`${CLIENT_URL}reno-registration-form`}
                         >
                             <i className="ki-filled ki-copy"></i>
                             <span>Copy Registration Link</span>
@@ -308,7 +310,7 @@ function RegistrationFormMain() {
                                         >
                                             <td>
                                                 <Link
-                                                    to={'/registration-forms/' + regForm.id}
+                                                    to={LOCAL_PATH_PREFIX + 'registration-forms/' + regForm.id}
                                                     className="cursor-pointer text-orange-500"
                                                 >
                                                     {regForm.form_no}
@@ -393,7 +395,7 @@ function RegistrationFormMain() {
                                                             data-dropdown-dismiss="true">
                                                             <div className="menu-item">
                                                                 <Link
-                                                                    to={'/registration-forms/' + regForm.id}
+                                                                    to={LOCAL_PATH_PREFIX + 'registration-forms/' + regForm.id}
                                                                     className="menu-link"
                                                                 >
                                                                     <span className="menu-title">
@@ -408,7 +410,7 @@ function RegistrationFormMain() {
                                                             {regForm.status === 'pending' &&
                                                                 <div className="menu-item">
                                                                     <Link
-                                                                        to={`/registration-forms/edit/${regForm.id}`}
+                                                                        to={LOCAL_PATH_PREFIX + `registration-forms/edit/${regForm.id}`}
                                                                         className="menu-link"
                                                                     >
                                                                         <span className="menu-title">
@@ -460,7 +462,7 @@ function RegistrationFormMain() {
                                                                 (regForm.status === 'approved' ?
                                                                     <div className="menu-item">
                                                                         <Link
-                                                                            to={`/orders/create?formId=${regForm.id}`}
+                                                                            to={LOCAL_PATH_PREFIX + `orders/create?formId=${regForm.id}`}
                                                                             className="menu-link"
                                                                         >
                                                                             <span className="menu-title">

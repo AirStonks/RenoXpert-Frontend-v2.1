@@ -1,18 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 const Error404: React.FC = () => {
     return (
         <div
             className="min-h-screen w-full flex items-center justify-center bg-cover bg-center bg-no-repeat text-gray-800 text-center"
             style={{
                 backgroundImage:
-                    "url('/public/media/images/2600x1600/bg-2.png')",
+                    "url('" + MEDIA_URL + "images/2600x1600/bg-2.png')",
             }}
         >
             <div className="max-w-lg mx-5">
                 <img
-                    src="/public/media/illustrations/15.svg"
+                    src={`${MEDIA_URL}illustrations/15.svg`}
                     alt="404 Error Illustration"
                     className="w-full max-w-[240px] mx-auto mb-4"
                 />

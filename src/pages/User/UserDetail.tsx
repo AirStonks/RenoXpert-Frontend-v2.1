@@ -8,6 +8,8 @@ import ClipboardJS from "clipboard";
 import { resetUserPassword } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function UserDetail() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -22,7 +24,7 @@ function UserDetail() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/users');
+            navigate(LOCAL_PATH_PREFIX + 'users');
         }
     };
 

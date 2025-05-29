@@ -12,13 +12,26 @@ import {
     Squares2X2Icon,
     ListBulletIcon,
 } from '@heroicons/react/24/solid';
+import { MinusCircleIcon } from 'lucide-react';
+
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
 type SortOrder = 'asc' | 'desc';
 type FilterStatus = 'All' | 'Completed' | 'Delayed' | 'On Track';
-type SortField = 'property.name' | 'overall_completion' | 'contractual_end_date';
+type SortField =
+    | 'id'
+    | 'property.name'
+    | 'overall_completion'
+    | 'contractual_end_date'
+    | 'date_management.sales_date'
+    | 'date_management.reno_date'
+    | 'date_management.ch_date'
+    | 'ch_rundown'
+    | 'date_management.oh_date'
+    | 'oh_rundown';
 type ViewMode = 'card' | 'list';
 
-function PMMainV3() {
+function App() {
     const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -29,7 +42,7 @@ function PMMainV3() {
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [sortField, setSortField] = useState<SortField>('property.name');
+    const [sortField, setSortField] = useState<SortField>('id');
     const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
     const [filterStatus, setFilterStatus] = useState<FilterStatus>('All');
     const [expandedRows, setExpandedRows] = useState<number[]>([]);
@@ -69,8 +82,28 @@ function PMMainV3() {
 
             // Client-side status filtering
             if (status !== 'All') {
-                // In fetchProjects function
                 data = data.filter((progress: RenoProgress) => getStatus(progress) === status);
+            }
+
+            // Client-side sorting for calculated fields that can't be sorted on the server
+            if (field === 'ch_rundown' || field === 'oh_rundown') {
+                data = [...data].sort((a, b) => {
+                    let valueA, valueB;
+
+                    if (field === 'ch_rundown') {
+                        valueA = calculateChdRundown(a);
+                        valueB = calculateChdRundown(b);
+                    } else { // oh_rundown
+                        valueA = calculateOhdRundown(a);
+                        valueB = calculateOhdRundown(b);
+                    }
+
+                    if (order === 'asc') {
+                        return valueA - valueB;
+                    } else {
+                        return valueB - valueA;
+                    }
+                });
             }
 
             setRenoProgress(data);
@@ -200,6 +233,61 @@ function PMMainV3() {
             progress.post_reno_completion * 0.1) *
         100;
 
+    const calculateChdRundown = (progress: RenoProgress) => {
+        if (!progress.date_management?.ch_date) return 0;
+        const chd = new Date(progress.date_management.ch_date);
+        const now = new Date();
+        const timeDiff = chd.getTime() - now.getTime();
+        const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+        return daysDiff;
+    }
+
+    const calculateOhdRundown = (progress: RenoProgress) => {
+        if (!progress.date_management?.oh_date) return 0;
+        const ohd = new Date(progress.date_management.oh_date);
+        const now = new Date();
+        const timeDiff = ohd.getTime() - now.getTime();
+        const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+        return daysDiff;
+    }
+
+    const getRundownColor = (day: number) => {
+        if (day < 0) {
+            return 'text-red-500'
+        } else {
+            return 'text-green-500';
+        }
+    }
+
+    const getRundownIcon = (day: number) => {
+        if (day < 0) {
+            return <MinusCircleIcon className="w-4 h-4 text-red-500 font-bold" />
+        } else {
+            return '';
+        }
+    }
+
+    const getRundownDayLabel = (day: number) => {
+        if (day > 1) {
+            return day + ' days';
+        } else if (day === 1) {
+            return day + ' day'
+        } else if (day < 0) {
+            return (day * -1) + ' days'
+        } else {
+            return '-'
+        }
+    }
+
+    const renderSortIndicator = (field: SortField) => {
+        if (sortField === field) {
+            return <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>;
+        }
+        return null;
+    };
+
     const totalPages = Math.ceil(totalItems / size);
 
     return (
@@ -237,6 +325,12 @@ function PMMainV3() {
                             <option value="property.name">Property Name</option>
                             <option value="overall_completion">Overall Completion</option>
                             <option value="contractual_end_date">Permit Approval</option>
+                            <option value="date_management.sales_date">Sales Date</option>
+                            <option value="date_management.reno_date">Reno Date</option>
+                            <option value="date_management.ch_date">CH Date</option>
+                            <option value="ch_rundown">CH Rundown</option>
+                            <option value="date_management.oh_date">OH Date</option>
+                            <option value="oh_rundown">OH Rundown</option>
                         </select>
                         <button
                             onClick={handleRefresh}
@@ -296,7 +390,7 @@ function PMMainV3() {
                                 className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg dark:hover:shadow-xl dark:hover:shadow-teal-500/20 transform hover:scale-105 transition cursor-pointer"
                             >
                                 <Link
-                                    to={`/reno-progress/${progress.id}`}
+                                    to={LOCAL_PATH_PREFIX + `reno-progress/${progress.id}`}
                                     className="block"
                                     aria-label={`View details for ${progress.property.name}`}
                                 >
@@ -355,8 +449,8 @@ function PMMainV3() {
                                     </p>
                                     <div className="mb-4">
                                         <Link
-                                            to={`/sales/${progress.sale_id}`}
-                                            state={{ fromUrl: '/reno-progress/overview/v3' }}
+                                            to={LOCAL_PATH_PREFIX + `sales/${progress.sale_id}`}
+                                            state={{ fromUrl: LOCAL_PATH_PREFIX + 'reno-progress/overview/v3' }}
                                             onClick={(e) => e.stopPropagation()}
                                             className="text-orange-500 hover:underline dark:text-orange-400 dark:hover:text-orange-300"
                                         >
@@ -521,22 +615,76 @@ function PMMainV3() {
                                 >
                                     <div className="flex items-center gap-1">
                                         Condo
-                                        {sortField === 'property.name' && (
-                                            <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                                        )}
+                                        {renderSortIndicator('property.name')}
                                     </div>
                                 </th>
+                                {/* New Columns */}
+                                <th className="px-4 py-3">Room Config</th>
+                                <th className="px-4 py-3 text-center">Partition</th>
                                 <th className="px-4 py-3">Payment Progress</th>
                                 <th className="px-4 py-3">Owner</th>
+                                {/* Sortable Date Columns */}
                                 <th
                                     className="px-4 py-3 cursor-pointer hover:bg-gray-100"
-                                    onClick={() => handleSortChange('overall_completion')}
+                                    onClick={() => handleSortChange('date_management.sales_date')}
                                 >
                                     <div className="flex items-center gap-1">
-                                        Overall Completion
-                                        {sortField === 'overall_completion' && (
-                                            <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                                        )}
+                                        Sales Date
+                                        {renderSortIndicator('date_management.sales_date')}
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSortChange('date_management.reno_date')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Reno Date
+                                        {renderSortIndicator('date_management.reno_date')}
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSortChange('date_management.ch_date')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        CH Date
+                                        {renderSortIndicator('date_management.ch_date')}
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-center cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSortChange('ch_rundown')}
+                                >
+                                    <div className="flex items-center justify-center gap-1">
+                                        CH Rundown
+                                        {renderSortIndicator('ch_rundown')}
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSortChange('date_management.oh_date')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        OH Date
+                                        {renderSortIndicator('date_management.oh_date')}
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-center cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSortChange('oh_rundown')}
+                                >
+                                    <div className="flex items-center justify-center gap-1">
+                                        OH Rundown
+                                        {renderSortIndicator('oh_rundown')}
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 text-center cursor-pointer hover:bg-gray-100"
+                                    onClick={() => handleSortChange('overall_completion')}
+                                >
+                                    <div className="flex items-center justify-center gap-1">
+                                        Completion
+                                        {renderSortIndicator('overall_completion')}
                                     </div>
                                 </th>
                                 <th className="px-4 py-3">Details</th>
@@ -557,10 +705,34 @@ function PMMainV3() {
                                             <div className="h-4 bg-gray-200 rounded w-32"></div>
                                         </td>
                                         <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <div className="h-4 bg-gray-200 rounded w-6"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
                                             <div className="h-2 bg-gray-200 rounded w-24"></div>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-40"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="h-2 bg-gray-200 rounded w-16"></div>
@@ -609,10 +781,29 @@ function PMMainV3() {
                                                     </span>
                                                 </div>
                                             </td>
+                                            {/* <td className="px-4 py-3">{progress.room_config || '-'}</td>
+                                            <td className="px-4 py-3">{progress.partition || '-'}</td> */}
+                                            <td className="px-4 py-3">
+                                                <div className="flex flex-col space-y-1">
+                                                    <span>Single: {progress.sale.order.single_bedroom_count || 0}</span>
+                                                    <span>Queen: {progress.sale.order.queen_bedroom_count || 0}</span>
+                                                    <span>Studio: {progress.sale.order.studio_count || 0}</span>
+                                                    <span>Bathroom: {progress.sale.order.bathroom_count || 0}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <span
+                                                    className={`inline-block h-3 w-3 rounded-full ${progress.sale.order.include_partition
+                                                        ? 'bg-green-500 dark:bg-green-400'
+                                                        : 'bg-gray-300 dark:bg-gray-600'
+                                                        }`}
+                                                    title={progress.sale.order.include_partition ? 'Include Partition' : 'Not Include Partition'}
+                                                ></span>
+                                            </td>
                                             <td className="px-4 py-3">
                                                 <Link
-                                                    to={`/sales/${progress.sale_id}`}
-                                                    state={{ fromUrl: '/reno-progress/overview/v3' }}
+                                                    to={LOCAL_PATH_PREFIX + `sales/${progress.sale_id}`}
+                                                    state={{ fromUrl: LOCAL_PATH_PREFIX + 'reno-progress/overview/v3' }}
                                                     onClick={(e) => e.stopPropagation()}
                                                     className="text-orange-500 hover:underline"
                                                 >
@@ -649,33 +840,29 @@ function PMMainV3() {
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3">
-                                                {progress.rpm_version === 3 ? (
-                                                    <>
-                                                        <div className="relative w-[75%] bg-gray-200 rounded-full h-2">
-                                                            <div
-                                                                className="absolute top-0 left-0 h-full bg-green-500 rounded-full"
-                                                                style={{ width: `${progress.completion.overall_completion * 100}%` }}
-                                                            ></div>
-                                                        </div>
-                                                        <span className="text-xs">{(progress.completion.overall_completion * 100).toFixed(2)}%</span>
-                                                    </>
-                                                ) :
-                                                    <>
-                                                        <div className="relative w-[75%] bg-gray-200 rounded-full h-2">
-                                                            <div
-                                                                className="absolute top-0 left-0 h-full bg-green-500 rounded-full"
-                                                                style={{ width: `${getOverallCompletion(progress)}%` }}
-                                                            ></div>
-                                                        </div>
-                                                        <span className="text-xs">{getOverallCompletion(progress).toFixed(2)}%</span>
-                                                    </>
-                                                }
+                                            <td className="px-4 py-3">{formatDate(progress.date_management.sales_date)}</td>
+                                            <td className="px-4 py-3">{formatDate(progress.date_management.reno_date)}</td>
+                                            <td className="px-4 py-3">{formatDate(progress.date_management.ch_date)}</td>
+                                            <td className={"px-4 py-3 text-center " + getRundownColor(calculateChdRundown(progress))}>
+                                                <div className="flex items-center justify-center text-center space-x-2 font-bold">
+                                                    {getRundownIcon(calculateChdRundown(progress))}
+                                                    <span className="font-bold">{getRundownDayLabel(calculateChdRundown(progress))}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3">{formatDate(progress.date_management.oh_date)}</td>
+                                            <td className={"px-4 py-3 text-center " + getRundownColor(calculateOhdRundown(progress))}>
+                                                <div className="flex items-center justify-center text-center space-x-2">
+                                                    {getRundownIcon(calculateOhdRundown(progress))}
+                                                    <span className="font-bold">{getRundownDayLabel(calculateOhdRundown(progress))}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <span className="text-sm">{(progress.completion.overall_completion * 100).toFixed(2)}%</span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Link
-                                                    to={`/reno-progress/${progress.id}`}
-                                                    state={{ fromUrl: '/reno-progress/overview/v3' }}
+                                                    to={LOCAL_PATH_PREFIX + `reno-progress/${progress.id}`}
+                                                    state={{ fromUrl: LOCAL_PATH_PREFIX + 'reno-progress/overview/v3' }}
                                                     onClick={(e) => e.stopPropagation()}
                                                     className="btn btn-primary btn-sm"
                                                 >
@@ -685,11 +872,38 @@ function PMMainV3() {
                                         </tr>
                                         {expandedRows.includes(Number(progress.id)) && (
                                             <tr className="border-b">
-                                                <td colSpan={7} className="px-6 py-4">
+                                                <td colSpan={15} className="px-6 py-4">
                                                     <div
                                                         className="bg-white rounded-lg shadow-sm p-6 transition-all duration-300 ease-in-out animate-fade-in"
                                                         aria-expanded="true"
                                                     >
+                                                        {/* Property Details Section */}
+                                                        <div className="mb-6">
+                                                            <button
+                                                                onClick={() => toggleSection(progress.id, 'keyDates')}
+                                                                className="flex items-center justify-between w-full text-base font-semibold text-gray-800 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                                                                aria-label={expandedSections[progress.id]?.keyDates ? 'Collapse Key Dates' : 'Expand Key Dates'}
+                                                            >
+                                                                <span>Property Details</span>
+                                                                {expandedSections[progress.id]?.keyDates ? (
+                                                                    <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+                                                                ) : (
+                                                                    <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+                                                                )}
+                                                            </button>
+                                                            {/* {expandedSections[progress.id]?.keyDates && (
+                                                                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm transition-all duration-200">
+                                                                    <div>
+                                                                        <p className="font-medium text-gray-700">Room Config</p>
+                                                                        <p className="text-gray-600">{progress.room_config || '-'}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="font-medium text-gray-700">Partition</p>
+                                                                        <p className="text-gray-600">{progress.partition || '-'}</p>
+                                                                    </div>
+                                                                </div>
+                                                            )} */}
+                                                        </div>
                                                         {/* Key Dates Section */}
                                                         <div className="mb-6">
                                                             <button
@@ -704,8 +918,26 @@ function PMMainV3() {
                                                                     <ChevronDownIcon className="h-5 w-5 text-gray-500" />
                                                                 )}
                                                             </button>
-                                                            {expandedSections[progress.id]?.keyDates && (
+                                                            {/* {expandedSections[progress.id]?.keyDates && (
                                                                 <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm transition-all duration-200">
+                                                                    <div>
+                                                                        <p className="font-medium text-gray-700">Sales Date</p>
+                                                                        <p className="text-orange-600">{formatDate(progress.sales_date)}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="font-medium text-gray-700">Reno Date</p>
+                                                                        <p className="text-orange-600">{formatDate(progress.reno_date)}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="font-medium text-gray-700">CH Date</p>
+                                                                        <p className="text-orange-600">{formatDate(progress.chd_date)}</p>
+                                                                        <p className="text-blue-600">{progress.chd_rundown || '-'}</p>
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="font-medium text-gray-700">OH Date</p>
+                                                                        <p className="text-orange-600">{formatDate(progress.ohd_date)}</p>
+                                                                        <p className="text-blue-600">{progress.ohd_rundown || '-'}</p>
+                                                                    </div>
                                                                     <div>
                                                                         <p className="font-medium text-gray-700">Permit Approval</p>
                                                                         <p className="text-orange-600">{formatDate(progress.contractual_end_date)}</p>
@@ -727,10 +959,9 @@ function PMMainV3() {
                                                                         <p className="text-blue-600">{formatDate(progress.contractor_handover_date)}</p>
                                                                     </div>
                                                                 </div>
-                                                            )}
+                                                            )} */}
                                                         </div>
-
-                                                        {/* Progress Section */}
+                                                        {/* Progress Section (unchanged) */}
                                                         <div>
                                                             <button
                                                                 onClick={() => toggleSection(progress.id, 'progress')}
@@ -752,7 +983,7 @@ function PMMainV3() {
                                                                                 ...progress.completion.jobs.map((job) => ({
                                                                                     label: job.job_name,
                                                                                     value: job.completion_percentage,
-                                                                                }))
+                                                                                })),
                                                                             ].map(({ label, value }) => (
                                                                                 <div key={label} className="flex items-center gap-3 group">
                                                                                     <span className="w-32 font-medium text-gray-700 whitespace-nowrap">{label}:</span>
@@ -814,14 +1045,14 @@ function PMMainV3() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={7} className="px-4 py-3 text-center text-gray-500">
+                                    <td colSpan={15} className="px-4 py-3 text-center text-gray-500">
                                         No projects available
                                     </td>
                                 </tr>
                             )}
                         </tbody>
-                    </table >
-                </div >
+                    </table>
+                </div>
             )
             }
 
@@ -883,31 +1114,7 @@ function PMMainV3() {
                 )
             }
         </div >
-
-
-        // <div className="flex justify-between items-center flex-wrap mb-6">
-        //     <div className="flex gap-4 items-center">
-        //         <span className="text-2xl font-bold text-gray-900">
-        //             Project Management
-        //         </span>
-        //     </div>
-        //     {/* <div className="flex">
-        //         <label className="switch flex justify-center">
-        //             <input
-        //                 name="advanceTableMode"
-        //                 type="checkbox"
-        //                 checked={advanceTableMode}
-        //                 onChange={toggleTableMode}
-        //             />
-        //             <span className="text-gray-900">
-        //                 Switch to Advance Table Mode
-        //             </span>
-        //         </label>
-        //     </div> */}
-        // </div>
-
-        // <PMTable />
     );
 }
 
-export default PMMainV3;
+export default App;

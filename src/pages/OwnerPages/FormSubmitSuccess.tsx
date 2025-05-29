@@ -1,6 +1,15 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
+const CLIENT_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_CLIENT_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_CLIENT_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? 'localhost:5173/owner/'
+                : null;
+
 const token = localStorage.getItem('o_token');
 
 function FormSubmitSuccess() {
@@ -33,9 +42,9 @@ function FormSubmitSuccess() {
 
                     <div className="flex flex-col mx-8 justify-center items-center text-center">
                         {token ?
-                            <span className="text-lg font-medium text-gray-900">You can now go back to <Link to={'/owner/home'} className="link underline">Home Page</Link></span>
+                            <span className="text-lg font-medium text-gray-900">You can now go back to <Link to={CLIENT_URL + 'home'} className="link underline">Home Page</Link></span>
                             :
-                            <span className="text-lg font-medium text-gray-900">You can now proceed to <Link to={'/owner/login'} className="link underline">Login</Link></span>
+                            <span className="text-lg font-medium text-gray-900">You can now proceed to <Link to={CLIENT_URL + 'login'} className="link underline">Login</Link></span>
                         }
                     </div>
                 </div>

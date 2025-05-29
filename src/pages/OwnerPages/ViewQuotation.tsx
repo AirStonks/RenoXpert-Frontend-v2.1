@@ -9,6 +9,8 @@ import { makePaymentIntent } from "../../services/api";
 import { Link } from "react-router-dom";
 import { Slide, toast } from "react-toastify";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
 function ViewQuotation() {
     // const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -69,7 +71,7 @@ function ViewQuotation() {
                 <div className="card-header flex justify-between">
                     <div className="flex gap-4 justify-center">
                         <Link
-                            to={'/owner/order/overview/id/' + invoiceDetail.sale.order_id}
+                            to={LOCAL_PATH_PREFIX + 'order/overview/id/' + invoiceDetail.sale.order_id}
                             className="ki-solid ki-arrow-left items-center">
                         </Link>
                         <span className="text-lg font-semibold">Payment Invoice</span>

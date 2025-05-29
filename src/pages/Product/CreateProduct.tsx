@@ -12,6 +12,8 @@ import useFetchProductCategory from '../../hook/useFetchPMCategory';
 import Loading from '../../components/Loading';
 import { AxiosError } from 'axios';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface FormErrors {
     [key: string]: string | undefined; // Use string or undefined for error messages
 }
@@ -67,7 +69,7 @@ function CreateProduct() {
     const [errors, setErrors] = useState<FormErrors>({});
 
     const handleBackClick = () => {
-        navigate('/products'); // Go back to the previous route
+        navigate(LOCAL_PATH_PREFIX + 'products'); // Go back to the previous route
     };
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -262,7 +264,7 @@ function CreateProduct() {
 
             if (response?.success) {
                 notify('success', "Product Created Successfully!");
-                navigate('/products'); // Navigate to /products on success
+                navigate(LOCAL_PATH_PREFIX + 'products'); // Navigate to /products on success
             }
 
         } catch (error) {

@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
 const OwnerProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -9,7 +11,7 @@ const OwnerProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) 
     useEffect(() => {
         if (!token) {
             // Redirect to login with the current path stored in state
-            navigate('/owner/login', {
+            navigate(LOCAL_PATH_PREFIX + 'login', {
                 state: { from: location.pathname + location.search }
             });
         }

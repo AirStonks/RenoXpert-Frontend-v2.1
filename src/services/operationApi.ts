@@ -497,3 +497,70 @@ export const removeRPMExternalAttachment = async (rpmTaskId: number, attachmentI
         throw error; // Ensure to throw the error if needed
     }
 }
+
+export const changeRPMTaskQcStatus = async (rpmTaskQcId: number, status: string) => {
+    try {
+        const response = await axios.get(API_URL + `rpm-task-qc/${rpmTaskQcId}/status/${status}`, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const updateRPMTaskQcComment = async (rpmTaskQcId: number, comment: string) => {
+    try {
+        const response = await axios.put(API_URL + `rpm-task-qc/${rpmTaskQcId}/comment/internal`, { internal_comment: comment }, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error;
+    }
+}
+
+export const uploadRPMTaskQcAttachment = async (rpmTaskQcId: number, files: File[]) => {
+    try {
+        // Create a new FormData instance
+        const formData = new FormData();
+
+        // Append each file to the FormData object
+        files.forEach(file => {
+            formData.append('internal_attachments[]', file);  // 'attachments[]' because your backend expects an array
+        });
+
+        // Make the API request
+        const response = await axios.post(API_URL + `rpm-task-qc/${rpmTaskQcId}/attachment/internal/upload`,
+            formData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'multipart/form-data', // Axios sets the proper boundary for this type
+                }
+            }
+        );
+
+        return response.data; // Return response data
+
+    } catch (error) {
+        // Handle errors like 401 or other server-side errors
+        handleOperation401Error(error as AxiosError);
+        throw error; // Rethrow the error for further handling
+    }
+}
+
+export const removeRPMTaskQcAttachment = async (rpmTaskQcId: number, attachmentIndex: number) => {
+    try {
+        const response = await axios.get(API_URL + `rpm-task-qc/${rpmTaskQcId}/attachment/internal/${attachmentIndex}/remove`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOperation401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}

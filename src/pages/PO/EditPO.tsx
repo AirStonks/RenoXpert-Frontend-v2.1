@@ -12,6 +12,8 @@ import { SortablePOPackage } from "./components/SortablePOPackage";
 import Loading from "../../components/Loading";
 import { KTModal } from "../../metronic/core";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function EditPO() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -45,7 +47,7 @@ function EditPO() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/purchase-orders/ ' + poId);
+            navigate(LOCAL_PATH_PREFIX + 'purchase-orders/ ' + poId);
         }
     };
 
@@ -121,7 +123,7 @@ function EditPO() {
                 theme: localStorage.getItem('theme'),
                 transition: Slide,
             });
-            navigate('/purchase-orders');
+            navigate(LOCAL_PATH_PREFIX + 'purchase-orders');
         } finally {
             setIsLoading(false);
         }
@@ -494,7 +496,7 @@ function EditPO() {
 
             if (response?.success) {
                 notify('success', "PO Edited Successfully!");
-                navigate('/purchase-orders/' + poId);
+                navigate(LOCAL_PATH_PREFIX + 'purchase-orders/' + poId);
             }
 
         } catch (error) {

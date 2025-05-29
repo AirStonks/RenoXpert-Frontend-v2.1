@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { TaskStatusBadge } from "../../../../components/task-status-badge";
 import { TaskDetailDrawer } from "../TaskDetailDrawer";
-import { RPMJob, RPMTask, Attachment } from "../../../../types";
+import { RPMJob, RPMTask, Attachment, TaskStatus } from "../../../../types";
 
 interface Props {
     keyManagementJob: RPMJob
@@ -54,7 +54,7 @@ export const KeyManagementCard = ({ keyManagementJob }: Props) => {
                                         <div>
                                             <span className="font-medium">{task.item_name}</span>
                                         </div>
-                                        <TaskStatusBadge status={task.status} />
+                                        <TaskStatusBadge status={task.status as TaskStatus} />
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">Last updated: {task.updated_at ? task.updated_at : 'N/A'}</p>
                                     <p className="text-xs text-gray-500">By: {task.updated_by?.name ? task.updated_by.name : 'N/A'}</p>

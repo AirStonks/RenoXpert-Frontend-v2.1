@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
 function KeyManagementForm() {
 
     return (
@@ -9,7 +11,7 @@ function KeyManagementForm() {
                     <div className="card-header flex justify-between">
                         <div className="flex gap-4 justify-center">
                             <Link
-                                to={'/owner/home'}
+                                to={LOCAL_PATH_PREFIX + 'home'}
                                 className="ki-solid ki-arrow-left items-center text-gray-900">
                             </Link>
                             <span className="text-lg text-gray-900 font-semibold">Key Management Form</span>

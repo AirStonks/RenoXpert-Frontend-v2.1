@@ -1,11 +1,11 @@
 import React, { useState, useCallback, useRef } from "react";
-import { RPMTask, Attachment, RenoProgress, TaskStatus } from "../../../types";
-import { changeRPMTaskStatus, removeRPMExternalAttachment, removeRPMInternalAttachment, updateRPMExternalComment, updateRPMInternalComment, uploadRPMExternalAttachment, uploadRPMInternalAttachment } from "../../../services/operationApi";
+import { Attachment, RenoProgress, TaskQCStatus, RPMTaskQC } from "../../../types";
+import { changeRPMTaskStatus, removeRPMExternalAttachment, removeRPMInternalAttachment, updateRPMExternalComment, updateRPMInternalComment, uploadRPMExternalAttachment, uploadRPMInternalAttachment } from "../../../services/api";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
-import { TaskStatusBadge } from "../../../components/task-status-badge";
+import { TaskQCStatusBadge } from "../../../components/task-qc-status-badge";
 
-const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -19,7 +19,7 @@ interface AttachmentProps {
     taskId: string;
     index: number;
     editMode: { section: "internal" | "external" | null; taskId: string | null };
-    onAttachmentChanges?: (updatedRPMTask: RPMTask, taskId: string) => void;
+    onAttachmentChanges?: (updatedRPMTask: RPMTaskQC, taskId: string) => void;
     updateEditedAttachments?: (attachments: Attachment[]) => void;
 }
 
@@ -35,7 +35,7 @@ const AttachmentComponent = ({ attachment, taskId, index, editMode, onAttachment
                     response = await removeRPMExternalAttachment(Number(taskId), index);
                 }
 
-                const data: RPMTask = response.data;
+                const data: RPMTaskQC = response.data;
 
                 if (response?.success) {
                     onAttachmentChanges?.(data, taskId);
@@ -133,19 +133,19 @@ const notify = (type: "success" | "error", message: string) => {
 
 const getFileIcon = (type: string) => "https://picsum.photos/200/200";
 
-interface TaskDetailDrawerProps {
-    selectedTask: RPMTask | null;
+interface TaskQCDetailDrawerProps {
+    selectedTaskQc: RPMTaskQC | null;
     selectedSection?: string;
     onClose: () => void;
     onSave: (comment_type: "internal" | "external", taskId: string, comment: string) => void;
-    onAttachmentChanges?: (updatedRPMTask: RPMTask, taskId: string) => void;
+    onAttachmentChanges?: (updatedRPMTask: RPMTaskQC, taskId: string) => void;
     taskName: string;
     statusOptions?: string[];
-    onStatusChange?: (updatedData: RPMTask | RenoProgress, newStatus: string) => void;
+    onStatusChange?: (updatedData: RPMTaskQC | RenoProgress, newStatus: string) => void;
 }
 
-export const TaskDetailDrawer = ({
-    selectedTask,
+export const TaskQCDetailDrawer = ({
+    selectedTaskQc,
     selectedSection,
     onClose,
     onSave,
@@ -153,7 +153,7 @@ export const TaskDetailDrawer = ({
     taskName,
     statusOptions = ["not-started", "in-progress", "completed", "pending"],
     onStatusChange,
-}: TaskDetailDrawerProps) => {
+}: TaskQCDetailDrawerProps) => {
     const [editMode, setEditMode] = useState<{ section: "internal" | "external" | null; taskId: string | null }>({ section: null, taskId: null });
     const [editedComment, setEditedComment] = useState<string>("");
     const [editedAttachments, setEditedAttachments] = useState<Attachment[]>([]);
@@ -165,8 +165,8 @@ export const TaskDetailDrawer = ({
         const newStatus = e.target.value;
 
         try {
-            const response = await changeRPMTaskStatus(Number(selectedTask?.id), newStatus);
-            const data: RPMTask | RenoProgress = response.data;
+            const response = await changeRPMTaskStatus(Number(selectedTaskQc?.id), newStatus);
+            const data: RPMTaskQC | RenoProgress = response.data;
 
             if (response?.success) {
                 onStatusChange?.(data, newStatus);
@@ -181,16 +181,16 @@ export const TaskDetailDrawer = ({
     const handleEditClick = useCallback(
         (section: "internal" | "external", taskId: string) => {
             setEditMode({ section, taskId });
-            setEditedComment(section === "internal" ? selectedTask?.internal_comment || "" : selectedTask?.owner_comment || "");
-            setEditedAttachments(section === "internal" ? selectedTask?.internal_attachments || [] : selectedTask?.owner_attachments || []);
+            setEditedComment(section === "internal" ? selectedTaskQc?.internal_comment || "" : selectedTaskQc?.owner_comment || "");
+            setEditedAttachments(section === "internal" ? selectedTaskQc?.internal_attachments || [] : selectedTaskQc?.owner_attachments || []);
         },
-        [selectedTask]
+        [selectedTaskQc]
     );
 
     const handleSave = useCallback(
         async (taskId: string) => {
-            const originalInternalComment = selectedTask?.internal_comment || "";
-            const originalExternalComment = selectedTask?.owner_comment || "";
+            const originalInternalComment = selectedTaskQc?.internal_comment || "";
+            const originalExternalComment = selectedTaskQc?.owner_comment || "";
 
             const isInternal = editMode.section === "internal";
             const originalComment = isInternal ? originalInternalComment : originalExternalComment;
@@ -219,7 +219,7 @@ export const TaskDetailDrawer = ({
                 notify("error", "Failed to update status: " + error);
             }
         },
-        [editMode, editedComment, onSave, selectedTask]
+        [editMode, editedComment, onSave, selectedTaskQc]
     );
 
     const handleCancel = useCallback(() => {
@@ -237,15 +237,15 @@ export const TaskDetailDrawer = ({
                     let response;
 
                     if (section === "internal") {
-                        response = await uploadRPMInternalAttachment(Number(selectedTask?.id), files);
+                        response = await uploadRPMInternalAttachment(Number(selectedTaskQc?.id), files);
                     } else {
-                        response = await uploadRPMExternalAttachment(Number(selectedTask?.id), files);
+                        response = await uploadRPMExternalAttachment(Number(selectedTaskQc?.id), files);
                     }
 
-                    const data: RPMTask = response.data;
+                    const data: RPMTaskQC = response.data;
 
                     if (response.success) {
-                        onAttachmentChanges?.(data, selectedTask?.id || "");
+                        onAttachmentChanges?.(data, selectedTaskQc?.id || "");
 
                         if (section === "internal") {
                             setEditedAttachments(data.internal_attachments || []);
@@ -260,31 +260,31 @@ export const TaskDetailDrawer = ({
                 }
             }
         },
-        [selectedTask, onAttachmentChanges]
+        [selectedTaskQc, onAttachmentChanges]
     );
 
     const handleDragOver = useCallback(
         (e: React.DragEvent<HTMLDivElement>, section: "internal" | "external") => {
             e.preventDefault();
-            if (editMode.section === section && editMode.taskId === selectedTask?.id) setIsDragOver({ section });
+            if (editMode.section === section && editMode.taskId === selectedTaskQc?.id) setIsDragOver({ section });
         },
-        [editMode, selectedTask]
+        [editMode, selectedTaskQc]
     );
 
     const handleDragEnter = useCallback(
         (e: React.DragEvent<HTMLDivElement>, section: "internal" | "external") => {
             e.preventDefault();
-            if (editMode.section === section && editMode.taskId === selectedTask?.id) setIsDragOver({ section });
+            if (editMode.section === section && editMode.taskId === selectedTaskQc?.id) setIsDragOver({ section });
         },
-        [editMode, selectedTask]
+        [editMode, selectedTaskQc]
     );
 
     const handleDragLeave = useCallback(
         (e: React.DragEvent<HTMLDivElement>, section: "internal" | "external") => {
             e.preventDefault();
-            if (editMode.section === section && editMode.taskId === selectedTask?.id) setIsDragOver({ section: null });
+            if (editMode.section === section && editMode.taskId === selectedTaskQc?.id) setIsDragOver({ section: null });
         },
-        [editMode, selectedTask]
+        [editMode, selectedTaskQc]
     );
 
     const handleDrop = useCallback(
@@ -292,21 +292,21 @@ export const TaskDetailDrawer = ({
             e.preventDefault();
             setIsDragOver({ section: null });
 
-            if (editMode.section === section && editMode.taskId === selectedTask?.id && e.dataTransfer.files) {
+            if (editMode.section === section && editMode.taskId === selectedTaskQc?.id && e.dataTransfer.files) {
                 try {
                     const files = Array.from(e.dataTransfer.files);
                     let response;
 
                     if (section === "internal") {
-                        response = await uploadRPMInternalAttachment(Number(selectedTask?.id), files);
+                        response = await uploadRPMInternalAttachment(Number(selectedTaskQc?.id), files);
                     } else {
-                        response = await uploadRPMExternalAttachment(Number(selectedTask?.id), files);
+                        response = await uploadRPMExternalAttachment(Number(selectedTaskQc?.id), files);
                     }
 
-                    const data: RPMTask = response.data;
+                    const data: RPMTaskQC = response.data;
 
                     if (response.success) {
-                        onAttachmentChanges?.(data, selectedTask?.id || "");
+                        onAttachmentChanges?.(data, selectedTaskQc?.id || "");
 
                         if (section === "internal") {
                             setEditedAttachments(data.internal_attachments || []);
@@ -321,13 +321,13 @@ export const TaskDetailDrawer = ({
                 }
             }
         },
-        [editMode, selectedTask, onAttachmentChanges]
+        [editMode, selectedTaskQc, onAttachmentChanges]
     );
 
     const renderAttachmentsSection = (section: "internal" | "external") => (
         <div className="space-y-1">
             <p className="text-2xs font-medium text-gray-700">Attachments:</p>
-            {editMode.section === section && editMode.taskId === selectedTask?.id ? (
+            {editMode.section === section && editMode.taskId === selectedTaskQc?.id ? (
                 <div>
                     <div
                         ref={(el) => (dropZoneRef.current[section] = el)}
@@ -362,7 +362,7 @@ export const TaskDetailDrawer = ({
                                     <AttachmentComponent
                                         key={attachment.id || `attachment-${section}-${index}`}
                                         attachment={attachment}
-                                        taskId={selectedTask?.id || ""}
+                                        taskId={selectedTaskQc?.id || ""}
                                         index={index}
                                         editMode={editMode}
                                         onAttachmentChanges={onAttachmentChanges}
@@ -377,13 +377,13 @@ export const TaskDetailDrawer = ({
                         <p className="text-2xs text-gray-500 italic">No attachments available.</p>
                     )}
                 </div>
-            ) : (section === "internal" ? selectedTask?.internal_attachments : selectedTask?.owner_attachments)?.length ? (
+            ) : (section === "internal" ? selectedTaskQc?.internal_attachments : selectedTaskQc?.owner_attachments)?.length ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {(section === "internal" ? selectedTask?.internal_attachments : selectedTask?.owner_attachments)?.map((attachment, index) => (
+                    {(section === "internal" ? selectedTaskQc?.internal_attachments : selectedTaskQc?.owner_attachments)?.map((attachment, index) => (
                         <AttachmentComponent
                             key={attachment.id || `attachment-${section}-${index}`}
                             attachment={attachment}
-                            taskId={selectedTask?.id || ""}
+                            taskId={selectedTaskQc?.id || ""}
                             index={index}
                             editMode={editMode}
                             onAttachmentChanges={onAttachmentChanges}
@@ -399,8 +399,9 @@ export const TaskDetailDrawer = ({
     return (
         <>
             <div
-                className={`fixed bottom-0 right-0 w-full h-5/6 bg-white shadow-lg z-50 transform transition-all duration-300 ease-in-out ${selectedTask ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
-                style={{ visibility: selectedTask ? "visible" : "hidden" }}
+                className={`fixed top-0 right-0 w-5/12 h-full bg-white shadow-lg z-50 transform transition-all duration-300 ease-in-out ${selectedTaskQc ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+                    }`}
+                style={{ visibility: selectedTaskQc ? "visible" : "hidden" }}
                 role="dialog"
                 aria-labelledby="drawer-title"
             >
@@ -428,72 +429,21 @@ export const TaskDetailDrawer = ({
                         </button>
                     </div>
 
-                    {selectedTask && (
+                    {selectedTaskQc && (
                         <div className="space-y-6 mt-2 overflow-y-auto flex-grow">
                             <div className="space-y-2">
                                 <h3 className="text-base font-semibold text-gray-900">
-                                    {selectedTask.room_name ? `${selectedTask.room_name} - ` : selectedSection && `${selectedSection} - `} {selectedTask.item_name}
+                                    {/* {selectedTaskQc.room_name ? `${selectedTaskQc.room_name} - ` : selectedSection && `${selectedSection} - `} {selectedTaskQc.item_name} */}
                                 </h3>
                                 <div className="flex items-center gap-4 rounded-lg bg-slate-200 p-2">
-                                    <TaskStatusBadge
-                                        status={selectedTask.status as TaskStatus}
+                                    <TaskQCStatusBadge
+                                        status={selectedTaskQc.status as TaskQCStatus}
                                         onStatusChange={(newStatus) =>
                                             handleChangeStatus({ target: { value: newStatus } } as React.ChangeEvent<HTMLSelectElement>)
                                         }
-                                        isStatic={true}
                                     />
                                 </div>
                             </div>
-
-                            {/* {selectedTask.item_name === "Defect Inspection" && (
-                                <div className="space-y-4 rounded-lg border border-gray-200 p-5 bg-white shadow-sm">
-                                    <div className="flex justify-between items-center">
-                                        <h3 className="text-base font-semibold text-gray-800 flex items-center gap-2">
-                                            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                            </svg>
-                                            Defect Inspection Form
-                                        </h3>
-                                    </div>
-                                    <div className="space-1">
-                                        <Link
-                                            to={`/reno-progress/${selectedTask.job.reno_progress_id}/defect-inspection-report`}
-                                            state={{ fromUrl: `/reno-progress/${selectedTask.job.reno_progress_id}` }}
-                                            className="w-full mb-4 bg-amber-600 text-white py-2 px-4 rounded-md hover:bg-amber-700 flex items-center justify-center gap-2 transition-colors duration-200"
-                                        >
-                                            <span className="text-2xs">📋</span>
-                                            <span className="text-2xs">Open Defect Inspection Form</span>
-                                        </Link>
-                                    </div>
-                                </div>
-                            )}
-                            {selectedTask.item_name === "Key Management" && (
-                                <div className="space-y-4 rounded-lg border border-gray-200 p-5 bg-white shadow-sm">
-                                    <div className="flex justify-between items-center">
-                                        <h3 className="text-base font-semibold text-gray-800 flex items-center gap-2">
-                                            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                                                />
-                                            </svg>
-                                            Key Management Detail
-                                        </h3>
-                                    </div>
-                                    <div className="space-1">
-                                        <Link
-                                            to={`/reno-progress/${selectedTask.job.reno_progress_id}/key-management`}
-                                            state={{ fromUrl: `/reno-progress/${selectedTask.job.reno_progress_id}` }}
-                                            className="w-full mb-4 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center gap-2 transition-colors duration-200"
-                                        >
-                                            <span className="text-2xs">📋</span>
-                                            <span className="text-2xs">Open Key Management Detail</span>
-                                        </Link>
-                                    </div>
-                                </div>
-                            )} */}
 
                             <div className="space-y-4 rounded-lg border border-gray-200 p-5 bg-white shadow-sm">
                                 <div className="flex justify-between items-center">
@@ -501,12 +451,26 @@ export const TaskDetailDrawer = ({
                                         <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
-                                        Details
+                                        Internal Section
                                     </h3>
+                                    {editMode.section === "internal" && editMode.taskId === selectedTaskQc.id ? (
+                                        <div className="flex gap-2">
+                                            <button className="btn btn-success btn-xs rounded-full px-4" onClick={() => handleSave(selectedTaskQc.id)}>
+                                                Save
+                                            </button>
+                                            <button className="btn btn-secondary btn-xs rounded-full px-4" onClick={handleCancel}>
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button className="btn btn-info btn-xs rounded-full px-4" onClick={() => handleEditClick("internal", selectedTaskQc.id)}>
+                                            Edit
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-2xs font-medium">Comment:</p>
-                                    {editMode.section === "external" && editMode.taskId === selectedTask.id ? (
+                                    {editMode.section === "internal" && editMode.taskId === selectedTaskQc.id ? (
                                         <textarea
                                             value={editedComment}
                                             onChange={(e) => setEditedComment(e.target.value)}
@@ -514,20 +478,60 @@ export const TaskDetailDrawer = ({
                                             rows={4}
                                         />
                                     ) : (
-                                        <p className="text-2xs text-gray-700 bg-white border border-gray-300 p-3 rounded-md">{selectedTask.owner_comment || "No comment"}</p>
+                                        <p className="text-2xs text-gray-700 bg-white border border-gray-300 p-3 rounded-md">{selectedTaskQc.internal_comment || "No comment"}</p>
                                     )}
                                 </div>
-                                {selectedTask.item_name !== "Key Management" && selectedTask.item_name !== "Defect Inspection" && renderAttachmentsSection("external")}
+
+                                {renderAttachmentsSection("internal")}
                             </div>
 
-                            {selectedTask.updated_at && <div className="text-2xs text-gray-500">Last updated: {selectedTask.updated_at}</div>}
+                            {/* <div className="space-y-4 rounded-lg border border-gray-200 p-5 bg-white shadow-sm">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        External Section (Owner View)
+                                    </h3>
+                                    {editMode.section === "external" && editMode.taskId === selectedTaskQc.id ? (
+                                        <div className="flex gap-2">
+                                            <button className="btn btn-success btn-xs rounded-full px-4" onClick={() => handleSave(selectedTaskQc.id)}>
+                                                Save
+                                            </button>
+                                            <button className="btn btn-secondary btn-xs rounded-full px-4" onClick={handleCancel}>
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button className="btn btn-info btn-xs rounded-full px-4" onClick={() => handleEditClick("external", selectedTaskQc.id)}>
+                                            Edit
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-2xs font-medium">Comment:</p>
+                                    {editMode.section === "external" && editMode.taskId === selectedTaskQc.id ? (
+                                        <textarea
+                                            value={editedComment}
+                                            onChange={(e) => setEditedComment(e.target.value)}
+                                            className="w-full text-2xs text-gray-700 bg-white border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            rows={4}
+                                        />
+                                    ) : (
+                                        <p className="text-2xs text-gray-700 bg-white border border-gray-300 p-3 rounded-md">{selectedTaskQc.owner_comment || "No comment"}</p>
+                                    )}
+                                </div>
+                                {selectedTaskQc.item_name !== "Key Management" && selectedTaskQc.item_name !== "Defect Inspection" && renderAttachmentsSection("external")}
+                            </div> */}
+
+                            {selectedTaskQc.updated_at && <div className="text-2xs text-gray-500">Last updated: {selectedTaskQc.updated_at}</div>}
                         </div>
                     )}
                 </div>
             </div>
             <div
-                className={`fixed inset-0 bg-black z-40 transition-opacity duration-300 ease-in-out ${selectedTask ? "bg-opacity-50" : "bg-opacity-0"}`}
-                style={{ visibility: selectedTask ? "visible" : "hidden" }}
+                className={`fixed inset-0 bg-black z-40 transition-opacity duration-300 ease-in-out ${selectedTaskQc ? "bg-opacity-50" : "bg-opacity-0"}`}
+                style={{ visibility: selectedTaskQc ? "visible" : "hidden" }}
                 onClick={onClose}
                 aria-label="Close drawer"
             />

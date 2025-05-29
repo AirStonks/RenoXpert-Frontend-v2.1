@@ -8,6 +8,8 @@ import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
 import DeleteModal from "../../components/Modals/DeleteModal";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const categoryOptions = [
     { value: "renovation", label: "Renovation" },
     { value: "partition", label: "Partition" },
@@ -53,7 +55,7 @@ function PackageDetail() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/packages');
+            navigate(LOCAL_PATH_PREFIX + 'packages');
         }
     };
 
@@ -90,7 +92,7 @@ function PackageDetail() {
                 modal.hide();
                 refetch();
 
-                navigate('/packages/' + packageId);
+                navigate(LOCAL_PATH_PREFIX + 'packages/' + packageId);
             }
         } catch (error) {
             console.log(error);
@@ -146,7 +148,7 @@ function PackageDetail() {
                 </div>
                 <div className="flex gap-4">
                     <Link
-                        to={'/packages/edit/' + packageId}
+                        to={LOCAL_PATH_PREFIX + 'packages/edit/' + packageId}
                         className="btn btn-info btn-sm"
                     >
                         <i className="ki-outline ki-notepad-edit"></i>
@@ -171,8 +173,8 @@ function PackageDetail() {
                         <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
                             <div className="menu-item">
                                 <Link
-                                    to={`/packages/create`}
-                                    state={{ dupPackId: packageId, fromUrl: `/packages/${packageId}` }}
+                                    to={LOCAL_PATH_PREFIX + `packages/create`}
+                                    state={{ dupPackId: packageId, fromUrl: LOCAL_PATH_PREFIX + `packages/${packageId}` }}
                                     className="menu-link"
                                 >
                                     <span className="menu-title">

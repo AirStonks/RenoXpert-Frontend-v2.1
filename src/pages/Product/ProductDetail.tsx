@@ -8,6 +8,8 @@ import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
 import { Attachment } from "../../types";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -71,7 +73,7 @@ function ProductDetail() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/products');
+            navigate(LOCAL_PATH_PREFIX + 'products');
         }
     };
 
@@ -201,7 +203,7 @@ function ProductDetail() {
                 modal.hide();
                 refetch();
 
-                navigate('/products/' + productId);
+                navigate(LOCAL_PATH_PREFIX + 'products/' + productId);
             }
         } catch (error) {
             console.log(error);
@@ -221,7 +223,7 @@ function ProductDetail() {
                 modal.hide();
                 refetch();
 
-                navigate('/products/' + productId);
+                navigate(LOCAL_PATH_PREFIX + 'products/' + productId);
             }
         } catch (error) {
             console.log(error);
@@ -253,7 +255,7 @@ function ProductDetail() {
                 </div>
                 <div className="flex gap-4">
                     <Link
-                        to={'/products/edit/' + productId}
+                        to={LOCAL_PATH_PREFIX + 'products/edit/' + productId}
                         className="btn btn-info btn-sm"
                     >
                         <i className="ki-outline ki-notepad-edit"></i>

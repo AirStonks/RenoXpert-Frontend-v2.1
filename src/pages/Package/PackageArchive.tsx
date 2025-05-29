@@ -10,6 +10,8 @@ import Loading from '../../components/Loading';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import { Link } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 type SortOrder = 'asc' | 'desc' | null;
 
 function PackageArchive() {
@@ -35,7 +37,7 @@ function PackageArchive() {
     }, []);
 
     const handleBackClick = () => {
-        navigate('/packages');
+        navigate(LOCAL_PATH_PREFIX + 'packages');
     };
 
     const initPackageTable = async (
@@ -143,7 +145,7 @@ function PackageArchive() {
     };
 
     const handleViewPackage = (pkgId: string | number) => {
-        navigate(`/packages/${pkgId}`);
+        navigate(LOCAL_PATH_PREFIX + `packages/${pkgId}`);
     }
 
     const handleRemovePackage = async (pkgId: number) => {
@@ -336,8 +338,8 @@ function PackageArchive() {
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
                                                     <Link
-                                                        to={`/packages/${pkg.id}`}
-                                                        state={{ fromUrl: '/packages/archives' }}
+                                                        to={LOCAL_PATH_PREFIX + `packages/${pkg.id}`}
+                                                        state={{ fromUrl: LOCAL_PATH_PREFIX + 'packages/archives' }}
                                                         className="btn btn-sm btn-secondary"
                                                     >
                                                         View

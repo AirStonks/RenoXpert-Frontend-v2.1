@@ -10,6 +10,8 @@ import { Slide, toast } from 'react-toastify';
 import ClipboardJS from 'clipboard';
 import ConfirmOrderModal from './components/ConfirmOrderModal';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const APP_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_APP_URL
@@ -229,7 +231,7 @@ function OrderMain() {
                     </span>
                     <div className="flex gap-3 flex-wrap">
                         <Link
-                            to={'/orders/create'}
+                            to={LOCAL_PATH_PREFIX + 'orders/create'}
                             className='btn btn-primary btn-sm'
                             data-modal-toggle="#create_order_modal"
                         >
@@ -384,7 +386,7 @@ function OrderMain() {
                                             <td>
                                                 <div className="flex flex-col gap-1">
                                                     <Link
-                                                        to={`/orders/${order.id}`}
+                                                        to={LOCAL_PATH_PREFIX + `orders/${order.id}`}
                                                         className="cursor-pointer text-orange-500"
                                                     >
                                                         {order.order_no}
@@ -516,7 +518,7 @@ function OrderMain() {
                                                             }
                                                             <div className="menu-item">
                                                                 <Link
-                                                                    to={`/orders/create?dp=${order.id}`}
+                                                                    to={LOCAL_PATH_PREFIX + `orders/create?dp=${order.id}`}
                                                                     className="menu-link"
                                                                     target="_blank"
                                                                 >
@@ -532,7 +534,7 @@ function OrderMain() {
                                                                 <>
                                                                     <div className="menu-item">
                                                                         <Link
-                                                                            to={`/orders/edit/${order.id}`}
+                                                                            to={LOCAL_PATH_PREFIX + `orders/edit/${order.id}`}
                                                                             className="menu-link"
                                                                         >
                                                                             <span className="menu-title">

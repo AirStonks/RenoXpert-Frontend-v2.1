@@ -10,6 +10,41 @@ import { Link } from 'react-router-dom';
 import { staffLoginToOwner } from '../../services/auth';
 import { Slide, toast } from 'react-toastify';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+const IS_LOCAL = window.location.hostname === 'localhost';
+
+const CLIENT_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_CLIENT_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_CLIENT_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? 'localhost:5173/owner/'
+                : null;
+
+const STAFF_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_STAFF_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_STAFF_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? 'localhost:5173/staff/'
+                : null;
+
+const VEN_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_VEN_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_VEN_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? 'localhost:5173/staff/'
+                : null;
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_API_URL
@@ -21,8 +56,8 @@ const API_URL =
 
 // Country code options
 const countryOptions = [
-    { code: '60', name: 'Malaysia', flag: '/public/media/flags/malaysia.svg' },
-    { code: '65', name: 'Singapore', flag: '/public/media/flags/singapore.svg' },
+    { code: '60', name: 'Malaysia', flag: MEDIA_URL + 'flags/malaysia.svg' },
+    { code: '65', name: 'Singapore', flag: MEDIA_URL + 'flags/singapore.svg' },
 ];
 
 const OwnerLogin: React.FC = () => {
@@ -144,7 +179,7 @@ const OwnerLogin: React.FC = () => {
 
                 // Get the redirect URL from location state or query parameters
                 const searchParams = new URLSearchParams(location.search);
-                const redirectUrl = location.state?.from || searchParams.get('redirect') || '/owner/home';
+                const redirectUrl = location.state?.from || searchParams.get('redirect') || '/';
 
                 // Navigate to the previous URL or fall back to home
                 navigate(redirectUrl);
@@ -182,13 +217,13 @@ const OwnerLogin: React.FC = () => {
                         <form className="card max-w-[370px] w-full gap-5">
                             <div className="flex gap-2 justify-end mt-2 mr-2">
                                 <Link
-                                    to={'/login'}
+                                    to={STAFF_URL}
                                     className="btn btn-light btn-sm"
                                 >
                                     Staff Login
                                 </Link>
                                 <Link
-                                    to={'/vendor-login'}
+                                    to={VEN_URL}
                                     className="btn btn-light btn-sm"
                                 >
                                     Vendor Login
@@ -239,8 +274,8 @@ const OwnerLogin: React.FC = () => {
                                         </button>
                                         <div className="dropdown-content w-full max-w-56 py-2" data-dropdown-dismiss="true">
                                             <div className="menu menu-default flex flex-col w-full">
-                                                {countryOptions.map((country) => (
-                                                    <div className="menu-item">
+                                                {countryOptions.map((country, index) => (
+                                                    <div className="menu-item" key={index}>
                                                         <button
                                                             type='button'
                                                             className="menu-link flex items-center text-center"

@@ -6,6 +6,13 @@ import KTComponents from '../../metronic/core';
 import { operationLogin } from '../../services/auth';
 import { Slide, toast } from 'react-toastify';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/op/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 interface LoginForm {
     mobile: string;
     password: string;
@@ -51,7 +58,7 @@ const OperationLogin: React.FC = () => {
         try {
             const userData = await operationLogin(formData.mobile, formData.password);
             if (userData) {
-                navigate('/op/home'); // Redirect to dashboard on successful userLogin
+                navigate(LOCAL_PATH_PREFIX + 'home'); // Redirect to dashboard on successful userLogin
             }
         } catch (err) {
             setError('Invalid user credentials. Please try again.');
@@ -105,7 +112,7 @@ const OperationLogin: React.FC = () => {
                                         <div className="menu-item">
                                             <button type='button' className="menu-link flex items-center text-center">
                                                 <span className="menu-icon">
-                                                    <img alt="" className="inline-block size-4 rounded-full" src="/public/media/flags/malaysia.svg" />
+                                                    <img alt="" className="inline-block size-4 rounded-full" src={`${MEDIA_URL}flags/malaysia.svg`} />
                                                 </span>
                                                 <span className="menu-title">
                                                     Malaysia +(60)

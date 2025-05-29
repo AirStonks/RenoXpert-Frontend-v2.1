@@ -10,6 +10,8 @@ import InvoiceDetailModal from './components/Modals/InvoiceDetailModal';
 import { Link } from 'react-router-dom';
 import { KTModal } from '../../metronic/core';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function POInvoice() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -40,7 +42,7 @@ function POInvoice() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/purchase-orders/' + poId);
+            navigate(LOCAL_PATH_PREFIX + 'purchase-orders/' + poId);
         }
     };
 
@@ -113,8 +115,8 @@ function POInvoice() {
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
                                                     <Link
-                                                        to={`/sales/${po.sale_id}`}
-                                                        state={{ fromUrl: '/purchase-orders/' + po.sale_id + '/invoices' }}
+                                                        to={LOCAL_PATH_PREFIX + `sales/${po.sale_id}`}
+                                                        state={{ fromUrl: LOCAL_PATH_PREFIX + 'purchase-orders/' + po.sale_id + '/invoices' }}
                                                         className="cursor-pointer text-orange-500 font-semibold"
                                                     >
                                                         {po.sale.sales_no}

@@ -9,6 +9,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const formatDate = (dateStr: string) => {
     const [day, month, year] = dateStr.split("/");
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -61,7 +63,7 @@ function PreviousOrderDetail() {
     if (!orderId) return null; // Early return for null orderId
 
     const handleBackClick = () => {
-        navigate('/orders/' + orderId);
+        navigate(LOCAL_PATH_PREFIX + 'orders/' + orderId);
     };
 
     if (loading) return <Loading />;
@@ -89,7 +91,7 @@ function PreviousOrderDetail() {
                 </div>
                 <div className="flex">
                     <Link
-                        to={`/orders/edit/${orderId}`}
+                        to={LOCAL_PATH_PREFIX + `orders/edit/${orderId}`}
                         className="btn btn-sm btn-info disabled"
                         data-tooltip="#edit_tooltip"
                         data-action="edit"

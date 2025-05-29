@@ -7,6 +7,8 @@ import KTComponents from "../../metronic/core";
 import { logoutOperation } from "../../services/auth";
 import { Slide, toast } from "react-toastify";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/op/' : '/';
+
 type SortOrder = 'asc' | 'desc' | null;
 
 function OperationHome() {
@@ -214,7 +216,7 @@ function OperationHome() {
         try {
             await logoutOperation();
             // Redirect to login page or home page
-            window.location.href = '/op'; // Adjust the redirection path as needed
+            window.location.href = LOCAL_PATH_PREFIX; // Adjust the redirection path as needed
         } catch (error) {
             console.error('Logout failed:', error);
             // Optionally show an error message to the user
@@ -310,19 +312,19 @@ function OperationHome() {
                                 className={`tab py-1 pb-4 ${activeTab === 'tab_1_1' ? 'active' : ''}`}
                                 onClick={() => handleChangeTab('tab_1_1')}
                             >
-                                <span>Reno</span>
+                                <span>Reno Tracker</span>
                             </button>
                             <button
                                 className={`tab py-1 pb-4 ${activeTab === 'tab_1_2' ? 'active' : ''}`}
                                 onClick={() => handleChangeTab('tab_1_2')}
                             >
-                                <span>DI Form</span>
+                                <span>Defect Inspection</span>
                             </button>
                             <button
                                 className={`tab py-1 pb-4 ${activeTab === 'tab_1_3' ? 'active' : ''}`}
                                 onClick={() => handleChangeTab('tab_1_3')}
                             >
-                                <span>QC Form</span>
+                                <span>QC</span>
                             </button>
                         </div>
 
@@ -409,7 +411,7 @@ function OperationHome() {
                                                     )
                                                     .map((progress, index) => (
                                                         <Link
-                                                            to={'/op/reno/progress/' + progress.id}
+                                                            to={LOCAL_PATH_PREFIX + 'reno/progress/' + progress.id}
                                                             className="card shadow-none rounded-lg" key={index}
                                                         >
                                                             <div className="card-body flex justify-between items-center p-4">
@@ -441,9 +443,9 @@ function OperationHome() {
                                                                             WIP
                                                                         </div>
                                                                     </div>
-                                                                    <span className="text-gray-900 text-xs">
+                                                                    {/* <span className="text-gray-900 text-xs">
                                                                         {(((progress.pre_reno_completion * 0.2) + (progress.p1_completion * 0.175) + (progress.p2a_completion * 0.175) + (progress.p2b_completion * 0.175) + (progress.iot_completion * 0.175) + (progress.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% Completed
-                                                                    </span>
+                                                                    </span> */}
                                                                 </div>
                                                             </div>
                                                         </Link>
@@ -629,7 +631,7 @@ function OperationHome() {
                                                     )
                                                     .map((diForm: DefectInspectionForm, index: number) => (
                                                         <Link
-                                                            to={`/reno/defect-inspection-form/${diForm.id}`}
+                                                            to={LOCAL_PATH_PREFIX + `reno/defect-inspection-form/${diForm.id}`}
                                                             className="card shadow-none rounded-lg" key={index}
                                                         >
                                                             <div className="card-body flex justify-between items-center p-4">

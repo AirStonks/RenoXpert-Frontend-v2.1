@@ -6,6 +6,8 @@ import { inventoryIndex } from "../../services/api";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function InventoryMain() {
     const [inventories, setInventories] = useState<Inventory[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -110,7 +112,7 @@ function InventoryMain() {
                     </span>
                     {/* <div className="flex gap-3 flex-wrap">
                         <Link
-                            to={'/purchase-orders/create'}
+                            to={LOCAL_PATH_PREFIX + 'purchase-orders/create'}
                             className='btn btn-primary btn-sm'
                             data-modal-toggle="#create_order_modal"
                         >
@@ -234,7 +236,7 @@ function InventoryMain() {
                                                 </td>
                                                 <td className='text-center'>
                                                     <Link
-                                                        to={`/inventory/${inventory.id}`}
+                                                        to={LOCAL_PATH_PREFIX + `inventory/${inventory.id}`}
                                                         className="btn btn-sm btn-outline btn-primary"
                                                     >
                                                         View

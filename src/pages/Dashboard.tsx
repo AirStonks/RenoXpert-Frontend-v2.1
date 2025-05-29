@@ -6,6 +6,13 @@ import KTLayout from '../metronic/app/layouts/demo1';
 import KTComponent from '../metronic/core';
 import { useEffect, useState } from 'react';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 function Dashboard() {
 
     useEffect(() => {
@@ -16,8 +23,8 @@ function Dashboard() {
         <div className="card">
             <div className="card-body flex flex-col items-center gap-2.5 py-7.5">
                 <div className="flex justify-center p-7.5 py-9">
-                    <img alt="image" className="dark:hidden max-h-[230px]" src="/public/media/illustrations/22.svg" />
-                    <img alt="image" className="light:hidden max-h-[230px]" src="/public/media/illustrations/22-dark.svg" />
+                    <img alt="image" className="dark:hidden max-h-[230px]" src={`${MEDIA_URL}illustrations/22.svg`} />
+                    <img alt="image" className="light:hidden max-h-[230px]" src={`${MEDIA_URL}illustrations/22-dark.svg`} />
                 </div>
                 <div className="flex flex-col gap-5 lg:gap-7.5">
                     <div className="flex flex-col gap-3 text-center">
@@ -30,25 +37,25 @@ function Dashboard() {
                     </div>
                     <div className="flex justify-center mb-5 gap-4 flex-wrap">
                         <Link
-                            to={'/orders'}
+                            to={LOCAL_PATH_PREFIX + 'orders'}
                             className='btn btn-primary btn-outline'
                         >
                             Orders
                         </Link>
                         <Link
-                            to={'/sales'}
+                            to={LOCAL_PATH_PREFIX + 'sales'}
                             className='btn btn-primary btn-outline'
                         >
                             Sales
                         </Link>
                         <Link
-                            to={'/registration-forms'}
+                            to={LOCAL_PATH_PREFIX + 'registration-forms'}
                             className='btn btn-primary btn-outline'
                         >
                             Registration Forms List
                         </Link>
                         <Link
-                            to={'/quotations'}
+                            to={LOCAL_PATH_PREFIX + 'quotations'}
                             className='btn btn-primary btn-outline'
                         >
                             Quotations

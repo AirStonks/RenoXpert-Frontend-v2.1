@@ -11,6 +11,13 @@ import { Link } from "react-router-dom";
 import { getOwnerUser, getProperties } from "../../services/publicApi";
 import axios from "axios";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_API_URL
@@ -38,8 +45,8 @@ interface UploadedFile {
 }
 
 const countryOptions = [
-    { code: '60', name: 'Malaysia', flag: '/public/media/flags/malaysia.svg' },
-    { code: '65', name: 'Singapore', flag: '/public/media/flags/singapore.svg' },
+    { code: '60', name: 'Malaysia', flag: MEDIA_URL + 'flags/malaysia.svg' },
+    { code: '65', name: 'Singapore', flag: MEDIA_URL + 'flags/singapore.svg' },
 ];
 
 const salutationOptions = [
@@ -921,7 +928,7 @@ function OwnerRenoRegistrationForm() {
                     const response = await submitRegistrationForm(formDataToSend);
 
                     if (response?.success) {
-                        navigate('/owner/reno-registration-form/success');
+                        navigate(LOCAL_PATH_PREFIX + 'reno-registration-form/success');
                     } else {
                         console.log('error');
                     }
@@ -1842,7 +1849,7 @@ function OwnerRenoRegistrationForm() {
                                     <div className="flex gap-4 justify-center">
                                         {!!owner &&
                                             <Link
-                                                to={'/owner/home'}
+                                                to={LOCAL_PATH_PREFIX + 'home'}
                                                 className="ki-solid ki-arrow-left items-center">
                                             </Link>
                                         }

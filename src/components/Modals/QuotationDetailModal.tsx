@@ -8,6 +8,8 @@ import useFetchQuotation from "../../hook/useFetchQuotation";
 import { Package } from "../../types";
 import { Link } from "react-router-dom";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface QuotationDetailModalProps {
     quotationId: number | null;
     onClose: () => void; // Add this prop
@@ -55,7 +57,7 @@ function QuotationDetailModal({ quotationId, onClose }: QuotationDetailModalProp
                             </h3>
 
                             <Link
-                                to={`/quotations/edit/${quotationId}`}
+                                to={LOCAL_PATH_PREFIX + `quotations/edit/${quotationId}`}
                                 className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                                 data-tooltip="#edit_tooltip"
                                 data-action="edit"
@@ -108,7 +110,7 @@ function QuotationDetailModal({ quotationId, onClose }: QuotationDetailModalProp
                             </h3>
 
                             <Link
-                                to={`/quotations/edit/${quotationId}`}
+                                to={LOCAL_PATH_PREFIX + `quotations/edit/${quotationId}`}
                                 className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                                 data-tooltip="#edit_tooltip"
                                 data-action="edit"

@@ -7,6 +7,8 @@ import { OrderQuotation, Package } from "../../types";
 import { Link } from "react-router-dom";
 import useFetchOrder from "../../hook/useFetchOrder";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface QuotationDetailModalProps {
     orderId: number | null;
 }
@@ -64,7 +66,7 @@ function SaleInvoicesModal({ orderId }: QuotationDetailModalProps) {
                             </h3>
 
                             <Link
-                                to={`/orders/edit/${orderId}`}
+                                to={LOCAL_PATH_PREFIX + `orders/edit/${orderId}`}
                                 className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                                 data-tooltip="#edit_tooltip"
                                 data-action="edit"
@@ -195,7 +197,7 @@ function SaleInvoicesModal({ orderId }: QuotationDetailModalProps) {
                             </h3>
 
                             <Link
-                                to={`/orders/edit/${orderId}`}
+                                to={LOCAL_PATH_PREFIX + `orders/edit/${orderId}`}
                                 className="btn-edit btn btn-sm btn-icon btn-clear btn-light"
                                 data-tooltip="#edit_tooltip"
                                 data-action="edit"

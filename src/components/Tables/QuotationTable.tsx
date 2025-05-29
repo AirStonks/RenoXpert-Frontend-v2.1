@@ -8,6 +8,8 @@ import QuotationDetailModal from '../Modals/QuotationDetailModal';
 import { removeQuotation } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function QuotationTable () {
     const navigate = useNavigate();
     const [selectedQuotationId, setSelectedQuotationId] = useState<number | null>(null);
@@ -21,7 +23,7 @@ function QuotationTable () {
 
         if (viewButton) {
             const id = viewButton.dataset.id;
-            navigate('/quotations/' + id);
+            navigate(LOCAL_PATH_PREFIX + 'quotations/' + id);
         } else if (deleteButton) {
             console.log('yes');
 

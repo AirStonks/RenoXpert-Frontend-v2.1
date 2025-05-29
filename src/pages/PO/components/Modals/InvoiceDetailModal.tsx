@@ -12,6 +12,8 @@ import { useUser } from "../../../../context/UserContext";
 import { Link } from "react-router-dom";
 import { KTModal } from "../../../../metronic/core";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface InvoiceDetailModalProps {
     invoiceId: number | null;
     refetchPo: () => void
@@ -168,7 +170,7 @@ function InvoiceDetailModal({ invoiceId, refetchPo, handleResetPoId }: InvoiceDe
                                     )}
                                     <div className="menu-item">
                                         <Link
-                                            to={`${invoice.id}/print`}
+                                            to={LOCAL_PATH_PREFIX + `${invoice.id}/print`}
                                             className="menu-link"
                                             onClick={handlePrint}
                                         >

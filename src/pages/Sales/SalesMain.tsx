@@ -8,6 +8,8 @@ import { Link } from 'react-router-dom';
 import { propertyIndex, salesIndex } from '../../services/api';
 // import CreatePropertyModal from '../../components/Modals/CreatePropertyModal';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 export type SortOrder = 'asc' | 'desc' | null;
 
 interface FilterOption {
@@ -513,7 +515,7 @@ function SalesMain() {
                                             <td>
                                                 <div className="flex flex-col gap-1">
                                                     <Link
-                                                        to={'/sales/' + sale.id}
+                                                        to={LOCAL_PATH_PREFIX + 'sales/' + sale.id}
                                                         className="cursor-pointer text-orange-500"
                                                         data-action="view"
                                                     >
@@ -524,7 +526,7 @@ function SalesMain() {
                                             <td className=''>
                                                 <div className="flex flex-col gap-1">
                                                     <Link
-                                                        to={'/orders/' + sale.order_id}
+                                                        to={LOCAL_PATH_PREFIX + 'orders/' + sale.order_id}
                                                         className="cursor-pointer text-orange-500"
                                                         data-action="view"
                                                     >

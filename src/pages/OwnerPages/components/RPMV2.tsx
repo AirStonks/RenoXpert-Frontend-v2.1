@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import Loading from '../../../components/Loading';
 import { KTAccordion } from '../../../metronic/core/components/accordion/accordion';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -410,7 +412,7 @@ function RPMV2({ renoProgress, setRenoProgress }: RPMV2Props) {
                     </div>
                     <div className="flex gap-3">
                         <Link
-                            to={`/reno/defect-inspection-form/${renoProgress?.defect_inspection_form?.id}`}
+                            to={LOCAL_PATH_PREFIX + `reno/defect-inspection-form/${renoProgress?.defect_inspection_form?.id}`}
                             className="btn btn-info btn-sm"
                         >
                             DI Form

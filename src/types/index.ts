@@ -4,6 +4,26 @@ export interface MyData {
     key: string;
 }
 
+export type TaskStatus =
+    | "not-applicable"
+    | "procurement-done"
+    | "pending-stocks"
+    | "delivered"
+    | "pending-installation"
+    | "in-progress"
+    | "completed"
+    | "to-rectified"
+    | "rejected"
+    | "not-available";
+
+export type TaskQCStatus =
+    | "not-started"
+    | "accepted"
+    | "accepted-with-comment"
+    | "to-rectified"
+    | "rejected"
+    | "not-applicable";
+
 export interface FormValues {
     email: string;
     password: string;
@@ -215,6 +235,7 @@ export interface Order {
     bedroom_count?: number,
     single_bedroom_count?: number,
     queen_bedroom_count?: number,
+    studio_count?: number,
     bathroom_count?: number,
     include_partition?: boolean,
     is_progressive_payment?: boolean,
@@ -1178,6 +1199,7 @@ export interface RPMTask {
     internal_attachments?: Attachment[],
     owner_attachments?: Attachment[],
     status?: string,
+    qc_task?: RPMTaskQC,
     completed_at?: string,
     created_at?: string,
     updated_at?: string,

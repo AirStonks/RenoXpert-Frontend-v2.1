@@ -1,21 +1,21 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
-import { RenoProgress, RPMTask } from '../../../types';
+import { RenoProgress, RPMTask, RPMTaskQC } from '../../../types';
 import { Slide, toast } from 'react-toastify';
 import { KTAccordion } from '../../../metronic/core/components/accordion/accordion';
 import {
     HomeIcon,
     PhoneIcon,
     UserIcon,
-    DocumentCheckIcon,
-    DocumentTextIcon,
-    TableCellsIcon,
-    LightBulbIcon,
 } from '@heroicons/react/24/outline';
-import { TaskStatusBadge } from '../../../components/task-status-badge';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { BottomNav } from './bottom-nav-bar';
-import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, ExclamationTriangleIcon, QuestionMarkCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { CheckCircleIcon, ClockIcon, ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
+import { AlertCircleIcon, ClipboardListIcon, HelpCircleIcon } from 'lucide-react';
+import RenovationTask from './RenovationTask';
+import RenovationQCTask from './RenovationQCTask';
+
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/op/' : '/';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -31,29 +31,31 @@ const formatDate = (date: string) => {
 };
 
 const statusColors = {
-    'Not Started': 'bg-gray-100 text-gray-800',
-    'Pending': 'bg-amber-100 text-amber-800',
+    'Not Applicable': 'bg-gray-100 text-gray-800',
+    'Procurement Done': 'bg-purple-100 text-purple-800',
+    'Pending Stocks': 'bg-orange-100 text-orange-800',
+    'Delivered': 'bg-teal-100 text-teal-800',
+    'Pending Installation': 'bg-yellow-100 text-yellow-800',
     'In Progress': 'bg-blue-100 text-blue-800',
     'Completed': 'bg-green-100 text-green-800',
-    'Not Available': 'bg-red-100 text-red-800',
+    'To Rectified': 'bg-indigo-100 text-indigo-800',
+    'Rejected': 'bg-red-100 text-red-800',
+    'Not Available': 'bg-slate-100 text-slate-800',
 };
+
+const statusQcColors = {
+    'Not Started': 'bg-gray-100 text-gray-800',
+    'Accepted': 'bg-green-100 text-green-800',
+    'Accepted with Comment': 'bg-yellow-100 text-yellow-800',
+    'To Rectified': 'bg-indigo-100 text-indigo-800',
+    'Rejected': 'bg-red-100 text-red-800',
+    'Not Applicable': 'bg-gray-100 text-gray-800',
+}
 
 interface RPMV3Props {
     renoProgress: RenoProgress;
     setRenoProgress: React.Dispatch<React.SetStateAction<RenoProgress>>;
 }
-
-const jobCategories = [
-    { name: 'VP Status', category: 'vp', icon: HomeIcon },
-    { name: 'Defect', category: 'defect', icon: DocumentCheckIcon },
-    { name: 'Permit', category: 'permit', icon: DocumentTextIcon },
-    { name: 'Room & Furnitures', category: 'room_furnitures', icon: HomeIcon },
-    { name: 'Bathroom Section', category: 'bathroom', icon: HomeIcon },
-    { name: 'Dining, Yard, Foyer', category: 'dining_yard_foyer', icon: TableCellsIcon },
-    { name: 'Kitchen', category: 'kitchen', icon: HomeIcon },
-    { name: 'Electrical Appliances', category: 'electrical', icon: LightBulbIcon },
-    { name: 'Living', category: 'living', icon: HomeIcon },
-];
 
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -61,11 +63,21 @@ const getStatusColor = (status: string) => {
             return "bg-green-100 text-green-800 hover:bg-green-200";
         case "in-progress":
             return "bg-blue-100 text-blue-800 hover:bg-blue-200";
-        case "pending":
-            return "bg-amber-100 text-amber-800 hover:bg-amber-200";
-        case "not-started":
+        case "pending-installation":
+            return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
+        case "not-applicable":
             return "bg-gray-100 text-gray-800 hover:bg-gray-200";
         case "not-available":
+            return "bg-slate-100 text-slate-800 hover:bg-slate-200";
+        case "procurement-done":
+            return "bg-purple-100 text-purple-800 hover:bg-purple-200";
+        case "pending-stocks":
+            return "bg-orange-100 text-orange-800 hover:bg-orange-200";
+        case "delivered":
+            return "bg-teal-100 text-teal-800 hover:bg-teal-200";
+        case "to-rectified":
+            return "bg-indigo-100 text-indigo-800 hover:bg-indigo-200";
+        case "rejected":
             return "bg-red-100 text-red-800 hover:bg-red-200";
         default:
             return "bg-gray-100 text-gray-800 hover:bg-gray-200";
@@ -75,32 +87,52 @@ const getStatusColor = (status: string) => {
 const getStatusTextColor = (status: string) => {
     switch (status) {
         case "completed":
-            return "text-green-700";
+            return "text-green-800";
         case "in-progress":
-            return "text-blue-700";
-        case "pending":
-            return "text-amber-700";
-        case "not-started":
-            return "text-gray-700";
+            return "text-blue-800";
+        case "pending-installation":
+            return "text-yellow-800";
+        case "not-applicable":
+            return "text-gray-800";
         case "not-available":
-            return "text-red-700";
+            return "text-slate-800";
+        case "procurement-done":
+            return "text-purple-800";
+        case "pending-stocks":
+            return "text-orange-800";
+        case "delivered":
+            return "text-teal-800";
+        case "to-rectified":
+            return "text-indigo-800";
+        case "rejected":
+            return "text-red-800";
         default:
-            return "text-gray-700";
+            return "text-gray-800";
     }
 };
 
 const getStatusIcon = (status: string) => {
     switch (status) {
         case "completed":
-            return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
+            return <CheckCircleIcon className="h-4 w-4 text-green-600" />;
         case "in-progress":
-            return <ClockIcon className="h-4 w-4 text-blue-500" />;
-        case "pending":
-            return <ExclamationCircleIcon className="h-4 w-4 text-amber-500" />;
-        case "not-started":
-            return <QuestionMarkCircleIcon className="h-4 w-4 text-gray-500" />;
+            return <ClockIcon className="h-4 w-4 text-blue-600" />;
+        case "pending-installation":
+            return <ClockIcon className="h-4 w-4 text-yellow-600" />;
+        case "not-applicable":
+            return <HelpCircleIcon className="h-4 w-4 text-gray-600" />;
         case "not-available":
-            return <XCircleIcon className="h-4 w-4 text-red-500" />;
+            return <XCircleIcon className="h-4 w-4 text-slate-600" />;
+        case "procurement-done":
+            return <CheckCircleIcon className="h-4 w-4 text-purple-600" />;
+        case "pending-stocks":
+            return <AlertCircleIcon className="h-4 w-4 text-orange-600" />;
+        case "delivered":
+            return <CheckCircleIcon className="h-4 w-4 text-teal-600" />;
+        case "to-rectified":
+            return <AlertCircleIcon className="h-4 w-4 text-indigo-600" />;
+        case "rejected":
+            return <XCircleIcon className="h-4 w-4 text-red-600" />;
         default:
             return null;
     }
@@ -108,33 +140,81 @@ const getStatusIcon = (status: string) => {
 
 const getStatusKey = (status: string | undefined) => {
     if (!status) return 'Not Available';
-    if (status.toLowerCase() === 'not-started') return 'Not Started';
-    if (status.toLowerCase() === 'pending') return 'Pending';
-    if (status.toLowerCase() === 'in-progress') return 'In Progress';
-    if (status.toLowerCase() === 'completed') return 'Completed';
-    return 'Not Available';
+    switch (status.toLowerCase()) {
+        case 'not-applicable':
+            return 'Not Applicable';
+        case 'procurement-done':
+            return 'Procurement Done';
+        case 'pending-stocks':
+            return 'Pending Stocks';
+        case 'delivered':
+            return 'Delivered';
+        case 'pending-installation':
+            return 'Pending Installation';
+        case 'in-progress':
+            return 'In Progress';
+        case 'completed':
+            return 'Completed';
+        case 'to-rectified':
+            return 'To Rectified';
+        case 'rejected':
+            return 'Rejected';
+        default:
+            return 'Not Available';
+    }
 };
 
 function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
     const [selectedTask, setSelectedTask] = useState<RPMTask | null>(null);
     const [selectedSection, setSelectedSection] = useState<string | null>(null);
+    const [taskMode, setTaskMode] = useState<'renovation' | 'qc'>('renovation');
 
-    const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('room_furnitures'); // Default active tab
     const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown visibility
     const dropdownRef = useRef<HTMLDivElement>(null); // Ref for dropdown container
 
-    // Find the active category details (name and icon) based on job_category
-    const activeCategory = jobCategories.find(cat => cat.category === activeTab) || jobCategories[0];
-    const ActiveTabIcon = activeCategory.icon;
-
     const getStatusKey = (status: string | undefined) => {
         if (!status) return 'Not Available';
-        if (status.toLowerCase() === 'not-started') return 'Not Started';
-        if (status.toLowerCase() === 'pending') return 'Pending';
-        if (status.toLowerCase() === 'in-progress') return 'In Progress';
-        if (status.toLowerCase() === 'completed') return 'Completed';
-        return 'Not Available';
+        switch (status.toLowerCase()) {
+            case 'not-applicable':
+                return 'Not Applicable';
+            case 'procurement-done':
+                return 'Procurement Done';
+            case 'pending-stocks':
+                return 'Pending Stocks';
+            case 'delivered':
+                return 'Delivered';
+            case 'pending-installation':
+                return 'Pending Installation';
+            case 'in-progress':
+                return 'In Progress';
+            case 'completed':
+                return 'Completed';
+            case 'to-rectified':
+                return 'To Rectified';
+            case 'rejected':
+                return 'Rejected';
+            default:
+                return 'Not Available';
+        }
+    };
+
+    const getQcStatusKey = (status: string | undefined) => {
+        if (!status) return 'Not Available';
+        switch (status.toLowerCase()) {
+            case 'not-started':
+                return 'Not Started';
+            case 'accepted':
+                return 'Accepted';
+            case 'accepted-with-comment':
+                return 'Accepted with Comment';
+            case 'to-rectified':
+                return 'To Rectified';
+            case 'rejected':
+                return 'Rejected';
+            default:
+                return 'Not Available';
+        }
     };
 
     // Close dropdown when clicking outside
@@ -261,7 +341,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
     }, [renoProgress]);
 
     const handleStatusChange = useCallback(
-        (updatedData: RPMTask | RenoProgress, newStatus: string) => {
+        (updatedData: RPMTask | RPMTaskQC | RenoProgress, newStatus: string) => {
             if ('job_id' in updatedData) {
                 // Treat as RPMTask
                 setSelectedTask(updatedData);
@@ -289,66 +369,141 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                     ...selectedTask,
                     status: "completed"
                 });
+            } else if ('task_id' in updatedData) {
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                            if (rpmTask.id === updatedData.task_id) {
+                                setSelectedTask({
+                                    ...rpmTask,
+                                    qc_task: updatedData
+                                })
+                                return { ...rpmTask, qc_task: updatedData };
+                            }
+                            return rpmTask;
+                        });
+
+                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                    });
+
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+                });
             }
         },
         [selectedTask, setRenoProgress]
     );
 
     const handleUpdateComment = useCallback(
-        (comment_type: 'internal' | 'external', taskId: string, comment: string) => {
-            setRenoProgress((prevRenoProgress) => {
-                if (!prevRenoProgress) return prevRenoProgress;
-                const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
-                    const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
-                        if (rpmTask.id === taskId) {
-                            if (comment_type === 'internal') {
-                                return { ...rpmTask, internal_comment: comment };
-                            } else if (comment_type === 'external') {
-                                return { ...rpmTask, owner_comment: comment };
+        (comment_type: 'internal' | 'external' | 'qc', taskId: string, comment: string) => {
+
+            if (comment_type === 'qc') {
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                            if (rpmTask.id === taskId) {
+                                setSelectedTask({
+                                    ...rpmTask,
+                                    qc_task: {
+                                        ...rpmTask.qc_task,
+                                        internal_comment: comment
+                                    }
+                                })
+                                return {
+                                    ...rpmTask,
+                                    qc_task: {
+                                        ...rpmTask.qc_task,
+                                        internal_comment: comment
+                                    }
+                                };
                             }
-                        }
-                        return rpmTask;
+                            return rpmTask;
+                        });
+
+                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
                     });
-                    return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
                 });
-                console.log({ ...prevRenoProgress, rpm_jobs: updatedRPMJobs });
+            } else {
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                            if (rpmTask.id === taskId) {
+                                if (comment_type === 'internal') {
+                                    return { ...rpmTask, internal_comment: comment };
+                                } else if (comment_type === 'external') {
+                                    return { ...rpmTask, owner_comment: comment };
+                                }
+                            }
+                            return rpmTask;
+                        });
+                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                    });
+                    console.log({ ...prevRenoProgress, rpm_jobs: updatedRPMJobs });
 
-                return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
-            });
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+                });
 
-            setSelectedTask((prevSelectedTask) => {
-                if (!prevSelectedTask) return prevSelectedTask;
-                if (prevSelectedTask.id === taskId) {
-                    if (comment_type === 'internal') {
-                        return { ...prevSelectedTask, internal_comment: comment };
-                    } else if (comment_type === 'external') {
-                        return { ...prevSelectedTask, owner_comment: comment };
+                setSelectedTask((prevSelectedTask) => {
+                    if (!prevSelectedTask) return prevSelectedTask;
+                    if (prevSelectedTask.id === taskId) {
+                        if (comment_type === 'internal') {
+                            return { ...prevSelectedTask, internal_comment: comment };
+                        } else if (comment_type === 'external') {
+                            return { ...prevSelectedTask, owner_comment: comment };
+                        }
                     }
-                }
-                return prevSelectedTask;
-            });
+                    return prevSelectedTask;
+                });
+            }
         },
         [setRenoProgress]
     );
 
     const handleAttachmentUpdate = useCallback(
-        (updatedRPMTask: RPMTask, taskId: string) => {
-            setRenoProgress((prevRenoProgress) => {
-                if (!prevRenoProgress) return prevRenoProgress;
-                const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
-                    const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
-                        if (rpmTask.id === taskId) {
-                            return updatedRPMTask;
-                        }
-                        return rpmTask;
-                    });
-                    return { ...rpmJob, rpm_tasks: updatedRPMTasks };
-                });
-                console.log({ ...prevRenoProgress, rpm_jobs: updatedRPMJobs });
-                return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
-            });
+        (updatedRPMTask: RPMTask | RPMTaskQC, taskId: string) => {
 
-            setSelectedTask(updatedRPMTask);
+            if ("task_id" in updatedRPMTask) {
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                            if (rpmTask.id === taskId) {
+                                return {
+                                    ...rpmTask,
+                                    qc_task: updatedRPMTask
+                                };
+                            }
+                            return rpmTask;
+                        });
+
+                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                    });
+
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+                });
+            } else {
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                            if (rpmTask.id === taskId) {
+                                return updatedRPMTask;
+                            }
+                            return rpmTask;
+                        });
+                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                    });
+                    console.log({ ...prevRenoProgress, rpm_jobs: updatedRPMJobs });
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+                });
+
+                setSelectedTask(updatedRPMTask);
+            }
         }, [setRenoProgress]
     );
 
@@ -458,7 +613,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                             <div className="p-4">
                                 <h3 className="text-sm font-bold">VP Status</h3>
                                 {renoProgress.rpm_jobs.find((job) => job.job_category === 'vp').rpm_tasks.map(task => (
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col" key={task.id}>
                                         <ul className='space-y-1'>
                                             <li className="py-2">
                                                 <div className="flex items-center justify-between">
@@ -478,7 +633,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                             <div className="p-4">
                                 <h3 className="text-sm font-bold">Defect</h3>
                                 {renoProgress.rpm_jobs.find((job) => job.job_category === 'defect').rpm_tasks.map(task => (
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col" key={task.id}>
                                         <ul className='space-y-1'>
                                             <li className="py-2">
                                                 <div className="flex items-center justify-between">
@@ -498,7 +653,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                             <div className="p-4">
                                 <h3 className="text-sm font-bold">Permit</h3>
                                 {renoProgress.rpm_jobs.find((job) => job.job_category === 'permit').rpm_tasks.map(task => (
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col" key={task.id}>
                                         <ul className='space-y-1'>
                                             <li className="py-2">
                                                 <div className="flex items-center justify-between">
@@ -537,7 +692,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                             </p>
 
                             <Link
-                                to={`/reno/defect-inspection-form/${renoProgress.defect_inspection_form.id}`}
+                                to={LOCAL_PATH_PREFIX + `reno/defect-inspection-form/${renoProgress.defect_inspection_form.id}`}
                                 className='btn btn-xs btn-info'
                             >
                                 DI Form
@@ -547,135 +702,58 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                 )
             }
 
+            <div className="card w-full rounded-lg">
+                <div className="card-body p-3 space-y-2">
+                    <h3 className='flex items-center space-x-2'>
+                        <div className="h-5 w-5">
+                            <ClipboardListIcon className='w-5 h-5 text-primary' />
+                        </div>
+                        <span className='text-sm text-gray-900 font-semibold h-5'>Task Mode</span>
+                    </h3>
+                    <div className="flex flex-col">
+                        <select
+                            className='select select-bordered select-sm'
+                            name="task_mode"
+                            id="task_mode"
+                            onChange={(e) => setTaskMode(e.target.value as 'renovation' | 'qc')}
+                        >
+                            <option value="renovation">Renovation</option>
+                            <option value="qc">QC</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+
 
             {/* Task Section */}
-            <section className="space-y-2 h-full max-h-[calc(100vw-2rem)]">
-                {/* Task List Section */}
-                {['room_furnitures', 'bathroom'].includes(activeTab) ? (
-                    <div className="shadow-lg rounded-xl overflow-hidden bg-white w-full max-w-[calc(100vw-2rem)] mx-auto">
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-semibold text-gray-800">
-                                    {activeCategory.name}
-                                </span>
-                            </div>
-                        </div>
+            {taskMode === 'renovation' && (
+                <RenovationTask
+                    renoProgress={renoProgress}
+                    getStatusKey={getStatusKey}
+                    statusColors={statusColors}
+                    setSelectedTask={setSelectedTask}
+                    activeTab={activeTab}
+                />
+            )}
 
-                        {/* Table Container */}
-                        <div className="overflow-x-auto overflow-y-auto h-full max-h-[calc(100vw-2rem)]">
-                            <table className="w-full text-sm">
-                                <thead className="sticky top-0 z-20">
-                                    <tr className="bg-gray-50 text-gray-600">
-                                        <th className="p-3 text-left text-xs font-medium uppercase tracking-wide sticky left-0 bg-gray-50 z-10 min-w-[150px] border-r border-gray-200 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]">
-                                            Item Name
-                                        </th>
-                                        {(() => {
-                                            const p2aJob = renoProgress.rpm_jobs.find(
-                                                (job) => job.job_category === activeTab
-                                            );
-                                            if (!p2aJob) return null;
-                                            const rooms = Array.from(
-                                                new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean))
-                                            );
-                                            return rooms.map((room) => (
-                                                <th
-                                                    key={room}
-                                                    className="p-3 text-center text-xs font-medium uppercase tracking-wide min-w-[120px] bg-gray-50"
-                                                >
-                                                    {room}
-                                                </th>
-                                            ));
-                                        })()}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(() => {
-                                        const p2aJob = renoProgress.rpm_jobs.find(
-                                            (job) => job.job_category === activeTab
-                                        );
-                                        if (!p2aJob) return null;
+            {taskMode === 'qc' && (
+                <RenovationQCTask
+                    renoProgress={renoProgress}
+                    getStatusKey={getStatusKey}
+                    getQcStatusKey={getQcStatusKey}
+                    statusColors={statusColors}
+                    statusQcColors={statusQcColors}
+                    setSelectedTask={setSelectedTask}
+                    activeTab={activeTab}
+                />
+            )}
 
-                                        const items = Array.from(new Set(p2aJob.rpm_tasks.map((task) => task.item_name)));
-
-                                        return items.map((item) => {
-                                            const rooms = Array.from(
-                                                new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean))
-                                            );
-
-                                            return (
-                                                <tr
-                                                    key={item}
-                                                    className="border-b border-gray-100 hover:bg-gray-50 transition-all duration-200 ease-in-out transform hover:scale-[1.005]"
-                                                >
-                                                    <td className="p-3 text-3xs text-gray-700 sticky left-0 bg-white z-10 font-medium border-r border-gray-200 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.1)]">
-                                                        {item}
-                                                    </td>
-                                                    {rooms.map((room) => {
-                                                        const task = p2aJob.rpm_tasks.find(
-                                                            (t) => t.room_name === room && t.item_name === item
-                                                        );
-                                                        const statusKey = getStatusKey(task?.status);
-
-                                                        return (
-                                                            <td
-                                                                key={`${room}-${item}`}
-                                                                className={`p-3 text-center text-3xs min-w-[120px] ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline" : ""}`}
-                                                                onClick={() => task && setSelectedTask(task)}
-                                                            >
-                                                                {task ? getStatusKey(task.status) : "-"}
-                                                            </td>
-                                                        );
-                                                    })}
-                                                </tr>
-                                            );
-                                        });
-                                    })()}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                ) : (
-                    // Task List Section
-                    <div className="shadow-lg rounded-xl overflow-hidden bg-white w-full max-w-[calc(100vw-2rem)] mx-auto">
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-semibold text-gray-800">
-                                    {activeCategory.name}
-                                </span>
-                            </div>
-                        </div>
-                        <div className="p-2 overflow-y-auto h-full max-h-[calc(100vw-2rem)]">
-                            <div>
-                                <ul className="space-y-1">
-                                    {renoProgress.rpm_jobs
-                                        .find((job) => job.job_category === activeTab)
-                                        ?.rpm_tasks.map((task) => (
-                                            <li
-                                                key={task.id}
-                                                className="p-2 rounded-lg bg-white shadow-sm hover:shadow-md transition-all duration-200 ease-in-out cursor-pointer"
-                                                onClick={() => task && setSelectedTask(task)}
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-medium text-2xs">{task.item_name}</span>
-                                                    <TaskStatusBadge status={task.status} isStatic={true} />
-                                                </div>
-                                                <p className="text-3xs text-gray-500 mt-0.5">
-                                                    Updated: {task.updated_at || 'N/A'} by {task.updated_by?.name || 'N/A'}
-                                                </p>
-                                            </li>
-                                        )) || <li className="p-2 text-2xs text-gray-500">No tasks available</li>}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </section>
 
             <TaskDetailDrawer
                 selectedTask={selectedTask}
                 selectedSection={selectedSection}
+                taskMode={taskMode}
                 onClose={() => {
                     setSelectedTask(null)
                     setSelectedSection(null)

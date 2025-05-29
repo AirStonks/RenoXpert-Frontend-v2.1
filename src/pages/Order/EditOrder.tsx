@@ -20,6 +20,13 @@ import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortablePackage } from "./components/SortablePackage"; // Adjust path as needed
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -76,6 +83,7 @@ function EditOrder() {
         // bedroom_count: 1,
         single_bedroom_count: 1,
         queen_bedroom_count: 1,
+        studio_count: 0,
         bathroom_count: 1,
         include_partition: false,
         is_progressive_payment: true,
@@ -124,6 +132,7 @@ function EditOrder() {
                     // bedroom_count: orderDetail.bedroom_count || 1,
                     single_bedroom_count: orderDetail.single_bedroom_count,
                     queen_bedroom_count: orderDetail.queen_bedroom_count,
+                    studio_count: orderDetail.studio_count,
                     bathroom_count: orderDetail.bathroom_count,
                     completion_day: orderDetail.completion_day,
                     internal_remark: orderDetail.internal_remark || "",
@@ -297,7 +306,7 @@ function EditOrder() {
     };
 
     const handleBackClick = () => {
-        navigate(`/orders/${orderId}`);
+        navigate(LOCAL_PATH_PREFIX + `orders/${orderId}`);
     };
 
     const handleSearchUser = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -470,6 +479,7 @@ function EditOrder() {
             // bedroom_count: formData.bedroom_count,
             single_bedroom_count: formData.single_bedroom_count,
             queen_bedroom_count: formData.queen_bedroom_count,
+            studio_count: formData.studio_count,
             bathroom_count: formData.bathroom_count,
             include_partition: formData.include_partition,
             is_progressive_payment: formData.is_progressive_payment,
@@ -484,7 +494,7 @@ function EditOrder() {
             const response = await updateOrder(newOrder);
             if (response?.success) {
                 notify("success", "Quotation Updated Successfully!");
-                navigate(`/orders/${orderId}`);
+                navigate(LOCAL_PATH_PREFIX + `orders/${orderId}`);
             } else {
                 notify("error", response?.data?.message || "Failed to update order");
             }
@@ -988,6 +998,21 @@ function EditOrder() {
                                                     </select>
                                                 </div>
                                                 <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-gray-900">Studio Room</span>
+                                                    <select
+                                                        className="select p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        name="studio_count"
+                                                        id="studio_count"
+                                                        onChange={handleChange}
+                                                        value={formData.studio_count}
+                                                    >
+                                                        <option value="0">0</option>
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                    </select>
+                                                </div>
+                                                <div className="flex flex-col">
                                                     <span className="text-sm font-semibold text-gray-900">Total Bathroom</span>
                                                     <select
                                                         className="select p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -996,6 +1021,7 @@ function EditOrder() {
                                                         onChange={handleChange}
                                                         value={formData.bathroom_count}
                                                     >
+                                                        <option value="0">0</option>
                                                         <option value="1">1</option>
                                                         <option value="2">2</option>
                                                         <option value="3">3</option>
@@ -2042,8 +2068,8 @@ function EditOrder() {
                         </>
                         :
                         <div className="card-body flex flex-col items-center justify-center">
-                            <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
-                            <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
+                            <img alt="image" className="dark:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3.svg`} />
+                            <img alt="image" className="light:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3-dark.svg`} />
                             <span className="text-gray-800 text-lg font-semibold text-center">No Registration Form selected</span>
                         </div>
                     }
