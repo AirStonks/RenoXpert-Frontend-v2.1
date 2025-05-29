@@ -9,6 +9,67 @@ import { logoutOwner } from "../../services/auth";
 import { toSvg } from "jdenticon/standalone";
 import useFetchOwnerRegistrationForms from "../../hook/useFetchOwnerRegistrationForms";
 import useFetchOwnerRenoProgresses from '../../hook/useFetchOwnerRenoProgresses';
+import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, QuestionMarkCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
+
+const getStatusColor = (status: string) => {
+    switch (status) {
+        case "completed":
+            return "bg-green-100 text-green-800 hover:bg-green-200";
+        case "in_progress":
+            return "bg-blue-100 text-blue-800 hover:bg-blue-200";
+        case "pending":
+            return "bg-amber-100 text-amber-800 hover:bg-amber-200";
+        case "not_started":
+            return "bg-gray-100 text-gray-800 hover:bg-gray-200";
+        case "not_available":
+            return "bg-red-100 text-red-800 hover:bg-red-200";
+        default:
+            return "bg-gray-100 text-gray-800 hover:bg-gray-200";
+    }
+};
+
+const getStatusTextColor = (status: string) => {
+    switch (status) {
+        case "completed":
+            return "text-green-700";
+        case "in_progress":
+            return "text-blue-700";
+        case "pending":
+            return "text-amber-700";
+        case "not_started":
+            return "text-gray-700";
+        case "not_available":
+            return "text-red-700";
+        default:
+            return "text-gray-700";
+    }
+};
+
+const getStatusIcon = (status: string) => {
+    switch (status) {
+        case "completed":
+            return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
+        case "in_progress":
+            return <ClockIcon className="h-4 w-4 text-blue-500" />;
+        case "pending":
+            return <ExclamationCircleIcon className="h-4 w-4 text-amber-500" />;
+        case "not_started":
+            return <QuestionMarkCircleIcon className="h-4 w-4 text-gray-500" />;
+        case "not_available":
+            return <XCircleIcon className="h-4 w-4 text-red-500" />;
+        default:
+            return null;
+    }
+};
+
+const getStatusKey = (status: string | undefined) => {
+    if (!status) return 'Not Available';
+    if (status.toLowerCase() === 'not_started') return 'Not Started';
+    if (status.toLowerCase() === 'pending') return 'Pending';
+    if (status.toLowerCase() === 'in_progress') return 'In Progress';
+    if (status.toLowerCase() === 'completed') return 'Completed';
+    return 'Not Available';
+};
 
 function OwnerHome() {
     const { orders, loading: ordersLoading, error: ordersError } = useFetchOwnerOrders();
@@ -324,14 +385,14 @@ function OwnerHome() {
                     <span className="text-lg font-bold text-gray-900">Reno Progress</span>
                 </div>
 
-                <div className="flex flex-col items-center">
+                {/* <div className="flex flex-col items-center">
                     <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/9.svg" />
                     <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/9.svg" />
 
                     <h2 className="text-xl font-semibold text-gray-900">Reno Progress Features Comming Soon</h2>
-                </div>
+                </div> */}
 
-                {/* <div className="flex flex-wrap gap-4">
+                <div className="flex flex-wrap gap-4">
                     {renoProgresses.length > 0 &&
                         renoProgresses.map((progress, index) => (
                             <Link
@@ -362,14 +423,15 @@ function OwnerHome() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="status">
-                                        {(((progress.pre_reno_completion * 0.2) + (progress.reno_completion * 0.7) + (progress.post_reno_completion * 0.1)) * 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% Completed
+                                    <div className={`${getStatusColor(progress.status)} badge badge-xs badge-pill space-x-1`}>
+                                        <span>{getStatusIcon(progress.status)}</span>
+                                        <span>{getStatusKey(progress.status)}</span>
                                     </div>
                                 </div>
                             </Link>
                         ))
                     }
-                </div> */}
+                </div>
             </div>
         </div>
     )

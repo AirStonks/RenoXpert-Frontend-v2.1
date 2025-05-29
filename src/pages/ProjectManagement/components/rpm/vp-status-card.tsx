@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { TaskStatusBadge } from "./task-status-badge";
+import { TaskStatusBadge } from "../../../../components/task-status-badge";
 import { RPMJob, RPMTask, Attachment } from "../../../../types";
 
 interface Props {
