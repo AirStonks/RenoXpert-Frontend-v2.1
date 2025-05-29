@@ -6,6 +6,13 @@ import { OwnerRegistrationForm, Property } from "../../types";
 import { fetchProperties, updateRegistrationForm } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 type FurnishingCategory = 'foyer_entrance' | 'kitchen' | 'yard' | 'dining' | 'living' | 'bedrooms' | 'bathrooms';
 
 interface FormErrors {
@@ -14,8 +21,8 @@ interface FormErrors {
 
 
 const countryOptions = [
-    { code: '60', name: 'Malaysia', flag: '/public/media/flags/malaysia.svg' },
-    { code: '65', name: 'Singapore', flag: '/public/media/flags/singapore.svg' },
+    { code: '60', name: 'Malaysia', flag: MEDIA_URL + 'flags/malaysia.svg' },
+    { code: '65', name: 'Singapore', flag: MEDIA_URL + 'flags/singapore.svg' },
 ];
 
 const salutationOptions = [
@@ -264,7 +271,7 @@ function EditRegistrationForm() {
     };
 
     const handleBackClick = () => {
-        navigate('/registration-forms/' + formId);
+        navigate(LOCAL_PATH_PREFIX + 'registration-forms/' + formId);
     }
 
     const handleChange = (
@@ -576,7 +583,7 @@ function EditRegistrationForm() {
 
             if (response?.success) {
                 notify('success', 'Registration Form updated successfully');
-                navigate('/registration-forms/' + formId);
+                navigate(LOCAL_PATH_PREFIX + 'registration-forms/' + formId);
             } else {
                 console.log('error');
             }

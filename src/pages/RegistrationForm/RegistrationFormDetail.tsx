@@ -3,6 +3,8 @@ import useFetchRegistrationForm from "../../hook/useFetchRegistrationForm";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -19,7 +21,7 @@ function RegistrationFormDetail() {
     const { formDetail, loading, error } = useFetchRegistrationForm(formId);
 
     const handleBackClick = () => {
-        navigate('/registration-forms');
+        navigate(LOCAL_PATH_PREFIX + 'registration-forms');
     };
 
     if (loading) return <Loading />;
@@ -39,7 +41,7 @@ function RegistrationFormDetail() {
                 </div>
                 {formDetail.status === 'pending' && (
                     <Link
-                        to={'/registration-forms/edit/' + formId}
+                        to={LOCAL_PATH_PREFIX + 'registration-forms/edit/' + formId}
                         className="btn btn-sm btn-info"
                     >
                         Edit Form

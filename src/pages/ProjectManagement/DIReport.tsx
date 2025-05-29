@@ -9,6 +9,8 @@ import { changeTaskStatus, fetchDIForm, fetchRenoProgress, markDIFormAsCompleted
 import React from 'react';
 import DIRLinkManagementModal from "./components/Modals/DIRLinkManagementModal";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const APP_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_APP_URL
@@ -16,6 +18,15 @@ const APP_URL =
             ? import.meta.env.VITE_STAGING_APP_URL
             : import.meta.env.VITE_APP_ENV === "local"
                 ? import.meta.env.VITE_LOCAL_APP_URL
+                : null;
+
+const PUBLIC_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_PUBLIC_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_PUBLIC_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? 'localhost:5173/public/'
                 : null;
 
 const AWS_S3_URL =
@@ -53,7 +64,7 @@ function DIReport() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/di-forms');
+            navigate(LOCAL_PATH_PREFIX + 'di-forms');
         }
     };
 
@@ -398,8 +409,8 @@ function DIReport() {
                                                     id="clipboard_1_target"
                                                     placeholder="Copy to clipboard"
                                                     type="text"
-                                                    value={`${APP_URL}di-form/report?id=${diForm?.report_hash}`}
-                                                    onClick={() => { window.open(`${APP_URL}di-form/report?id=${diForm?.report_hash}`, '_blank'); }}
+                                                    value={`${PUBLIC_URL}di-form/report?id=${diForm?.report_hash}`}
+                                                    onClick={() => { window.open(`${PUBLIC_URL}di-form/report?id=${diForm?.report_hash}`, '_blank'); }}
                                                     readOnly
                                                 />
                                                 <button className="btn btn-icon" id="clipboard_1_button">

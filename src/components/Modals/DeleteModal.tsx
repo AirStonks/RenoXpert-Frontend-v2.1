@@ -4,6 +4,8 @@ import { Slide, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { KTModal } from '../../metronic/core';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface DeleteModalProps {
     item: { id: number |string, name: string } | null;
     modalTitle?: string;

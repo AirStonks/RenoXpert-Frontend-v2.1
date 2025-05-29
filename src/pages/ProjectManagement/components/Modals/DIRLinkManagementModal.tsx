@@ -14,6 +14,15 @@ const APP_URL =
                 ? import.meta.env.VITE_LOCAL_APP_URL
                 : null;
 
+const PUBLIC_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_PUBLIC_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_PUBLIC_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? 'localhost:5173/public/'
+                : null;
+
 interface Props {
     diForm: DefectInspectionForm | null
     setDiForm: React.Dispatch<React.SetStateAction<DefectInspectionForm | null>> | null
@@ -121,7 +130,7 @@ function DIRLinkManagementModal({ diForm, setDiForm }: Props) {
                                         <input
                                             type="text"
                                             id="clipboard_2_target"
-                                            value={`${APP_URL}di-form/report?id=${diForm?.report_hash}`}
+                                            value={`${PUBLIC_URL}di-form/report?id=${diForm?.report_hash}`}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-gray-50"
                                             readOnly
                                         />

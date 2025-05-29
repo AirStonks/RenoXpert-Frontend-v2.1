@@ -8,6 +8,8 @@ import Loading from '../../components/Loading';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -40,7 +42,7 @@ function ProductArchive() {
     }, []);
 
     const handleBackClick = () => {
-        navigate('/products');
+        navigate(LOCAL_PATH_PREFIX + 'products');
     };
 
     const initProductTable = async (
@@ -147,7 +149,7 @@ function ProductArchive() {
 
     const handleViewProduct = (productId: string | number) => {
         const state = { from: 'products/archives' };
-        navigate(`/products/${productId}`, { state });
+        navigate(LOCAL_PATH_PREFIX + `products/${productId}`, { state });
     }
 
     const handleRemoveProduct = async (productId: number) => {
@@ -359,8 +361,8 @@ function ProductArchive() {
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
                                                     <Link
-                                                        to={`/products/${product.id}`}
-                                                        state={{ fromUrl: '/products/archives' }}
+                                                        to={LOCAL_PATH_PREFIX + `products/${product.id}`}
+                                                        state={{ fromUrl: LOCAL_PATH_PREFIX + 'products/archives' }}
                                                         className="btn-view btn btn-sm btn-secondary"
                                                     >
                                                         View

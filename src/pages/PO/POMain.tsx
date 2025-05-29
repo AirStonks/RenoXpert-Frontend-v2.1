@@ -7,6 +7,8 @@ import { PurchaseOrder } from "../../types";
 import Loading from "../../components/Loading";
 import { useUser } from "../../context/UserContext";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 type SortOrder = 'asc' | 'desc' | null;
 
 function POMain() {
@@ -132,7 +134,7 @@ function POMain() {
                 >
                     <div className="card-title">
                         <Link
-                            to={`/purchase-orders/${po.id}`}
+                            to={LOCAL_PATH_PREFIX + `purchase-orders/${po.id}`}
                             className='link text-orange-500'
                             onClick={(e) => e.stopPropagation()}
                         >
@@ -168,8 +170,8 @@ function POMain() {
                                         <td>
                                             {po.sale ? (
                                                 <Link
-                                                    to={`/sales/${po.sale_id}`}
-                                                    state={{ fromUrl: '/purchase-orders' }}
+                                                    to={LOCAL_PATH_PREFIX + `sales/${po.sale_id}`}
+                                                    state={{ fromUrl: LOCAL_PATH_PREFIX + 'purchase-orders' }}
                                                     className="text-orange-500"
                                                 >
                                                     {po.sale.sales_no}
@@ -232,7 +234,7 @@ function POMain() {
                                     </td>
                                     <td className="text-center">
                                         <Link
-                                            to={`/purchase-orders/fulfillment/${po.id}`}
+                                            to={LOCAL_PATH_PREFIX + `purchase-orders/fulfillment/${po.id}`}
                                             className="btn btn-sm btn-outline btn-primary"
                                         >
                                             View Status
@@ -257,7 +259,7 @@ function POMain() {
                     <span className="text-2xl font-bold text-gray-900">Purchase Orders</span>
                     {currentUser && currentUser.type !== 'backend-vendor' && (
                         <Link
-                            to={'/purchase-orders/create'}
+                            to={LOCAL_PATH_PREFIX + 'purchase-orders/create'}
                             className='btn btn-primary btn-sm'
                             data-modal-toggle="#create_order_modal"
                         >

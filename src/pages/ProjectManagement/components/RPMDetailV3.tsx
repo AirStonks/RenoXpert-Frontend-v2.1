@@ -1,19 +1,36 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { RenoProgress, RPMTask } from '../../../types';
+import { RenoProgress, RPMTask, RPMTaskQC } from '../../../types';
 import { VPStatusCard } from './rpm/vp-status-card';
 import { DefectCard } from './rpm/defect-card';
 import { PermitCard } from './rpm/permit-card';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { PostRenoCard } from './rpm/post-reno-card';
 import { RenoPorgressDetailCard } from './rpm/reno-progress-detail';
+import RenovationTask from './RenovationTask';
+import RenovationQCTask from './RenovationQCTask';
 
 const statusColors = {
-    'Not Started': 'bg-gray-100 text-gray-800',
-    'Pending': 'bg-amber-100 text-amber-800',
+    'Not Applicable': 'bg-gray-100 text-gray-800',
+    'Procurement Done': 'bg-purple-100 text-purple-800',
+    'Pending Stocks': 'bg-orange-100 text-orange-800',
+    'Delivered': 'bg-teal-100 text-teal-800',
+    'Pending Installation': 'bg-yellow-100 text-yellow-800',
     'In Progress': 'bg-blue-100 text-blue-800',
     'Completed': 'bg-green-100 text-green-800',
-    'Not Available': 'bg-red-100 text-red-800',
+    'To Rectified': 'bg-indigo-100 text-indigo-800',
+    'Rejected': 'bg-red-100 text-red-800',
+    'Not Available': 'bg-slate-100 text-slate-800',
 };
+
+const statusQcColors = {
+    'Not Started': 'bg-gray-100 text-gray-800',
+    'Accepted': 'bg-green-100 text-green-800',
+    'Accepted with Comment': 'bg-yellow-100 text-yellow-800',
+    'To Rectified': 'bg-indigo-100 text-indigo-800',
+    'Rejected': 'bg-red-100 text-red-800',
+    'Not Applicable': 'bg-gray-100 text-gray-800',
+}
+
 interface Props {
     renoProgress: RenoProgress;
     setRenoProgress: React.Dispatch<React.SetStateAction<RenoProgress | null>>;
@@ -28,14 +45,50 @@ const formatDate = (date: string) => {
 function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
     const [selectedTask, setSelectedTask] = useState<RPMTask | null>(null);
     const [selectedSection, setSelectedSection] = useState<string | null>(null);
+    const [selectedStage, setSelectedStage] = useState<number>(0);
 
     const getStatusKey = (status: string | undefined) => {
         if (!status) return 'Not Available';
-        if (status.toLowerCase() === 'not-started') return 'Not Started';
-        if (status.toLowerCase() === 'pending') return 'Pending';
-        if (status.toLowerCase() === 'in-progress') return 'In Progress';
-        if (status.toLowerCase() === 'completed') return 'Completed';
-        return 'Not Available';
+        switch (status.toLowerCase()) {
+            case 'not-applicable':
+                return 'Not Applicable';
+            case 'procurement-done':
+                return 'Procurement Done';
+            case 'pending-stocks':
+                return 'Pending Stocks';
+            case 'delivered':
+                return 'Delivered';
+            case 'pending-installation':
+                return 'Pending Installation';
+            case 'in-progress':
+                return 'In Progress';
+            case 'completed':
+                return 'Completed';
+            case 'to-rectified':
+                return 'To Rectified';
+            case 'rejected':
+                return 'Rejected';
+            default:
+                return 'Not Available';
+        }
+    };
+
+    const getQcStatusKey = (status: string | undefined) => {
+        if (!status) return 'Not Available';
+        switch (status.toLowerCase()) {
+            case 'not-started':
+                return 'Not Started';
+            case 'accepted':
+                return 'Accepted';
+            case 'accepted-with-comment':
+                return 'Accepted with Comment';
+            case 'to-rectified':
+                return 'To Rectified';
+            case 'rejected':
+                return 'Rejected';
+            default:
+                return 'Not Available';
+        }
     };
 
     // Compute steps dynamically using useMemo to avoid unnecessary recalculations
@@ -78,19 +131,20 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
             },
             {
                 label: 'Defect & Permit',
-                status: defectAndPermitStatus,
-                // status: 'Completed',
+                // status: defectAndPermitStatus,
+                status: 'Completed',
                 date: renoProgress.date_management.defect_permit_date ? formatDate(renoProgress.date_management.defect_permit_date) : 'TBC'
             },
             {
                 label: 'Renovation',
-                status: renovationStatus,
-                // status: 'Completed',
+                // status: renovationStatus,
+                status: 'Completed',
                 date: renoProgress.date_management.reno_date ? formatDate(renoProgress.date_management.reno_date) : 'TBC'
             },
             {
                 label: 'QC',
-                status: 'Not Started',
+                // status: 'Not Started',
+                status: 'Completed',
                 date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.qc_date) : 'TBC'
             },
             {
@@ -111,8 +165,12 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
         ];
     }, [renoProgress]); // Recompute when renoProgress changes
 
+    const handleSelectStage = useCallback((stageIndex: number) => {
+        setSelectedStage(stageIndex);
+    }, [])
+
     const handleStatusChange = useCallback(
-        (updatedData: RPMTask | RenoProgress, newStatus: string) => {
+        (updatedData: RPMTask | RPMTaskQC | RenoProgress, newStatus: string) => {
             if ('job_id' in updatedData) {
                 // Treat as RPMTask
                 setSelectedTask(updatedData);
@@ -140,66 +198,142 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                     ...selectedTask,
                     status: "completed"
                 });
+            } else if ('task_id' in updatedData) {
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                            if (rpmTask.id === updatedData.task_id) {
+                                setSelectedTask({
+                                    ...rpmTask,
+                                    qc_task: updatedData
+                                })
+                                return { ...rpmTask, qc_task: updatedData };
+                            }
+                            return rpmTask;
+                        });
+
+                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                    });
+
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+                });
             }
         },
         [selectedTask, setRenoProgress]
     );
 
+
     const handleUpdateComment = useCallback(
-        (comment_type: 'internal' | 'external', taskId: string, comment: string) => {
-            setRenoProgress((prevRenoProgress) => {
-                if (!prevRenoProgress) return prevRenoProgress;
-                const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
-                    const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
-                        if (rpmTask.id === taskId) {
-                            if (comment_type === 'internal') {
-                                return { ...rpmTask, internal_comment: comment };
-                            } else if (comment_type === 'external') {
-                                return { ...rpmTask, owner_comment: comment };
+        (comment_type: 'internal' | 'external' | 'qc', taskId: string, comment: string) => {
+
+            if (comment_type === 'qc') {
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                            if (rpmTask.id === taskId) {
+                                setSelectedTask({
+                                    ...rpmTask,
+                                    qc_task: {
+                                        ...rpmTask.qc_task,
+                                        internal_comment: comment
+                                    }
+                                })
+                                return {
+                                    ...rpmTask,
+                                    qc_task: {
+                                        ...rpmTask.qc_task,
+                                        internal_comment: comment
+                                    }
+                                };
                             }
-                        }
-                        return rpmTask;
+                            return rpmTask;
+                        });
+
+                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
                     });
-                    return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
                 });
-                console.log({ ...prevRenoProgress, rpm_jobs: updatedRPMJobs });
+            } else {
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                            if (rpmTask.id === taskId) {
+                                if (comment_type === 'internal') {
+                                    return { ...rpmTask, internal_comment: comment };
+                                } else if (comment_type === 'external') {
+                                    return { ...rpmTask, owner_comment: comment };
+                                }
+                            }
+                            return rpmTask;
+                        });
+                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                    });
+                    console.log({ ...prevRenoProgress, rpm_jobs: updatedRPMJobs });
 
-                return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
-            });
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+                });
 
-            setSelectedTask((prevSelectedTask) => {
-                if (!prevSelectedTask) return prevSelectedTask;
-                if (prevSelectedTask.id === taskId) {
-                    if (comment_type === 'internal') {
-                        return { ...prevSelectedTask, internal_comment: comment };
-                    } else if (comment_type === 'external') {
-                        return { ...prevSelectedTask, owner_comment: comment };
+                setSelectedTask((prevSelectedTask) => {
+                    if (!prevSelectedTask) return prevSelectedTask;
+                    if (prevSelectedTask.id === taskId) {
+                        if (comment_type === 'internal') {
+                            return { ...prevSelectedTask, internal_comment: comment };
+                        } else if (comment_type === 'external') {
+                            return { ...prevSelectedTask, owner_comment: comment };
+                        }
                     }
-                }
-                return prevSelectedTask;
-            });
+                    return prevSelectedTask;
+                });
+            }
         },
         [setRenoProgress]
     );
 
     const handleAttachmentUpdate = useCallback(
-        (updatedRPMTask: RPMTask, taskId: string) => {
-            setRenoProgress((prevRenoProgress) => {
-                if (!prevRenoProgress) return prevRenoProgress;
-                const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
-                    const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
-                        if (rpmTask.id === taskId) {
-                            return updatedRPMTask;
-                        }
-                        return rpmTask;
-                    });
-                    return { ...rpmJob, rpm_tasks: updatedRPMTasks };
-                });
-                console.log({ ...prevRenoProgress, rpm_jobs: updatedRPMJobs });
-                return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
-            });
+        (updatedRPMTask: RPMTask | RPMTaskQC, taskId: string) => {
 
-            setSelectedTask(updatedRPMTask);
+            if ("task_id" in updatedRPMTask) {
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                            if (rpmTask.id === taskId) {
+                                return {
+                                    ...rpmTask,
+                                    qc_task: updatedRPMTask
+                                };
+                            }
+                            return rpmTask;
+                        });
+
+                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                    });
+
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+                });
+            } else {
+                setRenoProgress((prevRenoProgress) => {
+                    if (!prevRenoProgress) return prevRenoProgress;
+                    const updatedRPMJobs = prevRenoProgress.rpm_jobs.map((rpmJob) => {
+                        const updatedRPMTasks = rpmJob.rpm_tasks.map((rpmTask) => {
+                            if (rpmTask.id === taskId) {
+                                return updatedRPMTask;
+                            }
+                            return rpmTask;
+                        });
+                        return { ...rpmJob, rpm_tasks: updatedRPMTasks };
+                    });
+                    console.log({ ...prevRenoProgress, rpm_jobs: updatedRPMJobs });
+                    return { ...prevRenoProgress, rpm_jobs: updatedRPMJobs };
+                });
+
+                setSelectedTask(updatedRPMTask);
+            }
         }, [setRenoProgress]
     );
 
@@ -220,12 +354,13 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-400 opacity-75"></span>
                                     )}
                                     <span
-                                        className={`relative inline-flex w-8 h-8 rounded-full items-center justify-center text-white font-medium transition-all duration-200 ${step.status === 'Completed'
+                                        className={`relative inline-flex w-8 h-8 rounded-full items-center justify-center text-white font-medium transition-all cursor-pointer duration-200 ${step.status === 'Completed'
                                             ? 'bg-green-500'
                                             : step.status === 'In Progress'
                                                 ? 'bg-yellow-500'
                                                 : 'bg-gray-300'
                                             } hover:scale-110`}
+                                        onClick={() => handleSelectStage(index)}
                                     >
                                         {index + 1}
                                     </span>
@@ -268,7 +403,8 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                         renoProgress={renoProgress}
                     />
 
-                    {overallStatusSteps[2].status !== 'Completed' && (
+                    {/* If selectedStage included in this array [0, 1, 2] */}
+                    {[0, 1, 2].includes(selectedStage) && (
                         <>
                             <VPStatusCard
                                 setSelectedTask={setSelectedTask}
@@ -290,7 +426,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                         </>
                     )}
 
-                    {overallStatusSteps[2].status === 'Completed' && (
+                    {[3, 4, 5, 6].includes(selectedStage) && (
                         <PostRenoCard
                             setSelectedTask={setSelectedTask}
                             postRenoJob={renoProgress.rpm_jobs.find((job) => job.job_category === 'post_reno') || {}}
@@ -299,312 +435,27 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                     )}
                 </div>
 
-                {/* <div className="relative my-8">
-                    <hr className="border-t border-gray-300" />
-                    <button
-                        onClick={() => {
-                            const rpmSection = document.getElementById('rpm-job-section');
-                            if (rpmSection) {
-                                rpmSection.scrollIntoView({ behavior: 'smooth' });
-                            }
-                        }}
-                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 focus:outline-none"
-                        aria-label="Scroll to RPM Job Section"
-                    >
-                        ↓ Click to Scroll to Project Management Jobs ↓
-                    </button>
-                </div> */}
-
-                <div
-                    id="rpm-job-section"
-                    className="flex gap-8 py-4"
-                >
-                    <div className="flex flex-col flex-[3] w-full gap-8">
-                        <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-0 h-max">
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                                <h3 className="text-lg font-semibold">Room & Furnitures</h3>
-                            </div>
-                            <div className="p-4 overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-gray-100">
-                                            <th className="p-2 text-left">Item Name</th>
-                                            {(() => {
-                                                const p2aJob = renoProgress.rpm_jobs.find((job) => job.job_category === "room_furnitures");
-                                                if (!p2aJob) return null;
-                                                const rooms = Array.from(new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean)));
-                                                return rooms.map((room) => (
-                                                    <th key={room} className="p-2 text-center">
-                                                        {room}
-                                                    </th>
-                                                ));
-                                            })()}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(() => {
-                                            const p2aJob = renoProgress.rpm_jobs.find((job) => job.job_category === "room_furnitures");
-                                            if (!p2aJob) return null;
-
-                                            const items = Array.from(new Set(p2aJob.rpm_tasks.map((task) => task.item_name)));
-
-                                            return items.map((item) => {
-                                                const rooms = Array.from(new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean)));
-
-                                                return (
-                                                    <tr key={item} className="border-b hover:bg-gray-50">
-                                                        <td className="p-2">{item}</td>
-                                                        {rooms.map((room) => {
-                                                            const task = p2aJob.rpm_tasks.find((t) => t.room_name === room && t.item_name === item);
-                                                            const statusKey = getStatusKey(task?.status);
-
-                                                            return (
-                                                                <td
-                                                                    key={`${room}-${item}`}
-                                                                    className={`p-2 text-center ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline" : ""}`}
-                                                                    onClick={() => task && setSelectedTask(task)}
-                                                                >
-                                                                    {task ? getStatusKey(task.status) : "-"}
-                                                                </td>
-                                                            );
-                                                        })}
-                                                    </tr>
-                                                );
-                                            });
-                                        })()}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-0 h-max">
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                                <h3 className="text-lg font-semibold">Bathroom Section</h3>
-                            </div>
-                            <div className="p-4 overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-gray-100">
-                                            <th className="p-2 text-left">Item Name</th>
-                                            {(() => {
-                                                const p2aJob = renoProgress.rpm_jobs.find((job) => job.job_category === "bathroom");
-                                                if (!p2aJob) return null;
-                                                const rooms = Array.from(new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean)));
-                                                return rooms.map((room) => (
-                                                    <th key={room} className="p-2 text-center">
-                                                        {room}
-                                                    </th>
-                                                ));
-                                            })()}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(() => {
-                                            const p2aJob = renoProgress.rpm_jobs.find((job) => job.job_category === "bathroom");
-                                            if (!p2aJob) return null;
-
-                                            const items = Array.from(new Set(p2aJob.rpm_tasks.map((task) => task.item_name)));
-
-                                            return items.map((item) => {
-                                                const rooms = Array.from(new Set(p2aJob.rpm_tasks.map((task) => task.room_name).filter(Boolean)));
-
-                                                return (
-                                                    <tr key={item} className="border-b hover:bg-gray-50">
-                                                        <td className="p-2">{item}</td>
-                                                        {rooms.map((room) => {
-                                                            const task = p2aJob.rpm_tasks.find((t) => t.room_name === room && t.item_name === item);
-                                                            const statusKey = getStatusKey(task?.status);
-
-                                                            return (
-                                                                <td
-                                                                    key={`${room}-${item}`}
-                                                                    className={`p-2 text-center ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline" : ""}`}
-                                                                    onClick={() => task && setSelectedTask(task)}
-                                                                >
-                                                                    {task ? getStatusKey(task.status) : "-"}
-                                                                </td>
-                                                            );
-                                                        })}
-                                                    </tr>
-                                                );
-                                            });
-                                        })()}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col flex-[1] w-full gap-8">
-                        <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-[200px] h-max">
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                                <h3 className="text-lg font-semibold">Dining, Yard, Foyer</h3>
-                            </div>
-                            <div className="p-4 overflow-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-gray-100">
-                                            <th className="p-2 text-left w-1/3">Item Name</th>
-                                            <th className="p-2 text-center w-1/3">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(() => {
-                                            const diningJob = renoProgress.rpm_jobs.find((job) => job.job_category === "dining_yard_foyer");
-                                            if (!diningJob) return null;
-
-                                            return diningJob.rpm_tasks.map((task) => {
-                                                const status = getStatusKey(task?.status);
-
-                                                return (
-                                                    <tr key={task.id} className="border-b hover:bg-gray-50">
-                                                        <td className="p-2 w-1/3">{task.item_name}</td>
-                                                        <td
-                                                            className={`p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline" : ""
-                                                                }`}
-                                                            onClick={() => {
-                                                                task && setSelectedTask(task);
-                                                                setSelectedSection("Dining, Yard, Foyer");
-                                                            }}
-                                                        >
-                                                            {task ? getStatusKey(task.status) : "-"}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            });
-                                        })()}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-[200px] h-max">
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                                <h3 className="text-lg font-semibold">Kitchen</h3>
-                            </div>
-                            <div className="p-4 overflow-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-gray-100">
-                                            <th className="p-2 text-left w-1/3">Item Name</th>
-                                            <th className="p-2 text-center w-1/3">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(() => {
-                                            const diningJob = renoProgress.rpm_jobs.find((job) => job.job_category === "kitchen");
-                                            if (!diningJob) return null;
-
-                                            return diningJob.rpm_tasks.map((task) => {
-                                                const status = getStatusKey(task?.status);
-
-                                                return (
-                                                    <tr key={task.id} className="border-b hover:bg-gray-50">
-                                                        <td className="p-2 w-1/3">{task.item_name}</td>
-                                                        <td
-                                                            className={`p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline" : ""
-                                                                }`}
-                                                            onClick={() => {
-                                                                task && setSelectedTask(task);
-                                                                setSelectedSection("Kitchen");
-                                                            }}
-                                                        >
-                                                            {task ? getStatusKey(task.status) : "-"}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            });
-                                        })()}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-[200px] h-max">
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                                <h3 className="text-lg font-semibold">Electrical Appliances</h3>
-                            </div>
-                            <div className="p-4 overflow-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-gray-100">
-                                            <th className="p-2 text-left w-1/3">Item Name</th>
-                                            <th className="p-2 text-center w-1/3">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(() => {
-                                            const diningJob = renoProgress.rpm_jobs.find((job) => job.job_category === "electrical");
-                                            if (!diningJob) return null;
-
-                                            return diningJob.rpm_tasks.map((task) => {
-                                                const status = getStatusKey(task?.status);
-
-                                                return (
-                                                    <tr key={task.id} className="border-b hover:bg-gray-50">
-                                                        <td className="p-2 w-1/3">{task.item_name}</td>
-                                                        <td
-                                                            className={`p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline" : ""
-                                                                }`}
-                                                            onClick={() => {
-                                                                task && setSelectedTask(task);
-                                                                setSelectedSection("Electrical");
-                                                            }}
-                                                        >
-                                                            {task ? getStatusKey(task.status) : "-"}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            });
-                                        })()}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div className="shadow-md rounded-xl overflow-hidden bg-white min-w-[200px] h-max">
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 p-4">
-                                <h3 className="text-lg font-semibold">Living</h3>
-                            </div>
-                            <div className="p-4 overflow-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-gray-100">
-                                            <th className="p-2 text-left w-1/3">Item Name</th>
-                                            <th className="p-2 text-center w-1/3">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(() => {
-                                            const livingJob = renoProgress.rpm_jobs.find((job) => job.job_category === "living");
-                                            if (!livingJob) return null;
-
-                                            return livingJob.rpm_tasks.map((task) => {
-                                                const status = getStatusKey(task?.status);
-
-                                                return (
-                                                    <tr key={task.id} className="border-b hover:bg-gray-50">
-                                                        <td className="p-2 w-1/3">{task.item_name}</td>
-                                                        <td
-                                                            className={`p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline" : ""
-                                                                }`}
-                                                            onClick={() => {
-                                                                task && setSelectedTask(task);
-                                                                setSelectedSection("Living");
-                                                            }}
-                                                        >
-                                                            {task ? getStatusKey(task.status) : "-"}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            });
-                                        })()}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {/* If selectedStage included in this array [0, 1, 2] */}
+                {[0, 1, 2].includes(selectedStage) && (
+                    <RenovationTask
+                        renoProgress={renoProgress}
+                        getStatusKey={getStatusKey}
+                        statusColors={statusColors}
+                        setSelectedTask={setSelectedTask}
+                        setSelectedSection={setSelectedSection}
+                    />
+                )}
+                {[3, 4, 5, 6].includes(selectedStage) && (
+                    <RenovationQCTask
+                        renoProgress={renoProgress}
+                        getStatusKey={getStatusKey}
+                        getQcStatusKey={getQcStatusKey}
+                        statusColors={statusColors}
+                        statusQcColors={statusQcColors}
+                        setSelectedTask={setSelectedTask}
+                        setSelectedSection={setSelectedSection}
+                    />
+                )}
 
                 <div className="my-4">
                     <hr />
@@ -614,6 +465,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
             <TaskDetailDrawer
                 selectedTask={selectedTask}
                 selectedSection={selectedSection}
+                selectedStage={selectedStage}
                 onClose={() => {
                     setSelectedTask(null)
                     setSelectedSection(null)

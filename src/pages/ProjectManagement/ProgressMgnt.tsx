@@ -15,6 +15,8 @@ import ProjectDateManagementModal from "./components/Modals/ProjectDateManagemen
 import AccessPermissionModal from "./components/Modals/AccessPermissionModal";
 import ConvertRenoProgressModal from "./components/Modals/ConvertRenoProgressModal";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function ProgressMgnt() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -106,7 +108,7 @@ function ProgressMgnt() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/reno-progress/overview');
+            navigate(LOCAL_PATH_PREFIX + 'reno-progress/overview');
         }
     };
 
@@ -241,10 +243,12 @@ function ProgressMgnt() {
                         setUsers={setUsers}
                     />
 
-                    <DIRLinkManagementModal
-                        diForm={renoProgress.defect_inspection_form}
-                        setDiForm={handleUpdateDIForm}
-                    />
+                    {!isOldVersion &&
+                        <DIRLinkManagementModal
+                            diForm={renoProgress.defect_inspection_form}
+                            setDiForm={handleUpdateDIForm}
+                        />
+                    }
 
                     <ProjectDateManagementModal
                         renoProgress={renoProgress}

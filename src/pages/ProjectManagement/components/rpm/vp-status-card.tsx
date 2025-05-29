@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { TaskStatusBadge } from "../../../../components/task-status-badge";
-import { RPMJob, RPMTask, Attachment } from "../../../../types";
+import { RPMJob, RPMTask, Attachment, TaskStatus } from "../../../../types";
 
 interface Props {
     setSelectedTask: React.Dispatch<React.SetStateAction<RPMTask | null>>
@@ -50,7 +50,7 @@ export const VPStatusCard = ({ setSelectedTask, vpJob, handleStatusChange }: Pro
                             >
                                 <div className="flex items-center justify-between">
                                     <span className="font-medium text-sm">{task.item_name}</span>
-                                    <TaskStatusBadge isStatic={true} status={task.status} />
+                                    <TaskStatusBadge isStatic={true} status={task.status as TaskStatus} />
                                 </div>
                                 <p className="text-[10px] text-gray-500 mt-0.5">
                                     Updated: {task.updated_at || 'N/A'} by {task.updated_by?.name || 'N/A'}

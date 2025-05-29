@@ -8,6 +8,8 @@ import { KTAccordion, KTModal } from "../../metronic/core";
 import { archiveQuotation, restoreQuotation } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const categoryOptions = [
     { value: "renovation", label: "Renovation" },
     { value: "partition", label: "Partition" },
@@ -54,7 +56,7 @@ function QuotationDetail() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/quotations');
+            navigate(LOCAL_PATH_PREFIX + 'quotations');
         }
     };
 
@@ -71,7 +73,7 @@ function QuotationDetail() {
                 modal.hide();
                 refetch();
 
-                navigate('/quotations/' + quotationId);
+                navigate(LOCAL_PATH_PREFIX + 'quotations/' + quotationId);
             }
         } catch (error) {
             console.log(error);
@@ -91,7 +93,7 @@ function QuotationDetail() {
                 modal.hide();
                 refetch();
 
-                navigate('/quotations/' + quotationId);
+                navigate(LOCAL_PATH_PREFIX + 'quotations/' + quotationId);
             }
         } catch (error) {
             console.log(error);
@@ -119,7 +121,7 @@ function QuotationDetail() {
                 </div>
                 <div className="flex gap-4">
                     <Link
-                        to={`/quotations/edit/${quotationId}`}
+                        to={LOCAL_PATH_PREFIX + `quotations/edit/${quotationId}`}
                         className="btn btn-info btn-sm"
                     >
                         <i className="ki-outline ki-notepad-edit"></i>

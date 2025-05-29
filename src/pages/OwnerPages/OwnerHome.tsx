@@ -10,18 +10,36 @@ import { toSvg } from "jdenticon/standalone";
 import useFetchOwnerRegistrationForms from "../../hook/useFetchOwnerRegistrationForms";
 import useFetchOwnerRenoProgresses from '../../hook/useFetchOwnerRenoProgresses';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, QuestionMarkCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
+import { AlertCircleIcon, HelpCircleIcon } from "lucide-react";
+
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
 
 const getStatusColor = (status: string) => {
     switch (status) {
         case "completed":
             return "bg-green-100 text-green-800 hover:bg-green-200";
-        case "in_progress":
+        case "in-progress":
             return "bg-blue-100 text-blue-800 hover:bg-blue-200";
-        case "pending":
-            return "bg-amber-100 text-amber-800 hover:bg-amber-200";
-        case "not_started":
+        case "pending-installation":
+            return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
+        case "not-applicable":
             return "bg-gray-100 text-gray-800 hover:bg-gray-200";
-        case "not_available":
+        case "not-available":
+            return "bg-slate-100 text-slate-800 hover:bg-slate-200";
+        case "procurement-done":
+            return "bg-purple-100 text-purple-800 hover:bg-purple-200";
+        case "pending-stocks":
+            return "bg-orange-100 text-orange-800 hover:bg-orange-200";
+        case "delivered":
+            return "bg-teal-100 text-teal-800 hover:bg-teal-200";
+        case "to-rectified":
+            return "bg-indigo-100 text-indigo-800 hover:bg-indigo-200";
+        case "rejected":
             return "bg-red-100 text-red-800 hover:bg-red-200";
         default:
             return "bg-gray-100 text-gray-800 hover:bg-gray-200";
@@ -31,32 +49,52 @@ const getStatusColor = (status: string) => {
 const getStatusTextColor = (status: string) => {
     switch (status) {
         case "completed":
-            return "text-green-700";
-        case "in_progress":
-            return "text-blue-700";
-        case "pending":
-            return "text-amber-700";
-        case "not_started":
-            return "text-gray-700";
-        case "not_available":
-            return "text-red-700";
+            return "text-green-800";
+        case "in-progress":
+            return "text-blue-800";
+        case "pending-installation":
+            return "text-yellow-800";
+        case "not-applicable":
+            return "text-gray-800";
+        case "not-available":
+            return "text-slate-800";
+        case "procurement-done":
+            return "text-purple-800";
+        case "pending-stocks":
+            return "text-orange-800";
+        case "delivered":
+            return "text-teal-800";
+        case "to-rectified":
+            return "text-indigo-800";
+        case "rejected":
+            return "text-red-800";
         default:
-            return "text-gray-700";
+            return "text-gray-800";
     }
 };
 
 const getStatusIcon = (status: string) => {
     switch (status) {
         case "completed":
-            return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
-        case "in_progress":
-            return <ClockIcon className="h-4 w-4 text-blue-500" />;
-        case "pending":
-            return <ExclamationCircleIcon className="h-4 w-4 text-amber-500" />;
-        case "not_started":
-            return <QuestionMarkCircleIcon className="h-4 w-4 text-gray-500" />;
-        case "not_available":
-            return <XCircleIcon className="h-4 w-4 text-red-500" />;
+            return <CheckCircleIcon className="h-4 w-4 text-green-600" />;
+        case "in-progress":
+            return <ClockIcon className="h-4 w-4 text-blue-600" />;
+        case "pending-installation":
+            return <ClockIcon className="h-4 w-4 text-yellow-600" />;
+        case "not-applicable":
+            return <HelpCircleIcon className="h-4 w-4 text-gray-600" />;
+        case "not-available":
+            return <XCircleIcon className="h-4 w-4 text-slate-600" />;
+        case "procurement-done":
+            return <CheckCircleIcon className="h-4 w-4 text-purple-600" />;
+        case "pending-stocks":
+            return <AlertCircleIcon className="h-4 w-4 text-orange-600" />;
+        case "delivered":
+            return <CheckCircleIcon className="h-4 w-4 text-teal-600" />;
+        case "to-rectified":
+            return <AlertCircleIcon className="h-4 w-4 text-indigo-600" />;
+        case "rejected":
+            return <XCircleIcon className="h-4 w-4 text-red-600" />;
         default:
             return null;
     }
@@ -64,11 +102,28 @@ const getStatusIcon = (status: string) => {
 
 const getStatusKey = (status: string | undefined) => {
     if (!status) return 'Not Available';
-    if (status.toLowerCase() === 'not_started') return 'Not Started';
-    if (status.toLowerCase() === 'pending') return 'Pending';
-    if (status.toLowerCase() === 'in_progress') return 'In Progress';
-    if (status.toLowerCase() === 'completed') return 'Completed';
-    return 'Not Available';
+    switch (status.toLowerCase()) {
+        case 'not-applicable':
+            return 'Not Applicable';
+        case 'procurement-done':
+            return 'Procurement Done';
+        case 'pending-stocks':
+            return 'Pending Stocks';
+        case 'delivered':
+            return 'Delivered';
+        case 'pending-installation':
+            return 'Pending Installation';
+        case 'in-progress':
+            return 'In Progress';
+        case 'completed':
+            return 'Completed';
+        case 'to-rectified':
+            return 'To Rectified';
+        case 'rejected':
+            return 'Rejected';
+        default:
+            return 'Not Available';
+    }
 };
 
 function OwnerHome() {
@@ -221,8 +276,8 @@ function OwnerHome() {
 
                     {orders.length === 0 ? (
                         <div className="flex flex-col items-center">
-                            <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
-                            <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
+                            <img alt="image" className="dark:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3.svg`}/>
+                            <img alt="image" className="light:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3-dark.svg`} />
 
                             <h2 className="text-xl font-semibold text-gray-900">There is no Quotation here</h2>
                         </div>
@@ -230,7 +285,7 @@ function OwnerHome() {
                         <div className="flex flex-wrap gap-4">
                             {orders.map((order, index) => (
                                 <Link
-                                    to={'/owner/order/overview/id/' + order.id}
+                                    to={LOCAL_PATH_PREFIX + 'order/overview/id/' + order.id}
                                     className="card w-full sm:w-[calc(50%-0.5rem)] cursor-pointer"
                                     key={index}>
                                     <div className="card-body flex justify-between items-center">
@@ -298,7 +353,7 @@ function OwnerHome() {
                     <div className="flex justify-between items-center mb-2">
                         <span className="text-lg font-bold text-gray-900">Registration Form</span>
                         <Link
-                            to={'/owner/reno-registration-form'}
+                            to={LOCAL_PATH_PREFIX + 'reno-registration-form'}
                             className="btn btn-sm btn-secondary"
                         >
                             Request New Registration
@@ -307,8 +362,8 @@ function OwnerHome() {
 
                     {forms.length === 0 ? (
                         <div className="flex flex-col items-center">
-                            <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
-                            <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
+                            <img alt="image" className="dark:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3.svg`} />
+                            <img alt="image" className="light:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3-dark.svg`} />
 
                             <h2 className="text-xl font-semibold text-gray-900">There is no Reno Registration Forms here</h2>
                         </div>
@@ -316,7 +371,7 @@ function OwnerHome() {
                         <div className="flex flex-wrap gap-4">
                             {forms.map((form, index) => (
                                 <Link
-                                    to={'/owner/form/reno-registration-forms/' + form.id}
+                                    to={LOCAL_PATH_PREFIX + 'form/reno-registration-forms/' + form.id}
                                     className="card w-full sm:w-[calc(50%-0.5rem)] cursor-pointer"
                                     key={index}
                                 >
@@ -397,7 +452,7 @@ function OwnerHome() {
                         renoProgresses.map((progress, index) => (
                             <Link
                                 // to={'/owner/reno-progress/' + renoProgress.id}
-                                to={'/owner/reno/progress/' + progress.id}
+                                to={LOCAL_PATH_PREFIX + 'reno/progress/' + progress.id}
                                 className="card w-full sm:w-[calc(50%-0.5rem)] cursor-pointer"
                                 key={index}
                             >

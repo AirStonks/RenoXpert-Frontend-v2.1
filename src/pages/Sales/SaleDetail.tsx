@@ -12,6 +12,8 @@ import { Link } from "react-router-dom";
 import { testGenerateProgress } from "../../services/api";
 import NewPaymentDetailModal from "./components/Modals/NewPaymentDetailModal";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function SaleDetail() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -35,7 +37,7 @@ function SaleDetail() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/sales');
+            navigate(LOCAL_PATH_PREFIX + 'sales');
         }
     };
 
@@ -91,8 +93,8 @@ function SaleDetail() {
                                             </td>
                                             <td className="text-sm text-gray-900 pb-3">
                                                 <Link
-                                                    to={`/orders/${sale.order_id}`}
-                                                    state={{ fromUrl: '/sales/' + sale.id }}
+                                                    to={LOCAL_PATH_PREFIX + `orders/${sale.order_id}`}
+                                                    state={{ fromUrl: LOCAL_PATH_PREFIX + 'sales/' + sale.id }}
                                                     className="cursor-pointer text-orange-500 font-semibold"
                                                 >
                                                     {sale.order.order_no}
@@ -137,8 +139,8 @@ function SaleDetail() {
                                             <td>
                                                 {sale.reno_progress_id ?
                                                     <Link
-                                                        to={'/reno-progress/' + sale.reno_progress_id}
-                                                        state={{ fromUrl: '/sales/' + sale.id }}
+                                                        to={LOCAL_PATH_PREFIX + 'reno-progress/' + sale.reno_progress_id}
+                                                        state={{ fromUrl: LOCAL_PATH_PREFIX + 'sales/' + sale.id }}
                                                         className="btn btn-secondary btn-outline btn-sm"
                                                     >
                                                         View Progress
@@ -338,7 +340,7 @@ function SaleDetail() {
 
                             <div className="flex gap-4">
                                 <Link
-                                    to={`/purchase-orders/create?saleId=${sale.id}`}
+                                    to={LOCAL_PATH_PREFIX + `purchase-orders/create?saleId=${sale.id}`}
                                     state={{ fromUrl: location.pathname }}
                                     className="btn btn-xs btn-info flex gap-2 items-center"
                                     data-modal-toggle="#create-addon-inv-modal"
@@ -351,8 +353,8 @@ function SaleDetail() {
                         <div className="flex flex-col gap-4">
                             {sale.purchase_orders.map((po, index) => (
                                 <Link
-                                    to={`/purchase-orders/${po.id}`}
-                                    state={{ fromUrl: '/sales/' + sale.id }}
+                                    to={LOCAL_PATH_PREFIX + `purchase-orders/${po.id}`}
+                                    state={{ fromUrl: LOCAL_PATH_PREFIX + 'sales/' + sale.id }}
                                     key={index}
                                     className="card cursor-pointer"
                                 // data-modal-toggle="#payment_invoice_modal"

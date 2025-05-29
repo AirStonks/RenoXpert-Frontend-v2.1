@@ -13,6 +13,11 @@ const API_URL =
                 ? import.meta.env.VITE_LOCAL_API_URL
                 : null;
 
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+                
 const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmit: (mobile?: string, otp?: string[]) => void, otp: string[], setOtp: React.Dispatch<React.SetStateAction<string[]>> }> = ({ 
     mobile, 
     countryCode, 
@@ -129,8 +134,8 @@ const OTPVerifyPage: React.FC<{ mobile: string, countryCode: string, handleSubmi
             <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
                 <div className="card max-w-[380px] w-full">
                     <div className="card-body flex flex-col gap-5 p-10">
-                        <img src='/public/media/illustrations/34.svg' className="dark:hidden h-20 mb-2" alt="" />
-                        <img src='/media/illustrations/34-dark.svg' className="light:hidden h-20 mb-2" alt="" />
+                        <img src={`${MEDIA_URL}illustrations/34.svg`} className="dark:hidden h-20 mb-2" alt="" />
+                        <img src={`${MEDIA_URL}illustrations/34-dark.svg`} className="light:hidden h-20 mb-2" alt="" />
 
                         <div className="text-center mb-2">
                             <h3 className="text-lg font-medium text-gray-900 mb-5">Verify your phone</h3>

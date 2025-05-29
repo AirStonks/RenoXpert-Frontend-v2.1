@@ -4,6 +4,8 @@ import { salesIndex } from '../../services/api';
 import { Invoice, Sale } from '../../types';
 import { Link } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 type SortOrder = 'asc' | 'desc' | null;
 
 interface FilterOption {
@@ -138,8 +140,8 @@ function SalesOrderPO() {
                 >
                     <div className="card-title">
                         <Link
-                            to={'/sales/' + sale.id}
-                            state={{ fromUrl: '/finance/sales-order-po' }}
+                            to={LOCAL_PATH_PREFIX + 'sales/' + sale.id}
+                            state={{ fromUrl: LOCAL_PATH_PREFIX + 'finance/sales-order-po' }}
                             className='link text-orange-500'
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -215,7 +217,7 @@ function SalesOrderPO() {
                                                             </div>
                                                         </td>
                                                         <td className="align-top">
-                                                            <Link to={`/orders/${sale.order.id}`} className="link text-orange-500">
+                                                            <Link to={LOCAL_PATH_PREFIX + `orders/${sale.order.id}`} className="link text-orange-500">
                                                                 {sale.order.order_no}
                                                             </Link>
                                                         </td>
@@ -235,8 +237,8 @@ function SalesOrderPO() {
                                                                     {sale.invoices.map((invoice: Invoice, index) => (
                                                                         <li key={index} className="text-gray-700 dark:text-gray-200">
                                                                             <Link
-                                                                                to={'/purchase-orders/' + sale.id + '/invoices?inv=' + invoice.id}
-                                                                                state={{ fromUrl: '/purchase-orders/property/view' }}
+                                                                                to={LOCAL_PATH_PREFIX + 'purchase-orders/' + sale.id + '/invoices?inv=' + invoice.id}
+                                                                                state={{ fromUrl: LOCAL_PATH_PREFIX + 'purchase-orders/property/view' }}
                                                                                 className="font-semibold cursor-pointer text-orange-500">
                                                                                 {invoice.invoice_no}
                                                                             </Link>
@@ -321,7 +323,7 @@ function SalesOrderPO() {
                                                 </td>
                                                 <td className="align-top">
                                                     {rowIdx < poCount && (
-                                                        <Link to={`/purchase-orders/${sale.purchase_orders[rowIdx].id}`} className="link text-orange-500">
+                                                        <Link to={LOCAL_PATH_PREFIX + `purchase-orders/${sale.purchase_orders[rowIdx].id}`} className="link text-orange-500">
                                                             {sale.purchase_orders[rowIdx].po_no}
                                                         </Link>
                                                     )}
@@ -336,8 +338,8 @@ function SalesOrderPO() {
                                                             {sale.purchase_orders[rowIdx].invoices.map((invoice: Invoice, index) => (
                                                                 <li key={index} className="text-gray-700 dark:text-gray-200">
                                                                     <Link
-                                                                        to={'/purchase-orders/' + sale.purchase_orders[rowIdx].id + '/invoices?inv=' + invoice.id}
-                                                                        state={{ fromUrl: '/purchase-orders/property/view' }}
+                                                                        to={LOCAL_PATH_PREFIX + 'purchase-orders/' + sale.purchase_orders[rowIdx].id + '/invoices?inv=' + invoice.id}
+                                                                        state={{ fromUrl: LOCAL_PATH_PREFIX + 'purchase-orders/property/view' }}
                                                                         className="font-semibold cursor-pointer text-orange-500">
                                                                         {invoice.invoice_no}
                                                                     </Link>
@@ -433,7 +435,7 @@ function SalesOrderPO() {
                                             </div>
                                         </td>
                                         <td>
-                                            <Link to={`/orders/${sale.order.id}`} className="link text-orange-500">
+                                            <Link to={LOCAL_PATH_PREFIX + `orders/${sale.order.id}`} className="link text-orange-500">
                                                 {sale.order.order_no}
                                             </Link>
                                         </td>
@@ -443,8 +445,8 @@ function SalesOrderPO() {
                                                     {sale.invoices.map((invoice: Invoice, index) => (
                                                         <li key={index} className="text-gray-700 dark:text-gray-200">
                                                             <Link
-                                                                to={'/sales/' + sale.id + '?inv=' + invoice.id}
-                                                                state={{ fromUrl: '/finance/sales-order-po' }}
+                                                                to={LOCAL_PATH_PREFIX + 'sales/' + sale.id + '?inv=' + invoice.id}
+                                                                state={{ fromUrl: LOCAL_PATH_PREFIX + 'finance/sales-order-po' }}
                                                                 className="font-semibold cursor-pointer text-orange-500">
                                                                 {invoice.invoice_no}
                                                             </Link>

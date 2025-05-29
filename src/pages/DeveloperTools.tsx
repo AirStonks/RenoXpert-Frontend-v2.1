@@ -4,6 +4,8 @@ import { Slide, toast } from "react-toastify";
 import { KTModal } from "../metronic/core";
 import { useEffect } from "react";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_API_URL
@@ -54,7 +56,7 @@ function DeveloperTool() {
             localStorage.clear();
 
             notify('success', 'Database refreshed successfully.');
-            navigate('/login');
+            navigate(LOCAL_PATH_PREFIX + 'login');
         } catch (error) {
             console.error('Error refreshing database:', error);
         }

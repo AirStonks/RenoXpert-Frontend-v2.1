@@ -8,6 +8,8 @@ import { Slide, toast } from "react-toastify";
 import ClipboardJS from "clipboard";
 import { useUser } from "../../context/UserContext";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 // Define type for validation errors
 interface ValidationErrors {
     name_first?: string[];
@@ -47,7 +49,7 @@ function AddInternalUser() {
     };
 
     const handleBackClick = () => {
-        navigate("/users");
+        navigate(LOCAL_PATH_PREFIX + "users");
     };
 
     useEffect(() => {

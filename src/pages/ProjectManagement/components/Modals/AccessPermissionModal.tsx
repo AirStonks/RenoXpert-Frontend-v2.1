@@ -16,7 +16,6 @@ interface Props {
 
 function AccessPermissionModal({ permissions, setPermissions, renoProgress, setRenoProgress, users, setUsers }: Props) {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -150,12 +149,12 @@ function AccessPermissionModal({ permissions, setPermissions, renoProgress, setR
                             <i className="ki-filled ki-cross text-xl"></i>
                         </button>
                     </div>
-                    <div className="modal-body p-8 rounded-xl overflow-y-auto scrollable-y-auto">
-                        <div className="flex flex-col gap-4">
-                            <h2>
-                                {/* User/Roles */}
-                                User
-                            </h2>
+                    <div className="modal-body p-2 rounded-xl overflow-y-auto scrollable-y-auto">
+                        <h2 className='font-semibold px-4'>
+                            {/* User/Roles */}
+                            User
+                        </h2>
+                        <div className="flex flex-col gap-4 p-4">
                             <div className="dropdow" data-dropdown="true" data-dropdown-placement="bottom-start" data-dropdown-trigger="click" id='search_user_dropdown'>
                                 <label className="dropdown-toggle input input-lg">
                                     <input
@@ -208,7 +207,6 @@ function AccessPermissionModal({ permissions, setPermissions, renoProgress, setR
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="flex flex-col items-start">
-                                    <span className="text-gray-900 text-base font-semibold">Owner access not supported yet.</span>
                                     <span className="text-gray-600 text-sm"></span>
                                 </div>
                             </div>
@@ -222,7 +220,7 @@ function AccessPermissionModal({ permissions, setPermissions, renoProgress, setR
                                 </div>
 
                                 <div className="flex flex-col items-start">
-                                    <span className="text-gray-900 text-base font-semibold">Anyone</span>
+                                    <span className="text-gray-900 text-base font-semibold">Owner</span>
                                 </div>
                                 <div className="ml-auto">
                                     <div className="dropdow" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click" id='permission_dropdown'>

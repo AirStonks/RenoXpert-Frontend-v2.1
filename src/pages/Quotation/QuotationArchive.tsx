@@ -9,6 +9,8 @@ import Loading from '../../components/Loading';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import { Link } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 type SortOrder = 'asc' | 'desc' | null;
 
 function QuotationArchive() {
@@ -38,7 +40,7 @@ function QuotationArchive() {
     }, []);
 
     const handleBackClick = () => {
-        navigate('/quotations');
+        navigate(LOCAL_PATH_PREFIX + 'quotations');
     };
 
     const initQuotationTable = async (
@@ -148,7 +150,7 @@ function QuotationArchive() {
     const totalPages = Math.ceil(totalItems / size);
 
     const handleViewQuotation = (quotationId: string | number) => {
-        navigate(`/quotations/${quotationId}`);
+        navigate(LOCAL_PATH_PREFIX + `quotations/${quotationId}`);
     }
 
     const handleRemoveQuotation = async (quotationId: number) => {
@@ -361,8 +363,8 @@ function QuotationArchive() {
                                             <td className='text-center'>
                                                 <div className="flex justify-around gap-2">
                                                     <Link
-                                                        to={`/quotations/${quotation.id}`}
-                                                        state={{ fromUrl: '/quotations/archives' }}
+                                                        to={LOCAL_PATH_PREFIX + `quotations/${quotation.id}`}
+                                                        state={{ fromUrl: LOCAL_PATH_PREFIX + 'quotations/archives' }}
                                                         className="btn btn-sm btn-secondary"
                                                     >
                                                         View

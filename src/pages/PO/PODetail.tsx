@@ -10,6 +10,8 @@ import { acceptPO, rejectPO, releasePO, revertPO } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface AccordionState {
     [key: number]: boolean;
 }
@@ -41,7 +43,7 @@ function PODetail() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/purchase-orders');
+            navigate(LOCAL_PATH_PREFIX + 'purchase-orders');
         }
     };
 
@@ -166,7 +168,7 @@ function PODetail() {
                         <>
                             {poDetail.order_status === 'released' ?
                                 <Link
-                                    to={'/purchase-orders/' + poId + '/invoices'}
+                                    to={LOCAL_PATH_PREFIX + 'purchase-orders/' + poId + '/invoices'}
                                     className="btn btn-primary btn-sm"
                                 >
                                     Invoices
@@ -174,7 +176,7 @@ function PODetail() {
                                 :
                                 <>
                                     <Link
-                                        to={'/purchase-orders/edit/' + poId}
+                                        to={LOCAL_PATH_PREFIX + 'purchase-orders/edit/' + poId}
                                         className="btn btn-info btn-sm"
                                     >
                                         Edit PO
@@ -204,7 +206,7 @@ function PODetail() {
                                 Reject Order
                             </button>
                             <Link
-                                to={'/purchase-orders/' + poId + '/invoices'}
+                                to={LOCAL_PATH_PREFIX + 'purchase-orders/' + poId + '/invoices'}
                                 className="btn btn-primary btn-sm"
                             >
                                 Invoices
@@ -232,7 +234,7 @@ function PODetail() {
                                     </button>
                                 }
                                 <Link
-                                    to={`/purchase-orders/print/${poId}`}
+                                    to={LOCAL_PATH_PREFIX + `purchase-orders/print/${poId}`}
                                     className="menu-link"
                                 >
                                     <span className="menu-title">

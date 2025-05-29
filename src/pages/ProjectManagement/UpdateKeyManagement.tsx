@@ -8,6 +8,8 @@ import KeyManagementCategoryItem from "./components/KeyManagementCategoryItem";
 import { Slide, toast } from "react-toastify";
 import { KeyManagement } from "../../types";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function UpdateKeyManagement() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -59,7 +61,7 @@ function UpdateKeyManagement() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate(`/reno-progress/${renoProgressId}/key-management`);
+            navigate(LOCAL_PATH_PREFIX + `reno-progress/${renoProgressId}/key-management`);
         }
     };
 

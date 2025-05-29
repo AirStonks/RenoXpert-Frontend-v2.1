@@ -12,6 +12,13 @@ import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortablePackage } from "./components/SortablePackage";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 const categoryOptions = [
     { value: "renovation", label: "Renovation" },
     { value: "partition", label: "Partition" },
@@ -68,6 +75,7 @@ function CreateOrder() {
         isDraftMode: false,
         single_bedroom_count: 1,
         queen_bedroom_count: 1,
+        studio_count: 0,
         bathroom_count: 1,
         include_partition: false,
         is_progressive_payment: true,
@@ -311,6 +319,7 @@ function CreateOrder() {
                     // bedroom_count: response.data.bedroom_count,
                     single_bedroom_count: response.data.single_bedroom_count,
                     queen_bedroom_count: response.data.queen_bedroom_count,
+                    studio_count: response.data.studio_count,
                     bathroom_count: response.data.bathroom_count,
                     bonus: {
                         description: response.data.latest_quotation.bonus?.description || "",
@@ -344,7 +353,7 @@ function CreateOrder() {
     };
 
     const handleBackClick = () => {
-        navigate("/orders");
+        navigate(LOCAL_PATH_PREFIX + "orders");
     };
 
     const handleSearchUser = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -474,6 +483,7 @@ function CreateOrder() {
             // bedroom_count: formData.bedroom_count,
             single_bedroom_count: formData.single_bedroom_count,
             queen_bedroom_count: formData.queen_bedroom_count,
+            studio_count: formData.studio_count,
             bathroom_count: formData.bathroom_count,
             include_partition: formData.include_partition,
             is_progressive_payment: formData.is_progressive_payment,
@@ -488,7 +498,7 @@ function CreateOrder() {
             const response = await createOrder(newOrder);
             if (response?.success) {
                 notify("success", "Order Created Successfully!");
-                navigate("/orders/" + response.data.id);
+                navigate(LOCAL_PATH_PREFIX + "orders/" + response.data.id);
             }
         } catch (error) {
             notify("error", error.response.data.data);
@@ -1003,6 +1013,21 @@ function CreateOrder() {
                                                     </select>
                                                 </div>
                                                 <div className="flex flex-col">
+                                                    <span className="text-sm font-semibold text-gray-900">Studio Room</span>
+                                                    <select
+                                                        className="select p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        name="studio_count"
+                                                        id="studio_count"
+                                                        onChange={handleChange}
+                                                        value={formData.studio_count}
+                                                    >
+                                                        <option value="0">0</option>
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                    </select>
+                                                </div>
+                                                <div className="flex flex-col">
                                                     <span className="text-sm font-semibold text-gray-900">Bathroom</span>
                                                     <select
                                                         className="select p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1011,6 +1036,7 @@ function CreateOrder() {
                                                         onChange={handleChange}
                                                         value={formData.bathroom_count}
                                                     >
+                                                        <option value="0">0</option>
                                                         <option value="1">1</option>
                                                         <option value="2">2</option>
                                                         <option value="3">3</option>
@@ -2031,12 +2057,12 @@ function CreateOrder() {
                             <img
                                 alt="image"
                                 className="dark:hidden max-h-[160px] mb-12"
-                                src="/public/media/illustrations/3.svg"
+                                src={`${MEDIA_URL}illustrations/3.svg`}
                             />
                             <img
                                 alt="image"
                                 className="light:hidden max-h-[160px] mb-12"
-                                src="/public/media/illustrations/3-dark.svg"
+                                src={`${MEDIA_URL}illustrations/3-dark.svg`}
                             />
                             <span className="text-gray-800 text-lg font-semibold text-center">
                                 No Registration Form selected

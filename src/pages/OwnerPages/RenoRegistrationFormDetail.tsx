@@ -4,6 +4,8 @@ import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
 import React, { useEffect } from "react";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -31,7 +33,7 @@ function RenoRegistrationFormDetail() {
             <div className="card-header flex justify-between">
                 <div className="flex gap-4 justify-center">
                     <Link
-                        to={'/owner/home'}
+                        to={LOCAL_PATH_PREFIX + 'home'}
                         className="ki-solid ki-arrow-left items-center">
                     </Link>
                     <span className="text-lg font-semibold">[Reno] Registration Form</span>

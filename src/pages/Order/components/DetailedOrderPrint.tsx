@@ -8,6 +8,13 @@ import { useParams } from "react-router-dom"
 import { Link } from "react-router-dom"
 import type { Order, Product } from "../../../types"
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 const getCurrentDate = () => {
     const date = new Date()
     const options = { day: "2-digit", month: "short", year: "numeric" }
@@ -215,7 +222,7 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
     const COMPANY_CITY_STATE = "Subang Jaya, Selangor, 46500"
     const COMPANY_MOBILE = "03-58789831"
     const COMPANY_EMAIL = "sales@renoxpert.my"
-    const COMPANY_LOGO_URL = "/public/app/RenoExpert_logo-01.jpg"
+    const COMPANY_LOGO_URL = MEDIA_URL + "app/RenoExpert_logo-01.jpg"
 
     // Define constants for quotationHeader
     const QUOTATION_TITLE = "Detailed Quotation"
@@ -1124,7 +1131,7 @@ function DetailedOrderPrint() {
                 <div className="flex items-center gap-4 mb-6">
                     {/* Back */}
                     <Link
-                        to={"/orders/" + orderDetail.id}
+                        to={LOCAL_PATH_PREFIX + "orders/" + orderDetail.id}
                         className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
                     >
                         <i className="ki-solid ki-arrow-left text-2xl"></i>

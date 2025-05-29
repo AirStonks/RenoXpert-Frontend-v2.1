@@ -12,6 +12,8 @@ import { Slide, toast } from 'react-toastify';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import useFetchPMCategory from '../../hook/useFetchPMCategory';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -37,7 +39,7 @@ const EditProduct: React.FC = () => {
     const [errors, setErrors] = useState<FormErrors>({});
 
     const handleBackClick = () => {
-        navigate('/products/' + productId); // Go back to the previous route
+        navigate(LOCAL_PATH_PREFIX + 'products/' + productId); // Go back to the previous route
     };
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -150,7 +152,7 @@ const EditProduct: React.FC = () => {
 
             if (response?.success) {
                 notify('success', "Product Edited Successfully!");
-                navigate('/products/' + productId);
+                navigate(LOCAL_PATH_PREFIX + 'products/' + productId);
             }
 
         } catch (error) {

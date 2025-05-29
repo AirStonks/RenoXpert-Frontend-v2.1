@@ -4,10 +4,10 @@ import {
     HomeIcon,
     BoltIcon,
     FireIcon,
-    BeakerIcon,
     TvIcon,
     StopIcon,
 } from "@heroicons/react/24/solid"
+import { BathIcon } from "lucide-react"
 
 type NavItem = {
     icon: React.ReactNode
@@ -22,13 +22,13 @@ const navItems: NavItem[] = [
         category: "room_furnitures",
     },
     {
-        icon: <BeakerIcon className="h-4 w-4" />,
+        icon: <BathIcon className="h-4 w-4" />,
         label: "Bath",
         category: "bathroom",
     },
     {
         icon: <StopIcon className="h-4 w-4" />,
-        label: "DYF",
+        label: "Dining",
         category: "dining_yard_foyer",
     },
     {

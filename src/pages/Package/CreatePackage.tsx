@@ -11,6 +11,8 @@ import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableProductRow } from './components/SortableProductRow';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function CreatePackage() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -46,7 +48,7 @@ function CreatePackage() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/packages');
+            navigate(LOCAL_PATH_PREFIX + 'packages');
         }
     };
 
@@ -147,7 +149,7 @@ function CreatePackage() {
             const response = await createPackage(packageData);
             if (response?.success) {
                 notify('success', "Package Created Successfully!");
-                navigate('/packages');
+                navigate(LOCAL_PATH_PREFIX + 'packages');
             }
         } catch (error) {
             if (error.response?.status === 422) {

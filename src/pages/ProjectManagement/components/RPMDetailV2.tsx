@@ -6,6 +6,8 @@ import { addUserItemPermission, changeInternalComment, changeOwnerComment, chang
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -1127,9 +1129,11 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
                                                                     <td>
                                                                         <div className="flex flex-col items-center">
                                                                             {task.is_defect_form ?
-                                                                                <span>
-                                                                                    {renoProgress.defect_inspection_form.status === 'not_submitted' ? 'Not Submitted' : 'Completed'}
-                                                                                </span>
+                                                                                !renoProgress.is_converted && (
+                                                                                    <span>
+                                                                                        {renoProgress.defect_inspection_form.status === 'not_submitted' ? 'Not Submitted' : 'Completed'}
+                                                                                    </span>
+                                                                                )
                                                                                 : task.is_key_form ? (
                                                                                     <select
                                                                                         className="w-full max-w-xs appearance-none"
@@ -1175,14 +1179,14 @@ function RPMDetailV2({ renoProgress, setRenoProgress, permissions, users, setUse
                                                                     <td className="text-center">
                                                                         {task.is_defect_form ? (
                                                                             <Link
-                                                                                to={`/reno-progress/${renoProgress.id}/defect-inspection-report`}
+                                                                                to={LOCAL_PATH_PREFIX + `reno-progress/${renoProgress.id}/defect-inspection-report`}
                                                                                 className="btn btn-info btn-sm"
                                                                             >
                                                                                 DIR Overview
                                                                             </Link>
                                                                         ) : task.is_key_form ? (
                                                                             <Link
-                                                                                to={`/reno-progress/${renoProgress.id}/key-management`}
+                                                                                to={LOCAL_PATH_PREFIX + `reno-progress/${renoProgress.id}/key-management`}
                                                                                 className="btn btn-info btn-sm"
                                                                             >
                                                                                 Key Management

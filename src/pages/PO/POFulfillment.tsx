@@ -6,6 +6,8 @@ import { POItem, PurchaseOrder, POPackage } from "../../types";
 import { markPOItemAsDelivered } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface AccordionState {
     [key: number]: boolean;
 }
@@ -35,7 +37,7 @@ function POFulfillment() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/purchase-orders');
+            navigate(LOCAL_PATH_PREFIX + 'purchase-orders');
         }
     };
 
@@ -100,7 +102,7 @@ function POFulfillment() {
                     </span>
                 </div>
                 {/* <div className="flex">
-                    <Link to={`/purchase-order/edit/${poId}`} className="btn btn-info btn-sm">
+                    <Link to={LOCAL_PATH_PREFIX + `purchase-order/edit/${poId}`} className="btn btn-info btn-sm">
                         Update PO
                     </Link>
                 </div> */}

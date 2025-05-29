@@ -4,6 +4,8 @@ import Loading from './Loading';
 import { useEffect } from 'react';
 import { KTDrawer, KTScrollable } from '../metronic/core';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function Sidebar() {
 	const { currentUser, loading, error } = useUser();
 	const height = window.innerHeight;
@@ -30,7 +32,7 @@ function Sidebar() {
 				className="sidebar-header hidden lg:flex items-center relative justify-center mt-4 px-3 lg:px-6 shrink-0"
 				id="sidebar_header"
 			>
-				<Link className="dark:hidden" to="/dashboard">
+				<Link className="dark:hidden" to={LOCAL_PATH_PREFIX + "dashboard"}>
 					<img
 						className="default-logo min-h-[22px] h-[65px] max-w-none"
 						src="/app/RenoExpert_logo-01.svg"
@@ -40,7 +42,7 @@ function Sidebar() {
 						src="/app/RenoExpert_icon-01.svg"
 					/>
 				</Link>
-				<Link className="hidden dark:block" to="/dashboard">
+				<Link className="hidden dark:block" to={LOCAL_PATH_PREFIX + "dashboard"}>
 					<img
 						className="default-logo min-h-[22px] h-[65px] max-w-none"
 						src="/app/RenoExpert_logo-01.svg"
@@ -82,7 +84,7 @@ function Sidebar() {
 							<>
 								<div className="menu-item">
 									<Link
-										to="/dashboard"
+										to={LOCAL_PATH_PREFIX + "dashboard"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -100,7 +102,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/packages"
+										to={LOCAL_PATH_PREFIX + "packages"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -113,7 +115,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/orders"
+										to={LOCAL_PATH_PREFIX + "orders"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -153,7 +155,7 @@ function Sidebar() {
 										<div className="menu-item disabled">
 											<div className="menu-label">
 												<Link
-													to=""
+													to={LOCAL_PATH_PREFIX + ""}
 													className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 													tabIndex={0}
 												>
@@ -172,7 +174,7 @@ function Sidebar() {
 										<div className="menu-item">
 											<div className="menu-label">
 												<Link
-													to="/registration-forms"
+													to={LOCAL_PATH_PREFIX + "registration-forms"}
 													className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 													tabIndex={0}
 												>
@@ -186,7 +188,7 @@ function Sidebar() {
 										<div className="menu-item disabled">
 											<div className="menu-label">
 												<Link
-													to=""
+													to={LOCAL_PATH_PREFIX + ""}
 													className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 													tabIndex={0}
 												>
@@ -205,7 +207,7 @@ function Sidebar() {
 										<div className="menu-item">
 											<div className="menu-label">
 												<Link
-													to="/di-forms"
+													to={LOCAL_PATH_PREFIX + "di-forms"}
 													className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 													tabIndex={0}
 												>
@@ -219,7 +221,7 @@ function Sidebar() {
 										<div className="menu-item disabled">
 											<div className="menu-label">
 												<Link
-													to=""
+													to={LOCAL_PATH_PREFIX + ""}
 													className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 													tabIndex={0}
 												>
@@ -244,7 +246,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/sales"
+										to={LOCAL_PATH_PREFIX + "sales"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -281,7 +283,7 @@ function Sidebar() {
 							<div className="menu-accordion gap-0.5 pl-[10px] relative before:absolute before:left-[20px] before:top-0 before:bottom-0 before:border-l before:border-gray-200">
 								<div className="menu-item">
 									<Link
-										to="/purchase-orders"
+										to={LOCAL_PATH_PREFIX + "purchase-orders"}
 										className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 										tabIndex={0}
 									>
@@ -293,7 +295,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/purchase-orders/property/view"
+										to={LOCAL_PATH_PREFIX + "purchase-orders/property/view"}
 										className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 										tabIndex={0}
 									>
@@ -338,7 +340,7 @@ function Sidebar() {
 										<div className="menu-item">
 											<div className="menu-label">
 												<Link
-													to="/di-forms"
+													to={LOCAL_PATH_PREFIX + "di-forms"}
 													className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 													tabIndex={0}
 												>
@@ -352,7 +354,7 @@ function Sidebar() {
 										<div className="menu-item disabled">
 											<div className="menu-label">
 												<Link
-													to=""
+													to={LOCAL_PATH_PREFIX + ""}
 													className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 													tabIndex={0}
 												>
@@ -393,7 +395,7 @@ function Sidebar() {
 									<div className="menu-accordion gap-0.5 pl-[10px] relative before:absolute before:left-[20px] before:top-0 before:bottom-0 before:border-l before:border-gray-200">
 										<div className="menu-item">
 											<Link
-												to="/reno-progress/overview"
+												to={LOCAL_PATH_PREFIX + "reno-progress/overview"}
 												className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 												tabIndex={0}
 											>
@@ -405,7 +407,7 @@ function Sidebar() {
 										</div>
 										<div className="menu-item">
 											<Link
-												to="/reno-progress/overview/v3"
+												to={LOCAL_PATH_PREFIX + "reno-progress/overview/v3"}
 												className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 												tabIndex={0}
 											>
@@ -417,7 +419,7 @@ function Sidebar() {
 										</div>
 										<div className="menu-item">
 											<Link
-												to="/reno-progress/progress-tracker"
+												to={LOCAL_PATH_PREFIX + "reno-progress/progress-tracker"}
 												className="menu-link gap-[14px] pl-[10px] pr-[10px] py-[8px] border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 												tabIndex={0}
 											>
@@ -437,7 +439,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/inventory"
+										to={LOCAL_PATH_PREFIX + "inventory"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -456,7 +458,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/finance/sales-order-po"
+										to={LOCAL_PATH_PREFIX + "finance/sales-order-po"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -470,7 +472,7 @@ function Sidebar() {
 								<div className="menu-item">
 									<div className="menu-label">
 										<Link
-											to=""
+											to={LOCAL_PATH_PREFIX + ""}
 											className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 										>
 											<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -490,7 +492,7 @@ function Sidebar() {
 								<div className="menu-item">
 									<div className="menu-label">
 										<Link
-											to=""
+											to={LOCAL_PATH_PREFIX + ""}
 											className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 										>
 											<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -515,7 +517,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/products"
+										to={LOCAL_PATH_PREFIX + "products"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -528,7 +530,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/properties"
+										to={LOCAL_PATH_PREFIX + "properties"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -541,7 +543,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/discountFee"
+										to={LOCAL_PATH_PREFIX + "discountFee"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -560,7 +562,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/users"
+										to={LOCAL_PATH_PREFIX + "users"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -573,7 +575,7 @@ function Sidebar() {
 								</div>
 								<div className="menu-item">
 									<Link
-										to="/otp-requests"
+										to={LOCAL_PATH_PREFIX + "otp-requests"}
 										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
 									>
 										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">

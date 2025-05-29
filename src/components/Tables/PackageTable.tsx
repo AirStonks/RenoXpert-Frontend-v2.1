@@ -5,6 +5,8 @@ import DeleteModal from '../Modals/DeleteModal';
 import { removePackage } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function PackageTable() {
     const navigate = useNavigate();
     const [selectedPackage, setSelectedPackage] = useState<{ id: number, name: string } | null>(null);
@@ -17,7 +19,7 @@ function PackageTable() {
 
         if (viewButton) {
             const id = viewButton.dataset.id;
-            navigate('/packages/' + id);
+            navigate(LOCAL_PATH_PREFIX + 'packages/' + id);
         } else if (deleteButton) {
             const id = deleteButton.dataset.id;
             const name = deleteButton.dataset.name;

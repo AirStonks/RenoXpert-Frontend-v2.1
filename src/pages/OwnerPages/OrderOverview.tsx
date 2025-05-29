@@ -17,6 +17,13 @@ import AgreePartitionRiskModal from "./components/Modals/AgreePartitionRiskModal
 import { CalendarDateRangeIcon } from "@heroicons/react/24/solid"
 import accordion from "../../metronic/core/plugins/components/accordion"
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 const convertToWords = (num: number) => {
     const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
     const teens = [
@@ -308,7 +315,7 @@ function OrderOverview() {
     }
 
     const handleAgreeOrder = async () => {
-        navigate("/confirm/order/otp/verify", {
+        navigate(LOCAL_PATH_PREFIX + "confirm/order/otp/verify", {
             state: {
                 conutry_code: orderDetail.user.country_code,
                 mobile: orderDetail.user.phone_no,
@@ -322,8 +329,8 @@ function OrderOverview() {
         return (
             <div className="flex items-center justify-center h-screen">
                 <div className="flex flex-col items-center">
-                    <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
-                    <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
+                    <img alt="image" className="dark:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3.svg`} />
+                    <img alt="image" className="light:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3-dark.svg`} />
 
                     <h2 className="text-xl font-semibold text-gray-900">Order not found or invalid</h2>
                 </div>
@@ -864,7 +871,7 @@ function OrderOverview() {
                     {/* Header */}
                     <div className="card-header flex justify-between">
                         <div className="flex gap-4 justify-center">
-                            <Link to={"/owner/home"} className="ki-solid ki-arrow-left items-center text-gray-900"></Link>
+                            <Link to={LOCAL_PATH_PREFIX + "home"} className="ki-solid ki-arrow-left items-center text-gray-900"></Link>
                             {orderDetail.status === "confirmed" ? (
                                 <span className="text-md text-gray-900 font-semibold">Quotation Order Overview</span>
                             ) : (
@@ -1206,7 +1213,7 @@ function OrderOverview() {
                                                 <img
                                                     alt="No invoices"
                                                     className="max-h-[160px] mb-4"
-                                                    src={`/public/media/illustrations/3${document.documentElement.classList.contains("dark") ? "-dark" : ""
+                                                    src={`${MEDIA_URL}illustrations/3${document.documentElement.classList.contains("dark") ? "-dark" : ""
                                                         }.svg`}
                                                 />
                                                 <h3 className="text-md font-semibold text-gray-900">No Payment Invoices Available</h3>
@@ -1215,7 +1222,7 @@ function OrderOverview() {
                                             <div className="grid grid-cols-1 gap-4">
                                                 {orderDetail.sale.invoices.map((invoice, index) => (
                                                     <Link
-                                                        to={`/invoice/${invoice.id}/view`}
+                                                        to={LOCAL_PATH_PREFIX + `invoice/${invoice.id}/view`}
                                                         key={index}
                                                         className="card bg-white shadow-sm rounded-lg hover:shadow-md transition-shadow"
                                                     >

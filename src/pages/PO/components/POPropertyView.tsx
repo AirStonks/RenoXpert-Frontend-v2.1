@@ -6,6 +6,8 @@ import { Invoice, PurchaseOrder } from '../../../types';
 import { Link } from 'react-router-dom';
 import { useUser } from '../../../context/UserContext';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface TableColumn {
     field: string;
     header: string;
@@ -104,8 +106,8 @@ const POPropertyView = () => {
     };
 
     const toPODetail = (id: number) => {
-        navigate(`/purchase-orders/${id}`, {
-            state: { fromUrl: '/purchase-orders/property-view' }
+        navigate(LOCAL_PATH_PREFIX + `purchase-orders/${id}`, {
+            state: { fromUrl: LOCAL_PATH_PREFIX + 'purchase-orders/property-view' }
         });
     };
 
@@ -206,8 +208,8 @@ const POPropertyView = () => {
                     </div>
                     <div>
                         <Link
-                            to={`/purchase-orders/${item.id}`}
-                            state={{ fromUrl: '/purchase-orders/property/view' }}
+                            to={LOCAL_PATH_PREFIX + `purchase-orders/${item.id}`}
+                            state={{ fromUrl: LOCAL_PATH_PREFIX + 'purchase-orders/property/view' }}
                             className="font-semibold cursor-pointer text-orange-500"
                         >
                             {item.po_no}
@@ -217,8 +219,8 @@ const POPropertyView = () => {
                         <div>
                             {item.sale ?
                                 <Link
-                                    to={`/sales/${item.sale_id}`}
-                                    state={{ fromUrl: '/purchase-orders/property/view' }}
+                                    to={LOCAL_PATH_PREFIX + `sales/${item.sale_id}`}
+                                    state={{ fromUrl: LOCAL_PATH_PREFIX + 'purchase-orders/property/view' }}
                                     className="font-semibold cursor-pointer text-orange-500"
                                 >
                                     {item.sale.sales_no}
@@ -264,8 +266,8 @@ const POPropertyView = () => {
                     </div>
                     <div className="">
                         <Link
-                            to={`/purchase-orders/fulfillment/${item.id}`}
-                            state={{ fromUrl: '/purchase-orders/property/view' }}
+                            to={LOCAL_PATH_PREFIX + `purchase-orders/fulfillment/${item.id}`}
+                            state={{ fromUrl: LOCAL_PATH_PREFIX + 'purchase-orders/property/view' }}
                             className="btn btn-sm btn-outline btn-primary"
                         >
                             View Status
@@ -277,8 +279,8 @@ const POPropertyView = () => {
                                 {item.invoices.map((invoice: Invoice, index) => (
                                     <li key={index} className="text-gray-700 dark:text-gray-200">
                                         <Link
-                                            to={'/purchase-orders/' + item.id + '/invoices?inv=' + invoice.id}
-                                            state={{ fromUrl: '/purchase-orders/property/view' }}
+                                            to={LOCAL_PATH_PREFIX + 'purchase-orders/' + item.id + '/invoices?inv=' + invoice.id}
+                                            state={{ fromUrl: LOCAL_PATH_PREFIX + 'purchase-orders/property/view' }}
                                             className="font-semibold cursor-pointer text-orange-500">
                                             {invoice.invoice_no}
                                         </Link>

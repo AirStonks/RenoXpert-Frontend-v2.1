@@ -7,6 +7,8 @@ import { Link } from "react-router-dom";
 import useFetchRenoProgress from "../../hook/useFetchRenoProgress";
 import { Attachment } from "../../types"; // Assuming types are exported from index.ts
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_AWS_S3_URL
@@ -157,7 +159,7 @@ function KeyManagementOverview() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate("/reno-progress/" + renoProgressId);
+            navigate(LOCAL_PATH_PREFIX + "reno-progress/" + renoProgressId);
         }
     };
 
@@ -190,7 +192,7 @@ function KeyManagementOverview() {
                 </div>
 
                 <Link
-                    to={`/reno-progress/${renoProgressId}/key-management/update`}
+                    to={LOCAL_PATH_PREFIX + `reno-progress/${renoProgressId}/key-management/update`}
                     className="btn btn-info btn-sm"
                 >
                     Update Key & Access Card

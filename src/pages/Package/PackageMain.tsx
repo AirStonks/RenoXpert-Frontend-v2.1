@@ -15,6 +15,8 @@ import {
     ListBulletIcon,
 } from '@heroicons/react/24/solid';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 type SortOrder = 'asc' | 'desc';
 type FilterCategory = 'All' | 'renovation' | 'partition' | 'carpentry' | 'furniture' | 'electrical_appliances' | 'air_conditioning' | 'smart_iot' | 'project_management' | 'loose_items' | 'others';
 type SortField = 'name' | 'created_at' | 'updated_at';
@@ -284,13 +286,13 @@ function PackageMain() {
                             )}
                         </button>
                         <Link
-                            to="/packages/create"
+                            to={LOCAL_PATH_PREFIX + "packages/create"}
                             className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
                         >
                             Add New Package
                         </Link>
                         <Link
-                            to="/packages/archives"
+                            to={LOCAL_PATH_PREFIX + "packages/archives"}
                             className="p-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
                         >
                             Archived Zone
@@ -375,7 +377,7 @@ function PackageMain() {
                                     </div>
                                     <div className="flex gap-4">
                                         <Link
-                                            to={`/packages/${pkg.id}`}
+                                            to={LOCAL_PATH_PREFIX + `packages/${pkg.id}`}
                                             className="text-blue-500 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                                         >
                                             View
@@ -536,7 +538,7 @@ function PackageMain() {
                                             <td className="px-4 py-3">
                                                 <div className="flex gap-4">
                                                     <Link
-                                                        to={`/packages/${pkg.id}`}
+                                                        to={LOCAL_PATH_PREFIX + `packages/${pkg.id}`}
                                                         className="text-blue-500 hover:underline"
                                                     >
                                                         View

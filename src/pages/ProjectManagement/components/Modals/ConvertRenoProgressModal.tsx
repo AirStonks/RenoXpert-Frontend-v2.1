@@ -6,6 +6,8 @@ import type { RenoProgress } from "../../../../types"
 import { ArrowPathIcon } from "@heroicons/react/24/solid"
 import { KTModal } from "../../../../metronic/core"
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function ConvertRenoProgressModal({ renoProgressId }: { renoProgressId: number }) {
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(false)
@@ -34,7 +36,7 @@ function ConvertRenoProgressModal({ renoProgressId }: { renoProgressId: number }
                 const modal = KTModal.getInstance(modalEl)
                 modal.hide()
 
-                navigate(`/reno-progress/${newRenoProgress.id}`)
+                navigate(LOCAL_PATH_PREFIX + `reno-progress/${newRenoProgress.id}`)
                 notify("success", "Reno Progress converted to V3 successfully.")
             }
         } catch (error) {

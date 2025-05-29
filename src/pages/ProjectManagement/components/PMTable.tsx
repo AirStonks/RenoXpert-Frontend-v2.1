@@ -6,6 +6,8 @@ import Loading from '../../../components/Loading';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 type SortOrder = 'asc' | 'desc' | null;
 
 function PMTable() {
@@ -146,7 +148,7 @@ function PMTable() {
     };
 
     const toProgressDetail = (id: number) => {
-        navigate(`/reno-progress/${id}`);
+        navigate(LOCAL_PATH_PREFIX + `reno-progress/${id}`);
     }
 
     const totalPages = Math.ceil(totalItems / size);
@@ -322,8 +324,8 @@ function PMTable() {
                                         </td>
                                         <td className="text-center">
                                             <Link
-                                                to={'/sales/' + progress.sale_id}
-                                                state={{ fromUrl: '/reno-progress/overview' }}
+                                                to={LOCAL_PATH_PREFIX + 'sales/' + progress.sale_id}
+                                                state={{ fromUrl: LOCAL_PATH_PREFIX + 'reno-progress/overview' }}
                                                 onClick={(e) => e.stopPropagation()} // Prevent tr onClick
                                                 className="link text-orange-500"
                                             >

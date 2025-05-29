@@ -13,9 +13,11 @@ import {
     ListBulletIcon,
 } from '@heroicons/react/24/solid';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 type SortOrder = 'asc' | 'desc';
 type FilterStatus = 'All' | 'Completed' | 'Delayed' | 'On Track';
-type SortField = 'property.name' | 'overall_completion' | 'contractual_end_date';
+type SortField = 'property.name' | 'overall_completion' | 'contractual_end_date' | 'id';
 type ViewMode = 'card' | 'list';
 
 function PMMain() {
@@ -29,7 +31,7 @@ function PMMain() {
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [sortField, setSortField] = useState<SortField>('property.name');
+    const [sortField, setSortField] = useState<SortField>('id');
     const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
     const [filterStatus, setFilterStatus] = useState<FilterStatus>('All');
     const [expandedRows, setExpandedRows] = useState<number[]>([]);
@@ -296,7 +298,7 @@ function PMMain() {
                                 className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg dark:hover:shadow-xl dark:hover:shadow-teal-500/20 transform hover:scale-105 transition cursor-pointer"
                             >
                                 <Link
-                                    to={`/reno-progress/${progress.id}`}
+                                    to={LOCAL_PATH_PREFIX + `reno-progress/${progress.id}`}
                                     className="block"
                                     aria-label={`View details for ${progress.property.name}`}
                                 >
@@ -355,8 +357,8 @@ function PMMain() {
                                     </p>
                                     <div className="mb-4">
                                         <Link
-                                            to={`/sales/${progress.sale_id}`}
-                                            state={{ fromUrl: '/reno-progress/overview' }}
+                                            to={LOCAL_PATH_PREFIX + `sales/${progress.sale_id}`}
+                                            state={{ fromUrl: LOCAL_PATH_PREFIX + 'reno-progress/overview' }}
                                             onClick={(e) => e.stopPropagation()}
                                             className="text-orange-500 hover:underline dark:text-orange-400 dark:hover:text-orange-300"
                                         >
@@ -615,8 +617,8 @@ function PMMain() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Link
-                                                    to={`/sales/${progress.sale_id}`}
-                                                    state={{ fromUrl: '/reno-progress/overview' }}
+                                                    to={LOCAL_PATH_PREFIX + `sales/${progress.sale_id}`}
+                                                    state={{ fromUrl: LOCAL_PATH_PREFIX + 'reno-progress/overview' }}
                                                     onClick={(e) => e.stopPropagation()}
                                                     className="text-orange-500 hover:underline"
                                                 >
@@ -688,7 +690,7 @@ function PMMain() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Link
-                                                    to={`/reno-progress/${progress.id}`}
+                                                    to={LOCAL_PATH_PREFIX + `reno-progress/${progress.id}`}
                                                     onClick={(e) => e.stopPropagation()}
                                                     className="btn btn-primary btn-sm"
                                                 >

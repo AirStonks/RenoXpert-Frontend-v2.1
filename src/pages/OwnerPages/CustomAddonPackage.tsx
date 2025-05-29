@@ -7,6 +7,13 @@ import Loading from '../../components/Loading';
 import { Slide, toast } from 'react-toastify';
 import { updateOwnerOrderAddon } from '../../services/ownerApi';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 function CustomAddonPackage() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -87,7 +94,7 @@ function CustomAddonPackage() {
 
             if (response?.success) {
                 notify('success', 'Changes saved successfully!');
-                navigate(`/owner/order/overview/id/${orderId}`);
+                navigate(LOCAL_PATH_PREFIX + `order/overview/id/${orderId}`);
             }
 
         } catch (error) {
@@ -112,10 +119,10 @@ function CustomAddonPackage() {
                     'You have unsaved changes to the quotation packages. Are you sure you want to cancel and discard these changes?'
                 );
                 if (confirmDiscard) {
-                    navigate(`/owner/order/overview/id/${orderId}`);
+                    navigate(LOCAL_PATH_PREFIX + `order/overview/id/${orderId}`);
                 }
             } else {
-                navigate(`/owner/order/overview/id/${orderId}`);
+                navigate(LOCAL_PATH_PREFIX + `order/overview/id/${orderId}`);
             }
         }
     };
@@ -124,8 +131,8 @@ function CustomAddonPackage() {
     if (error) return (
         <div className="flex items-center justify-center h-screen">
             <div className="flex flex-col items-center">
-                <img alt="image" className="dark:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3.svg" />
-                <img alt="image" className="light:hidden max-h-[160px] mb-12" src="/public/media/illustrations/3-dark.svg" />
+                <img alt="image" className="dark:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}/illustrations/3.svg`} />
+                <img alt="image" className="light:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3-dark.svg`} />
                 <h2 className="text-xl font-semibold text-gray-900">Order not found or invalid</h2>
             </div>
         </div>

@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { removeProductCategory } from '../../services/api';
 import { KTModal } from '../../metronic/core';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface DeleteProductCategoryModalProps {
     productCategory: { id: number, name: string } | null;
 }
@@ -40,7 +42,7 @@ function DeleteProductCategoryModal({ productCategory }: DeleteProductCategoryMo
 
                 modal.hide();
                 
-                navigate('/products/category'); // Navigate to /products on success
+                navigate(LOCAL_PATH_PREFIX + 'products/category'); // Navigate to /products on success
                 window.location.href = '/products/category';
             } else {
                 alert('Error: ' + (response?.message || 'Product remove failed.'));

@@ -7,6 +7,17 @@ import KTComponent from '../metronic/core';
 import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const VEN_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_VEN_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_VEN_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? 'localhost:5173/vendor/'
+                : null;
+
 interface LoginForm {
     email: string;
     password: string;
@@ -40,7 +51,7 @@ const Login: React.FC = () => {
         try {
             const userData = await userLogin(emailWithDomain, formData.password);
             if (userData) {
-                navigate('/dashboard'); // Redirect to dashboard on successful userLogin
+                navigate(LOCAL_PATH_PREFIX + 'dashboard'); // Redirect to dashboard on successful userLogin
             }
         } catch (err) {
             setError('Invalid userLogin credentials. Please try again.');
@@ -133,7 +144,7 @@ const Login: React.FC = () => {
                         {loading ? 'Signing In...' : 'Sign In'}
                     </button>
                     <Link
-                        to={'/vendor-login'}
+                        to={VEN_URL}
                         className="btn btn-secondary flex justify-center grow"
                         type="submit">
                         Switch to Vendor login

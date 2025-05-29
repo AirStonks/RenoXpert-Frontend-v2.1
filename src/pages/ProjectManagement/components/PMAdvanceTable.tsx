@@ -5,6 +5,8 @@ import { renoProgressAdvanceTable } from '../../../services/api';
 import { useNavigate } from 'react-router-dom';
 import { KTSticky } from '../../../metronic/core';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface TableColumn {
     field: string; // Change from keyof RenoProgress to string
     header: string;
@@ -111,8 +113,8 @@ const PMAdvanceTable = () => {
     };
 
     const toProgressDetail = (id: number) => {
-        navigate(`/reno-progress/${id}`, {
-            state: { fromUrl: '/reno-progress/progress-tracker' }
+        navigate(LOCAL_PATH_PREFIX + `reno-progress/${id}`, {
+            state: { fromUrl: LOCAL_PATH_PREFIX + 'reno-progress/progress-tracker' }
         });
     };
 

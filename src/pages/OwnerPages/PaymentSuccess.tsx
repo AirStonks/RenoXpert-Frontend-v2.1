@@ -5,6 +5,13 @@ import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import Loading from '../../components/Loading';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 function PaymentSuccess() {
     const [paymentData, setErrorData] = useState(null);
     const location = useLocation();
@@ -32,8 +39,8 @@ function PaymentSuccess() {
             <div className="flex flex-col items-center justify-center h-[95%]">
 
                 <div className="mb-10">
-                    <img alt="image" className="dark:hidden max-h-[160px]" src="/public/media/illustrations/21.svg" />
-                    <img alt="image" className="light:hidden max-h-[160px]" src="/public/media/illustrations/21-dark.svg" />
+                    <img alt="image" className="dark:hidden max-h-[160px]" src={`${MEDIA_URL}illustrations/21.svg`} />
+                    <img alt="image" className="light:hidden max-h-[160px]" src={`${MEDIA_URL}illustrations/21-dark.svg`} />
                 </div>
                 <h3 className="text-2.5xl font-semibold text-gray-900 text-center mb-2">
                     Payment Transaction Successful

@@ -13,6 +13,13 @@ import ConfirmOrderModal from "./components/ConfirmOrderModal";
 import ReReleaseOrderModal from "./components/ReReleaseOrderModal";
 import VoidQuotationModal from "./components/VoidQuotationModal";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 const APP_URL =
     import.meta.env.VITE_APP_ENV === "production"
         ? import.meta.env.VITE_APP_URL
@@ -254,7 +261,7 @@ function OrderDetail() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/orders');
+            navigate(LOCAL_PATH_PREFIX + 'orders');
         }
     };
 
@@ -735,7 +742,7 @@ function OrderDetail() {
                     }
                     {orderDetail?.status !== 'confirmed' &&
                         <Link
-                            to={`/orders/edit/${orderId}`}
+                            to={LOCAL_PATH_PREFIX + `orders/edit/${orderId}`}
                             className="btn btn-sm btn-info"
                             data-tooltip="#edit_tooltip"
                             data-action="edit"
@@ -755,8 +762,9 @@ function OrderDetail() {
                             {orderDetail.user &&
                                 <div className="menu-item">
                                     <button
-                                        className="menu-link copy-link"
-                                        data-clipboard-text={`${APP_URL}owner/order/overview/id/${orderId}`}
+                                        className="menu-link copy-link opacity-50 cursor-not-allowed"
+                                        disabled
+                                        // data-clipboard-text={`${APP_URL}owner/order/overview/id/${orderId}`}
                                     >
                                         <span className="menu-title">
                                             <div className="flex gap-2 items-center">
@@ -771,7 +779,7 @@ function OrderDetail() {
                             }
                             <div className="menu-item">
                                 <Link
-                                    to={`/orders/create?dp=${orderId}`}
+                                    to={LOCAL_PATH_PREFIX + `orders/create?dp=${orderId}`}
                                     className="menu-link"
                                     target="_blank"
                                 >
@@ -800,7 +808,7 @@ function OrderDetail() {
                             </div>
                             <div className="menu-item">
                                 <Link
-                                    to={`/orders/print/${orderId}`}
+                                    to={LOCAL_PATH_PREFIX + `orders/print/${orderId}`}
                                     className="menu-link"
                                 >
                                     <span className="menu-title">
@@ -811,7 +819,7 @@ function OrderDetail() {
                                     </span>
                                 </Link>
                                 <Link
-                                    to={`/orders/print/${orderId}/internal`}
+                                    to={LOCAL_PATH_PREFIX + `orders/print/${orderId}/internal`}
                                     className="menu-link"
                                 >
                                     <span className="menu-title">
@@ -1195,6 +1203,14 @@ function OrderDetail() {
                                             </tr>
                                             <tr>
                                                 <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                                    Total Studio Room:
+                                                </td>
+                                                <td className="text-sm text-gray-900 pb-3">
+                                                    {orderDetail.studio_count}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
                                                     Total Bathroom:
                                                 </td>
                                                 <td className="text-sm text-gray-900 pb-3">
@@ -1266,7 +1282,7 @@ function OrderDetail() {
                                         >
                                             <div className="flex flex-col">
                                                 <Link
-                                                    to={`ver/${orderQuotation.version}`}
+                                                    to={LOCAL_PATH_PREFIX + `order/${orderDetail.id}/ver/${orderQuotation.version}`}
                                                     className="flex items-center flex-wrap gap-3.5 cursor-pointer text-orange-500 font-semibold text-sm">
                                                     {orderDetail.order_no}-{String.fromCharCode(64 + orderQuotation.version)}
                                                 </Link>
@@ -2088,7 +2104,7 @@ function OrderDetail() {
                                                 <img
                                                     alt="No invoices"
                                                     className="max-h-[160px] mb-4"
-                                                    src={`/public/media/illustrations/3${document.documentElement.classList.contains('dark')
+                                                    src={`${MEDIA_URL}/illustrations/3${document.documentElement.classList.contains('dark')
                                                         ? '-dark'
                                                         : ''
                                                         }.svg`}
@@ -2101,7 +2117,7 @@ function OrderDetail() {
                                             <div className="grid grid-cols-1 gap-4">
                                                 {orderDetail.sale.invoices.map((invoice, index) => (
                                                     <Link
-                                                        to={`/invoice/${invoice.id}/view`}
+                                                        to={LOCAL_PATH_PREFIX + `invoice/${invoice.id}/view`}
                                                         key={index}
                                                         className="card bg-white shadow-sm rounded-lg hover:shadow-md transition-shadow"
                                                     >

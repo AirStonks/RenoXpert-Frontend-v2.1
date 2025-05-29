@@ -4,6 +4,8 @@ import useFetchRegistrationForm from "../../hook/useFetchRegistrationForm";
 import { KTModal } from "../../metronic/core";
 import Loading from "../Loading";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 interface OwnerRegistrationFormModalProps {
     formId: number | null;
 }
@@ -31,7 +33,7 @@ function OwnerRegistrationFormModal({ formId }: OwnerRegistrationFormModalProps)
 
             modal.hide();
 
-            navigate(`/registration-forms/edit/${formId}`)
+            navigate(LOCAL_PATH_PREFIX + `registration-forms/edit/${formId}`)
         }
 
         content = (

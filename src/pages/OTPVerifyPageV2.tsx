@@ -5,6 +5,13 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Slide, toast, ToastContainer } from "react-toastify";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
+
 const API_URL = 'https://sapi.renoxpert.my/api/';
 
 const OTPVerifyPageV2: React.FC = () => {
@@ -105,7 +112,7 @@ const OTPVerifyPageV2: React.FC = () => {
 
             if (response.data.status === 'verified') {
                 localStorage.setItem('guest_token', response.data.guest_token);
-                navigate(`/owner/order/overview/id/${state.orderId}`);
+                navigate(LOCAL_PATH_PREFIX + `order/overview/id/${state.orderId}`);
             } else {
                 console.log('Invalid');
             }
@@ -152,8 +159,8 @@ const OTPVerifyPageV2: React.FC = () => {
     const otpForm = (
         <div className="card max-w-[380px] w-full">
             <form className="card-body flex flex-col gap-5 p-10" onSubmit={handleSubmit}>
-                <img src='/public/media/illustrations/34.svg' className="dark:hidden h-20 mb-2" alt="" />
-                <img src='/media/illustrations/34-dark.svg' className="light:hidden h-20 mb-2" alt="" />
+                <img src={`${MEDIA_URL}illustrations/34.svg`} className="dark:hidden h-20 mb-2" alt="" />
+                <img src={`${MEDIA_URL}illustrations/34-dark.svg`} className="light:hidden h-20 mb-2" alt="" />
 
                 <div className="text-center mb-2">
                     <h3 className="text-lg font-medium text-gray-900 mb-5">Verify your phone</h3>

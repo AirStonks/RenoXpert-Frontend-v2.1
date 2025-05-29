@@ -2,89 +2,48 @@ import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
 import { CheckCircle, Clock, AlertCircle, XCircle, HelpCircle, ChevronDown } from 'lucide-react'
-import { TaskStatus } from "../types"
+import { TaskQCStatus } from "../types"
 
 interface TaskStatusBadgeProps {
-    status: TaskStatus
+    status: TaskQCStatus
     isStatic?: boolean
-    disabled?: boolean
-    onStatusChange?: (newStatus: TaskStatus) => void
+    onStatusChange?: (newStatus: TaskQCStatus) => void
 }
 
 const statusConfig = {
-    completed: {
-        label: "Completed",
-        icon: CheckCircle,
-        bgColor: "bg-green-100",
-        textColor: "text-green-800",
-        iconColor: "text-green-600",
-        hoverColor: "hover:bg-green-200",
-    },
-    "in-progress": {
-        label: "In Progress",
-        icon: Clock,
-        bgColor: "bg-blue-100",
-        textColor: "text-blue-800",
-        iconColor: "text-blue-600",
-        hoverColor: "hover:bg-blue-200",
-    },
-    "pending-installation": {
-        label: "Pending Installation",
-        icon: Clock,
-        bgColor: "bg-yellow-100",
-        textColor: "text-yellow-800",
-        iconColor: "text-yellow-600",
-        hoverColor: "hover:bg-yellow-200",
-    },
-    "not-applicable": {
-        label: "Not Applicable",
+    "not-started": {
+        label: "Not Started",
         icon: HelpCircle,
         bgColor: "bg-gray-100",
         textColor: "text-gray-800",
         iconColor: "text-gray-600",
         hoverColor: "hover:bg-gray-200",
     },
-    "not-available": {
-        label: "Not Available",
-        icon: XCircle,
-        bgColor: "bg-slate-100",
-        textColor: "text-slate-800",
-        iconColor: "text-slate-600",
-        hoverColor: "hover:bg-slate-200",
-    },
-    "procurement-done": {
-        label: "Procurement Done",
+    "accepted": {
+        label: "Accepted",
         icon: CheckCircle,
-        bgColor: "bg-purple-100",
-        textColor: "text-purple-800",
-        iconColor: "text-purple-600",
-        hoverColor: "hover:bg-purple-200",
+        bgColor: "bg-green-100",
+        textColor: "text-green-800",
+        iconColor: "text-green-600",
+        hoverColor: "hover:bg-green-200",
     },
-    "pending-stocks": {
-        label: "Pending Stocks",
+    "accepted-with-comment": {
+        label: "Accepted with Comment",
         icon: AlertCircle,
-        bgColor: "bg-orange-100",
-        textColor: "text-orange-800",
-        iconColor: "text-orange-600",
-        hoverColor: "hover:bg-orange-200",
-    },
-    delivered: {
-        label: "Delivered",
-        icon: CheckCircle,
-        bgColor: "bg-teal-100",
-        textColor: "text-teal-800",
-        iconColor: "text-teal-600",
-        hoverColor: "hover:bg-teal-200",
+        bgColor: "bg-yellow-100",
+        textColor: "text-yellow-800",
+        iconColor: "text-yellow-600",
+        hoverColor: "hover:bg-yellow-200",
     },
     "to-rectified": {
         label: "To Rectified",
-        icon: AlertCircle,
+        icon: XCircle,
         bgColor: "bg-indigo-100",
         textColor: "text-indigo-800",
         iconColor: "text-indigo-600",
         hoverColor: "hover:bg-indigo-200",
     },
-    rejected: {
+    "rejected": {
         label: "Rejected",
         icon: XCircle,
         bgColor: "bg-red-100",
@@ -92,22 +51,26 @@ const statusConfig = {
         iconColor: "text-red-600",
         hoverColor: "hover:bg-red-200",
     },
+    "not-applicable": {
+        label: "Not Applicable",
+        icon: Clock,
+        bgColor: "bg-gray-100",
+        textColor: "text-gray-800",
+        iconColor: "text-gray-600",
+        hoverColor: "hover:bg-gray-200",
+    },
 }
 
-const statusOptions: TaskStatus[] = [
-    "not-applicable",
-    "procurement-done",
-    "pending-stocks",
-    "delivered",
-    "pending-installation",
-    "in-progress",
-    "completed",
+const statusOptions: TaskQCStatus[] = [
+    "not-started",
+    "accepted",
+    "accepted-with-comment",
     "to-rectified",
     "rejected",
-    "not-available",
+    "not-applicable",
 ]
 
-export function TaskStatusBadge({ status, isStatic = false, disabled, onStatusChange }: TaskStatusBadgeProps) {
+export function TaskQCStatusBadge({ status, isStatic = false, onStatusChange }: TaskStatusBadgeProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
     const badgeRef = useRef<HTMLButtonElement>(null)
@@ -121,7 +84,7 @@ export function TaskStatusBadge({ status, isStatic = false, disabled, onStatusCh
         }
     }
 
-    const handleStatusSelect = (newStatus: TaskStatus) => {
+    const handleStatusSelect = (newStatus: TaskQCStatus) => {
         if (onStatusChange) {
             onStatusChange(newStatus)
         }
@@ -159,7 +122,7 @@ export function TaskStatusBadge({ status, isStatic = false, disabled, onStatusCh
         }
     }
 
-    const handleOptionKeyDown = (event: React.KeyboardEvent, option: TaskStatus) => {
+    const handleOptionKeyDown = (event: React.KeyboardEvent, option: TaskQCStatus) => {
         if (event.key === "Enter" || event.key === " ") {
             event.preventDefault()
             handleStatusSelect(option)
@@ -186,7 +149,7 @@ export function TaskStatusBadge({ status, isStatic = false, disabled, onStatusCh
             }`
     }
 
-    const getOptionClasses = (option: TaskStatus) => {
+    const getOptionClasses = (option: TaskQCStatus) => {
         const isSelected = option === status
         const baseClasses =
             "w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left transition-colors duration-150 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
@@ -199,7 +162,7 @@ export function TaskStatusBadge({ status, isStatic = false, disabled, onStatusCh
     }
 
     return (
-        <div className={`relative ${disabled && 'opacity-20'} `}>
+        <div className="relative">
             <button
                 ref={badgeRef}
                 onClick={isStatic ? undefined : handleBadgeClick}

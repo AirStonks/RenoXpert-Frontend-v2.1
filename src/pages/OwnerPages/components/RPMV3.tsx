@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
-import { RenoProgress, RPMTask } from '../../../types';
+import { RenoProgress, RPMTask, TaskStatus } from '../../../types';
 import { Slide, toast } from 'react-toastify';
 import { KTAccordion } from '../../../metronic/core/components/accordion/accordion';
 import {
@@ -16,6 +16,9 @@ import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, ExclamationTriangleIcon, QuestionMarkCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { Link, useLocation } from 'react-router-dom';
 import { BottomNav } from './bottom-nav-bar';
+import { AlertCircleIcon, HelpCircleIcon } from 'lucide-react';
+
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
 const AWS_S3_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -31,11 +34,16 @@ const formatDate = (date: string) => {
 };
 
 const statusColors = {
-    'Not Started': 'bg-gray-100 text-gray-800',
-    'Pending': 'bg-amber-100 text-amber-800',
+    'Not Applicable': 'bg-gray-100 text-gray-800',
+    'Procurement Done': 'bg-purple-100 text-purple-800',
+    'Pending Stocks': 'bg-orange-100 text-orange-800',
+    'Delivered': 'bg-teal-100 text-teal-800',
+    'Pending Installation': 'bg-yellow-100 text-yellow-800',
     'In Progress': 'bg-blue-100 text-blue-800',
     'Completed': 'bg-green-100 text-green-800',
-    'Not Available': 'bg-red-100 text-red-800',
+    'To Rectified': 'bg-indigo-100 text-indigo-800',
+    'Rejected': 'bg-red-100 text-red-800',
+    'Not Available': 'bg-slate-100 text-slate-800',
 };
 
 const headerData = { title: 'Reno Progress', backUrl: '/' }
@@ -63,11 +71,21 @@ const getStatusColor = (status: string) => {
             return "bg-green-100 text-green-800 hover:bg-green-200";
         case "in-progress":
             return "bg-blue-100 text-blue-800 hover:bg-blue-200";
-        case "pending":
-            return "bg-amber-100 text-amber-800 hover:bg-amber-200";
-        case "not-started":
+        case "pending-installation":
+            return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
+        case "not-applicable":
             return "bg-gray-100 text-gray-800 hover:bg-gray-200";
         case "not-available":
+            return "bg-slate-100 text-slate-800 hover:bg-slate-200";
+        case "procurement-done":
+            return "bg-purple-100 text-purple-800 hover:bg-purple-200";
+        case "pending-stocks":
+            return "bg-orange-100 text-orange-800 hover:bg-orange-200";
+        case "delivered":
+            return "bg-teal-100 text-teal-800 hover:bg-teal-200";
+        case "to-rectified":
+            return "bg-indigo-100 text-indigo-800 hover:bg-indigo-200";
+        case "rejected":
             return "bg-red-100 text-red-800 hover:bg-red-200";
         default:
             return "bg-gray-100 text-gray-800 hover:bg-gray-200";
@@ -77,32 +95,52 @@ const getStatusColor = (status: string) => {
 const getStatusTextColor = (status: string) => {
     switch (status) {
         case "completed":
-            return "text-green-700";
+            return "text-green-800";
         case "in-progress":
-            return "text-blue-700";
-        case "pending":
-            return "text-amber-700";
-        case "not-started":
-            return "text-gray-700";
+            return "text-blue-800";
+        case "pending-installation":
+            return "text-yellow-800";
+        case "not-applicable":
+            return "text-gray-800";
         case "not-available":
-            return "text-red-700";
+            return "text-slate-800";
+        case "procurement-done":
+            return "text-purple-800";
+        case "pending-stocks":
+            return "text-orange-800";
+        case "delivered":
+            return "text-teal-800";
+        case "to-rectified":
+            return "text-indigo-800";
+        case "rejected":
+            return "text-red-800";
         default:
-            return "text-gray-700";
+            return "text-gray-800";
     }
 };
 
 const getStatusIcon = (status: string) => {
     switch (status) {
         case "completed":
-            return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
+            return <CheckCircleIcon className="h-4 w-4 text-green-600" />;
         case "in-progress":
-            return <ClockIcon className="h-4 w-4 text-blue-500" />;
-        case "pending":
-            return <ExclamationCircleIcon className="h-4 w-4 text-amber-500" />;
-        case "not-started":
-            return <QuestionMarkCircleIcon className="h-4 w-4 text-gray-500" />;
+            return <ClockIcon className="h-4 w-4 text-blue-600" />;
+        case "pending-installation":
+            return <ClockIcon className="h-4 w-4 text-yellow-600" />;
+        case "not-applicable":
+            return <HelpCircleIcon className="h-4 w-4 text-gray-600" />;
         case "not-available":
-            return <XCircleIcon className="h-4 w-4 text-red-500" />;
+            return <XCircleIcon className="h-4 w-4 text-slate-600" />;
+        case "procurement-done":
+            return <CheckCircleIcon className="h-4 w-4 text-purple-600" />;
+        case "pending-stocks":
+            return <AlertCircleIcon className="h-4 w-4 text-orange-600" />;
+        case "delivered":
+            return <CheckCircleIcon className="h-4 w-4 text-teal-600" />;
+        case "to-rectified":
+            return <AlertCircleIcon className="h-4 w-4 text-indigo-600" />;
+        case "rejected":
+            return <XCircleIcon className="h-4 w-4 text-red-600" />;
         default:
             return null;
     }
@@ -110,11 +148,28 @@ const getStatusIcon = (status: string) => {
 
 const getStatusKey = (status: string | undefined) => {
     if (!status) return 'Not Available';
-    if (status.toLowerCase() === 'not-started') return 'Not Started';
-    if (status.toLowerCase() === 'pending') return 'Pending';
-    if (status.toLowerCase() === 'in-progress') return 'In Progress';
-    if (status.toLowerCase() === 'completed') return 'Completed';
-    return 'Not Available';
+    switch (status.toLowerCase()) {
+        case 'not-applicable':
+            return 'Not Applicable';
+        case 'procurement-done':
+            return 'Procurement Done';
+        case 'pending-stocks':
+            return 'Pending Stocks';
+        case 'delivered':
+            return 'Delivered';
+        case 'pending-installation':
+            return 'Pending Installation';
+        case 'in-progress':
+            return 'In Progress';
+        case 'completed':
+            return 'Completed';
+        case 'to-rectified':
+            return 'To Rectified';
+        case 'rejected':
+            return 'Rejected';
+        default:
+            return 'Not Available';
+    }
 };
 
 function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
@@ -133,11 +188,28 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
 
     const getStatusKey = (status: string | undefined) => {
         if (!status) return 'Not Available';
-        if (status.toLowerCase() === 'not-started') return 'Not Started';
-        if (status.toLowerCase() === 'pending') return 'Pending';
-        if (status.toLowerCase() === 'in-progress') return 'In Progress';
-        if (status.toLowerCase() === 'completed') return 'Completed';
-        return 'Not Available';
+        switch (status.toLowerCase()) {
+            case 'not-applicable':
+                return 'Not Applicable';
+            case 'procurement-done':
+                return 'Procurement Done';
+            case 'pending-stocks':
+                return 'Pending Stocks';
+            case 'delivered':
+                return 'Delivered';
+            case 'pending-installation':
+                return 'Pending Installation';
+            case 'in-progress':
+                return 'In Progress';
+            case 'completed':
+                return 'Completed';
+            case 'to-rectified':
+                return 'To Rectified';
+            case 'rejected':
+                return 'Rejected';
+            default:
+                return 'Not Available';
+        }
     };
 
     // Close dropdown when clicking outside
@@ -441,7 +513,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-4 bg-white md:w-2/3 flex flex-col justify-between">
+                                <div className="p-4 bg-white md:w-2/3 flex flex-col space-y-4">
                                     <div className="flex items-center">
                                         <h2 id="progress-heading" className="text-sm font-bold mr-3">
                                             {currentStep.label}
@@ -450,28 +522,16 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                             {currentStep.status}
                                         </span>
                                     </div>
-                                    <div className="flex flex-col sm:flex-row sm:items-center">
-                                        <span className="text-gray-500 text-sm">Due Date:</span>
-                                        <span className="font-medium text-gray-700 text-xs">{currentStep.date}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <div className="flex flex-col sm:flex-row sm:items-center">
-                                            <span className="text-gray-500 text-sm font-semibold text-blue-600">CHD:</span>
-                                            <span className="font-medium text-blue-700 flex items-center text-xs">
-                                                {renoProgress.date_management.ch_date ? formatDate(renoProgress.date_management.ch_date) : 'TBC'}
-                                            </span>
-                                        </div>
-                                        <div className="flex flex-col sm:flex-row sm:items-center">
-                                            <span className="text-gray-500 text-sm font-semibold text-green-600">OHD:</span>
-                                            <span className="font-medium text-gray-700 flex items-center text-xs">
-                                                {renoProgress.date_management.oh_date ? formatDate(renoProgress.date_management.oh_date) : 'TBC'}
-                                            </span>
-                                        </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-gray-500 text-sm">Estimate Completion Date: </span>
+                                        <span className="font-medium text-gray-700 text-xs">
+                                            {renoProgress.date_management.oh_date ? formatDate(renoProgress.date_management.oh_date) : 'TBC'}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden max-w-4xl">
                             <div className="p-4">
                                 <h3 className="text-sm font-bold">VP Status</h3>
                                 {renoProgress.rpm_jobs.find((job) => job.job_category === 'vp').rpm_tasks.map(task => (
@@ -494,7 +554,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                 ))}
                             </div>
                         </div>
-                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden max-w-4xl">
                             <div className="p-4">
                                 <h3 className="text-sm font-bold">Defect</h3>
                                 {renoProgress.rpm_jobs.find((job) => job.job_category === 'defect').rpm_tasks.map(task => (
@@ -517,7 +577,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                 ))}
                             </div>
                         </div>
-                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden max-w-4xl">
                             <div className="p-4">
                                 <h3 className="text-sm font-bold">Permit</h3>
                                 {renoProgress.rpm_jobs.find((job) => job.job_category === 'permit').rpm_tasks.map(task => (
@@ -656,7 +716,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                                 >
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-medium text-2xs">{task.item_name}</span>
-                                                        <TaskStatusBadge status={task.status} isStatic={true} />
+                                                        <TaskStatusBadge status={task.status as TaskStatus} isStatic={true} />
                                                     </div>
                                                     <p className="text-3xs text-gray-500 mt-0.5">
                                                         Updated: {task.updated_at || 'N/A'} by {task.updated_by?.name || 'N/A'}

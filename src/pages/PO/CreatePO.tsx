@@ -11,6 +11,8 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-ki
 import { SortablePOPackage } from "./components/SortablePOPackage";
 import { KTModal } from "../../metronic/core";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function CreatePO() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -37,7 +39,7 @@ function CreatePO() {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate('/purchase-orders');
+            navigate(LOCAL_PATH_PREFIX + 'purchase-orders');
         }
     };
 
@@ -420,7 +422,7 @@ function CreatePO() {
             const response = await createPurchaseOrder(updatedPO);
             if (response?.success) {
                 notify('success', "PO Created Successfully!");
-                navigate('/purchase-orders');
+                navigate(LOCAL_PATH_PREFIX + 'purchase-orders');
             }
         } catch (error) {
             console.log(error);

@@ -12,6 +12,8 @@ import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableProductRow } from './components/SortableProductRow';
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
 function EditPackage() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
@@ -34,7 +36,7 @@ function EditPackage() {
     const [totalPrice, setTotalPrice] = useState<number>(0);
 
     const handleBackClick = () => {
-        navigate('/packages/' + packageId);
+        navigate(LOCAL_PATH_PREFIX + 'packages/' + packageId);
     };
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -129,7 +131,7 @@ function EditPackage() {
             const response = await updatePackage(packageData);
             if (response?.success) {
                 notify('success', "Package Updated Successfully!");
-                navigate('/packages/' + packageId);
+                navigate(LOCAL_PATH_PREFIX + 'packages/' + packageId);
             }
         } catch (error) {
             if (error.response?.status === 422) {

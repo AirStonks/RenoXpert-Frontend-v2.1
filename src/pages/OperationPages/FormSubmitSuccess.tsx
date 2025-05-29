@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/op/' : '/';
+
 function FormSubmitSuccess() {
 
     useEffect(() => {
@@ -31,7 +33,7 @@ function FormSubmitSuccess() {
                         </div>
 
                         <div className="flex flex-col mx-8 justify-center items-center text-center">
-                            <span className="text-lg font-medium text-gray-900">You can now go back to <Link to={'/op/home'} className="link underline">Home Page</Link></span>
+                            <span className="text-lg font-medium text-gray-900">You can now go back to <Link to={LOCAL_PATH_PREFIX + 'home'} className="link underline">Home Page</Link></span>
                         </div>
                     </div>
                 </div>
