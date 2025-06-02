@@ -1,6 +1,7 @@
 import { ReactNode, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import { HomeBottomNav } from './components/home-bottom-nav-bar';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
@@ -27,6 +28,8 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
                     </div>
                 </div>
             </div>
+
+            <HomeBottomNav />
 
             <ToastContainer />
         </main>

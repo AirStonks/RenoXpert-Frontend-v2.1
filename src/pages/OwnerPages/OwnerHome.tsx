@@ -11,6 +11,7 @@ import useFetchOwnerRegistrationForms from "../../hook/useFetchOwnerRegistration
 import useFetchOwnerRenoProgresses from '../../hook/useFetchOwnerRenoProgresses';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, QuestionMarkCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { AlertCircleIcon, HelpCircleIcon } from "lucide-react";
+import Carousel from "./components/home/Caurosel";
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
@@ -276,7 +277,7 @@ function OwnerHome() {
 
                     {orders.length === 0 ? (
                         <div className="flex flex-col items-center">
-                            <img alt="image" className="dark:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3.svg`}/>
+                            <img alt="image" className="dark:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3.svg`} />
                             <img alt="image" className="light:hidden max-h-[160px] mb-12" src={`${MEDIA_URL}illustrations/3-dark.svg`} />
 
                             <h2 className="text-xl font-semibold text-gray-900">There is no Quotation here</h2>
