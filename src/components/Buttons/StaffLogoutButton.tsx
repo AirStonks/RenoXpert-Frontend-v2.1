@@ -1,12 +1,15 @@
 import React from 'react';
 import { logout } from '../../services/auth'; // Adjust the import path as needed
+import { useNavigate } from 'react-router-dom';
+
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
 const LogoutButton: React.FC = () => {
+    const navigate = useNavigate();
     const handleLogout = async () => {
         try {
             await logout();
-            // Redirect to login page or home page
-            window.location.href = '/login'; // Adjust the redirection path as needed
+            navigate(LOCAL_PATH_PREFIX + 'login');
         } catch (error) {
             console.error('Logout failed:', error);
             // Optionally show an error message to the user

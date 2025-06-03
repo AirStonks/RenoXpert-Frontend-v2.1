@@ -1,4 +1,4 @@
-import LogoutButton from './Buttons/LogoutButton';
+import LogoutButton from './Buttons/StaffLogoutButton';
 import { useUser } from '../context/UserContext';
 import Loading from './Loading';
 import { Link } from 'react-router-dom';

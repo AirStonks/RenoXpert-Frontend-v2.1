@@ -871,7 +871,7 @@ function OrderOverview() {
                     {/* Header */}
                     <div className="card-header flex justify-between">
                         <div className="flex gap-4 justify-center">
-                            <Link to={LOCAL_PATH_PREFIX + "home"} className="ki-solid ki-arrow-left items-center text-gray-900"></Link>
+                            <Link to={LOCAL_PATH_PREFIX + "quotations"} className="ki-solid ki-arrow-left items-center text-gray-900"></Link>
                             {orderDetail.status === "confirmed" ? (
                                 <span className="text-md text-gray-900 font-semibold">Quotation Order Overview</span>
                             ) : (
