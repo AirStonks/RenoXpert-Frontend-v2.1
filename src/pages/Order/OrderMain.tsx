@@ -2,13 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { orderIndex, releaseOrder, removeOrder } from '../../services/api';
+import { orderIndex, releaseOrder, removeOrder, voidOrder } from '../../services/api';
 import DeleteModal from '../../components/Modals/DeleteModal';
 import Loading from '../../components/Loading';
 import { Order } from '../../types';
 import { Slide, toast } from 'react-toastify';
 import ClipboardJS from 'clipboard';
 import ConfirmOrderModal from './components/ConfirmOrderModal';
+import VoidQuotationModal from './components/VoidQuotationModal';
+import { KTModal } from '../../metronic/core';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -217,6 +219,29 @@ function OrderMain() {
             return { success: false, message: 'Quotation removal failed' };
         }
         setIsLoading(false);
+    }
+
+    const handleVoidQuotation = async () => {
+        setIsLoading(true);
+
+        try {
+            const response = await voidOrder(selectedOrder.id as number);
+
+            if (response?.success) {
+
+                const modalEl = document.querySelector('#void_quotation_modal') as HTMLElement;
+                const modal = KTModal.getInstance(modalEl);
+                modal.hide();
+
+                notify('success', 'Order voided successfully!');
+                await handleRefreshTable();
+            }
+
+        } catch (error) {
+            notify('error', 'Failed to re-release order.');
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -501,20 +526,36 @@ function OrderMain() {
                                                                 </div>
                                                             }
                                                             {order.status === 'released' &&
-                                                                <div className="menu-item">
-                                                                    <button
-                                                                        className="menu-link"
-                                                                        data-modal-toggle="#confirm_order_modal"
-                                                                        onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
-                                                                    >
-                                                                        <span className="menu-title">
-                                                                            <div className="flex gap-2 items-center text-success">
-                                                                                <i className="ki-outline ki-check-circle"></i>
-                                                                                <span>Confirm Order</span>
-                                                                            </div>
-                                                                        </span>
-                                                                    </button>
-                                                                </div>
+                                                                <>
+                                                                    <div className="menu-item">
+                                                                        <button
+                                                                            className="menu-link"
+                                                                            data-modal-toggle="#confirm_order_modal"
+                                                                            onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
+                                                                        >
+                                                                            <span className="menu-title">
+                                                                                <div className="flex gap-2 items-center text-success">
+                                                                                    <i className="ki-outline ki-check-circle"></i>
+                                                                                    <span>Confirm Order</span>
+                                                                                </div>
+                                                                            </span>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div className="menu-item">
+                                                                        <button
+                                                                            className="menu-link"
+                                                                            data-modal-toggle="#void_quotation_modal"
+                                                                            onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
+                                                                        >
+                                                                            <span className="menu-title">
+                                                                                <div className="flex gap-2 items-center">
+                                                                                    <i className="ki-outline ki-cross-circle"></i>
+                                                                                    <span>Void Order</span>
+                                                                                </div>
+                                                                            </span>
+                                                                        </button>
+                                                                    </div>
+                                                                </>
                                                             }
                                                             <div className="menu-item">
                                                                 <Link
@@ -674,6 +715,10 @@ function OrderMain() {
             <ConfirmOrderModal
                 order={selectedOrder}
                 onSubmit={handleRefreshTable}
+            />
+
+            <VoidQuotationModal
+                handleConfirm={handleVoidQuotation}
             />
 
             <DeleteModal
