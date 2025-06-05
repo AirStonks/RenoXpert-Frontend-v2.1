@@ -14,11 +14,11 @@ function getStatusConfig(status: string) {
             icon: CheckCircleIcon,
             label: 'Completed'
         },
-        'in-progress': {
+        'in_progress': {
             bg: 'bg-blue-50',
             text: 'text-blue-600',
             icon: ClockIcon,
-            label: 'In Progress'
+            label: 'On Track'
         },
         'pending-installation': {
             bg: 'bg-yellow-50',
