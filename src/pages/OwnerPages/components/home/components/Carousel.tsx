@@ -43,10 +43,10 @@ const Carousel: React.FC = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             goToNext();
-        }, 5000);
+        }, 8000);
 
         return () => clearInterval(interval);
-    }, [currentIndex]);
+    });
 
     const goToPrevious = () => {
         if (isTransitioning) return;
