@@ -169,7 +169,7 @@ export const TaskDetailDrawer = ({
     const [editMode, setEditMode] = useState<{ section: "internal" | "external" | "qc" | null; taskId: string | null }>({ section: null, taskId: null });
     const [editedComment, setEditedComment] = useState<string>("");
     const [editedAttachments, setEditedAttachments] = useState<Attachment[]>([]);
-    const [isDragOver, setIsDragOver] = useState<{ section: "internal" | "external" | null }>({ section: null });
+    const [isDragOver, setIsDragOver] = useState<{ section: "internal" | "external" | "qc" | null }>({ section: null });
 
     const dropZoneRef = useRef<{ internal: HTMLDivElement | null; external: HTMLDivElement | null; qc: HTMLDivElement | null }>({ internal: null, external: null, qc: null });
 

@@ -10,22 +10,22 @@ type NavItem = {
 
 const navItems: NavItem[] = [
     {
-        icon: <HomeIcon className="h-4 w-4 md:h-6 md:w-6" />,
+        icon: <HomeIcon className="h-4 w-4 md:h-8 md:w-8" />,
         label: "Home",
         category: "home",
     },
     {
-        icon: <ScrollTextIcon className="h-4 w-4 md:h-6 md:w-6" />,
+        icon: <ScrollTextIcon className="h-4 w-4 md:h-8 md:w-8" />,
         label: "Quotations",
         category: "quotations",
     },
     {
-        icon: <HammerIcon className="h-4 w-4 md:h-6 md:w-6" />,
+        icon: <HammerIcon className="h-4 w-4 md:h-8 md:w-8" />,
         label: "Reno Progress",
         category: "reno-progress",
     },
     {
-        icon: <UserIcon className="h-4 w-4 md:h-6 md:w-6" />,
+        icon: <UserIcon className="h-4 w-4 md:h-8 md:w-8" />,
         label: "Profile",
         category: "profile",
     },
@@ -39,18 +39,35 @@ interface BottomNavProps {
 export function HomeBottomNav({ activeItem, setActiveItem }: BottomNavProps) {
     const [isVisible, setIsVisible] = useState(true)
     const [lastScrollY, setLastScrollY] = useState(0)
+    const [isSmallScreen, setIsSmallScreen] = useState(false)
+
+    useEffect(() => {
+        // Check screen size on mount and on resize
+        const checkScreenSize = () => {
+            setIsSmallScreen(window.innerWidth < 768) // 768px is typically the 'md' breakpoint in Tailwind
+        }
+
+        checkScreenSize()
+        window.addEventListener("resize", checkScreenSize)
+
+        return () => {
+            window.removeEventListener("resize", checkScreenSize)
+        }
+    }, [])
 
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY
 
-            // Update visibility immediately based on scroll direction
-            if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                // Scrolling down and past initial 100px
-                setIsVisible(false)
-            } else if (currentScrollY < lastScrollY) {
-                // Scrolling up
-                setIsVisible(true)
+            // Only apply scroll hiding behavior on small screens
+            if (isSmallScreen) {
+                if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                    // Scrolling down and past initial 100px
+                    setIsVisible(false)
+                } else if (currentScrollY < lastScrollY) {
+                    // Scrolling up
+                    setIsVisible(true)
+                }
             }
             setLastScrollY(currentScrollY)
         }
@@ -60,7 +77,7 @@ export function HomeBottomNav({ activeItem, setActiveItem }: BottomNavProps) {
         return () => {
             window.removeEventListener("scroll", handleScroll)
         }
-    }, [lastScrollY])
+    }, [lastScrollY, isSmallScreen])
 
     return (
         <nav
@@ -77,13 +94,13 @@ export function HomeBottomNav({ activeItem, setActiveItem }: BottomNavProps) {
                         <button
                             key={item.category}
                             className={`flex flex-col items-center justify-center px-2 py-1 rounded-lg transition-colors duration-200 ${activeItem === item.category
-                                ? "text-[#D71E42] bg-[#d71e430f]"
-                                : "text-gray-500 hover:text-[#D71E42] hover:bg-[#d71e430f]"
+                                    ? "text-[#D71E42] bg-[#d71e430f]"
+                                    : "text-gray-500 hover:text-[#D71E42] hover:bg-[#d71e430f]"
                                 }`}
                             onClick={() => setActiveItem(item.category)}
                         >
                             <div className="mb-0.5">{item.icon}</div>
-                            <span className="text-2xs md:text-xs font-medium leading-none">{item.label}</span>
+                            <span className="text-2xs md:text-md font-medium leading-none">{item.label}</span>
                         </button>
                     ))}
                 </div>

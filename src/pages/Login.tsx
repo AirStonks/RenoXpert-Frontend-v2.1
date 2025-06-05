@@ -3,18 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { userLogin } from '../services/auth';
 import KTComponent from '../metronic/core';
 import { ToastContainer } from 'react-toastify';
-import { Link } from 'react-router-dom';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
-const VEN_URL =
-    import.meta.env.VITE_APP_ENV === "production"
-        ? import.meta.env.VITE_VEN_URL
-        : import.meta.env.VITE_APP_ENV === "staging"
-            ? import.meta.env.VITE_STAGING_VEN_URL
-            : import.meta.env.VITE_APP_ENV === "local"
-                ? 'localhost:5173/vendor/'
-                : null;
 
 interface LoginForm {
     email: string;
@@ -125,7 +116,7 @@ const Login: React.FC = () => {
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input
                             type="checkbox"
-                            className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            className="checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
                             name="check"
                             value="1"
                         />
@@ -139,13 +130,6 @@ const Login: React.FC = () => {
                     >
                         {loading ? 'Signing In...' : 'Sign In'}
                     </button>
-
-                    <Link
-                        to={VEN_URL}
-                        className="w-full block text-center bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors duration-200"
-                    >
-                        Switch to Vendor login
-                    </Link>
                 </form>
             </div>
 

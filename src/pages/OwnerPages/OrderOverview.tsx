@@ -17,7 +17,7 @@ import AgreePartitionRiskModal from "./components/Modals/AgreePartitionRiskModal
 import { CalendarDateRangeIcon } from "@heroicons/react/24/solid"
 import accordion from "../../metronic/core/plugins/components/accordion"
 
-const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+const LOCAL_PATH_PREFIX = import.meta.env.VITE_APP_ENV === "local" ? '/owner/' : '/';
 
 const MEDIA_URL =
     import.meta.env.VITE_APP_ENV === "local"

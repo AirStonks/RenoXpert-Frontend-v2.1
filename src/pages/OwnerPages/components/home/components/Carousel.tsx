@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import CauroselCard, { CardContent } from './CauroselCard';
+import CauroselCard from './CauroselCard';
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local"
+        ? '/public/media/'
+        : '/media/';
 
 interface CarouselItem {
     id: number;
@@ -14,25 +18,19 @@ const carouselData: CarouselItem[] = [
         id: 1,
         title: "Title Placeholder",
         description: "Discover our latest products and how they're changing the game.",
-        image: "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+        image: MEDIA_URL + "owner-home/carousel_item_1.jpg"
     },
     {
         id: 2,
         title: "Unmatched Quality",
         description: "Craftsmanship and attention to detail in everything we make.",
-        image: "https://images.pexels.com/photos/9811024/pexels-photo-9811024.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+        image: MEDIA_URL + "owner-home/carousel_item_2.jpg"
     },
     {
         id: 3,
         title: "Sustainable Future",
         description: "Our commitment to environmental responsibility and innovation.",
-        image: "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-    },
-    {
-        id: 4,
-        title: "Sustainable Future",
-        description: "Our commitment to environmental responsibility and innovation.",
-        image: "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+        image: MEDIA_URL + "owner-home/carousel_item_3.jpg"
     }
 ];
 
@@ -101,11 +99,13 @@ const Carousel: React.FC = () => {
 
     return (
         <div className="mx-auto">
-            <div className="relative w-full overflow-hidden rounded-xl"
+            <div
+                className="relative w-full overflow-hidden rounded-xl"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}>
-                <div className="relative w-full h-[200px] md:h-[300px]">
+                onTouchEnd={handleTouchEnd}
+            >
+                <div className="relative w-full h-[200px] md:h-[400px]">
                     {carouselData.map((item, index) => (
                         <CauroselCard
                             key={item.id}
@@ -113,11 +113,12 @@ const Carousel: React.FC = () => {
                         >
                             <div
                                 className="absolute inset-0 bg-cover bg-center rounded-xl"
+                                style={{ backgroundImage: `url(${item.image})` }}
                             >
-                                <div className="absolute inset-0 bg-black bg-opacity-40 rounded-xl" />
+                                <div className="absolute inset-0 bg-black bg-opacity-0 rounded-xl" />
                             </div>
 
-                            <CardContent className="relative h-full flex items-center z-10 mx-9">
+                            {/* <CardContent className="relative h-full flex items-center z-10 mx-9">
                                 <div className="w-full text-white">
                                     <h2 className="text-lg md:text-3xl font-bold mb-4 tracking-tight">
                                         {item.title}
@@ -126,12 +127,12 @@ const Carousel: React.FC = () => {
                                         {item.description}
                                     </p>
                                 </div>
-                            </CardContent>
+                            </CardContent> */}
                         </CauroselCard>
                     ))}
                 </div>
 
-                <button
+                {/* <button
                     onClick={goToPrevious}
                     className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/30 transition-colors"
                     aria-label="Previous slide"
@@ -145,18 +146,18 @@ const Carousel: React.FC = () => {
                     aria-label="Next slide"
                 >
                     <ChevronRight size={18} />
-                </button>
+                </button> */}
+            </div>
 
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
-                    {carouselData.map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => goToSlide(index)}
-                            className={`w-2.5 h-2.5 rounded-full transition-all ${index === currentIndex ? 'bg-white w-8' : 'bg-white/50'}`}
-                            aria-label={`Go to slide ${index + 1}`}
-                        />
-                    ))}
-                </div>
+            <div className="flex justify-center mt-3 space-x-1">
+                {carouselData.map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => goToSlide(index)}
+                        className={`w-2.5 h-2.5 rounded-full transition-all ${index === currentIndex ? 'bg-[#D71E42] w-8' : 'bg-gray-400'}`}
+                        aria-label={`Go to slide ${index + 1}`}
+                    />
+                ))}
             </div>
         </div>
     );

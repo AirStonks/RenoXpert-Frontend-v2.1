@@ -1,27 +1,40 @@
-import { LogOutIcon, MailIcon, PhoneIcon, SettingsIcon, EditIcon } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import {
+    LogOutIcon,
+    MailIcon,
+    PhoneIcon,
+    SettingsIcon,
+    EditIcon,
+    UserIcon
+} from 'lucide-react';
+
+// Components
 import { User } from '../../../../types';
+import ErrorToast from './components/ErrorToast';
+import ProfileAvatar from './components/ProfileAvatar';
+import ActionButton from './components/ActionButton';
+import ProfileInfoItem from './components/ProfileInfoItem';
+import MenuCard from './components/MenuCard';
 import { logoutOwner } from '../../../../services/auth';
-import { toSvg } from 'jdenticon/standalone';
 import { useNavigate } from 'react-router-dom';
 
-interface Props {
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+
+interface ProfilePageProps {
     owner: User;
 }
 
-export default function ProfilePage({ owner }: Props) {
-    const [size, setSize] = useState(window.innerWidth >= 768 ? 150 : 100);
-    const [svgString, setSvgString] = useState('');
+const ProfilePage: React.FC<ProfilePageProps> = ({ owner }) => {
+    const navigate = useNavigate();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const navigate = useNavigate();
 
     const handleLogout = async () => {
         setIsLoggingOut(true);
         setError(null);
         try {
             await logoutOwner();
-            navigate('/owner/home');
+            navigate(LOCAL_PATH_PREFIX + 'login')
         } catch (error) {
             console.error('Logout failed:', error);
             setError('Failed to logout. Please try again.');
@@ -30,104 +43,110 @@ export default function ProfilePage({ owner }: Props) {
     };
 
     const handleEditProfile = () => {
-        navigate('/owner/profile/edit');
+        // Navigation removed temporarily
+        console.log('Edit profile clicked');
     };
 
     const handleSettings = () => {
-        navigate('/owner/settings');
+        // Navigation removed temporarily
+        console.log('Settings clicked');
     };
 
-    useEffect(() => {
-        const handleResize = () => {
-            setSize(window.innerWidth >= 768 ? 150 : window.innerWidth >= 640 ? 120 : 100);
-        };
-
-        setSvgString(toSvg(owner.name + owner.phone_no, size));
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [owner.name, owner.phone_no]);
-
-    useEffect(() => {
-        setSvgString(toSvg(owner.name + owner.phone_no, size));
-    }, [size, owner.name, owner.phone_no]);
-
     return (
-        <main className="container mx-auto px-4 py-8 max-w-3xl">
-            {/* Error Toast */}
+        <main className="w-full mx-auto px-4 py-8">
             {error && (
-                <div className="fixed top-4 right-4 bg-red-500 text-white p-3 rounded-lg shadow-lg text-sm">
-                    {error}
-                    <button 
-                        className="ml-3 text-white hover:text-red-200"
-                        onClick={() => setError(null)}
-                    >
-                        ×
-                    </button>
-                </div>
+                <ErrorToast
+                    message={error}
+                    onClose={() => setError(null)}
+                />
             )}
 
+            {/* Profile Header */}
+            {/* <div className="mb-8">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">Profile</h1>
+                <p className="text-gray-500">Manage your personal information and account settings</p>
+            </div> */}
+
             {/* Profile Card */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 transform transition-all hover:scale-[1.01]">
+            <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                    <div className="w-24 h-24 sm:w-36 sm:h-36 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl overflow-hidden flex-shrink-0">
-                        <div
-                            dangerouslySetInnerHTML={{ __html: svgString }}
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
+                    {/* Avatar */}
+                    <ProfileAvatar user={owner} size="lg" />
+
+                    {/* User Info */}
                     <div className="flex-grow text-center sm:text-left">
-                        <h2 className="text-xl font-bold text-gray-900 mb-2">{owner.name}</h2>
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-center sm:justify-start text-gray-600 bg-gray-50 p-2 rounded-lg transition-colors hover:bg-gray-100">
-                                <PhoneIcon className="w-4 h-4 mr-2 text-gray-500" />
-                                <span className="text-xs font-medium">+{owner.country_code} {owner.phone_no}</span>
-                            </div>
-                            <div className="flex items-center justify-center sm:justify-start text-gray-600 bg-gray-50 p-2 rounded-lg transition-colors hover:bg-gray-100">
-                                <MailIcon className="w-4 h-4 mr-2 text-gray-500" />
-                                <span className="text-xs font-medium">{owner.email ? owner.email : '-'}</span>
-                            </div>
-                        </div>
-                        {/* <button
+                        <h2 className="text-xl font-bold text-gray-900 mb-1">
+                            {owner.name_preferred}
+                        </h2>
+                        <p className="text-sm text-gray-500 mb-4">Account Owner</p>
+
+                        {/* Edit Profile Button */}
+                        {/* <ActionButton
+                            icon={EditIcon}
+                            label="Edit Profile"
                             onClick={handleEditProfile}
-                            className="mt-3 inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                        >
-                            <EditIcon className="w-3 h-3 mr-1.5" />
-                            Edit Profile
-                        </button> */}
+                            variant="primary"
+                        /> */}
                     </div>
                 </div>
             </div>
 
-            {/* Settings Button */}
-            {/* <button 
-                onClick={handleSettings}
-                className="w-full bg-white rounded-2xl shadow-lg p-4 mb-4 flex items-center justify-between hover:bg-gray-50 transition-all hover:shadow-md"
-            >
-                <div className="flex items-center">
-                    <SettingsIcon className="w-5 h-5 text-gray-600 mr-2" />
-                    <span className="text-gray-900 font-medium text-base">Settings</span>
+            {/* Contact Information */}
+            <div className="mb-8">
+                <h3 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">
+                    Contact Information
+                </h3>
+                <div className="space-y-3">
+                    <ProfileInfoItem
+                        icon={UserIcon}
+                        label="Full Name"
+                        value={owner.name}
+                    />
+                    <ProfileInfoItem
+                        icon={PhoneIcon}
+                        label="Phone Number"
+                        value={`+${owner.country_code} ${owner.phone_no}`}
+                    />
+                    <ProfileInfoItem
+                        icon={MailIcon}
+                        label="Email Address"
+                        value={owner.email || ''}
+                    />
                 </div>
-                <span className="text-gray-400">→</span>
-            </button> */}
+            </div>
 
-            {/* Logout Button */}
-            <button
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className={`w-full rounded-2xl shadow-lg p-4 flex items-center justify-between transition-all ${
-                    isLoggingOut 
-                        ? 'bg-gray-100 cursor-not-allowed' 
-                        : 'bg-red-50 hover:bg-red-100 hover:shadow-md'
-                }`}
-            >
-                <div className="flex items-center">
-                    <LogOutIcon className={`w-5 h-5 mr-2 ${isLoggingOut ? 'text-gray-400' : 'text-red-600'}`} />
-                    <span className={`font-medium text-base ${isLoggingOut ? 'text-gray-400' : 'text-red-600'}`}>
-                        {isLoggingOut ? 'Logging out...' : 'Logout'}
-                    </span>
+            {/* Account Actions */}
+            <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">
+                    Account Actions
+                </h3>
+
+                {/* Settings Button */}
+                {/* <MenuCard
+                    icon={SettingsIcon}
+                    label="Settings"
+                    onClick={handleSettings}
+                /> */}
+
+                {/* Logout Button */}
+                <div className="mt-4">
+                    <ActionButton
+                        icon={LogOutIcon}
+                        label="Logout"
+                        onClick={handleLogout}
+                        variant="danger"
+                        isLoading={isLoggingOut}
+                        fullWidth
+                    />
                 </div>
-            </button>
+            </div>
+
+            <div className="flex flex-col gap-1 text-center">
+                {/* <span className='text-gray-500 text-sm'>Version: {'0.1.5'}</span> */}
+                <span className='text-gray-500 text-xs'>Bug Feedback: <a href="mailto:itsupport@renoxpert.my">itsupport@renoxpert.my</a></span>
+            </div>
         </main>
     );
-}
+};
+
+export default ProfilePage;
