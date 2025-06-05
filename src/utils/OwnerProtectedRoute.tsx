@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
+const LOCAL_PATH_PREFIX = import.meta.env.VITE_APP_ENV === "local" ? '/owner/' : '/';
 
 const OwnerProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
     const navigate = useNavigate();

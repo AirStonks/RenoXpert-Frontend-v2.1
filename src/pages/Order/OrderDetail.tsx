@@ -20,13 +20,13 @@ const MEDIA_URL =
         ? '/public/media/'
         : '/media/';
 
-const APP_URL =
+const CLIENT_URL =
     import.meta.env.VITE_APP_ENV === "production"
-        ? import.meta.env.VITE_APP_URL
+        ? import.meta.env.VITE_CLIENT_URL
         : import.meta.env.VITE_APP_ENV === "staging"
-            ? import.meta.env.VITE_STAGING_APP_URL
+            ? import.meta.env.VITE_STAGING_CLIENT_URL
             : import.meta.env.VITE_APP_ENV === "local"
-                ? import.meta.env.VITE_LOCAL_APP_URL
+                ? 'localhost:5173/owner/'
                 : null;
 
 
@@ -762,9 +762,8 @@ function OrderDetail() {
                             {orderDetail.user &&
                                 <div className="menu-item">
                                     <button
-                                        className="menu-link copy-link opacity-50 cursor-not-allowed"
-                                        disabled
-                                        // data-clipboard-text={`${APP_URL}owner/order/overview/id/${orderId}`}
+                                        className="menu-link copy-link"
+                                        data-clipboard-text={`${CLIENT_URL}order/overview/id/${orderId}`}
                                     >
                                         <span className="menu-title">
                                             <div className="flex gap-2 items-center">

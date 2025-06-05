@@ -75,13 +75,14 @@ export const fetchOwnerOrder = async (orderId: number) => {
     }
 };
 
-export const fetchOwnerOrders = async () => {
+export const fetchOwnerOrders = async (signal?: AbortSignal) => {
     try {
-        const response = await axios.get(API_URL + `owner/orders`, {
+        const response = await axios.get(`${API_URL}owner/orders`, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('o_token')}`,
+                Authorization: `Bearer ${localStorage.getItem('o_token')}`,
                 'Content-Type': 'multipart/form-data',
-            }
+            },
+            signal, // Pass the AbortSignal to Axios
         });
         return response.data; // Return product data
     } catch (error) {
@@ -165,10 +166,11 @@ export const fetchRegistrationForm = async (formId: number) => {
     }
 };
 
-export const retrieveRenoProgresses = async () => {
+export const retrieveRenoProgresses = async (signal?: AbortSignal) => {
     try {
         const response = await axios.get(API_URL + `owner/reno/progresses`, {
-            headers: getAuthHeaders()
+            headers: getAuthHeaders(),
+            signal
         });
         return response.data; // Return product data
     } catch (error) {

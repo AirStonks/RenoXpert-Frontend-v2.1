@@ -8,21 +8,33 @@ const useFetchOwnerRenoProgresses = () => {
     const [renoProgresses, setRenoProgresses] = useState<RenoProgress[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const abortController = new AbortController();
 
     useEffect(() => {
-        setLoading(true);
-        retrieveRenoProgresses()
-            .then((data) => {
-                setRenoProgresses(data.data);
-                setLoading(false);
-            })
-            .catch(() => {
-                setError('Failed to fetch renoProgresses');
-                setLoading(false);
-            });
-    }, []);
-
-    return { renoProgresses, loading, error };
+            const fetchData = async () => {
+                try {
+                    setLoading(true);
+                    const data = await retrieveRenoProgresses(abortController.signal);
+                    setRenoProgresses(data.data);
+                    setLoading(false);
+                } catch (err: any) {
+                    if (err.name === 'AbortError') {
+                        console.log('Fetch aborted');
+                    } else {
+                        setError('Failed to fetch Reno Progresses');
+                        setLoading(false);
+                    }
+                }
+            };
+    
+            fetchData();
+    
+            return () => {
+                abortController.abort();
+            };
+        }, []);
+    
+        return { renoProgresses, loading, error, abort: () => abortController.abort() };
 };
 
 export default useFetchOwnerRenoProgresses;

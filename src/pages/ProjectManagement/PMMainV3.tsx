@@ -12,7 +12,7 @@ import {
     Squares2X2Icon,
     ListBulletIcon,
 } from '@heroicons/react/24/solid';
-import { MinusCircleIcon } from 'lucide-react';
+import { CheckIcon, MinusCircleIcon, XIcon } from 'lucide-react';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -608,7 +608,6 @@ function App() {
                         <thead className="bg-gray-50 text-gray-800 sticky top-0">
                             <tr>
                                 <th className="px-4 py-3 w-12"></th>
-                                <th className="px-4 py-3">Status</th>
                                 <th
                                     className="px-4 py-3 cursor-pointer hover:bg-gray-100"
                                     onClick={() => handleSortChange('property.name')}
@@ -687,6 +686,7 @@ function App() {
                                         {renderSortIndicator('overall_completion')}
                                     </div>
                                 </th>
+                                <th className="px-4 py-3 text-center">Status</th>
                                 <th className="px-4 py-3">Details</th>
                             </tr>
                         </thead>
@@ -697,9 +697,6 @@ function App() {
                                     <tr key={index} className="border-b animate-pulse">
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-6"></div>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-20"></div>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-32"></div>
@@ -738,6 +735,9 @@ function App() {
                                             <div className="h-2 bg-gray-200 rounded w-16"></div>
                                         </td>
                                         <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-20"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
                                             <div className="h-6 bg-gray-200 rounded w-20"></div>
                                         </td>
                                     </tr>
@@ -762,18 +762,6 @@ function App() {
                                                 </button>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span
-                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatus(progress) === 'Completed'
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : getStatus(progress) === 'Delayed'
-                                                            ? 'bg-red-100 text-red-800'
-                                                            : 'bg-blue-100 text-blue-800'
-                                                        }`}
-                                                >
-                                                    {getStatus(progress)}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3">
                                                 <div className="flex flex-col">
                                                     <span className="font-medium">{progress.property.name}</span>
                                                     <span className="text-xs text-gray-500">
@@ -792,13 +780,12 @@ function App() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3 text-center">
-                                                <span
-                                                    className={`inline-block h-3 w-3 rounded-full ${progress.sale.order.include_partition
-                                                        ? 'bg-green-500 dark:bg-green-400'
-                                                        : 'bg-gray-300 dark:bg-gray-600'
-                                                        }`}
-                                                    title={progress.sale.order.include_partition ? 'Include Partition' : 'Not Include Partition'}
-                                                ></span>
+                                                <div className="flex items-center justify-center">
+                                                    {progress.sale.order.include_partition
+                                                        ? <CheckIcon className="h-6 w-6 text-white rounded-md bg-green-500 p-0.5" />
+                                                        : <XIcon className="h-6 w-6 text-white rounded-md bg-red-500 p-0.5" />
+                                                    }
+                                                </div>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Link
@@ -858,6 +845,18 @@ function App() {
                                             </td>
                                             <td className="px-4 py-3 text-center">
                                                 <span className="text-sm">{(progress.completion.overall_completion * 100).toFixed(2)}%</span>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <span
+                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatus(progress) === 'Completed'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : getStatus(progress) === 'Delayed'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : 'bg-blue-100 text-blue-800'
+                                                        }`}
+                                                >
+                                                    {getStatus(progress)}
+                                                </span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Link

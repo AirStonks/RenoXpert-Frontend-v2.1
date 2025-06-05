@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { TaskStatusBadge } from '../../../components/task-status-badge';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
-import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, ExclamationTriangleIcon, QuestionMarkCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { CheckCircleIcon, ClockIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { Link, useLocation } from 'react-router-dom';
 import { BottomNav } from './bottom-nav-bar';
 import { AlertCircleIcon, HelpCircleIcon } from 'lucide-react';
@@ -46,7 +46,7 @@ const statusColors = {
     'Not Available': 'bg-slate-100 text-slate-800',
 };
 
-const headerData = { title: 'Reno Progress', backUrl: '/' }
+const headerData = { title: 'Reno Progress', backUrl: LOCAL_PATH_PREFIX + 'reno-progress' }
 
 interface RPMV3Props {
     renoProgress: RenoProgress;

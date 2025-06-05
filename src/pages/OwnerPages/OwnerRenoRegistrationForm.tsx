@@ -972,6 +972,7 @@ function OwnerRenoRegistrationForm() {
                                     handleSubmit={handleSubmit}
                                     otp={otp}
                                     setOtp={setOtp} // Pass down the setter function
+                                    setShowOtpForm={setValidateOtp}
                                 />
                                 :
                                 <div className="card w-full">
