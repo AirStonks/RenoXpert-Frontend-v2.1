@@ -8,6 +8,7 @@ import { PostRenoCard } from './rpm/post-reno-card';
 import { RenoPorgressDetailCard } from './rpm/reno-progress-detail';
 import RenovationTask from './RenovationTask';
 import RenovationQCTask from './RenovationQCTask';
+import { HandoverStatusCard } from './rpm/handover-card';
 
 const statusColors = {
     'Not Applicable': 'bg-gray-100 text-gray-800',
@@ -136,10 +137,22 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                 date: renoProgress.date_management.defect_permit_date ? formatDate(renoProgress.date_management.defect_permit_date) : 'TBC'
             },
             {
-                label: 'Renovation',
+                label: 'P1',
+                // status: defectAndPermitStatus,
+                status: 'Completed',
+                date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.p1_date) : 'TBC'
+            },
+            {
+                label: 'P2A',
                 // status: renovationStatus,
                 status: 'Completed',
-                date: renoProgress.date_management.reno_date ? formatDate(renoProgress.date_management.reno_date) : 'TBC'
+                date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.p2a_date) : 'TBC'
+            },
+            {
+                label: 'P2B',
+                // status: renovationStatus,
+                status: 'Completed',
+                date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.p2b_date) : 'TBC'
             },
             {
                 label: 'QC',
@@ -399,13 +412,13 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
 
                 <div className="flex gap-4 justify-center">
 
-                    <RenoPorgressDetailCard
-                        renoProgress={renoProgress}
-                    />
-
                     {/* If selectedStage included in this array [0, 1, 2] */}
-                    {[0, 1, 2].includes(selectedStage) && (
+                    {[0, 1, 2, 3, 4].includes(selectedStage) && (
                         <>
+                            <RenoPorgressDetailCard
+                                renoProgress={renoProgress}
+                            />
+
                             <VPStatusCard
                                 setSelectedTask={setSelectedTask}
                                 vpJob={renoProgress.rpm_jobs.find((job) => job.job_category === 'vp') || {}}
@@ -426,17 +439,35 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                         </>
                     )}
 
-                    {[3, 4, 5, 6].includes(selectedStage) && (
-                        <PostRenoCard
-                            setSelectedTask={setSelectedTask}
-                            postRenoJob={renoProgress.rpm_jobs.find((job) => job.job_category === 'post_reno') || {}}
-                            handleStatusChange={handleStatusChange}
-                        />
+                    {[5, 6, 7, 8].includes(selectedStage) && (
+                        <>
+                            <PostRenoCard
+                                setSelectedTask={setSelectedTask}
+                                postRenoJob={{
+                                    ...renoProgress.rpm_jobs.find((job) => job.job_category === 'post_reno') || {},
+                                    rpm_tasks: renoProgress.rpm_jobs.find((job) => job.job_category === 'post_reno')?.rpm_tasks?.slice(0, 3) || []
+                                }}
+                                handleStatusChange={handleStatusChange}
+                            />
+                            <PostRenoCard
+                                setSelectedTask={setSelectedTask}
+                                postRenoJob={{
+                                    ...renoProgress.rpm_jobs.find((job) => job.job_category === 'post_reno') || {},
+                                    rpm_tasks: renoProgress.rpm_jobs.find((job) => job.job_category === 'post_reno')?.rpm_tasks?.slice(3, 6) || []
+                                }}
+                                handleStatusChange={handleStatusChange}
+                            />
+                            <HandoverStatusCard
+                                setSelectedTask={setSelectedTask}
+                                handoverJob={renoProgress.rpm_jobs.find((job) => job.job_category === 'handover') || {}}
+                                handleStatusChange={handleStatusChange}
+                            />
+                        </>
                     )}
                 </div>
 
                 {/* If selectedStage included in this array [0, 1, 2] */}
-                {[0, 1, 2].includes(selectedStage) && (
+                {[0, 1, 2, 3, 4].includes(selectedStage) && (
                     <RenovationTask
                         renoProgress={renoProgress}
                         getStatusKey={getStatusKey}
@@ -445,7 +476,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                         setSelectedSection={setSelectedSection}
                     />
                 )}
-                {[3, 4, 5, 6].includes(selectedStage) && (
+                {[5, 6, 7, 8].includes(selectedStage) && (
                     <RenovationQCTask
                         renoProgress={renoProgress}
                         getStatusKey={getStatusKey}
