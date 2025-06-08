@@ -1097,8 +1097,11 @@ export interface RenoProgress {
     date_management?: {
         sales_date?: string,
         defect_permit_date?: string,
-        reno_date?: string,
+        p1_date?: string,
+        p2a_date?: string,
+        p2b_date?: string,
         qc_date?: string,
+        reno_date?: string,
         cleaning_date?: string,
         ch_date?: string,
         oh_date?: string,

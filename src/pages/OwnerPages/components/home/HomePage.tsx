@@ -103,7 +103,7 @@ function HomePage() {
 
             <CardList
                 titleIcon={<LayersIcon size={20} />}
-                title="UP COMING PROJECT"
+                title="UPCOMING PROJECT"
                 items={projects1}
             />
 

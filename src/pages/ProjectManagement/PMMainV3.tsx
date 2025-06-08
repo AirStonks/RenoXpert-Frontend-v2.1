@@ -12,12 +12,12 @@ import {
     Squares2X2Icon,
     ListBulletIcon,
 } from '@heroicons/react/24/solid';
-import { CheckIcon, MinusCircleIcon, XIcon } from 'lucide-react';
+import { CheckIcon, ListFilterIcon, MinusCircleIcon, XIcon } from 'lucide-react';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
 type SortOrder = 'asc' | 'desc';
-type FilterStatus = 'All' | 'Completed' | 'Delayed' | 'On Track';
+type FilterStatus = 'All' | 'On Track' | 'Completed' | 'Handed Over';
 type SortField =
     | 'id'
     | 'property.name'
@@ -30,6 +30,12 @@ type SortField =
     | 'date_management.oh_date'
     | 'oh_rundown';
 type ViewMode = 'card' | 'list';
+
+const statusColors = {
+    'On Track': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    'Completed': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    'Handed Over': 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
+};
 
 function App() {
     const navigate = useNavigate();
@@ -123,6 +129,13 @@ function App() {
         notify('success', 'Projects refreshed');
     };
 
+    const handleFilterTable = async (selectedFilter: FilterStatus) => {
+        const newFilter = selectedFilter === filterStatus ? 'All' : selectedFilter;
+        setFilterStatus(prevStatus => (prevStatus === selectedFilter ? 'All' : selectedFilter));
+        setPage(1);
+        fetchProjects(1, size, searchTerm, sortOrder, sortField, newFilter);
+    };
+
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchTerm(value);
@@ -191,32 +204,43 @@ function App() {
     };
 
     const getStatus = (progress: RenoProgress) => {
-        const overallCompletion =
-            (progress.pre_reno_completion * 0.2 +
-                progress.p1_completion * 0.175 +
-                progress.p2a_completion * 0.175 +
-                progress.p2b_completion * 0.175 +
-                progress.iot_completion * 0.175 +
-                progress.post_reno_completion * 0.1) * 100;
 
-        if (overallCompletion >= 100) return 'Completed';
+        // - On Track
+        // - Delayed
+        // - Completed
+        // - Handed Over
 
-        const isDelayed = [
-            progress.contractual_end_date &&
-            progress.contractor_end_date &&
-            new Date(progress.contractor_end_date) > new Date(progress.contractual_end_date),
-            progress.contractual_p1_end_date &&
-            progress.contractor_p1_end_date &&
-            new Date(progress.contractor_p1_end_date) > new Date(progress.contractual_p1_end_date),
-            progress.contractual_qc_end_date &&
-            progress.contractor_qc_end_date &&
-            new Date(progress.contractor_qc_end_date) > new Date(progress.contractual_qc_end_date),
-            progress.contractual_handover_date &&
-            progress.contractor_handover_date &&
-            new Date(progress.contractor_handover_date) > new Date(progress.contractual_handover_date),
-        ].some(Boolean);
+        // const overallCompletion =
+        //     (progress.pre_reno_completion * 0.2 +
+        //         progress.p1_completion * 0.175 +
+        //         progress.p2a_completion * 0.175 +
+        //         progress.p2b_completion * 0.175 +
+        //         progress.iot_completion * 0.175 +
+        //         progress.post_reno_completion * 0.1) * 100;
 
-        return isDelayed ? 'Delayed' : 'On Track';
+        // if (overallCompletion >= 100) return 'Completed';
+
+        // const isDelayed = [
+        //     progress.contractual_end_date &&
+        //     progress.contractor_end_date &&
+        //     new Date(progress.contractor_end_date) > new Date(progress.contractual_end_date),
+        //     progress.contractual_p1_end_date &&
+        //     progress.contractor_p1_end_date &&
+        //     new Date(progress.contractor_p1_end_date) > new Date(progress.contractual_p1_end_date),
+        //     progress.contractual_qc_end_date &&
+        //     progress.contractor_qc_end_date &&
+        //     new Date(progress.contractor_qc_end_date) > new Date(progress.contractual_qc_end_date),
+        //     progress.contractual_handover_date &&
+        //     progress.contractor_handover_date &&
+        //     new Date(progress.contractor_handover_date) > new Date(progress.contractual_handover_date),
+        // ].some(Boolean);
+
+        // return isDelayed ? 'Delayed' : 'On Track';
+
+        if (progress.status === 'in_progress') return 'On Track';
+        // if (progress.status === 'delayed') return 'Delayed';
+        if (progress.status === 'completed') return 'Completed';
+        if (progress.status === 'handed-over') return 'Handed Over';
     };
 
     const formatDate = (date: string | null) =>
@@ -295,7 +319,45 @@ function App() {
             {/* Sticky Header */}
             <div className="sticky top-0 bg-white shadow-md rounded-lg p-4 mb-6 z-10">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                    <h1 className="text-2xl font-bold text-gray-800">Project Dashboard</h1>
+                    <div className="flex gap-4">
+                        <h1 className="text-2xl font-bold text-gray-800">Project Dashboard</h1>
+                        <div className="flex items-center gap-2">
+                            <ListFilterIcon className="w-5 h-5 text-gray-600" />
+
+                            <div className="flex gap-2">
+                                <button
+                                    className={`btn btn-sm rounded-md btn-light ${filterStatus === 'On Track' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                    onClick={() => handleFilterTable('On Track')}
+                                >
+                                    On Track
+                                    {
+                                        filterStatus === 'On Track' &&
+                                        <i className="ki-filled ki-cross"></i>
+                                    }
+                                </button>
+                                <button
+                                    className={`btn btn-sm rounded-md btn-light ${filterStatus === 'Completed' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                    onClick={() => handleFilterTable('Completed')}
+                                >
+                                    Completed
+                                    {
+                                        filterStatus === 'Completed' &&
+                                        <i className="ki-filled ki-cross"></i>
+                                    }
+                                </button>
+                                <button
+                                    className={`btn btn-sm rounded-md btn-light ${filterStatus === 'Handed Over' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                    onClick={() => handleFilterTable('Handed Over')}
+                                >
+                                    Handed Over
+                                    {
+                                        filterStatus === 'Handed Over' &&
+                                        <i className="ki-filled ki-cross"></i>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div className="flex items-center gap-4 w-full md:w-auto">
                         <div className="relative flex-1 md:flex-none">
                             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -397,12 +459,7 @@ function App() {
                                     <div className="flex justify-between items-center mb-4">
                                         <div className="flex items-center gap-2">
                                             <span
-                                                className={`px-2 py-1 rounded-full text-sm font-medium ${getStatus(progress) === 'Completed'
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                    : getStatus(progress) === 'Delayed'
-                                                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                                    }`}
+                                                className={`px-2 py-1 rounded-full text-sm font-medium ${statusColors[getStatus(progress)]}`}
                                             >
                                                 {getStatus(progress)}
                                             </span>
@@ -695,50 +752,57 @@ function App() {
                                 // Skeleton Loader for List
                                 Array.from({ length: 6 }).map((_, index) => (
                                     <tr key={index} className="border-b animate-pulse">
-                                        <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-6"></div>
+                                        <td className="px-4 py-3 w-12">
+                                            <div className="h-5 w-5 bg-gray-200 rounded"></div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-32"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-3/4 mt-1"></div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full mt-1"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full mt-1"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full mt-1"></div>
                                         </td>
                                         <td className="px-4 py-3 text-center">
-                                            <div className="h-4 bg-gray-200 rounded w-6"></div>
+                                            <div className="h-6 w-6 bg-gray-200 rounded-md mx-auto"></div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="h-2 bg-gray-200 rounded w-24"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
+                                            <div className="h-2 bg-gray-200 rounded w-3/4 mt-1"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-1/2 mt-1"></div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-40"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-3/4 mt-1"></div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="h-2 bg-gray-200 rounded w-16"></div>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="h-4 bg-gray-200 rounded w-20"></div>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="h-6 bg-gray-200 rounded w-20"></div>
+                                            <div className="h-6 bg-gray-200 rounded w-20 mx-auto"></div>
                                         </td>
                                     </tr>
                                 ))
@@ -848,12 +912,7 @@ function App() {
                                             </td>
                                             <td className="px-4 py-3 text-center">
                                                 <span
-                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatus(progress) === 'Completed'
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : getStatus(progress) === 'Delayed'
-                                                            ? 'bg-red-100 text-red-800'
-                                                            : 'bg-blue-100 text-blue-800'
-                                                        }`}
+                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[getStatus(progress)]}`}
                                                 >
                                                     {getStatus(progress)}
                                                 </span>

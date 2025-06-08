@@ -10,22 +10,22 @@ type NavItem = {
 
 const navItems: NavItem[] = [
     {
-        icon: <HomeIcon className="h-4 w-4 md:h-8 md:w-8" />,
+        icon: <HomeIcon className="h-4 w-4 md:h-6 md:w-6" />,
         label: "Home",
         category: "home",
     },
     {
-        icon: <ScrollTextIcon className="h-4 w-4 md:h-8 md:w-8" />,
+        icon: <ScrollTextIcon className="h-4 w-4 md:h-6 md:w-6" />,
         label: "Quotations",
         category: "quotations",
     },
     {
-        icon: <HammerIcon className="h-4 w-4 md:h-8 md:w-8" />,
+        icon: <HammerIcon className="h-4 w-4 md:h-6 md:w-6" />,
         label: "Reno Progress",
         category: "reno-progress",
     },
     {
-        icon: <UserIcon className="h-4 w-4 md:h-8 md:w-8" />,
+        icon: <UserIcon className="h-4 w-4 md:h-6 md:w-6" />,
         label: "Profile",
         category: "profile",
     },
@@ -100,7 +100,7 @@ export function HomeBottomNav({ activeItem, setActiveItem }: BottomNavProps) {
                             onClick={() => setActiveItem(item.category)}
                         >
                             <div className="mb-0.5">{item.icon}</div>
-                            <span className="text-2xs md:text-md font-medium leading-none">{item.label}</span>
+                            <span className="text-2xs md:text-xs font-medium leading-none">{item.label}</span>
                         </button>
                     ))}
                 </div>
