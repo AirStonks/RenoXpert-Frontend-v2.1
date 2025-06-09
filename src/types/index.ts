@@ -1182,6 +1182,7 @@ export interface RPMJob {
     reno_progress_id?: string,
     job_category?: string,
     name?: string,
+    status?: string,
     rpm_tasks?: RPMTask[],
 }
 
