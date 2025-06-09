@@ -14,6 +14,8 @@ import DIRLinkManagementModal from "./components/Modals/DIRLinkManagementModal";
 import ProjectDateManagementModal from "./components/Modals/ProjectDateManagementModal";
 import AccessPermissionModal from "./components/Modals/AccessPermissionModal";
 import ConvertRenoProgressModal from "./components/Modals/ConvertRenoProgressModal";
+import { CalendarIcon } from "lucide-react";
+import DateManagementModal from "./components/Modals/DateManagementModal";
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -215,6 +217,22 @@ function ProgressMgnt() {
                                     </button>
                                 </div>
                             )}
+
+                            {renoProgress.rpm_version === 3 && (
+                                <div className="menu-item">
+                                    <button
+                                        className="menu-link"
+                                        data-modal-toggle="#date-management-modal"
+                                    >
+                                        <span className="menu-title">
+                                            <div className="flex gap-2 items-center">
+                                                <i className="ki-filled ki-calendar text-lg"></i>
+                                                <span>Date Management</span>
+                                            </div>
+                                        </span>
+                                    </button>
+                                </div>
+                            )}
                             <div className="menu-item">
                                 {/* <Link
                                 to={/purchase-orders/print/payment-voucher/${poId}}
@@ -273,6 +291,11 @@ function ProgressMgnt() {
                         setRenoProgress={setRenoProgress}
                         users={users}
                         setUsers={setUsers}
+                    />
+
+                    <DateManagementModal
+                        renoProgress={renoProgress}
+                        setRenoProgress={setRenoProgress}
                     />
                 </>
             )}

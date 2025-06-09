@@ -1895,6 +1895,36 @@ export const renoProgressAdvanceTable = async (groubBy?: string, groupOp?: strin
     }
 }
 
+export const changeDateManagement = async (renoProgressId: number, field: string, value: string) => {
+    try {
+        // Determine which field to update
+        const payload: { sales_date?: string; defect_permit_date?: string } = {};
+
+        if (field === 'sales_date') {
+            payload.sales_date = value;
+        } else if (field === 'defect_permit_date') {
+            payload.defect_permit_date = value;
+        }
+
+        // Proceed if either startDate or endDate is provided
+        if (Object.keys(payload).length === 0) {
+            throw new Error("Either startDate or endDate must be provided.");
+        }
+
+        // Make the API request
+        const response = await axios.post(
+            `${API_URL}reno-progress/${renoProgressId}/date-management/change`,
+            payload,
+            { headers: getAuthHeaders() }
+        );
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
 export const changeRenoProgressContractualDate = async (renoProgressId: number, dateType: string, startDate?: string, endDate?: string) => {
     try {
         // Determine which field to update

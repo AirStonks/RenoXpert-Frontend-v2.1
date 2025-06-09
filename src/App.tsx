@@ -100,6 +100,7 @@ import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
 import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
 import DetailedOrderPrint from './pages/Order/components/DetailedOrderPrint';
 import PMMainV3 from './pages/ProjectManagement/PMMainV3';
+import DIReport from './pages/ProjectManagement/DIReport';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -302,7 +303,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/:id/old-ver', element: <ProgressMgnt />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
-        { path: '/staff/di-forms/:id', element: <DefectInspectionReport />, layout: ProtectedLayout },
+        { path: '/staff/di-forms/:id', element: <DIReport />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/:id/key-management', element: <KeyManagementOverview />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/:id/key-management/update', element: <UpdateKeyManagement />, layout: ProtectedLayout },
         { path: '/staff/di-forms', element: <DIFormMain />, layout: ProtectedLayout },
