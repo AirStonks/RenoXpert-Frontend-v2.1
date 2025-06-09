@@ -517,7 +517,7 @@ export const TaskDetailDrawer = ({
                                 <h3 className="text-base font-semibold text-gray-900">
                                     {selectedTask.room_name ? `${selectedTask.room_name} - ` : selectedSection && `${selectedSection} - `} {selectedTask.item_name}
                                 </h3>
-                                {[5, 6, 7, 8].includes(selectedStage) ? (
+                                {[5, 6, 7, 8].includes(selectedStage) && selectedTask.qc_task ? (
                                     <div className="flex flex-col gap-4 rounded-lg bg-slate-200 p-2">
                                         <div className="flex space-x-2 items-center">
                                             <span className="font-semibold">Renovation Status: </span>

@@ -21,6 +21,7 @@ const statusColors = {
     'To Rectified': 'bg-indigo-100 text-indigo-800',
     'Rejected': 'bg-red-100 text-red-800',
     'Not Available': 'bg-slate-100 text-slate-800',
+    'Not Started': 'bg-slate-100 text-slate-800',
 };
 
 const statusQcColors = {
@@ -49,7 +50,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
     const [selectedStage, setSelectedStage] = useState<number>(0);
 
     const getStatusKey = (status: string | undefined) => {
-        if (!status) return 'Not Available';
+        if (!status) return '-';
         switch (status.toLowerCase()) {
             case 'not-applicable':
                 return 'Not Applicable';
@@ -70,7 +71,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
             case 'rejected':
                 return 'Rejected';
             default:
-                return 'Not Available';
+                return 'Not Started';
         }
     };
 
@@ -121,8 +122,77 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                 ? 'Completed'
                 : 'In Progress';
 
+        const renovationJobCategories = ['room_furnitures', 'bathroom', 'dining_yard_foyer', 'kitchen', 'electrical', 'living'];
+
         // Determine Renovation status based on Defect & Permit status
-        const renovationStatus = defectAndPermitStatus === 'In Progress' ? 'Not Started' : 'In Progress';
+        const renovationStatus = defectAndPermitStatus === 'In Progress'
+            ? 'Not Started'
+            // Else, check if every renoProgress.rpm_jobs that included in renovationJobCategories has a status of "completed"
+            : renoProgress.rpm_jobs
+                .filter(job => renovationJobCategories.includes(job.job_category))
+                .every(job => job.status === 'completed')
+                ? 'Completed'
+                : 'In Progress';
+
+        const qcStatus = (() => {
+            const relevantJobs = renoProgress.rpm_jobs.filter(job => renovationJobCategories.includes(job.job_category));
+
+            // If no relevant jobs or no tasks, return 'Not Started'
+            if (relevantJobs.length === 0 || relevantJobs.every(job => job.rpm_tasks.length === 0)) {
+                return 'Not Started';
+            }
+
+            const allTasks = relevantJobs.flatMap(job => job.rpm_tasks);
+            const hasAcceptedTask = allTasks.some(task => task.qc_task.status === 'accepted-with-comment' || task.qc_task.status === 'accepted');
+
+            // Log tasks where qc_task.status is not 'accepted-with-comment' or 'accepted'
+            allTasks.forEach(task => {
+                if (task.qc_task.status !== 'accepted-with-comment' && task.qc_task.status !== 'accepted') {
+                    console.log('Task with non-accepted qc_task.status:', task);
+                }
+            });
+
+            const allAccepted = allTasks.every(task => task.qc_task.status === 'accepted-with-comment' || task.qc_task.status === 'accepted' || task.status === 'not-applicable');
+
+            if (allAccepted) {
+                return 'Completed';
+            } else if (hasAcceptedTask) {
+                return 'In Progress';
+            } else {
+                return 'Not Started';
+            }
+        })();
+
+        const cleaningStatus = (() => {
+            const status = renoProgress.rpm_jobs?.find(
+                (job) => job.name === 'Post-Reno'
+            )?.rpm_tasks.find((task) => task.item_name === 'Cleaning')?.status;
+
+            if (status === 'completed') return 'Completed';
+            if (status === 'in-progress') return 'In Progress';
+
+            return 'Not Started';
+        })();
+
+        const chStatus = (() => {
+            const status = renoProgress.rpm_jobs?.find(
+                (job) => job.name === 'Handover'
+            )?.rpm_tasks.find((task) => task.item_name === 'Contractor Handover')?.status;
+
+            if (status === 'completed') return 'Completed';
+            if (status === 'in-progress') return 'In Progress';
+            return 'Not Started';
+        })();
+
+        const ohStatus = (() => {
+            const status = renoProgress.rpm_jobs?.find(
+                (job) => job.name === 'Handover'
+            )?.rpm_tasks.find((task) => task.item_name === 'Owner Handover')?.status;
+
+            if (status === 'completed') return 'Completed';
+            if (status === 'in-progress') return 'In Progress';
+            return 'Not Started';
+        })();
 
         return [
             {
@@ -132,47 +202,42 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
             },
             {
                 label: 'Defect & Permit',
-                // status: defectAndPermitStatus,
-                status: 'Completed',
+                status: defectAndPermitStatus,
                 date: renoProgress.date_management.defect_permit_date ? formatDate(renoProgress.date_management.defect_permit_date) : 'TBC'
             },
             {
                 label: 'P1',
-                // status: defectAndPermitStatus,
-                status: 'Completed',
+                status: renovationStatus,
                 date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.p1_date) : 'TBC'
             },
             {
                 label: 'P2A',
-                // status: renovationStatus,
-                status: 'Completed',
+                status: renovationStatus,
                 date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.p2a_date) : 'TBC'
             },
             {
                 label: 'P2B',
-                // status: renovationStatus,
-                status: 'Completed',
+                status: renovationStatus,
                 date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.p2b_date) : 'TBC'
             },
             {
                 label: 'QC',
-                // status: 'Not Started',
-                status: 'Completed',
+                status: qcStatus,
                 date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.qc_date) : 'TBC'
             },
             {
                 label: 'Cleaning',
-                status: 'Not Started',
+                status: cleaningStatus,
                 date: renoProgress.date_management.cleaning_date ? formatDate(renoProgress.date_management.cleaning_date) : 'TBC'
             },
             {
                 label: 'Contractor Handover',
-                status: 'Not Started',
+                status: chStatus,
                 date: renoProgress.date_management.ch_date ? formatDate(renoProgress.date_management.ch_date) : 'TBC'
             },
             {
                 label: 'Owner Handover',
-                status: 'Not Started',
+                status: ohStatus,
                 date: renoProgress.date_management.oh_date ? formatDate(renoProgress.date_management.oh_date) : 'TBC'
             },
         ];
@@ -400,7 +465,9 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                                     <div
                                         className={`hidden sm:block absolute h-1 top-4 w-[calc(100%-2.5rem)] left-1/2 ${step.status === 'Completed' || overallStatusSteps[index + 1].status === 'Completed'
                                             ? 'bg-green-500'
-                                            : 'bg-gray-300'
+                                            : step.status === 'In Progress'
+                                                ? 'bg-yellow-500'
+                                                : 'bg-gray-300'
                                             }`}
                                         style={{ transform: 'translateX(0)', marginLeft: '1.25rem', zIndex: -1 }}
                                     />
