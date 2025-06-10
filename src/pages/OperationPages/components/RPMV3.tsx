@@ -11,7 +11,7 @@ import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { BottomNav } from './bottom-nav-bar';
 import { CheckCircleIcon, ClockIcon, ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
-import { AlertCircleIcon, ClipboardListIcon, HelpCircleIcon } from 'lucide-react';
+import { AlertCircleIcon, CalendarClockIcon, ClipboardListIcon, HelpCircleIcon } from 'lucide-react';
 import RenovationTask from './RenovationTask';
 import RenovationQCTask from './RenovationQCTask';
 
@@ -240,77 +240,146 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
 
     // Compute steps dynamically using useMemo to avoid unnecessary recalculations
     const overallStatusSteps = useMemo(() => {
+        // Helper function to get job completion percentage by job name
         const getJobCompletion = (jobName: string): number => {
-            const job = renoProgress.rpm_jobs?.find((job) => job.name === jobName);
+            // Find the RPMJob with the matching job_name from rpm_jobs array
+            const job = renoProgress.rpm_jobs?.find(
+                (job) => job.name === jobName
+            );
+
+            // If job not found or no tasks, return 0
             if (!job || !job.rpm_tasks || job.rpm_tasks.length === 0) {
                 return 0;
             }
+
+            // Check if all tasks in the job have status "completed"
             const allTasksCompleted = job.rpm_tasks.every(
                 (task) => task.status?.toLowerCase() === "completed" || task.status?.toLowerCase() === "not-available"
             );
+
+            // Return 100 if all tasks are completed, otherwise 0
             return allTasksCompleted ? 1 : 0;
         };
 
+        // Determine Defect & Permit status
         const defectAndPermitStatus =
             getJobCompletion('Defect') === 1 && getJobCompletion('Permit') === 1
                 ? 'Completed'
                 : 'In Progress';
 
-        const renovationStatus = defectAndPermitStatus === 'In Progress' ? 'Not Started' : 'In Progress';
+        const renovationJobCategories = ['room_furnitures', 'bathroom', 'dining_yard_foyer', 'kitchen', 'electrical', 'living'];
+
+        // Determine Renovation status based on Defect & Permit status
+        const renovationStatus = defectAndPermitStatus === 'In Progress'
+            ? 'Not Started'
+            // Else, check if every renoProgress.rpm_jobs that included in renovationJobCategories has a status of "completed"
+            : renoProgress.rpm_jobs
+                .filter(job => renovationJobCategories.includes(job.job_category))
+                .every(job => job.status === 'completed')
+                ? 'Completed'
+                : 'In Progress';
+
+        const qcStatus = (() => {
+            const relevantJobs = renoProgress.rpm_jobs.filter(job => renovationJobCategories.includes(job.job_category));
+
+            // If no relevant jobs or no tasks, return 'Not Started'
+            if (relevantJobs.length === 0 || relevantJobs.every(job => job.rpm_tasks.length === 0)) {
+                return 'Not Started';
+            }
+
+            const allTasks = relevantJobs.flatMap(job => job.rpm_tasks);
+            const hasAcceptedTask = allTasks.some(task => task.qc_task.status === 'accepted-with-comment' || task.qc_task.status === 'accepted');
+            const allAccepted = allTasks.every(task => task.qc_task.status === 'accepted-with-comment' || task.qc_task.status === 'accepted' || task.status === 'not-applicable');
+
+            if (allAccepted) {
+                return 'Completed';
+            } else if (hasAcceptedTask) {
+                return 'In Progress';
+            } else {
+                return 'Not Started';
+            }
+        })();
+
+        const cleaningStatus = (() => {
+            const status = renoProgress.rpm_jobs?.find(
+                (job) => job.name === 'Post-Reno'
+            )?.rpm_tasks.find((task) => task.item_name === 'Cleaning')?.status;
+
+            if (status === 'completed') return 'Completed';
+            if (status === 'in-progress') return 'In Progress';
+
+            return 'Not Started';
+        })();
+
+        const chStatus = (() => {
+            const status = renoProgress.rpm_jobs?.find(
+                (job) => job.name === 'Handover'
+            )?.rpm_tasks.find((task) => task.item_name === 'Contractor Handover')?.status;
+
+            if (status === 'completed') return 'Completed';
+            if (status === 'in-progress') return 'In Progress';
+            return 'Not Started';
+        })();
+
+        const ohStatus = (() => {
+            const status = renoProgress.rpm_jobs?.find(
+                (job) => job.name === 'Handover'
+            )?.rpm_tasks.find((task) => task.item_name === 'Owner Handover')?.status;
+
+            if (status === 'completed') return 'Completed';
+            if (status === 'in-progress') return 'In Progress';
+            return 'Not Started';
+        })();
 
         return [
             {
                 label: 'Sales',
-                status: 'Completed',
-                date: renoProgress.date_management.sales_date ? formatDate(renoProgress.date_management.sales_date) : 'N/A',
+                status: 'Completed', // Always Completed
+                date: renoProgress.date_management.sales_date ? formatDate(renoProgress.date_management.sales_date) : 'N/A'
             },
             {
                 label: 'Defect & Permit',
                 status: defectAndPermitStatus,
-                date: renoProgress.date_management.defect_permit_date ? formatDate(renoProgress.date_management.defect_permit_date) : 'TBC',
+                date: renoProgress.date_management.defect_permit_date ? formatDate(renoProgress.date_management.defect_permit_date) : 'TBC'
             },
             {
-                label: 'Renovation',
+                label: 'P1',
                 status: renovationStatus,
-                date: renoProgress.date_management.reno_date ? formatDate(renoProgress.date_management.reno_date) : 'TBC',
+                date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.p1_date) : 'TBC'
+            },
+            {
+                label: 'P2A',
+                status: renovationStatus,
+                date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.p2a_date) : 'TBC'
+            },
+            {
+                label: 'P2B',
+                status: renovationStatus,
+                date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.p2b_date) : 'TBC'
             },
             {
                 label: 'QC',
-                status: 'Not Started',
-                date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.qc_date) : 'TBC',
+                status: qcStatus,
+                date: renoProgress.date_management.qc_date ? formatDate(renoProgress.date_management.qc_date) : 'TBC'
             },
             {
                 label: 'Cleaning',
-                status: 'Not Started',
-                date: renoProgress.date_management.cleaning_date ? formatDate(renoProgress.date_management.cleaning_date) : 'TBC',
+                status: cleaningStatus,
+                date: renoProgress.date_management.cleaning_date ? formatDate(renoProgress.date_management.cleaning_date) : 'TBC'
             },
             {
                 label: 'Contractor Handover',
-                status: 'Not Started',
-                date: renoProgress.date_management.ch_date ? formatDate(renoProgress.date_management.ch_date) : 'TBC',
+                status: chStatus,
+                date: renoProgress.date_management.ch_date ? formatDate(renoProgress.date_management.ch_date) : 'TBC'
             },
             {
                 label: 'Owner Handover',
-                status: 'Not Started',
-                date: renoProgress.date_management.oh_date ? formatDate(renoProgress.date_management.oh_date) : 'TBC',
+                status: ohStatus,
+                date: renoProgress.date_management.oh_date ? formatDate(renoProgress.date_management.oh_date) : 'TBC'
             },
         ];
-    }, [renoProgress]);
+    }, [renoProgress]); // Recompute when renoProgress changes
 
-    const { completedSteps, progressPercentage, currentStep } = useMemo(() => {
-        const completed = overallStatusSteps.reduce((count, step) => {
-            return step.status === 'Completed' ? count + 1 : count;
-        }, 0);
-        const total = overallStatusSteps.length;
-        const inProgressStep = overallStatusSteps.find(step => step.status === 'In Progress') || { label: 'Renovation', status: 'In Progress', date: 'TBC' };
-        return {
-            completedSteps: completed,
-            progressPercentage: (completed / total) * 100,
-            currentStep: inProgressStep,
-        };
-    }, [overallStatusSteps]);
-
-    const totalSteps = overallStatusSteps.length;
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -541,9 +610,24 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
             </div>
 
             {/* Progress Section */}
-            <section className="flex" aria-labelledby="progress-heading">
-                <div className=" overflow-x-auto w-full max-w-[calc(100vw-2rem)]">
-                    <div className="flex flex-row space-x-4 min-w-max h-full">
+            <div className="card w-full rounded-lg">
+                <div className="card-body p-3 space-y-2">
+                    <div className="flex justify-between items-center mb-2">
+                        <h3 className='flex items-center space-x-2'>
+                            <div className="h-5 w-5">
+                                <CalendarClockIcon className='w-5 h-5 text-primary' />
+                            </div>
+                            <span className='text-sm text-gray-900 font-semibold h-5'>Reno Progress Stages</span>
+                        </h3>
+                        {/* <button
+                            className="btn btn-secondary btn-xs"
+                            // onClick={}
+                        >
+                            View More
+                        </button> */}
+                    </div>
+                    <div className=" overflow-x-auto w-full max-w-[calc(100vw-3rem)]">
+                        {/* <div className="flex flex-row space-x-4 min-w-max h-full">
                         <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
                             <div className="flex flex-row border border-gray-200 rounded-lg overflow-hidden h-full">
                                 <div className="flex items-center justify-center p-4 bg-white border-b md:border-b-0 md:border-r border-gray-200 md:w-1/3">
@@ -669,9 +753,65 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                 ))}
                             </div>
                         </div>
+                    </div> */}
+                        <div className="flex justify-between min-w-max w-full relative py-4 space-x-10">
+                            {overallStatusSteps.map((step, index) => (
+                                <div
+                                    key={index}
+                                    className="flex flex-col items-center flex-1 w-full relative"
+                                    role="region"
+                                    aria-label={`Step ${index + 1}: ${step.label} - ${step.status}`}
+                                >
+                                    <div className="relative flex w-8 h-8">
+                                        {step.status === 'In Progress' && (
+                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-400 opacity-75"></span>
+                                        )}
+                                        <span
+                                            className={`relative inline-flex w-8 h-8 rounded-full items-center justify-center text-white font-medium transition-all cursor-pointer duration-200 ${step.status === 'Completed'
+                                                ? 'bg-green-500'
+                                                : step.status === 'In Progress'
+                                                    ? 'bg-yellow-500'
+                                                    : 'bg-gray-300'
+                                                } hover:scale-110`}
+                                        >
+                                            {index + 1}
+                                        </span>
+                                    </div>
+                                    <div className="text-xs mt-2 text-center">
+                                        <div className="font-semibold whitespace-nowrap">{step.label}</div>
+                                        <div
+                                            className={`text-2xs px-2 rounded whitespace-nowrap ${step.status === 'Completed'
+                                                ? 'text-green-800'
+                                                : step.status === 'In Progress'
+                                                    ? 'text-yellow-800'
+                                                    : 'text-gray-800'
+                                                }`}
+                                        >
+                                            {step.status}
+                                        </div>
+                                        <div
+                                            className="text-xs font-medium mt-1 badge badge-sm badge-pill"
+                                        >
+                                            {step.date}
+                                        </div>
+                                    </div>
+                                    {index < overallStatusSteps.length - 1 && (
+                                        <div
+                                            className={`block absolute h-1 top-4 w-[calc(100%+1.8rem)] left-1/2 ${step.status === 'Completed' || overallStatusSteps[index + 1].status === 'Completed'
+                                                ? 'bg-green-500'
+                                                : step.status === 'In Progress'
+                                                    ? 'bg-yellow-500'
+                                                    : 'bg-gray-300'
+                                                }`}
+                                            style={{ transform: 'translateX(0)', marginLeft: '1rem', zIndex: 0 }}
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
             {/* Defect Inspection Form (If available) */}
             {renoProgress.rpm_jobs.find((job) => job.job_category === 'defect')

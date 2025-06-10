@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import type { Order, Package, Product } from "../../types/index"
 import Loading from "../../components/Loading"
@@ -15,7 +15,6 @@ import { CreditCardIcon, InformationCircleIcon } from "@heroicons/react/24/outli
 import PaymentInfoModal from "./components/Modals/PaymentInfoModal"
 import AgreePartitionRiskModal from "./components/Modals/AgreePartitionRiskModal"
 import { CalendarDateRangeIcon } from "@heroicons/react/24/solid"
-import accordion from "../../metronic/core/plugins/components/accordion"
 
 const LOCAL_PATH_PREFIX = import.meta.env.VITE_APP_ENV === "local" ? '/owner/' : '/';
 
@@ -82,7 +81,7 @@ function OrderOverview() {
     const [agreePartitionRisk, setAgreePartitionRisk] = useState(false)
 
     const notify = (type: "success" | "error", message: string) => {
-        ; (toast[type] as (message: string, options?: object) => void)(message, {
+        (toast[type] as (message: string, options?: object) => void)(message, {
             position: "top-center",
             autoClose: 3000,
             hideProgressBar: true,

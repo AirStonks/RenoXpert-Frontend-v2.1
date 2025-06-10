@@ -892,7 +892,7 @@ function App() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">{formatDate(progress.date_management.sales_date)}</td>
-                                            <td className="px-4 py-3">{formatDate(progress.date_management.reno_date)}</td>
+                                            <td className="px-4 py-3">{formatDate(progress.date_management.p2b_date)}</td>
                                             <td className="px-4 py-3">{formatDate(progress.date_management.ch_date)}</td>
                                             <td className={"px-4 py-3 text-center " + getRundownColor(calculateChdRundown(progress))}>
                                                 <div className="flex items-center justify-center text-center space-x-2 font-bold">

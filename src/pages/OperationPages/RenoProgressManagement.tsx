@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Header from "./components/Header";
 import { RenoProgress } from "../../types";
-import KTComponents, { KTAccordion } from "../../metronic/core";
-import { fetchRenoProgressDetail } from "../../services/operationApi";
 import Loading from "../../components/Loading";
 import useFetchOperationRenoProgress from "../../hook/useFetchOperationRenoProgress";
 import RPMV2 from "./components/RPMV2";
 import RPMV3 from "./components/RPMV3";
 
-const headerData = { title: 'Reno Progress', backUrl: '/op/home' }
+const LOCAL_PATH_PREFIX = import.meta.env.VITE_APP_ENV === "local" ? '/op/' : '/';
+
+const headerData = { title: 'Reno Progress', backUrl: LOCAL_PATH_PREFIX + 'home' }
 
 function RenoProgressManagement() {
     const { id } = useParams<{ id: string }>();
@@ -17,7 +17,6 @@ function RenoProgressManagement() {
     const { renoProgressDetail, loading, error } = useFetchOperationRenoProgress(renoProgressId);
 
     const [renoProgress, setRenoProgress] = useState<RenoProgress>(null);
-    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         document.title = "Reno Progress | RenoXpert";
@@ -57,7 +56,7 @@ function RenoProgressManagement() {
                         </div>
                     </div> */}
 
-                    
+
 
 
                     <RPMV3

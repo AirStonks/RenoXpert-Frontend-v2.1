@@ -1101,7 +1101,6 @@ export interface RenoProgress {
         p2a_date?: string,
         p2b_date?: string,
         qc_date?: string,
-        reno_date?: string,
         cleaning_date?: string,
         ch_date?: string,
         oh_date?: string,

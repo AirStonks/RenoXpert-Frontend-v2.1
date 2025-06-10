@@ -144,14 +144,6 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
 
             const allTasks = relevantJobs.flatMap(job => job.rpm_tasks);
             const hasAcceptedTask = allTasks.some(task => task.qc_task.status === 'accepted-with-comment' || task.qc_task.status === 'accepted');
-
-            // Log tasks where qc_task.status is not 'accepted-with-comment' or 'accepted'
-            allTasks.forEach(task => {
-                if (task.qc_task.status !== 'accepted-with-comment' && task.qc_task.status !== 'accepted') {
-                    console.log('Task with non-accepted qc_task.status:', task);
-                }
-            });
-
             const allAccepted = allTasks.every(task => task.qc_task.status === 'accepted-with-comment' || task.qc_task.status === 'accepted' || task.status === 'not-applicable');
 
             if (allAccepted) {
