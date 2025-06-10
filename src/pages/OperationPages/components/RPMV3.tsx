@@ -380,20 +380,6 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
         ];
     }, [renoProgress]); // Recompute when renoProgress changes
 
-    const { completedSteps, progressPercentage, currentStep } = useMemo(() => {
-        const completed = overallStatusSteps.reduce((count, step) => {
-            return step.status === 'Completed' ? count + 1 : count;
-        }, 0);
-        const total = overallStatusSteps.length;
-        const inProgressStep = overallStatusSteps.find(step => step.status === 'In Progress') || { label: 'Renovation', status: 'In Progress', date: 'TBC' };
-        return {
-            completedSteps: completed,
-            progressPercentage: (completed / total) * 100,
-            currentStep: inProgressStep,
-        };
-    }, [overallStatusSteps]);
-
-    const totalSteps = overallStatusSteps.length;
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {

@@ -16,7 +16,7 @@ import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { CheckCircleIcon, ClockIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { Link, useLocation } from 'react-router-dom';
 import { BottomNav } from './bottom-nav-bar';
-import { AlertCircleIcon, HelpCircleIcon } from 'lucide-react';
+import { AlertCircleIcon, CalendarClockIcon, HelpCircleIcon } from 'lucide-react';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
@@ -558,10 +558,25 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
             </div>
 
             {/* Progress Section */}
-            <section className="flex mx-auto max-w-4xl" aria-labelledby="progress-heading">
-                <div className=" overflow-x-auto w-full max-w-[calc(100vw-2rem)]">
-                    <div className="flex flex-row space-x-4 min-w-max h-full">
-                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden max-w-4xl">
+            <div className="card rounded-lg mx-2">
+                <div className="card-body p-3 space-y-2">
+                    <div className="flex justify-between items-center mb-2">
+                        <h3 className='flex items-center space-x-2'>
+                            <div className="h-5 w-5">
+                                <CalendarClockIcon className='w-5 h-5 text-primary' />
+                            </div>
+                            <span className='text-sm text-gray-900 font-semibold h-5'>Reno Progress Stages</span>
+                        </h3>
+                        {/* <button
+                            className="btn btn-secondary btn-xs"
+                            // onClick={}
+                        >
+                            View More
+                        </button> */}
+                    </div>
+                    <div className=" overflow-x-auto w-full max-w-[calc(100vw-3rem)]">
+                        {/* <div className="flex flex-row space-x-4 min-w-max h-full">
+                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
                             <div className="flex flex-row border border-gray-200 rounded-lg overflow-hidden h-full">
                                 <div className="flex items-center justify-center p-4 bg-white border-b md:border-b-0 md:border-r border-gray-200 md:w-1/3">
                                     <div className="relative w-24 h-24">
@@ -596,7 +611,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-4 bg-white md:w-2/3 flex flex-col space-y-4">
+                                <div className="p-4 bg-white md:w-2/3 flex flex-col justify-between">
                                     <div className="flex items-center">
                                         <h2 id="progress-heading" className="text-sm font-bold mr-3">
                                             {currentStep.label}
@@ -605,87 +620,146 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                                             {currentStep.status}
                                         </span>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-gray-500 text-sm">Estimate Completion Date: </span>
-                                        <span className="font-medium text-gray-700 text-xs">
-                                            {renoProgress.date_management.oh_date ? formatDate(renoProgress.date_management.oh_date) : 'TBC'}
-                                        </span>
+                                    <div className="flex flex-col sm:flex-row sm:items-center">
+                                        <span className="text-gray-500 text-sm">Due Date:</span>
+                                        <span className="font-medium text-gray-700 text-xs">{currentStep.date}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <div className="flex flex-col sm:flex-row sm:items-center">
+                                            <span className="text-gray-500 text-sm font-semibold text-blue-600">CHD:</span>
+                                            <span className="font-medium text-blue-700 flex items-center text-xs">
+                                                {renoProgress.date_management.ch_date ? formatDate(renoProgress.date_management.ch_date) : 'TBC'}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row sm:items-center">
+                                            <span className="text-gray-500 text-sm font-semibold text-green-600">OHD:</span>
+                                            <span className="font-medium text-gray-700 flex items-center text-xs">
+                                                {renoProgress.date_management.oh_date ? formatDate(renoProgress.date_management.oh_date) : 'TBC'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden max-w-4xl">
+                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
                             <div className="p-4">
                                 <h3 className="text-sm font-bold">VP Status</h3>
                                 {renoProgress.rpm_jobs.find((job) => job.job_category === 'vp').rpm_tasks.map(task => (
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col" key={task.id}>
                                         <ul className='space-y-1'>
                                             <li className="py-2">
-                                                <button
-                                                    className="flex items-center justify-between w-full"
-                                                    onClick={() => task && setSelectedTask(task)}
-                                                >
+                                                <div className="flex items-center justify-between">
                                                     <span className="font-medium text-2xs">{task.item_name}</span>
                                                     <div className={`${getStatusColor(task.status)} badge badge-xs badge-pill space-x-1`}>
                                                         <span>{getStatusIcon(task.status)}</span>
                                                         <span>{getStatusKey(task.status)}</span>
                                                     </div>
-                                                </button>
+                                                </div>
                                             </li>
                                         </ul>
                                     </div>
                                 ))}
                             </div>
                         </div>
-                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden max-w-4xl">
+                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
                             <div className="p-4">
                                 <h3 className="text-sm font-bold">Defect</h3>
                                 {renoProgress.rpm_jobs.find((job) => job.job_category === 'defect').rpm_tasks.map(task => (
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col" key={task.id}>
                                         <ul className='space-y-1'>
                                             <li className="py-2">
-                                                <button
-                                                    className="flex items-center justify-between w-full"
-                                                    onClick={() => task && setSelectedTask(task)}
-                                                >
+                                                <div className="flex items-center justify-between">
                                                     <span className="font-medium text-2xs">{task.item_name}</span>
                                                     <div className={`${getStatusColor(task.status)} badge badge-xs badge-pill space-x-1`}>
                                                         <span>{getStatusIcon(task.status)}</span>
                                                         <span>{getStatusKey(task.status)}</span>
                                                     </div>
-                                                </button>
+                                                </div>
                                             </li>
                                         </ul>
                                     </div>
                                 ))}
                             </div>
                         </div>
-                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden max-w-4xl">
+                        <div className="card w-[calc(95vw-2rem)] border border-gray-200 rounded-lg overflow-hidden">
                             <div className="p-4">
                                 <h3 className="text-sm font-bold">Permit</h3>
                                 {renoProgress.rpm_jobs.find((job) => job.job_category === 'permit').rpm_tasks.map(task => (
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col" key={task.id}>
                                         <ul className='space-y-1'>
                                             <li className="py-2">
-                                                <button
-                                                    className="flex items-center justify-between w-full"
-                                                    onClick={() => task && setSelectedTask(task)}
-                                                >
+                                                <div className="flex items-center justify-between">
                                                     <span className="font-medium text-2xs">{task.item_name}</span>
                                                     <div className={`${getStatusColor(task.status)} badge badge-xs badge-pill space-x-1`}>
                                                         <span>{getStatusIcon(task.status)}</span>
                                                         <span>{getStatusKey(task.status)}</span>
                                                     </div>
-                                                </button>
+                                                </div>
                                             </li>
                                         </ul>
                                     </div>
                                 ))}
                             </div>
                         </div>
+                    </div> */}
+                        <div className="flex justify-between min-w-max w-full relative py-4 space-x-10">
+                            {overallStatusSteps.map((step, index) => (
+                                <div
+                                    key={index}
+                                    className="flex flex-col items-center flex-1 w-full relative"
+                                    role="region"
+                                    aria-label={`Step ${index + 1}: ${step.label} - ${step.status}`}
+                                >
+                                    <div className="relative flex w-8 h-8">
+                                        {step.status === 'In Progress' && (
+                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-400 opacity-75"></span>
+                                        )}
+                                        <span
+                                            className={`relative inline-flex w-8 h-8 rounded-full items-center justify-center text-white font-medium transition-all cursor-pointer duration-200 ${step.status === 'Completed'
+                                                ? 'bg-green-500'
+                                                : step.status === 'In Progress'
+                                                    ? 'bg-yellow-500'
+                                                    : 'bg-gray-300'
+                                                } hover:scale-110`}
+                                        >
+                                            {index + 1}
+                                        </span>
+                                    </div>
+                                    <div className="text-xs mt-2 text-center">
+                                        <div className="font-semibold whitespace-nowrap">{step.label}</div>
+                                        <div
+                                            className={`text-2xs px-2 rounded whitespace-nowrap ${step.status === 'Completed'
+                                                ? 'text-green-800'
+                                                : step.status === 'In Progress'
+                                                    ? 'text-yellow-800'
+                                                    : 'text-gray-800'
+                                                }`}
+                                        >
+                                            {step.status}
+                                        </div>
+                                        <div
+                                            className="text-xs font-medium mt-1 badge badge-sm badge-pill"
+                                        >
+                                            {step.date}
+                                        </div>
+                                    </div>
+                                    {index < overallStatusSteps.length - 1 && (
+                                        <div
+                                            className={`block absolute h-1 top-4 w-[calc(100%+1.8rem)] left-1/2 ${step.status === 'Completed' || overallStatusSteps[index + 1].status === 'Completed'
+                                                ? 'bg-green-500'
+                                                : step.status === 'In Progress'
+                                                    ? 'bg-yellow-500'
+                                                    : 'bg-gray-300'
+                                                }`}
+                                            style={{ transform: 'translateX(0)', marginLeft: '1rem', zIndex: 0 }}
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </section >
+            </div>
 
             {/* Task Section */}
             < section className="space-y-2 h-full max-h-[calc(100vw-2rem)]" >

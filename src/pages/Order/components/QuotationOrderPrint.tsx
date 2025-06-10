@@ -10,8 +10,8 @@ const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' :
 
 const MEDIA_URL =
     import.meta.env.VITE_APP_ENV === "local"
-        ? '/public/media/'
-        : '/media/';
+        ? '/public/'
+        : '/';
 
 const getCurrentDate = () => {
     const date = new Date();

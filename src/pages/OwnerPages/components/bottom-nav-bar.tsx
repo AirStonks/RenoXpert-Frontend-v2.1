@@ -56,7 +56,7 @@ interface BottomNavProps {
 export function BottomNav({ activeItem, setActiveItem }: BottomNavProps) {
 
     return (
-        <nav className="fixed bottom-0 left-0 z-35 w-full bg-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">
+        <nav className="fixed bottom-0 pb-4 left-0 z-35 w-full bg-white shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">
             <div className="mx-auto max-w-screen-xl">
                 <div className="flex justify-around py-1.5 px-2">
                     {navItems.map((item) => (

@@ -12,8 +12,8 @@ const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' :
 
 const MEDIA_URL =
     import.meta.env.VITE_APP_ENV === "local"
-        ? '/public/media/'
-        : '/media/';
+        ? '/public/'
+        : '/';
 
 const getCurrentDate = () => {
     const date = new Date()
@@ -892,7 +892,7 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                                                 </Text>
                                             </View>
                                             <View style={{ flex: 0.8 }}>
-                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold", color: "green"}]}>
+                                                <Text style={[additionalStyles.smallerItemTd, { fontWeight: "bold", color: "green" }]}>
                                                     {`RM ${grandTotal.toLocaleString(undefined, {
                                                         minimumFractionDigits: 2,
                                                         maximumFractionDigits: 2,

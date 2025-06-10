@@ -38,33 +38,6 @@ function RenoProgressDetail() {
         initFunctions();
     }, [renoProgressDetail]);
 
-    // const calculateJobProgress = (job: PhaseJob) => {
-    //     // Define the status weightages
-    //     const statusWeights = {
-    //         not_started: 0,
-    //         started: 0.25,
-    //         in_progress: 0.75,
-    //         completed: 1,
-    //         not_available: 1,
-    //     };
-
-    //     // Calculate the weighted sum of task statuses using task_weightage
-    //     const weightedSum = job.tasks.reduce((sum, task) => {
-    //         const statusWeight = statusWeights[task.status] || 0;
-    //         const taskWeight = task.task_weightage || 1; // Use task_weightage or default to 1 if not provided
-    //         return sum + (taskWeight * statusWeight);
-    //     }, 0);
-
-    //     // Calculate total task weight (sum of all task weights)
-    //     const totalWeight = job.tasks.reduce((sum, task) => sum + (task.task_weightage || 1), 0); // Default to 1 if task_weightage is not present
-
-
-    //     console.log(totalWeight);
-
-    //     // Return the progress percentage (multiply by 100 to get percentage)
-    //     return totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0;
-    // };
-
     if (loading) return <Loading />;
     if (error) return <div>Error: {error}</div>;
     if (!renoProgress) return <div>An unexpected error occured</div>;
