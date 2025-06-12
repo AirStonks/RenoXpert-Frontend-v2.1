@@ -8,6 +8,7 @@ const useFetchProperty = (propertyId: number | null) => {
     const [propertyDetail, setProperty] = useState<Property | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const abortController = new AbortController();
 
     useEffect(() => {
         if (propertyId === null) {
@@ -17,19 +18,31 @@ const useFetchProperty = (propertyId: number | null) => {
             return; // Exit early
         }
 
-        setLoading(true);
-        fetchProperty(propertyId)
-            .then((data) => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await fetchProperty(propertyId, abortController.signal);
                 setProperty(data.data);
                 setLoading(false);
-            })
-            .catch(() => {
-                setError('Failed to fetch property');
-                setLoading(false);
-            });
+            } catch (err: any) {
+                if (err.name === 'AbortError') {
+                    console.log('Fetch aborted');
+                } else {
+                    setError('Failed to fetch property');
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            abortController.abort();
+        };
+
     }, [propertyId]);
 
-    return { propertyDetail, loading, error };
+    return { propertyDetail, loading, error, abort: () => abortController.abort() };
 };
 
 export default useFetchProperty;

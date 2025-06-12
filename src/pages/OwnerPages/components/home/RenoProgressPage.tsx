@@ -1,76 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircleIcon, CheckCircleIcon, ClockIcon, HelpCircleIcon, HotelIcon, XCircleIcon } from 'lucide-react';
+import { CheckCircleIcon, ClockIcon, HotelIcon } from 'lucide-react';
 import { RenoProgress } from '../../../../types';
 import useFetchOwnerRenoProgresses from '../../../../hook/useFetchOwnerRenoProgresses';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
-function getStatusConfig(status: string) {
-    const configs = {
-        completed: {
-            bg: 'bg-green-50',
-            text: 'text-green-600',
-            icon: CheckCircleIcon,
-            label: 'Completed'
-        },
-        'in_progress': {
-            bg: 'bg-blue-50',
-            text: 'text-blue-600',
-            icon: ClockIcon,
-            label: 'On Track'
-        },
-        'pending-installation': {
-            bg: 'bg-yellow-50',
-            text: 'text-yellow-600',
-            icon: ClockIcon,
-            label: 'Pending Installation'
-        },
-        'not-applicable': {
-            bg: 'bg-gray-50',
-            text: 'text-gray-600',
-            icon: HelpCircleIcon,
-            label: 'Not Applicable'
-        },
-        'not-available': {
-            bg: 'bg-slate-50',
-            text: 'text-slate-600',
-            icon: XCircleIcon,
-            label: 'Not Available'
-        },
-        'procurement-done': {
-            bg: 'bg-purple-50',
-            text: 'text-purple-600',
-            icon: CheckCircleIcon,
-            label: 'Procurement Done'
-        },
-        'pending-stocks': {
-            bg: 'bg-orange-50',
-            text: 'text-orange-600',
-            icon: AlertCircleIcon,
-            label: 'Pending Stocks'
-        },
-        delivered: {
-            bg: 'bg-teal-50',
-            text: 'text-teal-600',
-            icon: CheckCircleIcon,
-            label: 'Delivered'
-        },
-        'to-rectified': {
-            bg: 'bg-indigo-50',
-            text: 'text-indigo-600',
-            icon: AlertCircleIcon,
-            label: 'To Be Rectified'
-        },
-        rejected: {
-            bg: 'bg-red-50',
-            text: 'text-red-600',
-            icon: XCircleIcon,
-            label: 'Rejected'
-        }
-    };
+const statusColors = {
+    'On Track': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    'Completed': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    'Handed Over': 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
+};
 
-    return configs[status as keyof typeof configs] || configs['not-available'];
+const statusIcon = {
+    'On Track': ClockIcon,
+    'Completed': CheckCircleIcon,
+    'Handed Over': CheckCircleIcon
 }
 
 function SkeletonLoader() {
@@ -93,6 +38,12 @@ function SkeletonLoader() {
 }
 
 function RenoProgressContent({ renoProgresses, abort }: { renoProgresses: RenoProgress[]; abort: () => void }) {
+    const getStatus = (progress: RenoProgress) => {
+        if (progress.status === 'in_progress') return 'On Track';
+        if (progress.status === 'completed') return 'Completed';
+        if (progress.status === 'handed-over') return 'Handed Over';
+    };
+
     if (renoProgresses.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-12">
@@ -108,8 +59,7 @@ function RenoProgressContent({ renoProgresses, abort }: { renoProgresses: RenoPr
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {renoProgresses.map((progress) => {
-                const statusConfig = getStatusConfig(progress.status);
-                const StatusIcon = statusConfig.icon;
+                const StatusIcon = statusIcon[getStatus(progress)];
 
                 return (
                     <Link
@@ -132,9 +82,9 @@ function RenoProgressContent({ renoProgresses, abort }: { renoProgresses: RenoPr
                                 </div>
                             </div>
                             <div>
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full ${statusConfig.bg} ${statusConfig.text}`}>
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full ${statusColors[getStatus(progress)]}`}>
                                     <StatusIcon className="w-3.5 h-3.5" />
-                                    {statusConfig.label}
+                                    {getStatus(progress)}
                                 </span>
                             </div>
                         </div>

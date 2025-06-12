@@ -101,6 +101,8 @@ import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
 import DetailedOrderPrint from './pages/Order/components/DetailedOrderPrint';
 import PMMainV3 from './pages/ProjectManagement/PMMainV3';
 import DIReport from './pages/ProjectManagement/DIReport';
+import { PropertyDetail } from './pages/Property/PropertyDetail';
+import { PropertyEdit } from './pages/Property/PropertyEdit';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -149,6 +151,8 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/quotations/:id', element: <QuotationDetail />, layout: ProtectedLayout },
         { path: '/quotations/archives', element: <QuotationArchive />, layout: ProtectedLayout },
         { path: '/properties', element: <PropertyMain />, layout: ProtectedLayout },
+        { path: '/properties/:id', element: <PropertyDetail />, layout: ProtectedLayout },
+        { path: '/properties/:id/edit', element: <PropertyEdit />, layout: ProtectedLayout },
         { path: '/registration-forms', element: <RegistrationFormMain />, layout: ProtectedLayout },
         { path: '/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
         { path: '/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
@@ -273,6 +277,8 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/quotations/:id', element: <QuotationDetail />, layout: ProtectedLayout },
         { path: '/staff/quotations/archives', element: <QuotationArchive />, layout: ProtectedLayout },
         { path: '/staff/properties', element: <PropertyMain />, layout: ProtectedLayout },
+        { path: '/staff/properties/:id', element: <PropertyDetail />, layout: ProtectedLayout },
+        { path: '/staff/properties/:id/edit', element: <PropertyEdit />, layout: ProtectedLayout },
         { path: '/staff/registration-forms', element: <RegistrationFormMain />, layout: ProtectedLayout },
         { path: '/staff/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
         { path: '/staff/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
@@ -409,7 +415,7 @@ function App() {
         } else if (isVendorDomain) {
             // Vendor domain: Vendor routes
             filteredRoutes = routeCat[3]; // Vendor
-        }  else if (isPublicDomain) {
+        } else if (isPublicDomain) {
             // Vendor domain: Vendor routes
             filteredRoutes = routeCat[4]; // Vendor
         } else {

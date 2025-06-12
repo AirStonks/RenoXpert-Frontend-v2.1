@@ -1,406 +1,465 @@
-// src\pages\Contact\ContactMain.tsx
-
-import { useEffect, useState } from 'react';
-import CreatePropertyModal from '../../components/Modals/CreatePropertyModal';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { propertyIndex, removeProperty } from '../../services/api';
 import { Property } from '../../types';
-import EditPropertyModal from '../../components/Modals/EditPropertyModal';
+import { toast } from 'react-toastify';
 import DeleteModal from '../../components/Modals/DeleteModal';
+import CreatePropertyModal from '../../components/Modals/CreatePropertyModal';
+// import EditPropertyModal from '../../components/Modals/EditPropertyModal';
+import React from 'react';
+import {
+    ChevronDownIcon,
+    ChevronUpIcon,
+    ArrowPathIcon,
+    MagnifyingGlassIcon,
+} from '@heroicons/react/24/solid';
+import { PencilIcon, PlusIcon, TrashIcon } from 'lucide-react';
 
-type SortOrder = 'asc' | 'desc' | null;
+
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+type SortOrder = 'asc' | 'desc';
+type SortField = 'id' | 'name' | 'address';
 
 function PropertyMain() {
     const navigate = useNavigate();
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const [properties, setPropertys] = useState<Property[]>([]); // Initialize as an empty array
+    interface StoredConfig {
+        page: number;
+        size: number;
+        searchTerm: string;
+        sortField: SortField;
+        sortOrder: SortOrder;
+        expiresAt: number;
+    }
+
+    const getInitialState = (): StoredConfig => {
+        const savedState = localStorage.getItem('propertyMainConfig');
+        const defaultState: StoredConfig = {
+            page: 1,
+            size: 10,
+            searchTerm: '',
+            sortField: 'name',
+            sortOrder: 'asc',
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+        };
+
+        if (savedState) {
+            const parsedState: StoredConfig = JSON.parse(savedState);
+            const currentTime = Date.now();
+
+            if (currentTime > parsedState.expiresAt) {
+                localStorage.removeItem('propertyMainConfig');
+                return defaultState;
+            }
+            return parsedState;
+        }
+        return defaultState;
+    };
+
+    const [properties, setProperties] = useState<Property[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState<number>(1);
-    const [size, setSize] = useState<number>(10);
+    const [page, setPage] = useState<number>(getInitialState().page);
+    const [size, setSize] = useState<number>(getInitialState().size);
     const [totalItems, setTotalItems] = useState<number>(0);
-    const [searchTerm, setSearchTerm] = useState<string>('');
-    const [sortField, setSortField] = useState<string>('');
-    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+    const [searchTerm, setSearchTerm] = useState<string>(getInitialState().searchTerm);
+    const [sortField, setSortField] = useState<SortField>(getInitialState().sortField);
+    const [sortOrder, setSortOrder] = useState<SortOrder>(getInitialState().sortOrder);
+    const [expandedRows, setExpandedRows] = useState<number[]>([]);
+    const [selectedProperty, setSelectedProperty] = useState<{ id: number | string; name: string; property?: Property } | null>(null);
 
-    const [selectedProperty, setSelectedProperty] = useState<{ id: number | string, name: string, property?: Property } | null>(null);
+    const notify = (type: 'success' | 'error', message: string) => {
+        toast[type](message, {
+            position: 'top-center',
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme') || 'light',
+        });
+    };
 
     useEffect(() => {
-        document.title = "Property | RenoXpert";
-        initPropertyTable(page, size, searchTerm, sortOrder, sortField);
+        const config: StoredConfig = {
+            page,
+            size,
+            searchTerm,
+            sortField,
+            sortOrder,
+            expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+        };
+        localStorage.setItem('propertyMainConfig', JSON.stringify(config));
+    }, [page, size, searchTerm, sortField, sortOrder]);
 
-    }, [page, size, searchTerm, sortOrder, sortField]);
+    useEffect(() => {
+        document.title = 'Properties | RenoXpert';
+        fetchProperties(page, size, searchTerm, sortOrder, sortField);
+    }, []);
 
-    const initPropertyTable = async (
+    const fetchProperties = async (
         page: number,
         size: number,
-        searchTerm?: string,
-        order?: string,
-        field?: string
+        searchTerm: string,
+        order: SortOrder,
+        field: SortField
     ) => {
         try {
             setIsLoading(true);
             const response = await propertyIndex(size, page, searchTerm, order, field);
             const data = response?.data || [];
-            setPropertys(data);
+            setProperties(data);
             setTotalItems(response?.totalCount || 0);
         } catch (error) {
             console.error('Error fetching properties:', error);
             setError('Failed to load properties');
+            notify('error', 'Failed to load properties');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleRefreshTable = async () => {
-        initPropertyTable(page, size, searchTerm, sortOrder, sortField);
+    const handleRefresh = async () => {
+        setPage(1);
+        await fetchProperties(1, size, searchTerm, sortOrder, sortField);
+        notify('success', 'Properties refreshed');
     };
 
-    const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSearchTerm(value);
 
-        try {
-            setIsLoading(true);
-            const response = await propertyIndex(size, page, value);
-
-            const data = response?.data || [];
-            setPropertys(data);
-            setTotalItems(response?.totalCount || 0);
-        } catch (error) {
-            console.error('Error searching properties:', error);
-            setError('Failed to search properties');
-        } finally {
-            setIsLoading(false);
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
         }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+            await fetchProperties(1, size, value, sortOrder, sortField);
+        }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
-        initPropertyTable(newPage, size, searchTerm, sortOrder, sortField);
+        fetchProperties(newPage, size, searchTerm, sortOrder, sortField);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
-        setPage(1); // Reset to the first page when changing the page size
-        initPropertyTable(1, newSize, searchTerm, sortOrder, sortField);
+        setPage(1);
+        fetchProperties(1, newSize, searchTerm, sortOrder, sortField);
     };
 
-    const handleSort = (field: string) => {
-        if (sortField === field) {
-            // Cycle through states: null -> asc -> desc -> null
-            if (sortOrder === null) {
-                setSortOrder('asc');
-            } else if (sortOrder === 'asc') {
-                setSortOrder('desc');
-            } else {
-                setSortOrder(null);
-                setSortField('');
-            }
-        } else {
-            // New field, start with ascending
-            setSortField(field);
-            setSortOrder('asc');
-        }
+    const handleSortChange = (field: SortField) => {
+        const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
+        setSortField(field);
+        setSortOrder(newOrder);
+        fetchProperties(page, size, searchTerm, newOrder, field);
     };
 
-    const getSortIcon = (field: string) => {
-        if (sortField !== field) {
-            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
-        }
-        switch (sortOrder) {
-            case 'asc':
-                return <i className="ki-outline ki-arrow-up text-primary" />;
-            case 'desc':
-                return <i className="ki-outline ki-arrow-down text-primary" />;
-            default:
-                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
-        }
+    const toggleRowExpansion = (id: number) => {
+        setExpandedRows((prev) =>
+            prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+        );
     };
-
-    const totalPages = Math.ceil(totalItems / size);
 
     const handleRemoveProperty = async (propertyId: number) => {
         try {
             const response = await removeProperty(propertyId);
-
             if (response?.success) {
-                initPropertyTable(page, size);
+                notify('success', 'Property removed successfully');
+                fetchProperties(page, size, searchTerm, sortOrder, sortField);
                 return { success: true };
             }
+            notify('error', 'Property removal failed');
             return { success: false };
-
         } catch (error) {
-            console.log(error);
+            notify('error', 'Property removal failed');
             return { success: false, message: 'Property removal failed' };
         }
-    }
+    };
+
+    const formatAddress = (property: Property) => {
+        const addressParts = [
+            property.address,
+            property.street,
+            property.postcode,
+            property.city,
+            property.state
+        ].filter(part => part !== null && part !== '');
+        return addressParts.join(', ') || '-';
+    };
+
+    const totalPages = Math.ceil(totalItems / size);
 
     return (
-        <>
-            <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-center flex-wrap">
-                    <span className="text-2xl font-bold text-gray-900">
-                        Property List
-                    </span>
-                    <div className="flex gap-3 flex-wrap">
+        <div className="min-h-screen bg-gray-100 p-4">
+            {/* Sticky Header */}
+            <div className="sticky top-0 bg-white shadow-md rounded-lg p-4 mb-6 z-10">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <h1 className="text-2xl font-bold text-gray-800">Property Overview</h1>
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="relative flex-1 md:flex-none">
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search properties..."
+                                value={searchTerm}
+                                onChange={handleSearch}
+                                className="pl-10 pr-4 py-2 w-full md:w-64 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <select
+                            value={sortField}
+                            onChange={(e) => handleSortChange(e.target.value as SortField)}
+                            className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="name">Name</option>
+                            <option value="id">ID</option>
+                            <option value="address">Address</option>
+                        </select>
                         <button
-                            className='btn btn-primary btn-sm'
+                            onClick={handleRefresh}
+                            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                        >
+                            <ArrowPathIcon className="h-5 w-5" />
+                        </button>
+                        <button
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
                             data-modal-toggle="#create_property_modal"
                         >
-                            <i className="ki-outline ki-plus-squared"></i>
+                            <PlusIcon className="h-5 w-5" />
                             New Property
                         </button>
                     </div>
                 </div>
+            </div>
 
-                <div className="card">
-                    <div className="card-header flex-wrap gap-2">
-                        <div className="card-title">
-                            Property Overview
-                        </div>
-                        <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
-                            <button
-                                className="btn-refresh"
-                                onClick={handleRefreshTable}
+            {/* Error State */}
+            {error && (
+                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6">
+                    <p>{error}</p>
+                    <button onClick={handleRefresh} className="mt-2 underline hover:text-red-900">
+                        Try Again
+                    </button>
+                </div>
+            )}
+
+            {/* List View */}
+            <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-700">
+                    <thead className="bg-gray-50 text-gray-800 sticky top-0">
+                        <tr>
+                            <th className="px-4 py-3 w-12"></th>
+                            <th
+                                className="w-[250px] px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSortChange('name')}
                             >
-                                <i className="ki-solid ki-arrows-circle text-lg"></i>
-                            </button>
-                            <div className="flex">
-                                <label className="input input-sm">
-                                    <i className="ki-filled ki-magnifier"></i>
-                                    <input
-                                        placeholder="Search properties"
-                                        type="text"
-                                        value={searchTerm}
-                                        onChange={handleSearch}
-                                    />
-                                </label>
-                            </div>
-                            <div className="flex flex-wrap gap-2.5">
-                                {/* <select className="select select-sm w-28">
-                                    <option value="1">
-                                        Latest
-                                    </option>
-                                    <option value="2">
-                                        Older
-                                    </option>
-                                    <option value="3">
-                                        Oldest
-                                    </option>
-                                </select>
-                                <button className="btn btn-sm btn-outline btn-primary">
-                                    <i className="ki-filled ki-setting-4">
-                                    </i>
-                                    Filters
-                                </button>
-                                <label className="switch switch-sm">
-                                    <input className="order-2" name="check" type="checkbox" value="1" />
-                                    <span className="switch-label order-1">Push Alerts</span>
-                                </label> */}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="card-table">
-                        <table className="table align-middle text-gray-700 font-medium text-sm">
-                            <thead>
-                                <tr>
-                                    <th
-                                        className='w-[20px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('id')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            ID {getSortIcon('id')}
+                                <div className="flex items-center gap-1">
+                                    Name
+                                    {sortField === 'name' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                                </div>
+                            </th>
+                            <th
+                                className="w-[400px] px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSortChange('address')}
+                            >
+                                <div className="flex items-center gap-1">
+                                    Address
+                                    {sortField === 'address' && <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                                </div>
+                            </th>
+                            <th className="w-[150px] px-4 py-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {isLoading ? (
+                            // Skeleton Loader for List
+                            Array.from({ length: 6 }).map((_, index) => (
+                                <tr key={index} className="border-b animate-pulse">
+                                    <td className="px-4 py-3">
+                                        <div className="h-4 bg-gray-200 rounded w-6"></div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="h-4 bg-gray-200 rounded w-32"></div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="h-4 bg-gray-200 rounded w-64"></div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="flex gap-2">
+                                            <div className="h-8 bg-gray-200 rounded w-16"></div>
+                                            <div className="h-8 bg-gray-200 rounded w-8"></div>
                                         </div>
-                                    </th>
-                                    <th
-                                        className='w-[250px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('name')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Name {getSortIcon('name')}
-                                        </div>
-                                    </th>
-                                    <th
-                                        className='w-[700px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('address')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Address {getSortIcon('address')}
-                                        </div>
-                                    </th>
-                                    <th className='w-[150px] text-center'>Action</th>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {properties.length > 0 ? (
-                                    properties.map((property, propertyIndex) => {
-                                        const addressParts = [
-                                            property.address,
-                                            property.street,
-                                            property.postcode,
-                                            property.city,
-                                            property.state
-                                        ].filter(part => part !== null && part !== '')
-
-                                        return (
-                                            <tr
-                                                key={propertyIndex}
-                                                className={`${propertyIndex % 2 === 0 ? '' : 'bg-gray-100'}`}
+                            ))
+                        ) : properties.length > 0 ? (
+                            properties.map((property) => (
+                                <React.Fragment key={property.id}>
+                                    <tr className="border-b hover:bg-gray-50">
+                                        <td className="px-4 py-3">
+                                            <button
+                                                onClick={() => toggleRowExpansion(Number(property.id))}
+                                                className="text-gray-500 hover:text-gray-700"
                                             >
-                                                <td className='text-center'>
-                                                    {property.id}
-                                                </td>
-                                                <td>
-                                                    {property.name}
-                                                </td>
-                                                <td>
-                                                    {addressParts.join(', ')}
-                                                </td>
-                                                <td className='text-center'>
-                                                    <div className="flex justify-around gap-2">
-                                                        <button
-                                                            className="btn-view btn btn-sm btn-secondary"
-                                                            data-modal-toggle="#edit_property_modal"
-                                                            onClick={() => setSelectedProperty({ id: property.id, name: property.name, property })}
-                                                        >
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            className="btn-delete btn btn-sm btn-icon btn-danger"
-                                                            data-modal-toggle="#delete_item_modal"
-                                                            onClick={() => setSelectedProperty({ id: property.id, name: property.name })}
-                                                        >
-                                                            <i className="ki-outline ki-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )
-                                    })
-                                ) : (
-                                    <tr>
-                                        <td colSpan={7} className="text-center text-gray-500">
-                                            No properties available
+                                                {expandedRows.includes(Number(property.id)) ? (
+                                                    <ChevronUpIcon className="h-5 w-5" />
+                                                ) : (
+                                                    <ChevronDownIcon className="h-5 w-5" />
+                                                )}
+                                            </button>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <span className="font-medium">{property.name}</span>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <span className="text-gray-600">{formatAddress(property)}</span>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex gap-2">
+                                                <button
+                                                    className="btn btn-sm flex items-center gap-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition"
+                                                    data-modal-toggle="#edit_property_modal"
+                                                    onClick={() => navigate(`${LOCAL_PATH_PREFIX}properties/${property.id}`)}
+                                                >
+                                                    View Detail
+                                                </button>
+                                                <button
+                                                    className="btn btn-sm flex items-center justify-center bg-red-500 text-white rounded hover:bg-red-600 transition"
+                                                    data-modal-toggle="#delete_item_modal"
+                                                    onClick={() => setSelectedProperty({ id: property.id, name: property.name })}
+                                                >
+                                                    <TrashIcon className="h-3 w-3" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                    {expandedRows.includes(Number(property.id)) && (
+                                        <tr className="border-b">
+                                            <td colSpan={5} className="px-6 py-4">
+                                                <div
+                                                    className="bg-gray-50 rounded-lg p-6 transition-all duration-300 ease-in-out animate-fade-in"
+                                                    aria-expanded="true"
+                                                >
+                                                    <h3 className="text-base font-semibold text-gray-800 mb-4">Property Details</h3>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                                        <div>
+                                                            <p className="font-medium text-gray-700">Full Address</p>
+                                                            <p className="text-gray-600">{formatAddress(property)}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-gray-700">Street</p>
+                                                            <p className="text-gray-600">{property.street || '-'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-gray-700">Postcode</p>
+                                                            <p className="text-gray-600">{property.postcode || '-'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-gray-700">City</p>
+                                                            <p className="text-gray-600">{property.city || '-'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-gray-700">State</p>
+                                                            <p className="text-gray-600">{property.state || '-'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-gray-700">Property ID</p>
+                                                            <p className="text-gray-600">{property.id}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                                    No properties available
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Pagination */}
+            {!isLoading && properties.length > 0 && (
+                <div className="flex flex-col md:flex-row items-center justify-between mt-6 bg-white p-4 rounded-lg shadow-md">
+                    <div className="flex items-center gap-2 mb-4 md:mb-0">
+                        <span>Show</span>
+                        <select
+                            value={size}
+                            onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                            className="border rounded-lg px-3 py-1"
+                        >
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                        </select>
+                        <span>per page</span>
                     </div>
-
-                    <div className="card-footer justify-center md:justify-between flex-col md:flex-row gap-3 text-gray-600 text-2sm font-medium">
-                        <div className="flex items-center gap-2">
-                            Show
-                            <select
-                                className="select select-sm w-16"
-                                name="perpage"
-                                value={size}
-                                onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                    <div className="flex items-center gap-4">
+                        <span>
+                            {(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}
+                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                disabled={page === 1}
+                                onClick={() => handlePageChange(page - 1)}
+                                className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
                             >
-                                <option value="5">5</option>
-                                <option value="10">10</option>
-                                <option value="20">20</option>
-                                <option value="30">30</option>
-                                <option value="50">50</option>
-                            </select>
-                            per page
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span>
-                            <div className="pagination">
-                                {/* Previous Page Button */}
-                                <button
-                                    className={`btn ${page === 1 ? 'disabled' : ''}`}
-                                    onClick={() => handlePageChange(page - 1)}
-                                >
-                                    <i className="ki-outline ki-black-left"></i>
-                                </button>
-
-                                {/* Page Number Buttons with Ellipses */}
-                                {totalPages > 0 && (
-                                    <>
-                                        {page > 3 && (
-                                            <>
-                                                <button
-                                                    className="btn"
-                                                    onClick={() => handlePageChange(1)}
-                                                >
-                                                    1
-                                                </button>
-                                                <span className="btn btn-disabled">...</span>
-                                            </>
-                                        )}
-
-                                        {Array.from({
-                                            length: Math.min(3, totalPages)
-                                        }, (_, index) => {
-                                            // Determine the start of the 3-page window
-                                            const startPage = Math.max(1,
-                                                Math.min(
-                                                    page - 1,
-                                                    totalPages - 2
-                                                )
-                                            );
-
-                                            const currentPage = startPage + index;
-                                            return (
-                                                <button
-                                                    key={currentPage}
-                                                    className={`btn ${page === currentPage ? 'active' : ''}`}
-                                                    onClick={() => handlePageChange(currentPage)}
-                                                >
-                                                    {currentPage}
-                                                </button>
-                                            );
-                                        })}
-
-                                        {page < totalPages - 2 && (
-                                            <>
-                                                <span className="btn btn-disabled">...</span>
-                                                <button
-                                                    className="btn"
-                                                    onClick={() => handlePageChange(totalPages)}
-                                                >
-                                                    {totalPages}
-                                                </button>
-                                            </>
-                                        )}
-                                    </>
-                                )}
-
-                                {/* Next Page Button */}
-                                <button
-                                    className={`btn ${page === totalPages ? 'disabled' : ''}`}
-                                    onClick={() => handlePageChange(page + 1)}
-                                >
-                                    <i className="ki-outline ki-black-right"></i>
-                                </button>
-                            </div>
+                                Previous
+                            </button>
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                                const startPage = Math.max(1, Math.min(page - 2, totalPages - 4));
+                                const currentPage = startPage + index;
+                                return (
+                                    <button
+                                        key={currentPage}
+                                        onClick={() => handlePageChange(currentPage)}
+                                        className={`px-3 py-1 border rounded-lg ${page === currentPage ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+                                    >
+                                        {currentPage}
+                                    </button>
+                                );
+                            })}
+                            <button
+                                disabled={page === totalPages}
+                                onClick={() => handlePageChange(page + 1)}
+                                className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+                            >
+                                Next
+                            </button>
                         </div>
                     </div>
                 </div>
+            )}
 
-                <CreatePropertyModal />
-
-                {/* Call initPropertyTable() function */}
-                <EditPropertyModal
-                    property={selectedProperty?.property}
-                    onUpdateSuccess={() => initPropertyTable(page, size)}
-                />
-
-                <DeleteModal
-                    item={selectedProperty}
-                    modalTitle='Remove Property'
-                    modalPrompt='Are you sure to permanently remove this property:'
-                    notifySuccess='Property Removed Successfully!'
-                    notifyError='Property remove failed'
-                    navigateUrl='/properties'
-                    deleteFunction={handleRemoveProperty}
-                />
-            </div>
-        </>
+            {/* Modals */}
+            <CreatePropertyModal />
+            {/* <EditPropertyModal
+                property={selectedProperty?.property}
+                onUpdateSuccess={() => fetchProperties(page, size, searchTerm, sortOrder, sortField)}
+            /> */}
+            <DeleteModal
+                item={selectedProperty}
+                modalTitle="Remove Property"
+                modalPrompt="Are you sure to permanently remove this property:"
+                notifySuccess="Property Removed Successfully!"
+                notifyError="Property remove failed"
+                navigateUrl="/properties"
+                deleteFunction={handleRemoveProperty}
+            />
+        </div>
     );
 }
 

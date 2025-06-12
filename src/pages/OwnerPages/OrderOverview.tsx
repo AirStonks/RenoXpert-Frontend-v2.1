@@ -3,18 +3,21 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import type { Order, Package, Product } from "../../types/index"
+import type { Order, Package, Product, Property } from "../../types/index"
 import Loading from "../../components/Loading"
 import { Slide, toast } from "react-toastify"
 import KTComponent, { KTModal } from "../../metronic/core"
 import useFetchOwnerOrder from "../../hook/useFetchOwnerOrder"
 import { Link } from "react-router-dom"
-import { toggleOwnerOrderAddon } from "../../services/ownerApi"
+import { fetchProperty, toggleOwnerOrderAddon } from "../../services/ownerApi"
 import ConfirmUnincludeAddon from "./components/Modals/ConfirmUnincludeAddon"
 import { CreditCardIcon, InformationCircleIcon } from "@heroicons/react/24/outline"
 import PaymentInfoModal from "./components/Modals/PaymentInfoModal"
 import AgreePartitionRiskModal from "./components/Modals/AgreePartitionRiskModal"
 import { CalendarDateRangeIcon } from "@heroicons/react/24/solid"
+import { ROIProgramModal } from "./components/Modals/ROIProjectModal"
+import { AnimatePresence, motion } from 'framer-motion';
+import { getWithExpiry, setWithExpiry } from "../../utils/storage"
 
 const LOCAL_PATH_PREFIX = import.meta.env.VITE_APP_ENV === "local" ? '/owner/' : '/';
 
@@ -68,6 +71,7 @@ function OrderOverview() {
     const { orderDetail: order, loading, error } = useFetchOwnerOrder(orderId)
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number }[]>([])
     const [orderDetail, setOrderDetail] = useState<Order>(null)
+    const [property, setProperty] = useState<Property>(null)
     const [selectedConfirmPkg, setSelectedConfirmPkg] = useState<Package>(null)
     const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0)
 
@@ -79,6 +83,8 @@ function OrderOverview() {
     const [agreeTnc, setAgreeTnc] = useState(false)
     const [agreeRenoAgreement, setAgreeRenoAgreement] = useState(false)
     const [agreePartitionRisk, setAgreePartitionRisk] = useState(false)
+
+    const [isRoiModalOpen, setIsRoiModalOpen] = useState(false)
 
     const notify = (type: "success" | "error", message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -97,6 +103,34 @@ function OrderOverview() {
         if (order) {
             setOrderDetail(order)
             KTModal.init()
+
+            const getPropertyDetail = async () => {
+                try {
+                    const response = await fetchProperty(Number(order.property_id))
+                    const proeprtyData: Property = response.data
+
+                    if (response.data) {
+                        setProperty(proeprtyData)
+
+                        if (order.status !== 'confirmed' && !getWithExpiry<string>('roiModal')) {
+
+                            if (proeprtyData.propertyRoi.view_enabled) {
+                                setIsRoiModalOpen(true);
+
+                                // Set localStorage with key 'roiModalOpen' and expire in 1 week (7 days * 24 hours * 60 minutes * 60 seconds * 1000 milliseconds)
+                                const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
+                                setWithExpiry('roiModal', 'true', oneWeekInMs);
+                            }
+                        }
+                    }
+
+                } catch (error) {
+                    console.log(error);
+                    notify('error', 'Failed to fetch property.');
+                }
+            }
+
+            getPropertyDetail();
         }
     }, [order])
 
@@ -860,6 +894,26 @@ function OrderOverview() {
 
     const isButtonDisabled = !(agreeTnc && agreeRenoAgreement && agreePartitionRisk)
 
+    // Sparkle component
+    const Sparkle = ({ delay = 0 }: { delay?: number }) => (
+        <motion.div
+            className="absolute w-1 h-1 bg-green-600 rounded-full"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{
+                opacity: [0, 1, 0],
+                scale: [0, 1, 0],
+                x: [0, Math.random() * 40 - 20],
+                y: [0, Math.random() * 40 - 20],
+            }}
+            transition={{
+                duration: 2,
+                repeat: Number.POSITIVE_INFINITY,
+                delay,
+                ease: "easeInOut",
+            }}
+        />
+    )
+
     return (
         <>
             <div className={`flex w-full px-2 ${openAccordions["amount_breakdown"]
@@ -882,36 +936,111 @@ function OrderOverview() {
                     {/* Body */}
                     <div className="card-body pt-2 px-4">
                         {/* Tabs */}
-                        <div className="tabs mb-5">
+                        <div className="mb-2 flex gap-2 bg-white">
                             <button
-                                className={`tab ${activeTab === "tab_1_1" ? "active" : ""}`}
+                                className={`py-2 text-xs px-2 rounded-md transition-all ${activeTab === "tab_1_1" ? "active bg-blue-500 text-white" : "hover:bg-gray-100"
+                                    }`}
                                 onClick={() => setActiveTab("tab_1_1")}
                             >
                                 {orderDetail.status === "confirmed" ? "Overview" : "Quotation Order"}
                             </button>
-                            {orderDetail.status === "confirmed" ? (
+
+                            {orderDetail.status === "confirmed" && (
                                 <button
-                                    className={`tab ${activeTab === "tab_1_4" ? "active" : ""}`}
+                                    className={`py-2 px-2 text-xs rounded-md transition-all ${activeTab === "tab_1_4" ? "active bg-blue-500 text-white" : "hover:bg-gray-100"
+                                        }`}
                                     onClick={() => setActiveTab("tab_1_4")}
                                 >
                                     Quotation Order
                                 </button>
-                            ) : (
-                                ""
                             )}
+
                             <button
-                                className={`tab ${activeTab === "tab_1_2" ? "active" : ""}`}
+                                className={`py-2 px-2 text-xs rounded-md transition-all ${activeTab === "tab_1_2" ? "active bg-blue-500 text-white" : "hover:bg-gray-100"
+                                    }`}
                                 onClick={() => setActiveTab("tab_1_2")}
                             >
                                 T&C
                             </button>
+
                             <button
-                                className={`tab ${activeTab === "tab_1_3" ? "active" : ""}`}
+                                className={`py-2 px-2 text-xs rounded-md transition-all ${activeTab === "tab_1_3" ? "active bg-blue-500 text-white" : "hover:bg-gray-100"
+                                    }`}
                                 onClick={() => setActiveTab("tab_1_3")}
                             >
                                 Reno Agreement
                             </button>
+
+                            {/* Animated ROI Button */}
+                            {property?.propertyRoi?.view_enabled ? (
+                                <div className="relative">
+                                    {/* Sparkles */}
+                                    <AnimatePresence>
+                                        {Array.from({ length: 10 }).map((_, i) => (
+                                            <Sparkle key={i} delay={i * 0.2} />
+                                        ))}
+                                    </AnimatePresence>
+
+                                    {/* ROI Button with animations */}
+                                    <motion.button
+                                        className={`py-2 px-4 text-xs rounded-md relative overflow-hidden font-semibold transition-all ${activeTab === "tab_1_5"
+                                            ? "active bg-gradient-to-r from-green-600 to-green-600 text-white shadow-lg"
+                                            : "bg-gradient-to-r from-green-500 to-green-500 text-white hover:from-redgreen-600 hover:to-green-600"
+                                            }`}
+                                        data-modal-toggle="#roi-program-modal"
+                                        // onClick={() => setActiveTab("tab_1_5")}
+                                        animate={{
+                                            boxShadow: [
+                                                "0 0 0 rgba(0, 128, 0, 0)",
+                                                "0 0 20px rgba(0, 128, 0, 0.4)",
+                                                "0 0 0 rgba(0, 128, 0, 0)",
+                                            ],
+                                        }}
+                                        transition={{
+                                            duration: 2,
+                                            repeat: Number.POSITIVE_INFINITY,
+                                            ease: "easeInOut",
+                                        }}
+                                        whileHover={{
+                                            scale: 1.05,
+                                            boxShadow: "0 0 25px rgba(215, 30, 66, 0.6)",
+                                        }}
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        {/* Shine effect */}
+                                        <motion.div
+                                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20"
+                                            initial={{ x: "-100%" }}
+                                            animate={{ x: "100%" }}
+                                            transition={{
+                                                duration: 2,
+                                                repeat: Number.POSITIVE_INFINITY,
+                                                repeatDelay: 3,
+                                                ease: "easeInOut",
+                                            }}
+                                        />
+
+                                        {/* Button text */}
+                                        <span className="relative z-10">ROI</span>
+
+                                        {/* Pulsing background overlay */}
+                                        <motion.div
+                                            className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-400 opacity-30 rounded-md"
+                                            animate={{
+                                                opacity: [0.3, 0.6, 0.3],
+                                            }}
+                                            transition={{
+                                                duration: 1.5,
+                                                repeat: Number.POSITIVE_INFINITY,
+                                                ease: "easeInOut",
+                                            }}
+                                        />
+                                    </motion.button>
+                                </div>
+                            ) : ""}
                         </div>
+
+                        <hr className="my-2" />
 
                         {/* Tab Content */}
                         <div className={activeTab === "tab_1_1" ? "block" : "hidden"} id="tab_1_1">
@@ -1830,6 +1959,10 @@ function OrderOverview() {
                         <div className={activeTab === "tab_1_3" ? "block" : "hidden"} id="tab_1_3">
                             <div className="prose max-w-none p-4 text-xs">{renoAgreement}</div>
                         </div>
+
+                        {/* ROI Tab */}
+                        {/* <div className={activeTab === "tab_1_5" ? "block" : "hidden"} id="tab_1_5">
+                        </div> */}
                     </div>
                 </div>
             </div>
@@ -1983,6 +2116,11 @@ function OrderOverview() {
             <PaymentInfoModal />
 
             <AgreePartitionRiskModal onChange={setAgreePartitionRisk} />
+
+            <ROIProgramModal
+                isOpen={isRoiModalOpen}
+                property={property}
+            />
 
             {/* <div className="fixed bottom-10 right-6">
                 <button className="btn btn-outline btn-primary rounded-full" data-scrollto="#footer">
