@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircleIcon, CheckCircleIcon, ClockIcon, HelpCircleIcon, HotelIcon, XCircleIcon } from 'lucide-react';
+import { CheckCircleIcon, ClockIcon, HotelIcon } from 'lucide-react';
 import { RenoProgress } from '../../../../types';
 import useFetchOwnerRenoProgresses from '../../../../hook/useFetchOwnerRenoProgresses';
 
