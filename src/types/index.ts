@@ -222,6 +222,44 @@ export interface Property {
     city?: string,
     state?: string,
     description?: string,
+    thumbnail_url?: string,
+    propertyRoi?: PropertyROI,
+    created_by?: User;
+    updated_by?: User;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface PropertyROI {
+    id?: string,
+    thumbnail_title?: string,
+    thumbnail_desc?: string,
+    content?: PropertyROIContent,
+    view_enabled?: boolean,
+    created_by?: User;
+    updated_by?: User;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface PropertyROIContent {
+    features?: ROICardFeature[],
+    gallery?: {
+        url?: string
+    }[]
+}
+
+export interface ROICardFeature {
+    icon?: 'shield' | 'star' | 'gift';
+    title?: string;
+    desc?: string;
+    color?: 'blue' | 'amber' | 'emerald'; // Use string literal union
+}
+
+export interface ROICardFeatureColor {
+    bg?: string;
+    text?: string;
+    border?: string;
 }
 
 export interface Order {

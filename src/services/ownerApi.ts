@@ -214,3 +214,16 @@ export const retrieveJobAttachments = async (renoProgressId: number, jobId: numb
         throw error; // Ensure to throw the error if needed
     }
 };
+
+export const fetchProperty = async (propertyId: number, signal?: AbortSignal) => {
+    try {
+        const response = await axios.get(API_URL + `properties/${propertyId}`, {
+            headers: getAuthHeaders(),
+            signal // Pass the AbortSignal to Axios
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handleOwner401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+};

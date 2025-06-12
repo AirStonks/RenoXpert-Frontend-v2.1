@@ -894,19 +894,31 @@ function App() {
                                             <td className="px-4 py-3">{formatDate(progress.date_management.sales_date)}</td>
                                             <td className="px-4 py-3">{formatDate(progress.date_management.p2b_date)}</td>
                                             <td className="px-4 py-3">{formatDate(progress.date_management.ch_date)}</td>
-                                            <td className={"px-4 py-3 text-center " + getRundownColor(calculateChdRundown(progress))}>
-                                                <div className="flex items-center justify-center text-center space-x-2 font-bold">
-                                                    {getRundownIcon(calculateChdRundown(progress))}
-                                                    <span className="font-bold">{getRundownDayLabel(calculateChdRundown(progress))}</span>
-                                                </div>
-                                            </td>
+                                            {progress.status === 'handed-over' ?
+                                                <td className='px-4 py-3 text-center'>
+                                                    <span className="font-bold">-</span>
+                                                </td>
+                                                :
+                                                <td className={"px-4 py-3 text-center " + getRundownColor(calculateChdRundown(progress))}>
+                                                    <div className="flex items-center justify-center text-center space-x-2 font-bold">
+                                                        {getRundownIcon(calculateChdRundown(progress))}
+                                                        <span className="font-bold">{getRundownDayLabel(calculateChdRundown(progress))}</span>
+                                                    </div>
+                                                </td>
+                                            }
                                             <td className="px-4 py-3">{formatDate(progress.date_management.oh_date)}</td>
-                                            <td className={"px-4 py-3 text-center " + getRundownColor(calculateOhdRundown(progress))}>
-                                                <div className="flex items-center justify-center text-center space-x-2">
-                                                    {getRundownIcon(calculateOhdRundown(progress))}
-                                                    <span className="font-bold">{getRundownDayLabel(calculateOhdRundown(progress))}</span>
-                                                </div>
-                                            </td>
+                                            {progress.status === 'handed-over' ?
+                                                <td className='px-4 py-3 text-center'>
+                                                    <span className="font-bold">-</span>
+                                                </td>
+                                                :
+                                                <td className={"px-4 py-3 text-center " + getRundownColor(calculateOhdRundown(progress))}>
+                                                    <div className="flex items-center justify-center text-center space-x-2">
+                                                        {getRundownIcon(calculateOhdRundown(progress))}
+                                                        <span className="font-bold">{getRundownDayLabel(calculateOhdRundown(progress))}</span>
+                                                    </div>
+                                                </td>
+                                            }
                                             <td className="px-4 py-3 text-center">
                                                 <span className="text-sm">{(progress.completion.overall_completion * 100).toFixed(2)}%</span>
                                             </td>

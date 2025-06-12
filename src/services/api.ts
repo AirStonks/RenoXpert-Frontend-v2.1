@@ -813,10 +813,11 @@ export const createProperty = async (propertyData: Property) => {
     }
 };
 
-export const fetchProperty = async (propertyId: number) => {
+export const fetchProperty = async (propertyId: number, signal?: AbortSignal) => {
     try {
         const response = await axios.get(API_URL + `properties/${propertyId}`, {
-            headers: getAuthHeaders()
+            headers: getAuthHeaders(),
+            signal // Pass the AbortSignal to Axios
         });
         return response.data; // Return product data
     } catch (error) {
@@ -841,19 +842,41 @@ export const fetchProperties = async (searchTerm = '', length = 50) => {
     }
 };
 
-export const updateProperty = async (propertyData: Property) => {
+export const updatePropertyWithFiles = async (
+    propertyId: number,
+    propertyData: Property,
+    files: { thumbnail?: File; galleryImages?: File[] },
+) => {
     try {
-        const response = await axios.put(API_URL + `properties/${propertyData.id}`, propertyData, {
+        const formData = new FormData()
+
+        // Add property data as JSON string
+        formData.append("property_data", JSON.stringify(propertyData))
+
+        // Add thumbnail file if exists
+        if (files.thumbnail) {
+            formData.append("thumbnail", files.thumbnail)
+        }
+
+        // Add gallery images if exist
+        if (files.galleryImages && files.galleryImages.length > 0) {
+            files.galleryImages.forEach((file, index) => {
+                formData.append(`gallery_images[${index}]`, file)
+            })
+        }
+
+        const response = await axios.post(API_URL + `properties/${propertyId}/update`, formData, {
             headers: {
                 ...getAuthHeaders(),
-                'Content-Type': 'application/json',
-            }
-        });
-        return response.data;
+                "Content-Type": "multipart/form-data",
+            },
+        })
+        return response.data
     } catch (error) {
-        handle401Error(error as AxiosError);
+        handle401Error(error as AxiosError)
+        throw error
     }
-};
+}
 
 export const removeProperty = async (propertyId: number) => {
     try {
@@ -1263,8 +1286,6 @@ export const saveInvoiceDetail = async (invoiceId: number, paymentDetail: Paymen
 
         const formData = new FormData();
 
-
-
         formData.append('invoice_id', String(invoiceId));
         formData.append('transaction_no', String(paymentDetail.transaction_no));
         formData.append('amount', String(paymentDetail.amount));
@@ -1278,8 +1299,6 @@ export const saveInvoiceDetail = async (invoiceId: number, paymentDetail: Paymen
         attachments.forEach(file => {
             formData.append('attachments[]', file as File);  // 'attachments[]' because your backend expects an array
         });
-        console.log(attachments);
-        console.log(formData);
 
         const response = await axios.post(API_URL + `invoices/${invoiceId}/payment/save`, formData, {
             headers: {
