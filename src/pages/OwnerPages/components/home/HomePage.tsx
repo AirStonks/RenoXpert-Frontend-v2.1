@@ -10,17 +10,15 @@ const MEDIA_URL =
         : '/media/';
 
 const projects1 = [
+    { name: "Nexus Taman Pertama", image: MEDIA_URL + "owner-home/nexus_taman_pertama.jpg" },
+    { name: "The Harmony OKR", image: MEDIA_URL + "owner-home/the_harmony.jpg" },
     { name: "D'Erica Residences", image: MEDIA_URL + "owner-home/d_erica_residences.png" },
-    { name: "Vivo Executive Apartment", image: MEDIA_URL + "owner-home/vivo_apartment.png" },
-    { name: "D'Erica Residences", image: MEDIA_URL + "owner-home/d_erica_residences.png" },
-    { name: "Vivo Executive Apartment", image: MEDIA_URL + "owner-home/vivo_apartment.png" },
 ];
 
 const projects2 = [
     { name: "M Vertica Residences", image: MEDIA_URL + "owner-home/m_vertica_residences.png" },
     { name: "Meta City", image: MEDIA_URL + "owner-home/meta_city.png" },
-    { name: "M Vertica Residences", image: MEDIA_URL + "owner-home/m_vertica_residences.png" },
-    { name: "Meta City", image: MEDIA_URL + "owner-home/meta_city.png" },
+    { name: "Vivo Exclusive Apartment", image: MEDIA_URL + "owner-home/vivo_apartment.png" },
 ];
 
 
@@ -64,8 +62,8 @@ function HomePage() {
                         <div className="w-5 h-5 bg-gray-200 animate-pulse" />
                         <div className="h-6 w-40 bg-gray-200 animate-pulse" />
                     </div>
-                    <div className="grid grid-cols-4 gap-1 justify-items-center">
-                        {[...Array(4)].map((_, index) => (
+                    <div className="grid grid-cols-3 gap-1 justify-items-center">
+                        {[...Array(3)].map((_, index) => (
                             <div key={index} className="flex flex-col items-center">
                                 <div className="w-24 h-16 md:w-32 md:h-20 bg-gray-200 animate-pulse rounded-lg" />
                                 <div className="h-3 w-20 bg-gray-200 animate-pulse mt-1 rounded" />
@@ -80,8 +78,8 @@ function HomePage() {
                         <div className="w-5 h-5 bg-gray-200 animate-pulse" />
                         <div className="h-6 w-40 bg-gray-200 animate-pulse" />
                     </div>
-                    <div className="grid grid-cols-4 gap-1 justify-items-center">
-                        {[...Array(4)].map((_, index) => (
+                    <div className="grid grid-cols-3 gap-1 justify-items-center">
+                        {[...Array(3)].map((_, index) => (
                             <div key={index} className="flex flex-col items-center">
                                 <div className="w-24 h-16 md:w-32 md:h-20 bg-gray-200 animate-pulse rounded-lg" />
                                 <div className="h-3 w-20 bg-gray-200 animate-pulse mt-1 rounded" />

@@ -24,7 +24,7 @@ const CardList: React.FC<CardListProps> = ({ titleIcon, title, items }) => {
                     <h3 className="font-bold text-lg">{title}</h3>
                 </div>
                 <div className="flex space-x-2 overflow-x-auto pb-2 snap-x snap-mandatory">
-                    <div className="grid grid-cols-4 gap-1 justify-items-center">
+                    <div className="grid grid-cols-3 gap-2 justify-items-center">
                         {items.map((item, index) => (
                             <div key={index} className="flex flex-col items-center">
                                 <div
@@ -34,7 +34,7 @@ const CardList: React.FC<CardListProps> = ({ titleIcon, title, items }) => {
                                         <img
                                             src={item.image}
                                             alt={item.name}
-                                            className="w-full h-full object-cover text-4xs"
+                                            className="w-full h-20 object-cover text-4xs"
                                         />
                                     </div>
                                 </div>
