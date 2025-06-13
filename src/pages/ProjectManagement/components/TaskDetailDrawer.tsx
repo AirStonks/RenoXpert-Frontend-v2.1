@@ -404,79 +404,89 @@ export const TaskDetailDrawer = ({
         [editMode, selectedTask, onAttachmentChanges]
     );
 
-    const renderAttachmentsSection = (section: "internal" | "external" | "qc") => (
-        <div className="space-y-1">
-            <p className="text-2xs font-medium text-gray-700">Attachments:</p>
-            {editMode.section === section && editMode.taskId === selectedTask?.id ? (
-                <div>
-                    <div
-                        ref={(el) => (dropZoneRef.current[section] = el)}
-                        onDragOver={(e) => handleDragOver(e, section)}
-                        onDragEnter={(e) => handleDragEnter(e, section)}
-                        onDragLeave={(e) => handleDragLeave(e, section)}
-                        onDrop={(e) => handleDrop(e, section)}
-                        className={`border-2 border-dashed rounded-lg p-4 mb-4 text-center ${isDragOver.section === section ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-gray-50"}`}
-                    >
-                        <p className="text-2xs text-gray-600">
-                            {isDragOver.section === section ? "Drop files here..." : "Drag & drop files here, or click to select"}
-                        </p>
-                        <button
-                            className="mt-2 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 transition"
-                            onClick={() => document.getElementById(`file-input-${section}`)?.click()}
+    const renderAttachmentsSection = (section: "internal" | "external" | "qc") => {
+        // Guard clause to prevent rendering when selectedTask is null
+        if (!selectedTask) {
+            return <p className="text-2xs text-gray-500 italic">No task selected.</p>;
+        }
+
+        return (
+            <div className="space-y-1">
+                <p className="text-2xs font-medium text-gray-700">Attachments:</p>
+                {editMode.section === section && editMode.taskId === selectedTask.id ? (
+                    <div>
+                        <div
+                            ref={(el) => (dropZoneRef.current[section] = el)}
+                            onDragOver={(e) => handleDragOver(e, section)}
+                            onDragEnter={(e) => handleDragEnter(e, section)}
+                            onDragLeave={(e) => handleDragLeave(e, section)}
+                            onDrop={(e) => handleDrop(e, section)}
+                            className={`border-2 border-dashed rounded-lg p-4 mb-4 text-center ${isDragOver.section === section ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-gray-50"
+                                }`}
                         >
-                            Browse Files
-                        </button>
-                        <input
-                            id={`file-input-${section}`}
-                            type="file"
-                            multiple
-                            accept="image/*,video/*"
-                            onChange={(e) => handleFileInputChange(e, section)}
-                            className="hidden"
-                        />
-                    </div>
-                    {editedAttachments ? (
-                        editedAttachments.length > 0 ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {editedAttachments.map((attachment, index) => (
-                                    <AttachmentComponent
-                                        key={attachment.id || `attachment-${section}-${index}`}
-                                        attachment={attachment}
-                                        taskId={selectedTask?.id || ""}
-                                        taskQcId={selectedTask ? selectedTask.qc_task?.id || "" : ""}
-                                        index={index}
-                                        editMode={editMode}
-                                        onAttachmentChanges={onAttachmentChanges}
-                                        updateEditedAttachments={setEditedAttachments}
-                                    />
-                                ))}
-                            </div>
+                            <p className="text-2xs text-gray-600">
+                                {isDragOver.section === section ? "Drop files here..." : "Drag & drop files here, or click to select"}
+                            </p>
+                            <button
+                                className="mt-2 bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 transition"
+                                onClick={() => document.getElementById(`file-input-${section}`)?.click()}
+                            >
+                                Browse Files
+                            </button>
+                            <input
+                                id={`file-input-${section}`}
+                                type="file"
+                                multiple
+                                accept="image/*,video/*"
+                                onChange={(e) => handleFileInputChange(e, section)}
+                                className="hidden"
+                            />
+                        </div>
+                        {editedAttachments ? (
+                            editedAttachments.length > 0 ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {editedAttachments.map((attachment, index) => (
+                                        <AttachmentComponent
+                                            key={attachment.id || `attachment-${section}-${index}`}
+                                            attachment={attachment}
+                                            taskId={selectedTask.id || ""}
+                                            taskQcId={section === "qc" ? selectedTask.qc_task?.id || "" : ""}
+                                            index={index}
+                                            editMode={editMode}
+                                            onAttachmentChanges={onAttachmentChanges}
+                                            updateEditedAttachments={setEditedAttachments}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-2xs text-gray-500 italic">No attachments available.</p>
+                            )
                         ) : (
                             <p className="text-2xs text-gray-500 italic">No attachments available.</p>
-                        )
-                    ) : (
-                        <p className="text-2xs text-gray-500 italic">No attachments available.</p>
-                    )}
-                </div>
-            ) : (section === "internal" ? selectedTask?.internal_attachments : (section === 'qc' ? selectedTask?.qc_task?.internal_attachments : selectedTask?.owner_attachments))?.length ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {(section === "internal" ? selectedTask?.internal_attachments : (section === 'qc' ? selectedTask?.qc_task?.internal_attachments : selectedTask?.owner_attachments))?.map((attachment, index) => (
-                        <AttachmentComponent
-                            key={attachment.id || `attachment-${section}-${index}`}
-                            attachment={attachment}
-                            taskId={selectedTask?.id || ""}
-                            taskQcId={selectedTask?.qc_task.id || ""}
-                            index={index}
-                            editMode={editMode}
-                            onAttachmentChanges={onAttachmentChanges}
-                        />
-                    ))}
-                </div>
-            ) : (
-                <p className="text-2xs text-gray-500 italic">No attachments available.</p>
-            )}
-        </div>
-    );
+                        )}
+                    </div>
+                ) : (section === "internal" ? selectedTask?.internal_attachments : section === "qc" ? selectedTask?.qc_task?.internal_attachments : selectedTask?.owner_attachments)?.length ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {(section === "internal" ? selectedTask.internal_attachments : section === "qc" ? selectedTask.qc_task?.internal_attachments : selectedTask.owner_attachments)?.map(
+                            (attachment, index) => (
+                                <AttachmentComponent
+                                    key={attachment.id || `attachment-${section}-${index}`}
+                                    attachment={attachment}
+                                    taskId={selectedTask.id || ""}
+                                    taskQcId={section === "qc" ? selectedTask.qc_task?.id || "" : ""}
+                                    index={index}
+                                    editMode={editMode}
+                                    onAttachmentChanges={onAttachmentChanges}
+                                />
+                            )
+                        )}
+                    </div>
+                ) : (
+                    <p className="text-2xs text-gray-500 italic">No attachments available.</p>
+                )}
+            </div>
+        );
+    };
 
     return (
         <>
