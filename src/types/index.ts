@@ -1152,6 +1152,7 @@ export interface RenoProgress {
     permissions?: User[],
     completed_at?: string,
     rpm_version?: number,
+    sent_to_lark_date?: string,
     is_converted?: boolean,
     created_at?: string,
     updated_at?: string,

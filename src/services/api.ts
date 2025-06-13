@@ -1914,6 +1914,18 @@ export const renoProgressAdvanceTable = async (groubBy?: string, groupOp?: strin
     }
 }
 
+export const sendRenoToLark = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/send-reno-to-lark`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+}
+
 export const changeDateManagement = async (renoProgressId: number, field: string, value: string) => {
     try {
         // Determine which field to update

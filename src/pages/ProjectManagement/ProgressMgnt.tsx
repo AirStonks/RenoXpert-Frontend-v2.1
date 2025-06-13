@@ -4,7 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import KTComponents from "../../metronic/core";
 import useFetchRenoProgress from "../../hook/useFetchRenoProgress";
 import { DefectInspectionForm, Permission, RenoProgress, User } from "../../types";
-import { fetchOldVersionRenoProgress, permissionIndex } from "../../services/api";
+import { fetchOldVersionRenoProgress, permissionIndex, sendRenoToLark } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import ClipboardJS from "clipboard";
 import Loading from "../../components/Loading";
@@ -123,6 +123,25 @@ function ProgressMgnt() {
         }
     };
 
+    const handleSendRenoToLark = async () => {
+        try {
+            const response = await sendRenoToLark(renoProgressId!);
+
+            if (response?.success) {
+
+                setRenoProgress({
+                    ...renoProgress,
+                    sent_to_lark_date: response.data.sent_to_lark_date
+                });
+
+                notify('success', 'Reno has been sent to Lark successfully.');
+                return;
+            }
+        } catch (error) {
+            notify('error', 'Failed to send Reno to Lark.');
+        }
+    }
+
     if (loading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!renoProgress) return <div>An unexpected error occured</div>;
@@ -234,71 +253,76 @@ function ProgressMgnt() {
                                 </div>
                             )}
                             <div className="menu-item">
-                                {/* <Link
-                                to={/purchase-orders/print/payment-voucher/${poId}}
-                                className="menu-link"
-                            >
-                                <span className="menu-title">
-                                    <div className="flex gap-2 items-center">
-                                        <i className="ki-filled ki-file-down text-lg"></i>
-                                        <span>Print Payment Voucher</span>
-                                    </div>
-                                </span>
-                            </Link> */}
+                                <button
+                                    className="menu-link"
+                                    onClick={handleSendRenoToLark}
+                                >
+                                    <span className="menu-title">
+                                        <div className="flex gap-2 items-center">
+                                            <i className="ki-filled ki-screen text-lg"></i>
+                                            <div className="flex flex-col space-y-1 justify-start items-start">
+                                                <span>Sent Reno to Lark Base</span>
+                                                <span className="text-gray-600 text-xs">Last Sent: {renoProgress.sent_to_lark_date ? renoProgress.sent_to_lark_date : '-'}</span>
+                                            </div>
+                                        </div>
+                                    </span>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
 
-            {renoProgress.rpm_version === 1 || renoProgress.rpm_version === 2 ? (
-                <>
-                    <RPMDetailV2
-                        renoProgress={renoProgress}
-                        setRenoProgress={setRenoProgress}
-                        permissions={permissions}
-                        users={users}
-                        setUsers={setUsers}
-                    />
-
-                    {!isOldVersion &&
-                        <DIRLinkManagementModal
-                            diForm={renoProgress.defect_inspection_form}
-                            setDiForm={handleUpdateDIForm}
+            {
+                renoProgress.rpm_version === 1 || renoProgress.rpm_version === 2 ? (
+                    <>
+                        <RPMDetailV2
+                            renoProgress={renoProgress}
+                            setRenoProgress={setRenoProgress}
+                            permissions={permissions}
+                            users={users}
+                            setUsers={setUsers}
                         />
-                    }
 
-                    <ProjectDateManagementModal
-                        renoProgress={renoProgress}
-                        setRenoProgress={setRenoProgress}
-                    />
+                        {!isOldVersion &&
+                            <DIRLinkManagementModal
+                                diForm={renoProgress.defect_inspection_form}
+                                setDiForm={handleUpdateDIForm}
+                            />
+                        }
 
-                    <ConvertRenoProgressModal
-                        renoProgressId={Number(renoProgress.id)}
-                    />
-                </>
-            ) : (
-                <>
-                    <RPMDetailV3
-                        renoProgress={renoProgress}
-                        setRenoProgress={setRenoProgress}
-                    />
+                        <ProjectDateManagementModal
+                            renoProgress={renoProgress}
+                            setRenoProgress={setRenoProgress}
+                        />
 
-                    <AccessPermissionModal
-                        permissions={permissions}
-                        setPermissions={setPermissions}
-                        renoProgress={renoProgress}
-                        setRenoProgress={setRenoProgress}
-                        users={users}
-                        setUsers={setUsers}
-                    />
+                        <ConvertRenoProgressModal
+                            renoProgressId={Number(renoProgress.id)}
+                        />
+                    </>
+                ) : (
+                    <>
+                        <RPMDetailV3
+                            renoProgress={renoProgress}
+                            setRenoProgress={setRenoProgress}
+                        />
 
-                    <DateManagementModal
-                        renoProgress={renoProgress}
-                        setRenoProgress={setRenoProgress}
-                    />
-                </>
-            )}
+                        <AccessPermissionModal
+                            permissions={permissions}
+                            setPermissions={setPermissions}
+                            renoProgress={renoProgress}
+                            setRenoProgress={setRenoProgress}
+                            users={users}
+                            setUsers={setUsers}
+                        />
+
+                        <DateManagementModal
+                            renoProgress={renoProgress}
+                            setRenoProgress={setRenoProgress}
+                        />
+                    </>
+                )
+            }
         </>
     )
 }
