@@ -1,5 +1,6 @@
 import React from 'react';
 import { RenoProgress, RPMTask } from '../../../types';
+import { CircleAlert } from 'lucide-react';
 
 interface Props {
     renoProgress: RenoProgress;
@@ -59,10 +60,23 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
                                                 return (
                                                     <td
                                                         key={`${room}-${item}`}
-                                                        className={`p-2 text-center ${cellStyle} ${task ? "cursor-pointer hover:underline" : ""} ${isClickable ? "" : "opacity-20"}`}
+                                                        className={`relative p-2 text-center ${cellStyle} ${task ? "cursor-pointer hover:underline group" : ""} ${isClickable ? "" : "opacity-20"}`}
                                                         onClick={isClickable ? () => setSelectedTask(task) : undefined}
                                                     >
+                                                        {/* Icon and Status Text */}
+                                                        {task.qc_task.internal_comment && (
+                                                            <CircleAlert className="inline-block mr-1 h-4 w-4 text-warning" />
+                                                        )}
+
+                                                        {/* Status Text */}
                                                         {task ? (isClickable ? getQcStatusKey(statusKey) : getStatusKey(statusKey)) || "-" : "-"}
+
+                                                        {/* Tooltip */}
+                                                        {task.qc_task.internal_comment && (
+                                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                                {task.qc_task.internal_comment}
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 );
                                             })}
@@ -118,10 +132,23 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
                                                 return (
                                                     <td
                                                         key={`${room}-${item}`}
-                                                        className={`p-2 text-center ${cellStyle} ${task ? "cursor-pointer hover:underline" : ""} ${isClickable ? "" : "opacity-20"}`}
+                                                        className={`relative p-2 text-center ${cellStyle} ${task ? "cursor-pointer hover:underline group" : ""} ${isClickable ? "" : "opacity-20"}`}
                                                         onClick={isClickable ? () => setSelectedTask(task) : undefined}
                                                     >
+                                                        {/* Icon and Status Text */}
+                                                        {task.qc_task.internal_comment && (
+                                                            <CircleAlert className="inline-block mr-1 h-4 w-4 text-warning" />
+                                                        )}
+
+                                                        {/* Status Text */}
                                                         {task ? (isClickable ? getQcStatusKey(statusKey) : getStatusKey(statusKey)) || "-" : "-"}
+
+                                                        {/* Tooltip */}
+                                                        {task.qc_task.internal_comment && (
+                                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                                {task.qc_task.internal_comment}
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 );
                                             })}
@@ -164,7 +191,7 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
                                             <tr key={task.id} className="border-b hover:bg-gray-20">
                                                 <td className="p-2 w-1/3">{task.item_name}</td>
                                                 <td
-                                                    className={`p-2 text-center w-1/3 ${cellStyle} ${task ? "cursor-pointer hover:underline" : ""} ${isClickable ? "" : "opacity-50"}`}
+                                                    className={`relative p-2 text-center w-1/3 ${cellStyle} ${task ? "cursor-pointer hover:underline group" : ""} ${isClickable ? "" : "opacity-50"}`}
                                                     onClick={
                                                         isClickable
                                                             ? () => {
@@ -174,7 +201,20 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
                                                             : undefined
                                                     }
                                                 >
+                                                    {/* Icon and Status Text */}
+                                                    {task.qc_task.internal_comment && (
+                                                        <CircleAlert className="inline-block mr-1 h-4 w-4 text-warning" />
+                                                    )}
+
+                                                    {/* Status Text */}
                                                     {(isClickable ? getQcStatusKey(statusKey) : getStatusKey(statusKey)) || "-"}
+
+                                                    {/* Tooltip */}
+                                                    {task.qc_task.internal_comment && (
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                            {task.qc_task.internal_comment}
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );
@@ -214,17 +254,30 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
                                             <tr key={task.id} className="border-b hover:bg-gray-20">
                                                 <td className="p-2 w-1/3">{task.item_name}</td>
                                                 <td
-                                                    className={`p-2 text-center w-1/3 ${cellStyle} ${task ? "cursor-pointer hover:underline" : ""} ${isClickable ? "" : "opacity-50"}`}
+                                                    className={`relative p-2 text-center w-1/3 ${cellStyle} ${task ? "cursor-pointer hover:underline group" : ""} ${isClickable ? "" : "opacity-50"}`}
                                                     onClick={
                                                         isClickable
                                                             ? () => {
                                                                 setSelectedTask(task);
-                                                                setSelectedSection("Kitchen");
+                                                                setSelectedSection("Dining, Yard, Foyer");
                                                             }
                                                             : undefined
                                                     }
                                                 >
+                                                    {/* Icon and Status Text */}
+                                                    {task.qc_task.internal_comment && (
+                                                        <CircleAlert className="inline-block mr-1 h-4 w-4 text-warning" />
+                                                    )}
+
+                                                    {/* Status Text */}
                                                     {(isClickable ? getQcStatusKey(statusKey) : getStatusKey(statusKey)) || "-"}
+
+                                                    {/* Tooltip */}
+                                                    {task.qc_task.internal_comment && (
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                            {task.qc_task.internal_comment}
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );
@@ -264,17 +317,30 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
                                             <tr key={task.id} className="border-b hover:bg-gray-20">
                                                 <td className="p-2 w-1/3">{task.item_name}</td>
                                                 <td
-                                                    className={`p-2 text-center w-1/3 ${cellStyle} ${task ? "cursor-pointer hover:underline" : ""} ${isClickable ? "" : "opacity-50"}`}
+                                                    className={`relative p-2 text-center w-1/3 ${cellStyle} ${task ? "cursor-pointer hover:underline group" : ""} ${isClickable ? "" : "opacity-50"}`}
                                                     onClick={
                                                         isClickable
                                                             ? () => {
                                                                 setSelectedTask(task);
-                                                                setSelectedSection("Electrical");
+                                                                setSelectedSection("Dining, Yard, Foyer");
                                                             }
                                                             : undefined
                                                     }
                                                 >
+                                                    {/* Icon and Status Text */}
+                                                    {task.qc_task.internal_comment && (
+                                                        <CircleAlert className="inline-block mr-1 h-4 w-4 text-warning" />
+                                                    )}
+
+                                                    {/* Status Text */}
                                                     {(isClickable ? getQcStatusKey(statusKey) : getStatusKey(statusKey)) || "-"}
+
+                                                    {/* Tooltip */}
+                                                    {task.qc_task.internal_comment && (
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                            {task.qc_task.internal_comment}
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );
@@ -304,7 +370,7 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
                                     if (!diningJob) return null;
 
                                     return diningJob.rpm_tasks.map((task) => {
-                                        const statusKey = task?.status === "completed" ? task.qc_task?.status : task?.status;
+                                        const statusKey = task?.status === "completed" ? task.qc_task?.status : task?.status === 'not-applicable' ? "N/A" : task?.status;
                                         const cellStyle = task?.status === "completed"
                                             ? statusQcColors[getQcStatusKey(statusKey)]
                                             : statusColors[getStatusKey(statusKey)] || "";
@@ -314,17 +380,30 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
                                             <tr key={task.id} className="border-b hover:bg-gray-20">
                                                 <td className="p-2 w-1/3">{task.item_name}</td>
                                                 <td
-                                                    className={`p-2 text-center w-1/3 ${cellStyle} ${task ? "cursor-pointer hover:underline" : ""} ${isClickable ? "" : "opacity-50"}`}
+                                                    className={`relative p-2 text-center w-1/3 ${cellStyle} ${task ? "cursor-pointer hover:underline group" : ""} ${isClickable ? "" : "opacity-50"}`}
                                                     onClick={
                                                         isClickable
                                                             ? () => {
                                                                 setSelectedTask(task);
-                                                                setSelectedSection("Living");
+                                                                setSelectedSection("Dining, Yard, Foyer");
                                                             }
                                                             : undefined
                                                     }
                                                 >
+                                                    {/* Icon and Status Text */}
+                                                    {task.qc_task.internal_comment && (
+                                                        <CircleAlert className="inline-block mr-1 h-4 w-4 text-warning" />
+                                                    )}
+
+                                                    {/* Status Text */}
                                                     {(isClickable ? getQcStatusKey(statusKey) : getStatusKey(statusKey)) || "-"}
+
+                                                    {/* Tooltip */}
+                                                    {task.qc_task.internal_comment && (
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                            {task.qc_task.internal_comment}
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );

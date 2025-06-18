@@ -252,22 +252,6 @@ function ProgressMgnt() {
                                     </button>
                                 </div>
                             )}
-                            <div className="menu-item">
-                                <button
-                                    className="menu-link"
-                                    onClick={handleSendRenoToLark}
-                                >
-                                    <span className="menu-title">
-                                        <div className="flex gap-2 items-center">
-                                            <i className="ki-filled ki-screen text-lg"></i>
-                                            <div className="flex flex-col space-y-1 justify-start items-start">
-                                                <span>Sent Reno to Lark Base</span>
-                                                <span className="text-gray-600 text-xs">Last Sent: {renoProgress.sent_to_lark_date ? renoProgress.sent_to_lark_date : '-'}</span>
-                                            </div>
-                                        </div>
-                                    </span>
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>

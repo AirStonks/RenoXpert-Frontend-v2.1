@@ -852,15 +852,12 @@ function App() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <Link
-                                                    to={LOCAL_PATH_PREFIX + `sales/${progress.sale_id}`}
-                                                    state={{ fromUrl: LOCAL_PATH_PREFIX + 'reno-progress/overview/v3' }}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className="text-orange-500 hover:underline"
-                                                >
-                                                    Sale #{progress.sales_no}
-                                                </Link>
-                                                <div className="relative w-[75%] bg-gray-200 rounded-full h-2 mt-1">
+                                                <div className="flex gap-2">
+                                                    <span className="text-sm text-green-600">
+                                                        {(progress.paid_percentage * 100).toFixed(2)}%
+                                                    </span>
+                                                </div>
+                                                <div className="relative w-full bg-gray-200 rounded-full h-2 mt-1">
                                                     <div
                                                         className="absolute top-0 left-0 h-full bg-blue-300 rounded-full"
                                                         style={{ width: `${100 - progress.remaining_percentage * 100}%` }}
@@ -869,14 +866,6 @@ function App() {
                                                         className="absolute top-0 left-0 h-full bg-green-500 rounded-full"
                                                         style={{ width: `${progress.paid_percentage * 100}%` }}
                                                     ></div>
-                                                </div>
-                                                <div className="flex gap-2 mt-1">
-                                                    <span className="text-xs text-blue-600">
-                                                        {(100 - progress.remaining_percentage * 100).toFixed(2)}%
-                                                    </span>
-                                                    <span className="text-xs text-green-600">
-                                                        {(progress.paid_percentage * 100).toFixed(2)}%
-                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">

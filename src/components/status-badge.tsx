@@ -2,75 +2,17 @@ import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
 import { CheckCircle, Clock, AlertCircle, XCircle, HelpCircle, ChevronDown } from 'lucide-react'
-import { TaskQCStatus } from "../types"
 
 interface TaskStatusBadgeProps {
-    status: TaskQCStatus
+    statusConfig: Record<string, { label: string; icon: any; bgColor: string; textColor: string; iconColor: string; hoverColor: string }>
+    statusOptions: string[]
+    status: string
     isStatic?: boolean
-    onStatusChange?: (newStatus: TaskQCStatus) => void
+    disabled?: boolean
+    onStatusChange?: (newStatus: string) => void
 }
 
-const statusConfig = {
-    "not-started": {
-        label: "To be QC",
-        icon: HelpCircle,
-        bgColor: "bg-gray-100",
-        textColor: "text-gray-800",
-        iconColor: "text-gray-600",
-        hoverColor: "hover:bg-gray-200",
-    },
-    "accepted": {
-        label: "Accepted",
-        icon: CheckCircle,
-        bgColor: "bg-green-100",
-        textColor: "text-green-800",
-        iconColor: "text-green-600",
-        hoverColor: "hover:bg-green-200",
-    },
-    "accepted-with-comment": {
-        label: "Accepted with Comment",
-        icon: AlertCircle,
-        bgColor: "bg-yellow-100",
-        textColor: "text-yellow-800",
-        iconColor: "text-yellow-600",
-        hoverColor: "hover:bg-yellow-200",
-    },
-    "to-rectified": {
-        label: "To Rectified",
-        icon: XCircle,
-        bgColor: "bg-indigo-100",
-        textColor: "text-indigo-800",
-        iconColor: "text-indigo-600",
-        hoverColor: "hover:bg-indigo-200",
-    },
-    "rejected": {
-        label: "Rejected",
-        icon: XCircle,
-        bgColor: "bg-red-100",
-        textColor: "text-red-800",
-        iconColor: "text-red-600",
-        hoverColor: "hover:bg-red-200",
-    },
-    "not-applicable": {
-        label: "Not Applicable",
-        icon: Clock,
-        bgColor: "bg-gray-100",
-        textColor: "text-gray-800",
-        iconColor: "text-gray-600",
-        hoverColor: "hover:bg-gray-200",
-    },
-}
-
-const statusOptions: TaskQCStatus[] = [
-    "not-started",
-    "accepted",
-    "accepted-with-comment",
-    "to-rectified",
-    "rejected",
-    "not-applicable",
-]
-
-export function TaskQCStatusBadge({ status, isStatic = false, onStatusChange }: TaskStatusBadgeProps) {
+export function StatusBadge({ statusConfig, statusOptions, status, isStatic = false, disabled, onStatusChange }: TaskStatusBadgeProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
     const badgeRef = useRef<HTMLButtonElement>(null)
@@ -84,8 +26,10 @@ export function TaskQCStatusBadge({ status, isStatic = false, onStatusChange }: 
         }
     }
 
-    const handleStatusSelect = (newStatus: TaskQCStatus) => {
+    const handleStatusSelect = (newStatus: string) => {
         if (onStatusChange) {
+            console.log('yes');
+
             onStatusChange(newStatus)
         }
         setIsDropdownOpen(false)
@@ -122,7 +66,7 @@ export function TaskQCStatusBadge({ status, isStatic = false, onStatusChange }: 
         }
     }
 
-    const handleOptionKeyDown = (event: React.KeyboardEvent, option: TaskQCStatus) => {
+    const handleOptionKeyDown = (event: React.KeyboardEvent, option: string) => {
         if (event.key === "Enter" || event.key === " ") {
             event.preventDefault()
             handleStatusSelect(option)
@@ -149,7 +93,7 @@ export function TaskQCStatusBadge({ status, isStatic = false, onStatusChange }: 
             }`
     }
 
-    const getOptionClasses = (option: TaskQCStatus) => {
+    const getOptionClasses = (option: string) => {
         const isSelected = option === status
         const baseClasses =
             "w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left transition-colors duration-150 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
@@ -162,7 +106,7 @@ export function TaskQCStatusBadge({ status, isStatic = false, onStatusChange }: 
     }
 
     return (
-        <div className="relative">
+        <div className={`relative ${disabled && 'opacity-20'} `}>
             <button
                 ref={badgeRef}
                 onClick={isStatic ? undefined : handleBadgeClick}

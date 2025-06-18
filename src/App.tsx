@@ -103,6 +103,9 @@ import PMMainV3 from './pages/ProjectManagement/PMMainV3';
 import DIReport from './pages/ProjectManagement/DIReport';
 import { PropertyDetail } from './pages/Property/PropertyDetail';
 import { PropertyEdit } from './pages/Property/PropertyEdit';
+import InvestorInterestForm from './pages/InvestorInterestForm';
+import IIFMain from './pages/InvestorInterestForm/IIFMain';
+import IIFDetail from './pages/InvestorInterestForm/IIFDetail';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -156,6 +159,8 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/registration-forms', element: <RegistrationFormMain />, layout: ProtectedLayout },
         { path: '/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
         { path: '/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
+        { path: '/investor-interest-forms', element: <IIFMain />, layout: ProtectedLayout },
+        { path: '/investor-interest-forms/:id', element: <IIFDetail />, layout: ProtectedLayout },
         { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },
         { path: '/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
         { path: '/orders/:id/ver/:verId', element: <PreviousOrderDetail />, layout: ProtectedLayout },
@@ -250,6 +255,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/test', element: <Test />, layout: null },
         { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
         { path: '/di-form/report', element: <PublicDIReport />, layout: null },
+        { path: '/investor-interest-form', element: <InvestorInterestForm />, layout: null },
     ],
 ];
 
@@ -282,6 +288,8 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/registration-forms', element: <RegistrationFormMain />, layout: ProtectedLayout },
         { path: '/staff/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
         { path: '/staff/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
+        { path: '/staff/investor-interest-forms', element: <IIFMain />, layout: ProtectedLayout },
+        { path: '/staff/investor-interest-forms/:id', element: <IIFDetail />, layout: ProtectedLayout },
         { path: '/staff/orders', element: <OrderMain />, layout: ProtectedLayout },
         { path: '/staff/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
         { path: '/staff/orders/:id/ver/:verId', element: <PreviousOrderDetail />, layout: ProtectedLayout },
@@ -367,6 +375,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/public/test', element: <Test />, layout: null },
         { path: '/public/themakeover/test', element: <MakeoverLanding />, layout: null },
         { path: '/public/di-form/report', element: <PublicDIReport />, layout: null },
+        { path: '/public/investor-interest-form', element: <InvestorInterestForm />, layout: null },
     ],
 ]
 
@@ -374,12 +383,12 @@ function App() {
     const hostname = window.location.hostname;
 
     // Define route groups based on domain
-    const isMainDomain = hostname === 'renoxpert.my' || hostname === 'staging.renoxpert.my' || hostname === 'localhost';
+    const isMainDomain = hostname === 'renoxpert.my' || hostname === 'localhost';
     const isStaffDomain = hostname === 'app.renoxpert.my' || hostname === 'sapp.renoxpert.my' || hostname === 'localhost';
     const isClientDomain = hostname === 'client.renoxpert.my' || hostname === 'sclient.renoxpert.my' || hostname === 'localhost';
     const isOpDomain = hostname === 'op.renoxpert.my' || hostname === 'sop.renoxpert.my' || hostname === 'localhost';
     const isVendorDomain = hostname === 'ven.renoxpert.my' || hostname === 'sven.renoxpert.my' || hostname === 'localhost';
-    const isPublicDomain = hostname === 'public.renoxpert.my' || hostname === 'spublic.renoxpert.my' || hostname === 'localhost';
+    const isPublicDomain = hostname === 'public.renoxpert.my' || hostname === 'staging.renoxpert.my' || hostname === 'localhost';
 
     useEffect(() => {
         KTComponent.init();
