@@ -53,6 +53,7 @@ export const PropertyEdit: React.FC = () => {
             content: {
                 features: [],
                 gallery: [],
+                design_rendering: [],
             },
         },
     })
@@ -63,15 +64,23 @@ export const PropertyEdit: React.FC = () => {
     // Separate state for gallery images
     const [galleryImages, setGalleryImages] = useState<string[]>([])
 
+    // Separate state for gallery images
+    const [designRenderingImages, setDesignRenderingImages] = useState<string[]>([])
+
     // File tracking state - add after existing state declarations
     const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
     const [galleryFiles, setGalleryFiles] = useState<File[]>([])
+    const [designRenderingFiles, setDesignRenderingFiles] = useState<File[]>([])
     const [removedGalleryUrls, setRemovedGalleryUrls] = useState<string[]>([])
+    const [removedDesignRenderingUrls, setRemovedDesignRenderingUrls] = useState<string[]>([])
 
     // Drag and drop state
-    const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
-    const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
-    const dragCounter = useRef(0)
+    const [draggedIndexGallery, setDraggedIndexGallery] = useState<number | null>(null)
+    const [dragOverIndexGallery, setDragOverIndexGallery] = useState<number | null>(null)
+    const [draggedIndexDesign, setDraggedIndexDesign] = useState<number | null>(null)
+    const [dragOverIndexDesign, setDragOverIndexDesign] = useState<number | null>(null)
+    const dragCounterGallery = useRef(0)
+    const dragCounterDesign = useRef(0)
 
     const iconMap = {
         shield: Shield,
@@ -107,6 +116,9 @@ export const PropertyEdit: React.FC = () => {
             // Set gallery images from property ROI content
             const galleryUrls = propertyDetail.propertyRoi?.content?.gallery?.map((item) => item.url || "") || []
             setGalleryImages(galleryUrls.filter((url) => url !== ""))
+            // Set design rendering images from property ROI content
+            const designRenderingUrls = propertyDetail.propertyRoi?.content?.design_rendering?.map((item) => item.url || "") || []
+            setDesignRenderingImages(designRenderingUrls.filter((url) => url !== ""))
             KTModal.init()
         }
     }, [propertyDetail])
@@ -170,6 +182,19 @@ export const PropertyEdit: React.FC = () => {
         }
     }
 
+    const handleDesignRenderingImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            const newImageUrl = URL.createObjectURL(file)
+            const updatedGallery = [...designRenderingImages, newImageUrl]
+            const updatedFiles = [...designRenderingFiles, file] // Track the actual file
+
+            setDesignRenderingImages(updatedGallery)
+            setDesignRenderingFiles(updatedFiles)
+            updateDesignRendering(updatedGallery)
+        }
+    }
+
     const handleGalleryImageRemove = (index: number) => {
         const imageToRemove = galleryImages[index]
         const updatedGallery = galleryImages.filter((_, i) => i !== index)
@@ -185,6 +210,23 @@ export const PropertyEdit: React.FC = () => {
         setGalleryImages(updatedGallery)
         setGalleryFiles(updatedFiles)
         updatePropertyGallery(updatedGallery)
+    }
+
+    const handleDesignRenderingRemove = (index: number) => {
+        const imageToRemove = designRenderingImages[index]
+        const updatedGallery = designRenderingImages.filter((_, i) => i !== index)
+
+        // If it's an existing URL (not a blob URL), add to removed list
+        if (!isBlobUrl(imageToRemove)) {
+            setRemovedDesignRenderingUrls((prev) => [...prev, imageToRemove])
+        }
+
+        // Remove from files array if it exists
+        const updatedFiles = designRenderingFiles.filter((_, i) => i !== index)
+
+        setDesignRenderingImages(updatedGallery)
+        setDesignRenderingFiles(updatedFiles)
+        updateDesignRendering(updatedGallery)
     }
 
     const addGalleryImageByUrl = () => {
@@ -209,61 +251,72 @@ export const PropertyEdit: React.FC = () => {
         }))
     }
 
+    const updateDesignRendering = (updatedGallery: string[]) => {
+        setProperty((prev) => ({
+            ...prev,
+            propertyRoi: {
+                ...prev.propertyRoi,
+                content: {
+                    ...prev.propertyRoi?.content,
+                    design_rendering: updatedGallery.map((url) => ({ url })),
+                },
+            },
+        }))
+    }
+
     // Drag and drop handlers
-    const handleDragStart = (e: React.DragEvent, index: number) => {
-        setDraggedIndex(index)
+    const handleDragStartGallery = (e: React.DragEvent, index: number) => {
+        setDraggedIndexGallery(index)
         e.dataTransfer.effectAllowed = "move"
         e.dataTransfer.setData("text/html", "")
     }
 
-    const handleDragEnd = () => {
-        setDraggedIndex(null)
-        setDragOverIndex(null)
-        dragCounter.current = 0
+    const handleDragEndGallery = () => {
+        setDraggedIndexGallery(null)
+        setDragOverIndexGallery(null)
+        dragCounterGallery.current = 0
     }
 
-    const handleDragOver = (e: React.DragEvent) => {
+    const handleDragOverGallery = (e: React.DragEvent) => {
         e.preventDefault()
         e.dataTransfer.dropEffect = "move"
     }
 
-    const handleDragEnter = (e: React.DragEvent, index: number) => {
+    const handleDragEnterGallery = (e: React.DragEvent, index: number) => {
         e.preventDefault()
-        dragCounter.current++
-        setDragOverIndex(index)
+        dragCounterGallery.current++
+        setDragOverIndexGallery(index)
     }
 
-    const handleDragLeave = (e: React.DragEvent) => {
-        dragCounter.current--
-        if (dragCounter.current === 0) {
-            setDragOverIndex(null)
+    const handleDragLeaveGallery = (e: React.DragEvent) => {
+        dragCounterGallery.current--
+        if (dragCounterGallery.current === 0) {
+            setDragOverIndexGallery(null)
         }
     }
 
-    const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    const handleDropGallery = (e: React.DragEvent, dropIndex: number) => {
         e.preventDefault()
-        dragCounter.current = 0
+        dragCounterGallery.current = 0
 
-        if (draggedIndex === null || draggedIndex === dropIndex) {
-            setDraggedIndex(null)
-            setDragOverIndex(null)
+        if (draggedIndexGallery === null || draggedIndexGallery === dropIndex) {
+            setDraggedIndexGallery(null)
+            setDragOverIndexGallery(null)
             return
         }
 
         const newGalleryImages = [...galleryImages]
         const newGalleryFiles = [...galleryFiles]
 
-        const draggedImage = newGalleryImages[draggedIndex]
-        const draggedFile = newGalleryFiles[draggedIndex]
+        const draggedImage = newGalleryImages[draggedIndexGallery]
+        const draggedFile = newGalleryFiles[draggedIndexGallery]
 
-        // Remove the dragged items
-        newGalleryImages.splice(draggedIndex, 1)
+        newGalleryImages.splice(draggedIndexGallery, 1)
         if (draggedFile) {
-            newGalleryFiles.splice(draggedIndex, 1)
+            newGalleryFiles.splice(draggedIndexGallery, 1)
         }
 
-        // Insert at new position
-        const insertIndex = draggedIndex < dropIndex ? dropIndex - 1 : dropIndex
+        const insertIndex = draggedIndexGallery < dropIndex ? dropIndex - 1 : dropIndex
         newGalleryImages.splice(insertIndex, 0, draggedImage)
         if (draggedFile) {
             newGalleryFiles.splice(insertIndex, 0, draggedFile)
@@ -272,8 +325,73 @@ export const PropertyEdit: React.FC = () => {
         setGalleryImages(newGalleryImages)
         setGalleryFiles(newGalleryFiles)
         updatePropertyGallery(newGalleryImages)
-        setDraggedIndex(null)
-        setDragOverIndex(null)
+        setDraggedIndexGallery(null)
+        setDragOverIndexGallery(null)
+    }
+
+    // Drag and drop handlers for Design Rendering Section
+    const handleDragStartDesign = (e: React.DragEvent, index: number) => {
+        setDraggedIndexDesign(index)
+        e.dataTransfer.effectAllowed = "move"
+        e.dataTransfer.setData("text/html", "")
+    }
+
+    const handleDragEndDesign = () => {
+        setDraggedIndexDesign(null)
+        setDragOverIndexDesign(null)
+        dragCounterDesign.current = 0
+    }
+
+    const handleDragOverDesign = (e: React.DragEvent) => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = "move"
+    }
+
+    const handleDragEnterDesign = (e: React.DragEvent, index: number) => {
+        e.preventDefault()
+        dragCounterDesign.current++
+        setDragOverIndexDesign(index)
+    }
+
+    const handleDragLeaveDesign = (e: React.DragEvent) => {
+        dragCounterDesign.current--
+        if (dragCounterDesign.current === 0) {
+            setDragOverIndexDesign(null)
+        }
+    }
+
+    const handleDropDesign = (e: React.DragEvent, dropIndex: number) => {
+        e.preventDefault()
+        dragCounterDesign.current = 0
+
+        if (draggedIndexDesign === null || draggedIndexDesign === dropIndex) {
+            setDraggedIndexDesign(null)
+            setDragOverIndexDesign(null)
+            return
+        }
+
+        const newDesignImages = [...designRenderingImages]
+        const newDesignFiles = [...designRenderingFiles]
+
+        const draggedImage = newDesignImages[draggedIndexDesign]
+        const draggedFile = newDesignFiles[draggedIndexDesign]
+
+        newDesignImages.splice(draggedIndexDesign, 1)
+        if (draggedFile) {
+            newDesignFiles.splice(draggedIndexDesign, 1)
+        }
+
+        const insertIndex = draggedIndexDesign < dropIndex ? dropIndex - 1 : dropIndex
+        newDesignImages.splice(insertIndex, 0, draggedImage)
+        if (draggedFile) {
+            newDesignFiles.splice(insertIndex, 0, draggedFile)
+        }
+
+        setDesignRenderingImages(newDesignImages)
+        setDesignRenderingFiles(newDesignFiles)
+        updateDesignRendering(newDesignImages)
+        setDraggedIndexDesign(null)
+        setDragOverIndexDesign(null)
     }
 
     const updateFeature = (
@@ -335,7 +453,7 @@ export const PropertyEdit: React.FC = () => {
         setIsSaving(true)
         try {
             // Prepare files object
-            const files: { thumbnail?: File; galleryImages?: File[] } = {}
+            const files: { thumbnail?: File; galleryImages?: File[], designRenderingImages?: File[] } = {}
 
             if (thumbnailFile) {
                 files.thumbnail = thumbnailFile
@@ -345,11 +463,19 @@ export const PropertyEdit: React.FC = () => {
                 files.galleryImages = galleryFiles
             }
 
+            if (designRenderingFiles.length > 0) {
+                files.designRenderingImages = designRenderingFiles
+            }
+
             // Prepare property data with removed gallery URLs
             const propertyDataWithRemovals = {
                 ...property,
                 removed_gallery_urls: removedGalleryUrls,
+                removed_design_rendering_urls: removedDesignRenderingUrls,
             }
+
+            // console.log(propertyId, propertyDataWithRemovals, files);
+
 
             // Use the new API function that handles files
             const response = await updatePropertyWithFiles(propertyId, propertyDataWithRemovals, files)
@@ -371,6 +497,8 @@ export const PropertyEdit: React.FC = () => {
                     setThumbnailImage(response.data.thumbnail_url || "")
                     const galleryUrls = response.data.property_roi?.content?.gallery?.map((item: any) => item.url || "") || []
                     setGalleryImages(galleryUrls.filter((url: string) => url !== ""))
+                    const designRenderingUrls = response.data.property_roi?.content?.design_rendering?.map((item: any) => item.url || "") || []
+                    setDesignRenderingImages(designRenderingUrls.filter((url: string) => url !== ""))
                 }
             }
         } catch (error) {
@@ -660,8 +788,8 @@ export const PropertyEdit: React.FC = () => {
                                 property.propertyRoi.content.features.map((feature, index) => {
                                     const IconComponent = iconMap[feature.icon || "star"]
                                     const colors = colorMap[feature.color || "blue"]
-                                    const title = feature.title || "Feature Title"
-                                    const description = feature.desc || "Feature Description"
+                                    const title = feature.title
+                                    const description = feature.desc
 
                                     return (
                                         <div key={index} className="bg-white/70 border border-gray-200 rounded-2xl p-4">
@@ -740,12 +868,12 @@ export const PropertyEdit: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Enhanced Gallery Images with Drag & Drop */}
-                    <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl border border-white/20 p-6">
+                    {/* Rendering Strategy */}
+                    <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl border border-white/20 p-6 mb-6">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                                 <GalleryThumbnailsIcon className="w-5 h-5" />
-                                Gallery Images
+                                Rendering Strategy Section
                                 {galleryImages.length > 0 && (
                                     <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full font-medium">
                                         {galleryImages.length} {galleryImages.length === 1 ? "image" : "images"}
@@ -804,18 +932,18 @@ export const PropertyEdit: React.FC = () => {
                                         <div
                                             key={`${image}-${index}`}
                                             draggable
-                                            onDragStart={(e) => handleDragStart(e, index)}
-                                            onDragEnd={handleDragEnd}
-                                            onDragOver={handleDragOver}
-                                            onDragEnter={(e) => handleDragEnter(e, index)}
-                                            onDragLeave={handleDragLeave}
-                                            onDrop={(e) => handleDrop(e, index)}
+                                            onDragStart={(e) => handleDragStartGallery(e, index)}
+                                            onDragEnd={handleDragEndGallery}
+                                            onDragOver={handleDragOverGallery}
+                                            onDragEnter={(e) => handleDragEnterGallery(e, index)}
+                                            onDragLeave={handleDragLeaveGallery}
+                                            onDrop={(e) => handleDropGallery(e, index)}
                                             className={`
-                                                relative group cursor-move transition-all duration-200
-                                                ${draggedIndex === index ? "opacity-50 scale-95 rotate-2" : ""}
-                                                ${dragOverIndex === index && draggedIndex !== index ? "scale-105 shadow-lg ring-2 ring-blue-400" : ""}
-                                                ${draggedIndex !== null && draggedIndex !== index ? "opacity-75" : ""}
-                                            `}
+                    relative group cursor-move transition-all duration-200
+                    ${draggedIndexGallery === index ? "opacity-50 scale-95 rotate-2" : ""}
+                    ${dragOverIndexGallery === index && draggedIndexGallery !== index ? "scale-105 shadow-lg ring-2 ring-blue-400" : ""}
+                    ${draggedIndexGallery !== null && draggedIndexGallery !== index ? "opacity-75" : ""}
+                `}
                                         >
                                             <div className="relative overflow-hidden rounded-xl bg-gray-100 aspect-square">
                                                 <img
@@ -824,18 +952,12 @@ export const PropertyEdit: React.FC = () => {
                                                     className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
                                                     draggable={false}
                                                 />
-
-                                                {/* Drag Handle */}
                                                 <div className="absolute top-2 left-2 w-6 h-6 bg-black/50 backdrop-blur-sm rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                                     <GripVertical className="w-3 h-3 text-white" />
                                                 </div>
-
-                                                {/* Image Index */}
                                                 <div className="absolute bottom-2 left-2 w-6 h-6 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center">
                                                     <span className="text-white text-xs font-medium">{index + 1}</span>
                                                 </div>
-
-                                                {/* Remove Button */}
                                                 <button
                                                     onClick={() => handleGalleryImageRemove(index)}
                                                     className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-600 hover:scale-110"
@@ -843,9 +965,7 @@ export const PropertyEdit: React.FC = () => {
                                                 >
                                                     <X className="w-3 h-3" />
                                                 </button>
-
-                                                {/* Overlay for drag state */}
-                                                {draggedIndex === index && (
+                                                {draggedIndexGallery === index && (
                                                     <div className="absolute inset-0 bg-blue-500/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                                                         <div className="text-blue-700 font-medium text-sm">Moving...</div>
                                                     </div>
@@ -864,6 +984,129 @@ export const PropertyEdit: React.FC = () => {
                                             <Plus className="w-4 h-4" />
                                             Add More Images
                                             <input type="file" accept="image/*" onChange={handleGalleryImageUpload} className="hidden" />
+                                        </label>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Design & Rendering */}
+                    <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl border border-white/20 p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <GalleryThumbnailsIcon className="w-5 h-5" />
+                                Design & Rendering Section
+                                {designRenderingImages.length > 0 && (
+                                    <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full font-medium">
+                                        {designRenderingImages.length} {designRenderingImages.length === 1 ? "image" : "images"}
+                                    </span>
+                                )}
+                            </h2>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={addGalleryImageByUrl}
+                                    className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors duration-200 text-sm"
+                                >
+                                    <Link className="w-4 h-4" />
+                                    Add URL
+                                </button>
+                                <label className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors duration-200 cursor-pointer text-sm">
+                                    <Camera className="w-4 h-4" />
+                                    Upload
+                                    <input type="file" accept="image/*" onChange={handleDesignRenderingImageUpload} className="hidden" />
+                                </label>
+                            </div>
+                        </div>
+
+                        {designRenderingImages.length === 0 ? (
+                            <div className="text-center py-12">
+                                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <GalleryThumbnailsIcon className="w-8 h-8 text-gray-400" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">No gallery images yet</h3>
+                                <p className="text-gray-500 mb-6">Add images to showcase your property in the ROI modal</p>
+                                <div className="flex justify-center gap-3">
+                                    <label className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 cursor-pointer">
+                                        <Upload className="w-4 h-4" />
+                                        Upload Images
+                                        <input type="file" accept="image/*" onChange={handleDesignRenderingImageUpload} className="hidden" />
+                                    </label>
+                                    <button
+                                        onClick={addGalleryImageByUrl}
+                                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                                    >
+                                        <Link className="w-4 h-4" />
+                                        Add by URL
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <div className="flex items-center gap-2 text-blue-700">
+                                        <GripVertical className="w-4 h-4" />
+                                        <span className="text-sm font-medium">Drag and drop to reorder images</span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {designRenderingImages.map((image, index) => (
+                                        <div
+                                            key={`${image}-${index}`}
+                                            draggable
+                                            onDragStart={(e) => handleDragStartDesign(e, index)}
+                                            onDragEnd={handleDragEndDesign}
+                                            onDragOver={handleDragOverDesign}
+                                            onDragEnter={(e) => handleDragEnterDesign(e, index)}
+                                            onDragLeave={handleDragLeaveDesign}
+                                            onDrop={(e) => handleDropDesign(e, index)}
+                                            className={`
+                    relative group cursor-move transition-all duration-200
+                    ${draggedIndexDesign === index ? "opacity-50 scale-95 rotate-2" : ""}
+                    ${dragOverIndexDesign === index && draggedIndexDesign !== index ? "scale-105 shadow-lg ring-2 ring-blue-400" : ""}
+                    ${draggedIndexDesign !== null && draggedIndexDesign !== index ? "opacity-75" : ""}
+                `}
+                                        >
+                                            <div className="relative overflow-hidden rounded-xl bg-gray-100 aspect-square">
+                                                <img
+                                                    src={image || "/placeholder.svg"}
+                                                    alt={`Design Rendering ${index + 1}`}
+                                                    className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
+                                                    draggable={false}
+                                                />
+                                                <div className="absolute top-2 left-2 w-6 h-6 bg-black/50 backdrop-blur-sm rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                    <GripVertical className="w-3 h-3 text-white" />
+                                                </div>
+                                                <div className="absolute bottom-2 left-2 w-6 h-6 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                                    <span className="text-white text-xs font-medium">{index + 1}</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleDesignRenderingRemove(index)}
+                                                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-600 hover:scale-110"
+                                                    title="Remove image"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                                {draggedIndexDesign === index && (
+                                                    <div className="absolute inset-0 bg-blue-500/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                                        <div className="text-blue-700 font-medium text-sm">Moving...</div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="mt-6 text-center">
+                                    <p className="text-sm text-gray-500 mb-3">
+                                        Images will appear in this order in the ROI modal gallery
+                                    </p>
+                                    <div className="flex justify-center gap-3">
+                                        <label className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors duration-200 cursor-pointer">
+                                            <Plus className="w-4 h-4" />
+                                            Add More Images
+                                            <input type="file" accept="image/*" onChange={handleDesignRenderingImageUpload} className="hidden" />
                                         </label>
                                     </div>
                                 </div>

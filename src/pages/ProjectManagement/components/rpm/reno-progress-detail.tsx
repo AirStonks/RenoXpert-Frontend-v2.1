@@ -130,14 +130,14 @@ export const RenoPorgressDetailCard = ({ renoProgress, setRenoProgress }: Props)
                             <div className="flex items-center justify-between">
                                 <span className="font-medium text-sm">Send to RPM</span>
                             </div>
-                            <p className="text-[10px] text-gray-500 mt-0.5">Sent Date: {renoProgress.sent_to_lark_date ? renoProgress.sent_to_lark_date : '-'}</p>
+                            <p className="text-[10px] text-gray-500 mt-0.5">Notify Date: {renoProgress.sent_to_lark_date ? renoProgress.sent_to_lark_date : '-'}</p>
                         </div>
                         {renoProgress.rpm_acknowledge_status === 'pending' && (
                             <button
                                 className="btn btn-sm btn-info"
                                 onClick={handleInformRPM}
                             >
-                                Inform RPM
+                                Notify RPM
                             </button>
                         )}
                         {renoProgress.rpm_acknowledge_status === 'informed' && (

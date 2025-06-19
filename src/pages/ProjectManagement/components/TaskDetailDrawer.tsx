@@ -473,7 +473,7 @@ export const TaskDetailDrawer = ({
                                     key={attachment.id || `attachment-${section}-${index}`}
                                     attachment={attachment}
                                     taskId={selectedTask.id || ""}
-                                    taskQcId={section === "qc" ? selectedTask.qc_task?.id || "" : ""}
+                                    taskQcId={section === "qc" && selectedTask.qc_task ? selectedTask.qc_task.id || "" : ""}
                                     index={index}
                                     editMode={editMode}
                                     onAttachmentChanges={onAttachmentChanges}

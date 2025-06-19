@@ -52,7 +52,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
                                                     return (
                                                         <td
                                                             key={`${room}-${item}`}
-                                                            className={`relative p-2 text-center ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline group" : ""}`}
+                                                            className={`relative p-2 text-center ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline group" : ""} ${getStatusKey(task.status) === "Not Applicable" && "font-bold text-xs"}`}
                                                             onClick={() => task && setSelectedTask(task)}
                                                         >
                                                             {/* Icon and Status Text */}

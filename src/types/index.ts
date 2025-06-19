@@ -246,7 +246,10 @@ export interface PropertyROIContent {
     features?: ROICardFeature[],
     gallery?: {
         url?: string
-    }[]
+    }[],
+    design_rendering?: {
+        url?: string
+    }[],
 }
 
 export interface ROICardFeature {

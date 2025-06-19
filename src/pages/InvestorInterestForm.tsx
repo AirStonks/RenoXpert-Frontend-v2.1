@@ -18,6 +18,7 @@ import {
     AlertCircle,
 } from "lucide-react"
 import { submitInvestorInterestForm } from "../services/publicApi";
+import { Slide, toast, ToastContainer } from "react-toastify";
 
 const MEDIA_URL =
     import.meta.env.VITE_APP_ENV === "local"
@@ -68,6 +69,19 @@ function InvestorInterestForm() {
 
     const [errors, setErrors] = useState<FormErrors>({})
     const [isSubmitted, setIsSubmitted] = useState(false)
+
+    const notify = (type: "success" | "error", message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem("theme"),
+            transition: Slide,
+        });
+    };
 
     const unitTypes = ["Studio", "2 Rooms", "3 Rooms", "4+ Rooms", "Dual Key", "Other"]
 
@@ -179,12 +193,15 @@ function InvestorInterestForm() {
 
                 if (response?.success) {
                     setIsSubmitted(true)
-                    console.log("Form submitted:", formData)
                 }
 
             } catch (error) {
                 console.log(error);
             }
+        } else {
+            console.log('yes');
+
+            notify("error", "Please fix the errors in the form before submitting.")
         }
     }
 
@@ -243,7 +260,7 @@ function InvestorInterestForm() {
                             <h1 className="text-4xl font-bold bg-[#D71E42] bg-clip-text text-transparent">
                                 RenoXpert
                             </h1>
-                            <p className="text-lg text-gray-600 font-medium">& <span className="text-[#41C0BE]">Be</span><span className="text-[#F5833C]">Live</span></p>
+                            <p className="text-lg text-gray-500 font-medium text-right">Reno for ROI</p>
                         </div>
                     </div>
                     <h2 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
@@ -686,6 +703,9 @@ function InvestorInterestForm() {
                     </div>
                 </form>
             </div>
+
+
+            <ToastContainer />
         </div>
     )
 }

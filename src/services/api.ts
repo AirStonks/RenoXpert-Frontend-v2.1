@@ -845,7 +845,7 @@ export const fetchProperties = async (searchTerm = '', length = 50) => {
 export const updatePropertyWithFiles = async (
     propertyId: number,
     propertyData: Property,
-    files: { thumbnail?: File; galleryImages?: File[] },
+    files: { thumbnail?: File; galleryImages?: File[], designRenderingImages?: File[] },
 ) => {
     try {
         const formData = new FormData()
@@ -862,6 +862,13 @@ export const updatePropertyWithFiles = async (
         if (files.galleryImages && files.galleryImages.length > 0) {
             files.galleryImages.forEach((file, index) => {
                 formData.append(`gallery_images[${index}]`, file)
+            })
+        }
+
+        // Add design rendering images if exist
+        if (files.designRenderingImages && files.designRenderingImages.length > 0) {
+            files.designRenderingImages.forEach((file, index) => {
+                formData.append(`design_rendering[${index}]`, file)
             })
         }
 
