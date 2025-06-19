@@ -173,9 +173,6 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                         products: selectedPackage.products || [], // Ensure products is included
                     };
 
-                    console.log(packageIsAddon === 'true');
-
-
                     const updatedPackages = [...selectedPackages, newPackage];
                     setSelectedPackages(updatedPackages);
 
@@ -185,8 +182,6 @@ function IncludeOrderQuotationPackageModal({ selectedPackages, setSelectedPackag
                     selectBtn.innerText = 'Remove';
                 }
             }
-
-            console.log('Updated selectedPackages:', selectedPackages);
         }
     };
 

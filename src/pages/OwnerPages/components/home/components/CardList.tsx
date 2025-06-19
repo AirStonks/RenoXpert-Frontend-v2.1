@@ -21,7 +21,7 @@ const CardList: React.FC<CardListProps> = ({ titleIcon, title, items }) => {
             <div className="flex flex-col">
                 <div className="flex items-center space-x-2 text-[#D71E42] mb-3">
                     {titleIcon}
-                    <h3 className="font-bold text-lg">{title}</h3>
+                    <h3 className="font-bold text-lg md:text-xl">{title}</h3>
                 </div>
                 <div className="flex space-x-2 overflow-x-auto pb-2 snap-x snap-mandatory">
                     <div className="grid grid-cols-3 gap-2 justify-items-center">
@@ -34,11 +34,11 @@ const CardList: React.FC<CardListProps> = ({ titleIcon, title, items }) => {
                                         <img
                                             src={item.image}
                                             alt={item.name}
-                                            className="w-full h-20 object-cover text-4xs"
+                                            className="w-full h-20 md:h-48 object-cover text-4xs"
                                         />
                                     </div>
                                 </div>
-                                <p className="text-[#D71E42] font-extrabold text-center text-[8px] leading-none sm:text-xs mt-1">{item.name}</p>
+                                <p className="text-[#D71E42] font-extrabold text-center text-[8px] md:text-lg leading-none sm:text-xs mt-1">{item.name}</p>
                             </div>
                         ))}
                     </div>

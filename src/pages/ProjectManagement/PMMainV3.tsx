@@ -24,7 +24,7 @@ type SortField =
     | 'overall_completion'
     | 'contractual_end_date'
     | 'date_management.sales_date'
-    | 'date_management.reno_date'
+    | 'date_management.defect_permit_date'
     | 'date_management.ch_date'
     | 'ch_rundown'
     | 'date_management.oh_date'
@@ -35,6 +35,20 @@ const statusColors = {
     'On Track': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
     'Completed': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
     'Handed Over': 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
+};
+
+const permitStatusColors = {
+    'Not Applicable': 'bg-gray-100 text-gray-800',
+    'Procurement Done': 'bg-purple-100 text-purple-800',
+    'Pending Stocks': 'bg-orange-100 text-orange-800',
+    'Delivered': 'bg-teal-100 text-teal-800',
+    'Pending Installation': 'bg-yellow-100 text-yellow-800',
+    'In Progress': 'bg-blue-100 text-blue-800',
+    'Completed': 'bg-green-100 text-green-800',
+    'To Rectified': 'bg-indigo-100 text-indigo-800',
+    'Rejected': 'bg-red-100 text-red-800',
+    'Not Available': 'bg-slate-100 text-slate-800',
+    'Not Started': 'bg-slate-100 text-slate-800',
 };
 
 function App() {
@@ -203,6 +217,32 @@ function App() {
         setExpandedRows([]); // Reset expanded rows when switching views
     };
 
+    const getStatusKey = (status: string | undefined) => {
+        if (!status) return 'Not Applicable';
+        switch (status.toLowerCase()) {
+            case 'not-applicable':
+                return 'Not Applicable';
+            case 'procurement-done':
+                return 'Procurement Done';
+            case 'pending-stocks':
+                return 'Pending Stocks';
+            case 'delivered':
+                return 'Delivered';
+            case 'pending-installation':
+                return 'Pending Installation';
+            case 'in-progress':
+                return 'In Progress';
+            case 'completed':
+                return 'Completed';
+            case 'to-rectified':
+                return 'To Rectified';
+            case 'rejected':
+                return 'Rejected';
+            default:
+                return 'Not Started';
+        }
+    };
+
     const getStatus = (progress: RenoProgress) => {
 
         // - On Track
@@ -279,7 +319,7 @@ function App() {
 
     const getRundownColor = (day: number) => {
         if (day < 0) {
-            return 'text-red-500'
+            return 'text-red-500 '
         } else {
             return 'text-green-500';
         }
@@ -388,7 +428,7 @@ function App() {
                             <option value="overall_completion">Overall Completion</option>
                             <option value="contractual_end_date">Permit Approval</option>
                             <option value="date_management.sales_date">Sales Date</option>
-                            <option value="date_management.reno_date">Reno Date</option>
+                            <option value="date_management.defect_permit_date">Permit Date</option>
                             <option value="date_management.ch_date">CH Date</option>
                             <option value="ch_rundown">CH Rundown</option>
                             <option value="date_management.oh_date">OH Date</option>
@@ -691,11 +731,11 @@ function App() {
                                 </th>
                                 <th
                                     className="px-4 py-3 cursor-pointer hover:bg-gray-100"
-                                    onClick={() => handleSortChange('date_management.reno_date')}
+                                    onClick={() => handleSortChange('date_management.defect_permit_date')}
                                 >
-                                    <div className="flex items-center gap-1">
-                                        Reno Date
-                                        {renderSortIndicator('date_management.reno_date')}
+                                    <div className="flex gap-1">
+                                        Permit Date
+                                        {renderSortIndicator('date_management.defect_permit_date')}
                                     </div>
                                 </th>
                                 <th
@@ -707,7 +747,7 @@ function App() {
                                         {renderSortIndicator('date_management.ch_date')}
                                     </div>
                                 </th>
-                                <th
+                                {/* <th
                                     className="px-4 py-3 text-center cursor-pointer hover:bg-gray-100"
                                     onClick={() => handleSortChange('ch_rundown')}
                                 >
@@ -715,7 +755,7 @@ function App() {
                                         CH Rundown
                                         {renderSortIndicator('ch_rundown')}
                                     </div>
-                                </th>
+                                </th> */}
                                 <th
                                     className="px-4 py-3 cursor-pointer hover:bg-gray-100"
                                     onClick={() => handleSortChange('date_management.oh_date')}
@@ -725,13 +765,20 @@ function App() {
                                         {renderSortIndicator('date_management.oh_date')}
                                     </div>
                                 </th>
-                                <th
+                                {/* <th
                                     className="px-4 py-3 text-center cursor-pointer hover:bg-gray-100"
                                     onClick={() => handleSortChange('oh_rundown')}
                                 >
                                     <div className="flex items-center justify-center gap-1">
                                         OH Rundown
                                         {renderSortIndicator('oh_rundown')}
+                                    </div>
+                                </th> */}
+                                <th
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                >
+                                    <div className="flex items-center gap-1">
+                                        RPM
                                     </div>
                                 </th>
                                 <th
@@ -763,18 +810,16 @@ function App() {
                                             <div className="h-4 bg-gray-200 rounded w-full"></div>
                                             <div className="h-4 bg-gray-200 rounded w-full mt-1"></div>
                                             <div className="h-4 bg-gray-200 rounded w-full mt-1"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-full mt-1"></div>
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <div className="h-6 w-6 bg-gray-200 rounded-md mx-auto"></div>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-full"></div>
-                                            <div className="h-2 bg-gray-200 rounded w-3/4 mt-1"></div>
-                                            <div className="h-3 bg-gray-200 rounded w-1/2 mt-1"></div>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-full"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-3/4 mt-1"></div>
                                             <div className="h-3 bg-gray-200 rounded w-3/4 mt-1"></div>
                                         </td>
                                         <td className="px-4 py-3">
@@ -786,14 +831,17 @@ function App() {
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-full"></div>
                                         </td>
-                                        <td className="px-4 py-3 text-center">
+                                        {/* <td className="px-4 py-3 text-center">
                                             <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-                                        </td>
+                                        </td> */}
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-full"></div>
                                         </td>
-                                        <td className="px-4 py-3 text-center">
+                                        {/* <td className="px-4 py-3 text-center">
                                             <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                                        </td> */}
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
@@ -837,10 +885,9 @@ function App() {
                                             <td className="px-4 py-3">{progress.partition || '-'}</td> */}
                                             <td className="px-4 py-3">
                                                 <div className="flex flex-col space-y-1">
-                                                    <span>Single: {progress.sale.order.single_bedroom_count || 0}</span>
                                                     <span>Queen: {progress.sale.order.queen_bedroom_count || 0}</span>
+                                                    <span>Single: {progress.sale.order.single_bedroom_count || 0}</span>
                                                     <span>Studio: {progress.sale.order.studio_count || 0}</span>
-                                                    <span>Bathroom: {progress.sale.order.bathroom_count || 0}</span>
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3 text-center">
@@ -852,29 +899,8 @@ function App() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <Link
-                                                    to={LOCAL_PATH_PREFIX + `sales/${progress.sale_id}`}
-                                                    state={{ fromUrl: LOCAL_PATH_PREFIX + 'reno-progress/overview/v3' }}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className="text-orange-500 hover:underline"
-                                                >
-                                                    Sale #{progress.sales_no}
-                                                </Link>
-                                                <div className="relative w-[75%] bg-gray-200 rounded-full h-2 mt-1">
-                                                    <div
-                                                        className="absolute top-0 left-0 h-full bg-blue-300 rounded-full"
-                                                        style={{ width: `${100 - progress.remaining_percentage * 100}%` }}
-                                                    ></div>
-                                                    <div
-                                                        className="absolute top-0 left-0 h-full bg-green-500 rounded-full"
-                                                        style={{ width: `${progress.paid_percentage * 100}%` }}
-                                                    ></div>
-                                                </div>
-                                                <div className="flex gap-2 mt-1">
-                                                    <span className="text-xs text-blue-600">
-                                                        {(100 - progress.remaining_percentage * 100).toFixed(2)}%
-                                                    </span>
-                                                    <span className="text-xs text-green-600">
+                                                <div className="flex gap-2">
+                                                    <span className="text-md text-gray-900">
                                                         {(progress.paid_percentage * 100).toFixed(2)}%
                                                     </span>
                                                 </div>
@@ -884,6 +910,7 @@ function App() {
                                                     {progress.sale.order.user ? (
                                                         <>
                                                             <span className="font-medium">{progress.sale.order.user.name}</span>
+                                                            <span className="text-xs text-gray-500">+{progress.sale.order.user.country_code} {progress.sale.order.user.phone_no}</span>
                                                             <span className="text-xs text-gray-500">{progress.sale.order.user.email}</span>
                                                         </>
                                                     ) : (
@@ -892,9 +919,29 @@ function App() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">{formatDate(progress.date_management.sales_date)}</td>
-                                            <td className="px-4 py-3">{formatDate(progress.date_management.p2b_date)}</td>
-                                            <td className="px-4 py-3">{formatDate(progress.date_management.ch_date)}</td>
-                                            {progress.status === 'handed-over' ?
+                                            <td className="px-4 py-3">
+                                                <div className="flex flex-col">
+                                                    {formatDate(progress.date_management.defect_permit_date)}
+                                                    <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full ${permitStatusColors[getStatusKey(progress.rpm_jobs[0].rpm_tasks[2].status)]} items-center w-fit`}>
+                                                        {getStatusKey(progress.rpm_jobs[0].rpm_tasks[2].status)}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="flex flex-col gap-1">
+                                                    {formatDate(progress.date_management.ch_date)}
+                                                    {progress.status === 'handed-over' ?
+                                                        <span className="font-bold">-</span>
+                                                        :
+                                                        <div className={"inline-flex space-x-2 text-sm font-medium rounded-full items-center " + getRundownColor(calculateChdRundown(progress))}>
+                                                            {getRundownIcon(calculateChdRundown(progress))}
+                                                            <span className="font-bold">{getRundownDayLabel(calculateChdRundown(progress))}</span>
+                                                        </div>
+                                                    }
+                                                </span>
+
+                                            </td>
+                                            {/* {progress.status === 'handed-over' ?
                                                 <td className='px-4 py-3 text-center'>
                                                     <span className="font-bold">-</span>
                                                 </td>
@@ -905,9 +952,24 @@ function App() {
                                                         <span className="font-bold">{getRundownDayLabel(calculateChdRundown(progress))}</span>
                                                     </div>
                                                 </td>
-                                            }
-                                            <td className="px-4 py-3">{formatDate(progress.date_management.oh_date)}</td>
-                                            {progress.status === 'handed-over' ?
+                                            } */}
+                                            <td className="px-4 py-3">
+                                                <span className="flex flex-col gap-1">
+                                                    {formatDate(progress.date_management.oh_date)}
+                                                    {progress.status === 'handed-over' ?
+                                                        <span className="font-bold">-</span>
+                                                        :
+                                                        <div className={"inline-flex space-x-2 text-sm font-medium rounded-full items-center " + getRundownColor(calculateOhdRundown(progress))}>
+                                                            {getRundownIcon(calculateOhdRundown(progress))}
+                                                            <span className="font-bold">{getRundownDayLabel(calculateOhdRundown(progress))}</span>
+                                                        </div>
+                                                    }
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {progress.rpm_jobs[1]?.rpm_tasks[2]?.status === 'completed' ? formatDate(progress.rpm_jobs[1]?.rpm_tasks[2]?.updated_at) : '-'}
+                                            </td>
+                                            {/* {progress.status === 'handed-over' ?
                                                 <td className='px-4 py-3 text-center'>
                                                     <span className="font-bold">-</span>
                                                 </td>
@@ -918,7 +980,7 @@ function App() {
                                                         <span className="font-bold">{getRundownDayLabel(calculateOhdRundown(progress))}</span>
                                                     </div>
                                                 </td>
-                                            }
+                                            } */}
                                             <td className="px-4 py-3 text-center">
                                                 <span className="text-sm">{(progress.completion.overall_completion * 100).toFixed(2)}%</span>
                                             </td>
@@ -995,8 +1057,8 @@ function App() {
                                                                         <p className="text-orange-600">{formatDate(progress.sales_date)}</p>
                                                                     </div>
                                                                     <div>
-                                                                        <p className="font-medium text-gray-700">Reno Date</p>
-                                                                        <p className="text-orange-600">{formatDate(progress.reno_date)}</p>
+                                                                        <p className="font-medium text-gray-700">Permit Date</p>
+                                                                        <p className="text-orange-600">{formatDate(progress.defect_permit_date)}</p>
                                                                     </div>
                                                                     <div>
                                                                         <p className="font-medium text-gray-700">CH Date</p>

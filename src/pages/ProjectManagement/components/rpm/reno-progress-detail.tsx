@@ -1,9 +1,38 @@
 import { useCallback } from "react";
 import { TaskStatusBadge } from "../../../../components/task-status-badge";
 import { RenoProgress } from "../../../../types";
+import { CheckCircle, Clock } from "lucide-react";
+import { StatusBadge } from "../../../../components/status-badge";
+import { sendRenoToLark } from "../../../../services/api";
+import { Slide, toast } from "react-toastify";
+
+const customStatusOptions: string[] = [
+    'not-sent',
+    'sent',
+]
+
+const customStatusConfig = {
+    "not-sent": {
+        label: "Not Sent",
+        icon: Clock,
+        bgColor: "bg-yellow-100",
+        textColor: "text-yellow-800",
+        iconColor: "text-yellow-600",
+        hoverColor: "hover:bg-yellow-200",
+    },
+    "sent": {
+        label: "Completed",
+        icon: CheckCircle,
+        bgColor: "bg-green-100",
+        textColor: "text-green-800",
+        iconColor: "text-green-600",
+        hoverColor: "hover:bg-green-200",
+    },
+}
 
 interface Props {
     renoProgress: RenoProgress;
+    setRenoProgress?: React.Dispatch<React.SetStateAction<RenoProgress>>
 }
 
 const formatDate = (date: string) => {
@@ -25,7 +54,39 @@ const formatDate = (date: string) => {
     }
 };
 
-export const RenoPorgressDetailCard = ({ renoProgress }: Props) => {
+export const RenoPorgressDetailCard = ({ renoProgress, setRenoProgress }: Props) => {
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
+
+    const handleInformRPM = async () => {
+        try {
+            const response = await sendRenoToLark(Number(renoProgress.id)!);
+
+            if (response?.success) {
+
+                setRenoProgress({
+                    ...renoProgress,
+                    sent_to_lark_date: response.data.sent_to_lark_date,
+                    rpm_acknowledge_status: 'informed'
+                });
+
+                notify('success', 'Reno has been sent to Lark successfully.');
+                return;
+            }
+        } catch (error) {
+            notify('error', 'Failed to send Reno to Lark.');
+        }
+    }
 
     return (
         <div className="shadow-md rounded-xl overflow-hidden bg-white w-full">
@@ -38,12 +99,12 @@ export const RenoPorgressDetailCard = ({ renoProgress }: Props) => {
             </div>
             <div className="p-2">
                 <ul className="space-y-1">
-                    <li className="p-2 rounded-lg bg-white shadow-sm">
+                    {/* <li className="p-2 rounded-lg bg-white shadow-sm">
                         <div className="flex items-center justify-between">
                             <span className="font-medium text-sm">Sales Date</span>
                         </div>
                         <p className="text-xs text-gray-600 mt-0.5">{formatDate(renoProgress.date_management.sales_date)}</p>
-                    </li>
+                    </li> */}
                     <li className="p-2 rounded-lg bg-white shadow-sm">
                         <div className="flex items-center justify-between">
                             <span className="font-medium text-sm">Payment</span>
@@ -59,19 +120,38 @@ export const RenoPorgressDetailCard = ({ renoProgress }: Props) => {
                             ></div>
                         </div>
                         <div className="flex gap-1 mt-0.5">
-                            <span className="text-[10px] text-blue-600">
-                                {(100 - renoProgress.remaining_percentage * 100).toFixed(2)}%
-                            </span>
-                            <span className="text-[10px] text-green-600">
-                                {(renoProgress.paid_percentage * 100).toFixed(2)}%
+                            <span className="text-sm text-green-600">
+                                {(renoProgress.paid_percentage * 100).toFixed(2)}% Paid
                             </span>
                         </div>
                     </li>
-                    <li className="p-2 rounded-lg bg-white shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <span className="font-medium text-sm">Delivery Date</span>
+                    <li className="p-2 rounded-lg bg-white shadow-sm flex justify-between">
+                        <div className="flex flex-col">
+                            <div className="flex items-center justify-between">
+                                <span className="font-medium text-sm">Send to RPM</span>
+                            </div>
+                            <p className="text-[10px] text-gray-500 mt-0.5">Notify Date: {renoProgress.sent_to_lark_date ? renoProgress.sent_to_lark_date : '-'}</p>
                         </div>
-                        <p className="text-[10px] text-gray-500 mt-0.5">{formatDate(renoProgress.date_management.oh_date)}</p>
+                        {renoProgress.rpm_acknowledge_status === 'pending' && (
+                            <button
+                                className="btn btn-sm btn-info"
+                                onClick={handleInformRPM}
+                            >
+                                Notify RPM
+                            </button>
+                        )}
+                        {renoProgress.rpm_acknowledge_status === 'informed' && (
+                            <span className="inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 items-center">Informed</span>
+                        )}
+                        {renoProgress.rpm_acknowledge_status === 'acknowledged' && (
+                            <span className="inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-green-100 text-green-800 items-center">Acknowledged</span>
+                        )}
+                        {/* <StatusBadge
+                            statusConfig={customStatusConfig}
+                            statusOptions={customStatusOptions}
+                            status={renoProgress.sent_to_lark_date ? 'sent' : 'not-sent'}
+                            onStatusChange={() => handleChangeStatus()}
+                        /> */}
                     </li>
                 </ul>
             </div>

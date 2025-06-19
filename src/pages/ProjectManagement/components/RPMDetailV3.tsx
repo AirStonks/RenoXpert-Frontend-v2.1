@@ -25,7 +25,7 @@ const statusColors = {
 };
 
 const statusQcColors = {
-    'Not Started': 'bg-gray-100 text-gray-800',
+    'To be QC': 'bg-gray-100 text-gray-800',
     'Accepted': 'bg-green-100 text-green-800',
     'Accepted with Comment': 'bg-yellow-100 text-yellow-800',
     'To Rectified': 'bg-indigo-100 text-indigo-800',
@@ -79,7 +79,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
         if (!status) return 'Not Available';
         switch (status.toLowerCase()) {
             case 'not-started':
-                return 'Not Started';
+                return 'To be QC';
             case 'accepted':
                 return 'Accepted';
             case 'accepted-with-comment':
@@ -476,6 +476,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                         <>
                             <RenoPorgressDetailCard
                                 renoProgress={renoProgress}
+                                setRenoProgress={setRenoProgress}
                             />
 
                             <VPStatusCard

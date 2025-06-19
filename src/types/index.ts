@@ -246,7 +246,10 @@ export interface PropertyROIContent {
     features?: ROICardFeature[],
     gallery?: {
         url?: string
-    }[]
+    }[],
+    design_rendering?: {
+        url?: string
+    }[],
 }
 
 export interface ROICardFeature {
@@ -549,6 +552,24 @@ export interface OwnerRegistrationForm {
             file_url?: string;
         }
     }
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface InvestorInterest {
+    id?: string;
+    status?: "new" | "reviewed" | "contacted" | "closed";
+    full_name?: string;
+    email: string;
+    mobile_number: string;
+    property_name: string;
+    unit_type: string;
+    keys_collected: string;
+    concerns: string[];
+    rental_strategy: string[];
+    support_needed: string[];
+    preferred_contact: string;
+    preferred_time: string;
     created_at?: string,
     updated_at?: string,
 }
@@ -1153,6 +1174,7 @@ export interface RenoProgress {
     completed_at?: string,
     rpm_version?: number,
     sent_to_lark_date?: string,
+    rpm_acknowledge_status?: string,
     is_converted?: boolean,
     created_at?: string,
     updated_at?: string,

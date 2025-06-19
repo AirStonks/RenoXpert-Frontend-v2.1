@@ -987,7 +987,7 @@ function OrderDetail() {
                                         >
                                             <div className="flex flex-col">
                                                 <Link
-                                                    to={LOCAL_PATH_PREFIX + `order/${orderDetail.id}/ver/${orderQuotation.version}`}
+                                                    to={LOCAL_PATH_PREFIX + `orders/${orderDetail.id}/ver/${orderQuotation.version}`}
                                                     className="flex items-center flex-wrap gap-3.5 cursor-pointer text-orange-500 font-semibold text-sm">
                                                     {orderDetail.order_no}-{String.fromCharCode(64 + orderQuotation.version)}
                                                 </Link>

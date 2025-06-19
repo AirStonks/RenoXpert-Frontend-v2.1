@@ -120,15 +120,46 @@ export const ROIProgramModal: React.FC<ROIProgramModalProps> = ({ isOpen, proper
                             )}
                         </div>
 
-                        {/* Property Gallery - Single Column */}
+                        {/* Rendering Strategy - Single Column */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-sm font-semibold text-gray-900">Property Gallery</h4>
+                                <h4 className="text-md font-semibold text-gray-900">Rendering Strategy</h4>
                             </div>
 
                             <div className="space-y-2 pr-2">
                                 {property?.propertyRoi?.content?.gallery?.length > 0 ? (
                                     property.propertyRoi.content.gallery.map((item, index) => (
+                                        <div key={index} className="relative group cursor-pointer">
+                                            {item.url ? (
+                                                <img
+                                                    src={item.url}
+                                                    alt={`Property view ${index + 1}`}
+                                                    className="w-full h-full object-cover rounded-lg transition-transform duration-200 group-hover:scale-[1.02]"
+                                                />
+                                            ) : (
+                                                <NoImagePlaceholder height="12rem" className="w-full object-cover rounded-lg" />
+                                            )}
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 rounded-lg" />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center p-4 text-gray-600">
+                                        <NoImagePlaceholder height="12rem" className="w-full object-cover rounded-lg" />
+                                        <p className="text-sm mt-2">No gallery images available for this property.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Design & Rendering - Single Column */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-md font-semibold text-gray-900">Design & Rendering</h4>
+                            </div>
+
+                            <div className="space-y-2 pr-2">
+                                {property?.propertyRoi?.content?.design_rendering?.length > 0 ? (
+                                    property.propertyRoi.content.design_rendering.map((item, index) => (
                                         <div key={index} className="relative group cursor-pointer">
                                             {item.url ? (
                                                 <img

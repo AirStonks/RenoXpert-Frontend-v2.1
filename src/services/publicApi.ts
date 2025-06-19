@@ -51,3 +51,13 @@ export const fetchDIFormWithHashedString = async (hashedString: string) => {
         throw error; // Ensure to throw the error if needed
     }
 }
+
+export const submitInvestorInterestForm = async (data: any) => {
+    try {
+        const response = await axios.post(API_URL + `investor-interest-form`, data);
+        return response.data; // Return product data
+    } catch (error) {
+        console.log(error);
+        throw error; // Ensure to throw the error if needed
+    }
+}

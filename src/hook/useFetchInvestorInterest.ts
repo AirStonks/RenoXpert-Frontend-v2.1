@@ -1,19 +1,19 @@
-// src/hooks/useFetchProperty.ts
+// src/hooks/useFetchInvestorInterest.ts
 
 import { useState, useEffect } from 'react';
-import { fetchProperty } from '../services/api';
-import { Property } from '../types';
+import { InvestorInterest } from '../types';
+import { fetchInvestorInterest } from '../services/api';
 
-const useFetchProperty = (propertyId: number | null) => {
-    const [propertyDetail, setProperty] = useState<Property | null>(null);
+const useFetchInvestorInterest = (formId: number | null) => {
+    const [investorInterestDetail, setInvestorInterest] = useState<InvestorInterest | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const abortController = new AbortController();
 
     useEffect(() => {
-        if (propertyId === null) {
-            setLoading(false); // No need to load if propertyId is null
-            setProperty(null);
+        if (formId === null) {
+            setLoading(false); // No need to load if formId is null
+            setInvestorInterest(null);
             setError(null);
             return; // Exit early
         }
@@ -21,8 +21,8 @@ const useFetchProperty = (propertyId: number | null) => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const data = await fetchProperty(propertyId, abortController.signal);
-                setProperty(data.data);
+                const data = await fetchInvestorInterest(formId, abortController.signal);
+                setInvestorInterest(data.data);
                 setLoading(false);
             } catch (err: any) {
                 if (err.name === 'AbortError') {
@@ -40,9 +40,9 @@ const useFetchProperty = (propertyId: number | null) => {
             abortController.abort();
         };
 
-    }, [propertyId]);
+    }, [formId]);
 
-    return { propertyDetail, loading, error, abort: () => abortController.abort() };
+    return { investorInterestDetail, loading, error, abort: () => abortController.abort() };
 };
 
-export default useFetchProperty;
+export default useFetchInvestorInterest;

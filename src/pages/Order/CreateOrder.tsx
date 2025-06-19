@@ -200,8 +200,6 @@ function CreateOrder() {
 
             return acc;
         }, {} as Record<string, { total_price: number; cogs: number; quantity: number }>);
-
-        console.log(categoryTotals);
         
 
         // Calculate filtered total_amount (based on total_price)

@@ -845,7 +845,7 @@ export const fetchProperties = async (searchTerm = '', length = 50) => {
 export const updatePropertyWithFiles = async (
     propertyId: number,
     propertyData: Property,
-    files: { thumbnail?: File; galleryImages?: File[] },
+    files: { thumbnail?: File; galleryImages?: File[], designRenderingImages?: File[] },
 ) => {
     try {
         const formData = new FormData()
@@ -862,6 +862,13 @@ export const updatePropertyWithFiles = async (
         if (files.galleryImages && files.galleryImages.length > 0) {
             files.galleryImages.forEach((file, index) => {
                 formData.append(`gallery_images[${index}]`, file)
+            })
+        }
+
+        // Add design rendering images if exist
+        if (files.designRenderingImages && files.designRenderingImages.length > 0) {
+            files.designRenderingImages.forEach((file, index) => {
+                formData.append(`design_rendering[${index}]`, file)
             })
         }
 
@@ -1445,6 +1452,38 @@ export const updateRegistrationForm = async (form: OwnerRegistrationForm) => {
         handle401Error(error as AxiosError);
     }
 };
+
+export const investorInterestIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, signal?: AbortSignal) => {
+    try {
+        const response = await axios.get(API_URL + 'investor-interest-forms', {
+            headers: getAuthHeaders(),
+            signal,
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
+export const fetchInvestorInterest = async (formId: number, signal?: AbortSignal) => {
+    try {
+        const response = await axios.get(API_URL + `investor-interest-forms/${formId}`, {
+            headers: getAuthHeaders(),
+            signal
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
 
 export const fetchRenoProgress = async (renoProgressId: number) => {
     try {
