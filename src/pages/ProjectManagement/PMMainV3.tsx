@@ -456,7 +456,7 @@ function App() {
                         </button>
                         <button
                             onClick={() => setIsCreateRenoProgressModalOpen(true)}
-                            className={`flex items-center px-4 py-2 rounded-xl font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 opacity-30`}
+                            className={`flex items-center px-4 py-2 rounded-xl font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600`}
                         >
                             Create Reno Progress
                         </button>
