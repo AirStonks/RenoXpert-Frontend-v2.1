@@ -106,6 +106,7 @@ import { PropertyEdit } from './pages/Property/PropertyEdit';
 import InvestorInterestForm from './pages/InvestorInterestForm';
 import IIFMain from './pages/InvestorInterestForm/IIFMain';
 import IIFDetail from './pages/InvestorInterestForm/IIFDetail';
+import OrderConfirmSuccess from './pages/OwnerPages/OrderConfirmSuccess';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -211,28 +212,19 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/reno-progress', element: <OwnerHome />, layout: OwnerProtectedLayout },
         { path: '/profile', element: <OwnerHome />, layout: OwnerProtectedLayout },
         { path: '/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
-        // { path: '/owner/home', element: <OwnerHome />, layout: OwnerProtectedLayout },
         { path: '/invoice/:id/view', element: <ViewQuotation />, layout: OwnerProtectedLayout },
         { path: '/invoice/:id/payment/success', element: <PaymentSuccess />, layout: OwnerProtectedLayout },
         { path: '/invoice/:id/payment/error', element: <PaymentError />, layout: OwnerProtectedLayout },
         { path: '/success/test', element: <PaymentSuccess />, layout: null },
-        // { path: '/owner/form/reno-registration-forms/:id', element: <RenoRegistrationFormDetail />, layout: OwnerProtectedLayout },
         { path: '/form/reno-registration-forms/:id', element: <RenoRegistrationFormDetail />, layout: OwnerProtectedLayout },
-        // { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
         { path: '/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
         { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
-        // { path: '/owner/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
-        { path: '/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
-        // { path: '/owner/reno-registration-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
-        { path: '/reno-registration-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
-        // { path: '/owner/reno/progress/:id', element: <RenoProgressDetail />, layout: OwnerProtectedLayout },
+        { path: '/quotation-request-form', element: <OwnerRenoRegistrationForm />, layout: null },
+        { path: '/quotation-request-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
         { path: '/reno/progress/:id', element: <RenoProgressDetail />, layout: OwnerProtectedLayout },
         { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
-        // { path: '/owner/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },
         { path: '/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },
-        // { path: '/owner/reno/progress/:id/phase/:phase/attachments', element: <RenoProgressPhaseAttachments />, layout: OwnerProtectedLayout },
         { path: '/reno/progress/:id/phase/:phase/attachments', element: <RenoProgressPhaseAttachments />, layout: OwnerProtectedLayout },
-        // { path: '/owner/order/:id/customize-addons', element: <CustomAddonPackage />, layout: OwnerProtectedLayout },
         { path: '/order/:id/customize-addons', element: <CustomAddonPackage />, layout: OwnerProtectedLayout },
     ],
     // Operation
@@ -346,8 +338,9 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/owner/form/reno-registration-forms/:id', element: <RenoRegistrationFormDetail />, layout: OwnerProtectedLayout },
         { path: '/owner/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
         { path: '/owner/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
-        { path: '/owner/reno-registration-form', element: <OwnerRenoRegistrationForm />, layout: null },
-        { path: '/owner/reno-registration-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
+        { path: '/owner/confirm/order', element: <OrderConfirmSuccess />, layout: null },
+        { path: '/owner/quotation-request-form', element: <OwnerRenoRegistrationForm />, layout: null },
+        { path: '/owner/quotation-request-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
         { path: '/owner/reno/progress/:id', element: <RenoProgressDetail />, layout: OwnerProtectedLayout },
         { path: '/owner/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
         { path: '/owner/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },

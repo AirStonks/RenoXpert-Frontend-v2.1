@@ -8,7 +8,7 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { staffLoginToOwner } from '../../services/auth';
-import { Slide, toast } from 'react-toastify';
+import { Slide, toast, ToastContainer } from 'react-toastify';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 const IS_LOCAL = window.location.hostname === 'localhost';
@@ -299,6 +299,8 @@ const OwnerLogin: React.FC = () => {
                     setShowOtpForm={setShowOtpForm}
                 />
             )}
+            
+            <ToastContainer />
         </>
     );
 };

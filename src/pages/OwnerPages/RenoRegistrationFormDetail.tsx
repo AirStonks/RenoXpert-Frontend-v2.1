@@ -21,7 +21,7 @@ function RenoRegistrationFormDetail() {
     const { form, loading, error } = useFetchOwnerRegistrationForm(formId);
 
     useEffect(() => {
-        document.title = "Reno Registration Form Detail | RenoXpert";
+        document.title = "Quotation Request Form Detail | RenoXpert";
     })
 
     if (loading) return <Loading />;
@@ -36,7 +36,7 @@ function RenoRegistrationFormDetail() {
                         to={LOCAL_PATH_PREFIX + 'home'}
                         className="ki-solid ki-arrow-left items-center">
                     </Link>
-                    <span className="text-lg font-semibold">[Reno] Registration Form</span>
+                    <span className="text-lg font-semibold">Quotation Request Form</span>
                 </div>
                 {/* <button className="btn btn-sm btn-icon btn-light btn-clear shrink-0">
                     <i className="ki-filled ki-printer"></i>

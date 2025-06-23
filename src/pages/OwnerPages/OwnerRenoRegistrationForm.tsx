@@ -254,7 +254,7 @@ function OwnerRenoRegistrationForm() {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
 
     useEffect(() => {
-        document.title = "Reno Registration Form | RenoXpert";
+        document.title = "Quotation Request Form | RenoXpert";
         KTComponent.init();
         getPropertiesSelection();
         checkOwnerExists();
@@ -928,7 +928,7 @@ function OwnerRenoRegistrationForm() {
                     const response = await submitRegistrationForm(formDataToSend);
 
                     if (response?.success) {
-                        navigate(LOCAL_PATH_PREFIX + 'reno-registration-form/success');
+                        navigate(LOCAL_PATH_PREFIX + 'quotation-request-form/success');
                     } else {
                         console.log('error');
                     }
@@ -977,7 +977,7 @@ function OwnerRenoRegistrationForm() {
                                 :
                                 <div className="card w-full">
                                     <div className="card-header py-2">
-                                        <h2 className="text-slate-900 text-lg font-semibold">[Reno] Registration Form</h2>
+                                        <h2 className="text-slate-900 text-lg font-semibold">Quotation Request Form</h2>
                                     </div>
                                     <div className="card-body flex flex-col gap-6">
                                         <div className="flex badge badge-dark badge-lg font-bold py-4">
@@ -1854,7 +1854,7 @@ function OwnerRenoRegistrationForm() {
                                                 className="ki-solid ki-arrow-left items-center">
                                             </Link>
                                         }
-                                        <h2 className="text-slate-900 text-lg font-semibold">[Reno] Registration Form</h2>
+                                        <h2 className="text-slate-900 text-lg font-semibold">Quotation Request Form</h2>
                                     </div>
                                 </div>
                                 <div className="card-body">

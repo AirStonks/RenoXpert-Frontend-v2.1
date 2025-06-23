@@ -116,21 +116,26 @@ const OTPConfirmOrder: React.FC = () => {
 
             const response = await axios.post(`${API_URL}sms-otp/verify`, requestBody); // Add your API endpoint here
 
-            console.log(response);
-
             if (response.data.status === 'verified') {
                 const response = await confirmOrder(Number(state.orderId));
 
                 if (response?.success) {
-                    notify('success', 'Status updated.');
-
-                    navigate(LOCAL_PATH_PREFIX + `order/overview/id/${state.orderId}`);
+                    navigate(LOCAL_PATH_PREFIX + `confirm/order?success`, {
+                        state: {
+                            body: {
+                                order_id: response.data.order_id,
+                                quotation_no: response.data.quotation_no,
+                            }
+                        }
+                    });
                 }
             } else {
                 console.log('Invalid');
+                notify('error', 'Invalid OTP code. Please try again.');
             }
         } catch (error) {
             console.error('Error fetching order details:', error);
+            notify('error', 'Error verifying OTP. Please try again.');
         }
     };
 
