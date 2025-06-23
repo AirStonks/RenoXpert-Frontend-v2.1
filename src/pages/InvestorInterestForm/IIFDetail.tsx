@@ -62,6 +62,7 @@ const strategyLabels: { [key: string]: string } = {
 }
 
 const supportLabels: { [key: string]: string } = {
+    "be_powererd": "I'm interested about BePowered 2.0 Program",
     quotation: "Renovation quotation",
     feasibility: "CoLiving feasibility check",
     consultant: "Speak to consultant",
