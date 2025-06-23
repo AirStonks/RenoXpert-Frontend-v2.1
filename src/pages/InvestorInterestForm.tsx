@@ -113,6 +113,7 @@ function InvestorInterestForm() {
     ]
 
     const supportOptions = [
+        { id: "be_powererd", label: "I'm interested about BePowered 2.0 Program" },
         { id: "quotation", label: "I want a renovation quotation" },
         { id: "feasibility", label: "I want a CoLiving feasibility check on my unit" },
         { id: "consultant", label: "I want to speak to a property consultant" },
