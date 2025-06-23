@@ -63,7 +63,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                             {/* Tooltip */}
                                                             {task.internal_comment && (
-                                                                <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-3 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                                <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
                                                                     {task.internal_comment}
                                                                 </div>
                                                             )}
@@ -117,7 +117,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
                                                     return (
                                                         <td
                                                             key={`${room}-${item}`}
-                                                            className={`relative p-2 text-center ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline group" : ""}`}
+                                                            className={`relative p-2 text-center ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline group" : ""} ${getStatusKey(task.status) === "Not Applicable" && "font-bold text-xs"}`}
                                                             onClick={() => task && setSelectedTask(task)}
                                                         >
                                                             {/* Icon and Status Text */}
@@ -128,7 +128,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                             {/* Tooltip */}
                                                             {task.internal_comment && (
-                                                                <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-3 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                                <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
                                                                     {task.internal_comment}
                                                                 </div>
                                                             )}
@@ -169,7 +169,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
                                             <tr key={task.id} className="border-b hover:bg-gray-50">
                                                 <td className="p-2 w-1/3">{task.item_name}</td>
                                                 <td
-                                                    className={`relative p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline group" : ""}`}
+                                                    className={`relative p-2 text-center ${statusColors[status]} ${task ? "cursor-pointer hover:underline group" : ""} ${getStatusKey(task.status) === "Not Applicable" && "font-bold text-xs"}`}
                                                     onClick={() => {
                                                         task && setSelectedTask(task);
                                                         setSelectedSection("Dining, Yard, Foyer");
@@ -185,7 +185,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                     {/* Tooltip */}
                                                     {task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
                                                             {task.internal_comment}
                                                         </div>
                                                     )}
@@ -222,7 +222,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
                                             <tr key={task.id} className="border-b hover:bg-gray-50">
                                                 <td className="p-2 w-1/3">{task.item_name}</td>
                                                 <td
-                                                    className={`relative p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline group" : ""}`}
+                                                    className={`relative p-2 text-center ${statusColors[status]} ${task ? "cursor-pointer hover:underline group" : ""} ${getStatusKey(task.status) === "Not Applicable" && "font-bold text-xs"}`}
                                                     onClick={() => {
                                                         task && setSelectedTask(task);
                                                         setSelectedSection("Dining, Yard, Foyer");
@@ -238,7 +238,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                     {/* Tooltip */}
                                                     {task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
                                                             {task.internal_comment}
                                                         </div>
                                                     )}
@@ -275,7 +275,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
                                             <tr key={task.id} className="border-b hover:bg-gray-50">
                                                 <td className="p-2 w-1/3">{task.item_name}</td>
                                                 <td
-                                                    className={`relative p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline group" : ""}`}
+                                                    className={`relative p-2 text-center ${statusColors[status]} ${task ? "cursor-pointer hover:underline group" : ""} ${getStatusKey(task.status) === "Not Applicable" && "font-bold text-xs"}`}
                                                     onClick={() => {
                                                         task && setSelectedTask(task);
                                                         setSelectedSection("Dining, Yard, Foyer");
@@ -291,7 +291,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                     {/* Tooltip */}
                                                     {task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
                                                             {task.internal_comment}
                                                         </div>
                                                     )}
@@ -328,7 +328,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
                                             <tr key={task.id} className="border-b hover:bg-gray-50">
                                                 <td className="p-2 w-1/3">{task.item_name}</td>
                                                 <td
-                                                    className={`relative p-2 text-center w-1/3 ${statusColors[status]} ${task ? "cursor-pointer hover:underline group" : ""}`}
+                                                    className={`relative p-2 text-center ${statusColors[status]} ${task ? "cursor-pointer hover:underline group" : ""} ${getStatusKey(task.status) === "Not Applicable" && "font-bold text-xs"}`}
                                                     onClick={() => {
                                                         task && setSelectedTask(task);
                                                         setSelectedSection("Dining, Yard, Foyer");
@@ -344,7 +344,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                     {/* Tooltip */}
                                                     {task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
                                                             {task.internal_comment}
                                                         </div>
                                                     )}

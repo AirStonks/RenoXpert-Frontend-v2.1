@@ -13,6 +13,7 @@ import {
     ListBulletIcon,
 } from '@heroicons/react/24/solid';
 import { CheckIcon, ListFilterIcon, MinusCircleIcon, XIcon } from 'lucide-react';
+import AddRenoProgressModal from './components/Modals/AddRenoProgressModal';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -70,6 +71,7 @@ function App() {
     const [expandedSections, setExpandedSections] = useState<{
         [key: string]: { keyDates: boolean; progress: boolean };
     }>({});
+    const [isCraeteRenoProgressModalOpen, setIsCreateRenoProgressModalOpen] = useState<boolean>(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
         toast[type](message, {
@@ -451,6 +453,12 @@ function App() {
                             ) : (
                                 <Squares2X2Icon className="h-5 w-5" />
                             )}
+                        </button>
+                        <button
+                            onClick={() => setIsCreateRenoProgressModalOpen(true)}
+                            className={`flex items-center px-4 py-2 rounded-xl font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600`}
+                        >
+                            Create Reno Progress
                         </button>
                     </div>
                 </div>
@@ -921,7 +929,7 @@ function App() {
                                             <td className="px-4 py-3">{formatDate(progress.date_management.sales_date)}</td>
                                             <td className="px-4 py-3">
                                                 <div className="flex flex-col">
-                                                    {formatDate(progress.date_management.defect_permit_date)}
+                                                    {formatDate(progress.date_management.defect_permit_date) !== '-' ? formatDate(progress.date_management.defect_permit_date) : ''}
                                                     <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full ${permitStatusColors[getStatusKey(progress.rpm_jobs[0].rpm_tasks[2].status)]} items-center w-fit`}>
                                                         {getStatusKey(progress.rpm_jobs[0].rpm_tasks[2].status)}
                                                     </span>
@@ -1245,6 +1253,12 @@ function App() {
                     </div>
                 )
             }
+
+            <AddRenoProgressModal
+                isOpen={isCraeteRenoProgressModalOpen}
+                onClose={() => setIsCreateRenoProgressModalOpen(false)} 
+                refetch={handleRefresh}
+            />
         </div >
     );
 }

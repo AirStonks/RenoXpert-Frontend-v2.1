@@ -143,7 +143,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ owner }) => {
 
             <div className="flex flex-col gap-1 text-center">
                 {/* <span className='text-gray-500 text-sm'>Version: {'0.1.5'}</span> */}
-                <span className='text-gray-500 text-xs'>Bug Feedback: <a href="mailto:itsupport@renoxpert.my">itsupport@renoxpert.my</a></span>
+                <span className='text-gray-500 text-xs'>We are still improving our system to enhance your experience.
+                    <p className='mb-2'>If you have any feedback suggestions or bugs encountered, please don't hesitate to contact us:</p>
+                    <a href="mailto:itsupport@renoxpert.my" className='underline'>itsupport@renoxpert.my</a>
+                </span>
             </div>
         </main>
     );

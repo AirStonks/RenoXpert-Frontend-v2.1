@@ -9,12 +9,22 @@ import { InvestorInterest } from '../../types';
 import { investorInterestIndex } from '../../services/api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import ClipboardJS from 'clipboard';
 
 type SortOrder = 'asc' | 'desc';
 type SortField = 'id' | 'name' | 'address';
 
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const PUBLIC_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_PUBLIC_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_PUBLIC_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? 'localhost:5173/public/'
+                : null;
 
 const statusConfig = {
     new: { label: "New", color: "bg-[#F9A533]", textColor: "text-white" },
@@ -82,8 +92,21 @@ function IIFMain() {
     };
 
     useEffect(() => {
-        document.title = 'Properties | RenoXpert';
+        document.title = 'Investor Interest Forms Overview | RenoXpert';
+
         fetchInvestorInterests(page, size, searchTerm, sortOrder, sortField);
+
+        const clipboard = new ClipboardJS('.copy-link');
+
+        clipboard.on('success', function (e) {
+            notify('success', 'Copied to clipboard!');
+            e.clearSelection();
+        });
+
+        return () => {
+            clipboard.destroy();
+        };
+
     }, []);
 
     const fetchInvestorInterests = async (
@@ -159,6 +182,15 @@ function IIFMain() {
             <div className="sticky top-0 bg-white shadow-md rounded-lg p-4 mb-6 z-10">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <h1 className="text-2xl font-bold text-gray-800">Investor Interest Forms</h1>
+                    <div className="flex gap-3 flex-wrap">
+                        <button
+                            className="btn btn-sm btn-outline btn-info copy-link flex justify-center gap-2"
+                            data-clipboard-text={`${PUBLIC_URL}investor-interest-form`}
+                        >
+                            <i className="ki-filled ki-copy"></i>
+                            <span>Copy Interest Form Link</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 

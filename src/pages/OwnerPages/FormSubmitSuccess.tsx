@@ -37,7 +37,7 @@ function FormSubmitSuccess() {
                     </div>
 
                     <div className="flex flex-col mx-8 justify-center items-center text-center">
-                        <span className="text-xl font-semibold text-gray-500">Reno Registration Form has been successfully submitted.</span>
+                        <span className="text-xl font-semibold text-gray-500">Quotation Request Form has been successfully submitted.</span>
                     </div>
 
                     <div className="flex flex-col mx-8 justify-center items-center text-center">

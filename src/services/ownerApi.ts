@@ -129,7 +129,7 @@ export const fetchOwnerRenoProgresses = async () => {
 
 export const submitRegistrationForm = async (formData: any) => {
     try {
-        const response = await axios.post(API_URL + `owner/reno-registration-form/overview/submit`, formData, {
+        const response = await axios.post(API_URL + `owner/quotation-request-form/overview/submit`, formData, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('o_token')}`,
                 'Content-Type': 'multipart/form-data',

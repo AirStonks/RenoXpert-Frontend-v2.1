@@ -211,7 +211,7 @@ function RegistrationFormMain() {
                     <div className="flex gap-3 flex-wrap">
                         <button
                             className="btn btn-sm btn-outline btn-info copy-link flex justify-center gap-2"
-                            data-clipboard-text={`${CLIENT_URL}reno-registration-form`}
+                            data-clipboard-text={`${CLIENT_URL}quotation-request-form`}
                         >
                             <i className="ki-filled ki-copy"></i>
                             <span>Copy Registration Link</span>
@@ -222,7 +222,7 @@ function RegistrationFormMain() {
                 <div className="card">
                     <div className="card-header flex-wrap gap-2">
                         <div className="card-title">
-                            Reno Registration Form Overview
+                            Quotation Request Form Overview
                         </div>
                         <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
                             <button
