@@ -29,7 +29,7 @@ const OTPConfirmOrder: React.FC = () => {
 
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [error, setError] = useState<string | null>(null);
-    const [countdown, setCountdown] = useState(5);
+    const [countdown, setCountdown] = useState(0);
     const [canResend, setCanResend] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -46,7 +46,24 @@ const OTPConfirmOrder: React.FC = () => {
     };
 
     useEffect(() => {
-        import.meta.env.VITE_APP_ENV === "production" && handleResend();
+        const handleRequestOTP = async () => {
+            const response = await axios.post(`${API_URL}sms-otp/request/60/${state.mobile}`);
+
+            if (response.data.status === 'success') {
+                notify('success', 'OTP has been sent to the mobile no.');
+                setCountdown(5);
+                setCanResend(false);
+            } else {
+                notify('error', 'Error while sending the OTP');
+            }
+        }
+
+        const handleLocalOTP = () => {
+            setCountdown(5);
+            setCanResend(false);
+        }
+
+        import.meta.env.VITE_APP_ENV === "production" ? handleRequestOTP() : handleLocalOTP();
 
         // Start countdown
         const timer = setInterval(() => {
