@@ -60,20 +60,38 @@ const OTPVerifyPage: React.FC<{
         };
 
         useEffect(() => {
-            import.meta.env.VITE_APP_ENV === "production" && handleResend();
+            const handleRequestOTP = async () => {
+                const response = await axios.post(`${API_URL}sms-otp/request/${countryCode}/${mobile}`);
 
+                if (response.data.status === 'success') {
+                    notify('success', 'OTP has been sent to the mobile no.');
+                    setCountdown(5);
+                    setCanResend(false);
+                } else {
+                    notify('error', 'Error while sending the OTP');
+                }
+            }
+
+            const handleLocalOTP = () => {
+                setCountdown(5);
+                setCanResend(false);
+            }
+
+            import.meta.env.VITE_APP_ENV === "production" ? handleRequestOTP() : handleLocalOTP();
+
+            // Start countdown
             const timer = setInterval(() => {
                 setCountdown(prev => {
                     if (prev <= 1) {
                         clearInterval(timer);
-                        setCanResend(true);
+                        setCanResend(true); // Allow resend after countdown
                         return 0;
                     }
                     return prev - 1;
                 });
             }, 1000);
 
-            return () => clearInterval(timer);
+            return () => clearInterval(timer); // Clean up on component unmount
         }, []);
 
         const handleChange = (index: number, value: string) => {
