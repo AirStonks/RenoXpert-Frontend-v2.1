@@ -29,8 +29,8 @@ const OTPConfirmOrder: React.FC = () => {
 
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [error, setError] = useState<string | null>(null);
-    const [countdown, setCountdown] = useState(0);
-    const [canResend, setCanResend] = useState(true);
+    const [countdown, setCountdown] = useState(5);
+    const [canResend, setCanResend] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -46,7 +46,7 @@ const OTPConfirmOrder: React.FC = () => {
     };
 
     useEffect(() => {
-        console.log(state);
+        import.meta.env.VITE_APP_ENV === "production" && handleResend();
 
         // Start countdown
         const timer = setInterval(() => {
