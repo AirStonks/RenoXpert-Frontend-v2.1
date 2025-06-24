@@ -372,7 +372,7 @@ function OrderOverview() {
     if (!orderDetail) return <div>An unexpected error occured</div>
 
     const tnc = (
-        <ul className="list-disc list-inside space-y-4 text-sm">
+        <ol className="list-decimal space-y-4 text-sm">
             <li>
                 This quotation is only valid for 7 days. If BeLive receives the Client’s confirmation after 7 days, BeLive
                 reserves the right to make changes to the quotation.
@@ -470,7 +470,7 @@ function OrderOverview() {
                 By signing this quotation, the Client acknowledges and agrees to the terms and conditions outlined in the
                 quotation and the attached renovation agreement.
             </li>
-        </ul>
+        </ol>
     )
 
     const address = orderDetail.user

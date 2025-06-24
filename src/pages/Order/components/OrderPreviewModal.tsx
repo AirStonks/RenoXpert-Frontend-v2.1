@@ -140,7 +140,7 @@ const OrderPreviewModal = ({
     ].filter(part => part !== null && part !== '') : null
 
     const tnc = (
-        <ul className="list-disc list-inside space-y-4 text-sm">
+        <ol className="list-decimal space-y-4 text-sm">
             <li>This quotation is only valid for 7 days. If BeLive receives the Client’s confirmation after 7 days, BeLive reserves the right to make changes to the quotation.</li>
             <li>BeLive reserves the right to decide on the overall design and theme, the selection of furniture, fixtures, and fittings for the Client’s unit including the colour and material of products.</li>
             <li>The pre-booking payment has a grace period of 7 days upon booking payment.</li>
@@ -167,7 +167,7 @@ const OrderPreviewModal = ({
             <li>If the Client opts to make payment using a credit card, an additional admin fee of 2% will apply. This charge is not applicable for credit card installment plans, FPX, or bank transfers.</li>
             <li>Any payment made is non-refundable.</li>
             <li>By signing this quotation, the Client acknowledges and agrees to the terms and conditions outlined in the quotation and the attached renovation agreement.</li>
-        </ul>
+        </ol>
     );
 
     const renoAgreement = (
