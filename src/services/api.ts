@@ -1940,7 +1940,18 @@ export const removeRPMTaskQcAttachment = async (rpmTaskQcId: number, attachmentI
     }
 }
 
-export const renoProgressIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true, rpm_version: number = null) => {
+export const renoProgressIndex = async (
+    size: number = 5,
+    page: number = 1,
+    searchTerm?: string,
+    order?: string,
+    field?: string,
+    filters?: {
+        field: string;
+        value: string;
+    }[],
+    isHead: boolean = true,
+    rpm_version: number = null) => {
     try {
         const response = await axios.get(API_URL + 'reno-progress', {
             headers: getAuthHeaders(),
@@ -1950,6 +1961,7 @@ export const renoProgressIndex = async (size: number = 5, page: number = 1, sear
                 search: searchTerm,
                 sortOrder: order,
                 sortField: field,
+                filters: filters,
                 head: isHead,
                 rpm_version: rpm_version,
             }

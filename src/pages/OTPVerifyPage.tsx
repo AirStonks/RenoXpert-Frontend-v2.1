@@ -42,8 +42,8 @@ const OTPVerifyPage: React.FC<{
     setShowOtpForm
 }) => {
         const [error, setError] = useState<string | null>(null);
-        const [countdown, setCountdown] = useState(0);
-        const [canResend, setCanResend] = useState(true);
+        const [countdown, setCountdown] = useState(5);
+        const [canResend, setCanResend] = useState(false);
         const [loading, setLoading] = useState(false); // New loading state
 
         const notify = (type: 'success' | 'error', message: string) => {
@@ -60,6 +60,8 @@ const OTPVerifyPage: React.FC<{
         };
 
         useEffect(() => {
+            import.meta.env.VITE_APP_ENV === "production" && handleResend();
+
             const timer = setInterval(() => {
                 setCountdown(prev => {
                     if (prev <= 1) {
@@ -237,7 +239,7 @@ const OTPVerifyPage: React.FC<{
                         )}
                     </button>
                 </div>
-                
+
                 <ToastContainer />
             </div>
         );

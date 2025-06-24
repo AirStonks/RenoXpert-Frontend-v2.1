@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { RenoProgress } from '../../types';
+import { Property, RenoProgress } from '../../types';
 import { toast } from 'react-toastify';
-import { renoProgressIndex } from '../../services/api';
+import { fetchProperties, renoProgressIndex } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import {
@@ -18,7 +18,10 @@ import AddRenoProgressModal from './components/Modals/AddRenoProgressModal';
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
 type SortOrder = 'asc' | 'desc';
-type FilterStatus = 'All' | 'On Track' | 'Completed' | 'Handed Over';
+type FilterTerms = {
+    status: 'All' | 'On Track' | 'Completed' | 'Handed Over'
+    property_id: string;
+};
 type SortField =
     | 'id'
     | 'property.name'
@@ -63,14 +66,20 @@ function App() {
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [sortField, setSortField] = useState<SortField>('id');
-    const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
-    const [filterStatus, setFilterStatus] = useState<FilterStatus>('All');
+    const [sortField, setSortField] = useState<SortField>('date_management.sales_date');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+    const [filterStatus, setFilterStatus] = useState<FilterTerms>({
+        status: 'All',
+        property_id: '',
+    });
+    const [propertyFilter, setPropertyFilter] = useState<string>('');
     const [expandedRows, setExpandedRows] = useState<number[]>([]);
     const [viewMode, setViewMode] = useState<ViewMode>('list');
     const [expandedSections, setExpandedSections] = useState<{
         [key: string]: { keyDates: boolean; progress: boolean };
     }>({});
+
+    const [properties, setProperties] = useState<Property[]>([])
     const [isCraeteRenoProgressModalOpen, setIsCreateRenoProgressModalOpen] = useState<boolean>(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -87,6 +96,19 @@ function App() {
 
     useEffect(() => {
         fetchProjects(1, size, searchTerm, sortOrder, sortField, filterStatus);
+
+        const getProperties = async () => {
+            try {
+                const response = await fetchProperties();
+
+                setProperties(response.data);
+            } catch (error) {
+                notify("error", "Failed to fetch properties")
+            }
+        }
+
+        getProperties()
+
     }, []);
 
     const fetchProjects = async (
@@ -95,17 +117,22 @@ function App() {
         searchTerm: string,
         order: SortOrder,
         field: SortField,
-        status: FilterStatus
+        status: FilterTerms
     ) => {
+        const filters = [{
+            field: 'status',
+            value: status.status,
+        },
+        {
+            field: 'property_id',
+            value: status.property_id,
+        }];
+
+
         try {
             setIsLoading(true);
-            const response = await renoProgressIndex(size, page, searchTerm, order, field, true, 3);
+            const response = await renoProgressIndex(size, page, searchTerm, order, field, filters, true, 3);
             let data = response?.data || [];
-
-            // Client-side status filtering
-            if (status !== 'All') {
-                data = data.filter((progress: RenoProgress) => getStatus(progress) === status);
-            }
 
             // Client-side sorting for calculated fields that can't be sorted on the server
             if (field === 'ch_rundown' || field === 'oh_rundown') {
@@ -145,9 +172,24 @@ function App() {
         notify('success', 'Projects refreshed');
     };
 
-    const handleFilterTable = async (selectedFilter: FilterStatus) => {
-        const newFilter = selectedFilter === filterStatus ? 'All' : selectedFilter;
-        setFilterStatus(prevStatus => (prevStatus === selectedFilter ? 'All' : selectedFilter));
+    const handleFilterStatus = async (selectedStatus: "All" | "On Track" | "Completed" | "Handed Over") => {
+        const newFilter: FilterTerms = {
+            status: selectedStatus === filterStatus.status ? 'All' : selectedStatus,
+            property_id: propertyFilter,
+        };
+        setFilterStatus(prevStatus =>
+            selectedStatus === 'All' ? { status: 'All', property_id: prevStatus.property_id } : newFilter
+        );
+        setPage(1);
+        fetchProjects(1, size, searchTerm, sortOrder, sortField, newFilter);
+    };
+
+    const handleFilterProperty = (propertyId: string) => {
+        const newFilter: FilterTerms = {
+            status: filterStatus.status,
+            property_id: propertyId,
+        };
+        setPropertyFilter(propertyId);
         setPage(1);
         fetchProjects(1, size, searchTerm, sortOrder, sortField, newFilter);
     };
@@ -183,12 +225,6 @@ function App() {
         setSortField(field);
         setSortOrder(newOrder);
         fetchProjects(page, size, searchTerm, newOrder, field, filterStatus);
-    };
-
-    const handleFilterChange = (status: FilterStatus) => {
-        setFilterStatus(status);
-        setPage(1);
-        fetchProjects(1, size, searchTerm, sortOrder, sortField, status);
     };
 
     const toggleRowExpansion = (id: string | undefined) => {
@@ -290,6 +326,26 @@ function App() {
             ? new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
             : '-';
 
+    const formatDateTime = (date: string | null) => {
+        if (!date) return '-';
+
+        // Split the input string assuming "dd/mm/yyyy" format
+        const [day, month, year] = date.split('/');
+
+        // Create a Date object using the parsed components (month is 0-based in JS)
+        const dateObj = new Date(Number(year), Number(month) - 1, Number(day));
+
+        // Check if the date is valid
+        if (isNaN(dateObj.getTime())) return '-';
+
+        // Format to "dd mmm yyyy" (e.g., "18 Jun 2025")
+        return dateObj.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    };
+
     const getOverallCompletion = (progress: RenoProgress) =>
         (progress.pre_reno_completion * 0.2 +
             progress.p1_completion * 0.175 +
@@ -368,32 +424,32 @@ function App() {
 
                             <div className="flex gap-2">
                                 <button
-                                    className={`btn btn-sm rounded-md btn-light ${filterStatus === 'On Track' ? 'btn-success btn-outline' : 'btn-light'}`}
-                                    onClick={() => handleFilterTable('On Track')}
+                                    className={`btn btn-sm rounded-md btn-light ${filterStatus.status === 'On Track' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                    onClick={() => handleFilterStatus('On Track')}
                                 >
                                     On Track
                                     {
-                                        filterStatus === 'On Track' &&
+                                        filterStatus.status === 'On Track' &&
                                         <i className="ki-filled ki-cross"></i>
                                     }
                                 </button>
                                 <button
-                                    className={`btn btn-sm rounded-md btn-light ${filterStatus === 'Completed' ? 'btn-success btn-outline' : 'btn-light'}`}
-                                    onClick={() => handleFilterTable('Completed')}
+                                    className={`btn btn-sm rounded-md btn-light ${filterStatus.status === 'Completed' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                    onClick={() => handleFilterStatus('Completed')}
                                 >
                                     Completed
                                     {
-                                        filterStatus === 'Completed' &&
+                                        filterStatus.status === 'Completed' &&
                                         <i className="ki-filled ki-cross"></i>
                                     }
                                 </button>
                                 <button
-                                    className={`btn btn-sm rounded-md btn-light ${filterStatus === 'Handed Over' ? 'btn-success btn-outline' : 'btn-light'}`}
-                                    onClick={() => handleFilterTable('Handed Over')}
+                                    className={`btn btn-sm rounded-md btn-light ${filterStatus.status === 'Handed Over' ? 'btn-success btn-outline' : 'btn-light'}`}
+                                    onClick={() => handleFilterStatus('Handed Over')}
                                 >
                                     Handed Over
                                     {
-                                        filterStatus === 'Handed Over' &&
+                                        filterStatus.status === 'Handed Over' &&
                                         <i className="ki-filled ki-cross"></i>
                                     }
                                 </button>
@@ -411,30 +467,25 @@ function App() {
                                 className="pl-10 pr-4 py-2 w-full md:w-64 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => handleFilterChange(e.target.value as FilterStatus)}
+                        {/* <select
+                            value={filterStatus.status}
+                            onChange={(e) => handleFilterChange(e.target.value as FilterTerms)}
                             className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="All">All Status</option>
                             <option value="Completed">Completed</option>
                             <option value="Delayed">Delayed</option>
                             <option value="On Track">On Track</option>
-                        </select>
+                        </select> */}
                         <select
-                            value={sortField}
-                            onChange={(e) => handleSortChange(e.target.value as SortField)}
+                            value={propertyFilter}
+                            onChange={(e) => handleFilterProperty(e.target.value)}
                             className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="property.name">Property Name</option>
-                            <option value="overall_completion">Overall Completion</option>
-                            <option value="contractual_end_date">Permit Approval</option>
-                            <option value="date_management.sales_date">Sales Date</option>
-                            <option value="date_management.defect_permit_date">Permit Date</option>
-                            <option value="date_management.ch_date">CH Date</option>
-                            <option value="ch_rundown">CH Rundown</option>
-                            <option value="date_management.oh_date">OH Date</option>
-                            <option value="oh_rundown">OH Rundown</option>
+                            <option value={""}>All Properties</option>
+                            {properties.map((property) => (
+                                <option key={property.id} value={property.id}>{property.name}</option>
+                            ))}
                         </select>
                         <button
                             onClick={handleRefresh}
@@ -458,7 +509,7 @@ function App() {
                             onClick={() => setIsCreateRenoProgressModalOpen(true)}
                             className={`flex items-center px-4 py-2 rounded-xl font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600`}
                         >
-                            Create Reno Progress
+                            Create Project Tracker
                         </button>
                     </div>
                 </div>
@@ -751,7 +802,7 @@ function App() {
                                     onClick={() => handleSortChange('date_management.ch_date')}
                                 >
                                     <div className="flex items-center gap-1">
-                                        CH Date
+                                        Completion Date
                                         {renderSortIndicator('date_management.ch_date')}
                                     </div>
                                 </th>
@@ -769,7 +820,7 @@ function App() {
                                     onClick={() => handleSortChange('date_management.oh_date')}
                                 >
                                     <div className="flex items-center gap-1">
-                                        OH Date
+                                        Handover Date
                                         {renderSortIndicator('date_management.oh_date')}
                                     </div>
                                 </th>
@@ -783,7 +834,7 @@ function App() {
                                     </div>
                                 </th> */}
                                 <th
-                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 flex justify-center"
                                 >
                                     <div className="flex items-center gap-1">
                                         RPM
@@ -975,7 +1026,15 @@ function App() {
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3">
-                                                {progress.rpm_jobs[1]?.rpm_tasks[2]?.status === 'completed' ? formatDate(progress.rpm_jobs[1]?.rpm_tasks[2]?.updated_at) : '-'}
+                                                <div className="flex flex-col justify-center items-center">
+                                                    {progress.rpm_acknowledge_status !== 'pending' ? formatDateTime(progress.sent_to_lark_date) : '-'}
+                                                    {progress.rpm_acknowledge_status === 'informed' && (
+                                                        <span className="inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-yellow-100 text-center text-yellow-800 items-center">Informed</span>
+                                                    )}
+                                                    {progress.rpm_acknowledge_status === 'acknowledged' && (
+                                                        <span className="inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-green-100 text-green-800 items-center">Acknowledged</span>
+                                                    )}
+                                                </div>
                                             </td>
                                             {/* {progress.status === 'handed-over' ?
                                                 <td className='px-4 py-3 text-center'>
@@ -993,11 +1052,14 @@ function App() {
                                                 <span className="text-sm">{(progress.completion.overall_completion * 100).toFixed(2)}%</span>
                                             </td>
                                             <td className="px-4 py-3 text-center">
-                                                <span
-                                                    className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[getStatus(progress)]}`}
-                                                >
-                                                    {getStatus(progress)}
-                                                </span>
+                                                <div className="flex flex-col">
+                                                    {formatDateTime(progress.completed_at)}
+                                                    <span
+                                                        className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[getStatus(progress)]}`}
+                                                    >
+                                                        {getStatus(progress)}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Link
@@ -1069,12 +1131,12 @@ function App() {
                                                                         <p className="text-orange-600">{formatDate(progress.defect_permit_date)}</p>
                                                                     </div>
                                                                     <div>
-                                                                        <p className="font-medium text-gray-700">CH Date</p>
+                                                                        <p className="font-medium text-gray-700">Completion Date</p>
                                                                         <p className="text-orange-600">{formatDate(progress.chd_date)}</p>
                                                                         <p className="text-blue-600">{progress.chd_rundown || '-'}</p>
                                                                     </div>
                                                                     <div>
-                                                                        <p className="font-medium text-gray-700">OH Date</p>
+                                                                        <p className="font-medium text-gray-700">Handover Date</p>
                                                                         <p className="text-orange-600">{formatDate(progress.ohd_date)}</p>
                                                                         <p className="text-blue-600">{progress.ohd_rundown || '-'}</p>
                                                                     </div>
@@ -1256,7 +1318,7 @@ function App() {
 
             <AddRenoProgressModal
                 isOpen={isCraeteRenoProgressModalOpen}
-                onClose={() => setIsCreateRenoProgressModalOpen(false)} 
+                onClose={() => setIsCreateRenoProgressModalOpen(false)}
                 refetch={handleRefresh}
             />
         </div >

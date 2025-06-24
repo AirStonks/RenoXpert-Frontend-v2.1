@@ -272,15 +272,15 @@ export default function AddRenoProgressModal({ isOpen, onClose, refetch }: Prope
             const response = await generateRenoProgress(body);
 
             if (response?.success) {
-                notify("success", "Reno Progress created successfully");
+                notify("success", "Project Tracker created successfully");
                 refetch();
                 onClose();
             } else {
-                notify("error", "Failed to create Reno Progress");
+                notify("error", "Failed to create Project Tracker");
             }
 
         } catch (error) {
-            notify("error", "Failed to create Reno Progress");
+            notify("error", "Failed to create Project Tracker");
         }
 
     }
@@ -296,8 +296,8 @@ export default function AddRenoProgressModal({ isOpen, onClose, refetch }: Prope
                                 <Building2 className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">Generate Reno Progress</h2>
-                                <p className="text-sm text-gray-600">Select a sale and generate a Reno Progress</p>
+                                <h2 className="text-2xl font-bold text-gray-900">Generate Project Tracker</h2>
+                                <p className="text-sm text-gray-600">Select a sale and generate a Project Tracker</p>
                             </div>
                         </div>
                         <button
@@ -313,7 +313,7 @@ export default function AddRenoProgressModal({ isOpen, onClose, refetch }: Prope
                     <div className="bg-yellow-100 backdrop-blur-md rounded-3xl shadow-md p-4 h-full w-full">
                         <div className="flex items-center">
                             <AlertCircle className="w-5 h-5 text-red-500" />
-                            <h3 className="text-lg font-semibold text-red-700 ml-2">This is a demo feature, the "+ Create Reno Progress" button is safe to click. So you can play around without hesitation.</h3>
+                            <h3 className="text-lg font-semibold text-red-700 ml-2">This is a demo feature, the "+ Create Project Tracker" button is safe to click. So you can play around without hesitation.</h3>
                         </div>
                     </div>
                 </div> */}
@@ -586,7 +586,7 @@ export default function AddRenoProgressModal({ isOpen, onClose, refetch }: Prope
                                     </div>
                                 </div>
 
-                                {/* Create Reno Progress Button */}
+                                {/* Create Project Tracker Button */}
                                 <div className="flex justify-end">
                                     {selectedSale && (
                                         <Button
@@ -594,7 +594,7 @@ export default function AddRenoProgressModal({ isOpen, onClose, refetch }: Prope
                                             onClick={() => handleCreateRenoProgress()}
                                         >
                                             <Plus className="w-4 h-4 mr-2" />
-                                            Create Reno Progress
+                                            Create Project Tracker
                                         </Button>
                                     )}
                                 </div>

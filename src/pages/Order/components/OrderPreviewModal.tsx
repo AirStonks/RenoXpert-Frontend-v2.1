@@ -140,34 +140,105 @@ const OrderPreviewModal = ({
     ].filter(part => part !== null && part !== '') : null
 
     const tnc = (
-        <ul className="list-disc list-inside space-y-4 text-sm">
-            <li>This quotation is only valid for 7 days. If BeLive receives the Client’s confirmation after 7 days, BeLive reserves the right to make changes to the quotation.</li>
-            <li>BeLive reserves the right to decide on the overall design and theme, the selection of furniture, fixtures, and fittings for the Client’s unit including the colour and material of products.</li>
-            <li>The pre-booking payment has a grace period of 7 days upon booking payment.</li>
-            <li>Any pictures or illustrations shown are for reference purposes only. BeLive will attempt to create a similar concept; however, some items may be seasonal, and BeLive reserves the right to substitute similar products of equivalent quality at our discretion.</li>
-            <li>BeLive is allowed to take photos of the renovation and the end product for marketing and promotional purposes.</li>
-            <li>BeLive reserves the right to replace the items as quoted with products of equivalent or higher value, of similar functionality, and/or purpose.</li>
-            <li>The commencement date for the renovation shall be determined at the sole discretion of BeLive.</li>
-            <li>BeLive will make reasonable efforts to meet the specified completion dates. However, unforeseen circumstances may lead to adjustments in the timeline. The Client will be informed of any changes.</li>
-            <li>In the event of non-payment or breach of contract by the Client, BeLive reserves the right to suspend work until the issue is resolved. Any additional costs incurred as a result of such suspension will be borne by the Client.</li>
-            <li>The bank interest rate for the installment plan may change by the bank(s) without prior notification to the Client.</li>
-            <li>For safety and security reasons, access/execution of all works by BeLive staff, suppliers, contractors, and sub-contractors requires the unit to be vacated during the entire duration of renovation work.</li>
-            <li>The Client consents to refrain from accessing the unit without prior notification to the BeLive team. Entry should be coordinated with a designated team member if the Client wishes to enter the unit during the renovation period.</li>
-            <li>It is advised that the Client refrain from staying in the unit during the renovation period. Occupancy may impact renovation progress and could raise safety concerns.</li>
-            <li>The Client acknowledges that the scope of work for this renovation project is fixed, and no changes, alterations, or customizations are permitted once the quotation is signed.</li>
-            <li>The quotation includes up to 6 feet of copper piping per air conditioning unit. An additional charge of RM25 per foot will apply for any additional copper piping required.</li>
-            <li>This quotation includes the supply and installation of kitchen cabinets up to the length specified. Any additional length will incur extra charges.</li>
-            <li>Complimentary items are provided if required for the unit, subject to necessity. These items are non-exchangeable for cash, discounts, or any other value. If deemed unnecessary for the unit, they will not be applicable for redemption.</li>
-            <li>Payment verification: Kindly WhatsApp us at +6011-5698 5313 with the bank-in slip or online payment receipt, along with the client’s name, development name, and unit number.</li>
-            <li>It shall be the Client’s duty to ensure that all details ascribed in the email are correct and accurate. BeLive shall not be held responsible for any discrepancies.</li>
-            <li>Renovations proceed in batches based on a first-come, first-served basis. BeLive is not responsible for delays due to a lack of documents or payment delays.</li>
-            <li>The Client assumes all risk for installing a partition. BeLive is not liable for penalties or removal costs requested by authorities.</li>
-            <li>The Client is solely responsible for paying the renovation deposit to the management office and for handling all related matters.</li>
-            <li>For all goods, products, and materials under the renovation work, BeLive reserves the right to remove any furniture and/or fittings up to the value of the amount owing to BeLive.</li>
-            <li>If the Client opts to make payment using a credit card, an additional admin fee of 2% will apply. This charge is not applicable for credit card installment plans, FPX, or bank transfers.</li>
-            <li>Any payment made is non-refundable.</li>
-            <li>By signing this quotation, the Client acknowledges and agrees to the terms and conditions outlined in the quotation and the attached renovation agreement.</li>
-        </ul>
+        <ol className="list-decimal text-sm space-y-6">
+            <li className="[&::marker]:font-bold pl-2">
+                This quotation is only valid for 7 days. If BeLive receives the Client’s confirmation after 7 days, BeLive
+                reserves the right to make changes to the quotation.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                BeLive reserves the right to decide on the overall design and theme, the selection of furniture, fixtures, and
+                fittings for the Client’s unit including the colour and material of products.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">The pre-booking payment has a grace period of 7 days upon booking payment.</li>
+            <li className="[&::marker]:font-bold pl-2">
+                Any pictures or illustrations shown are for reference purposes only. BeLive will attempt to create a similar
+                concept; however, some items may be seasonal, and BeLive reserves the right to substitute similar products of
+                equivalent quality at our discretion.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                BeLive is allowed to take photos of the renovation and the end product for marketing and promotional purposes.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                BeLive reserves the right to replace the items as quoted with products of equivalent or higher value, of similar
+                functionality, and/or purpose.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">The commencement date for the renovation shall be determined at the sole discretion of BeLive.</li>
+            <li className="[&::marker]:font-bold pl-2">
+                BeLive will make reasonable efforts to meet the specified completion dates. However, unforeseen circumstances
+                may lead to adjustments in the timeline. The Client will be informed of any changes.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                In the event of non-payment or breach of contract by the Client, BeLive reserves the right to suspend work until
+                the issue is resolved. Any additional costs incurred as a result of such suspension will be borne by the Client.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                The bank interest rate for the installment plan may change by the bank(s) without prior notification to the
+                Client.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                For safety and security reasons, access/execution of all works by BeLive staff, suppliers, contractors, and
+                sub-contractors requires the unit to be vacated during the entire duration of renovation work.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                The Client consents to refrain from accessing the unit without prior notification to the BeLive team. Entry
+                should be coordinated with a designated team member if the Client wishes to enter the unit during the renovation
+                period.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                It is advised that the Client refrain from staying in the unit during the renovation period. Occupancy may
+                impact renovation progress and could raise safety concerns.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                The Client acknowledges that the scope of work for this renovation project is fixed, and no changes,
+                alterations, or customizations are permitted once the quotation is signed.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                The quotation includes up to 6 feet of copper piping per air conditioning unit. An additional charge of RM25 per
+                foot will apply for any additional copper piping required.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                This quotation includes the supply and installation of kitchen cabinets up to the length specified. Any
+                additional length will incur extra charges.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                Complimentary items are provided if required for the unit, subject to necessity. These items are
+                non-exchangeable for cash, discounts, or any other value. If deemed unnecessary for the unit, they will not be
+                applicable for redemption.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                Payment verification: Kindly WhatsApp us at +6011-5698 5313 with the bank-in slip or online payment receipt,
+                along with the client’s name, development name, and unit number.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                It shall be the Client’s duty to ensure that all details ascribed in the email are correct and accurate. BeLive
+                shall not be held responsible for any discrepancies.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                Renovations proceed in batches based on a first-come, first-served basis. BeLive is not responsible for delays
+                due to a lack of documents or payment delays.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                The Client assumes all risk for installing a partition. BeLive is not liable for penalties or removal costs
+                requested by authorities.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                The Client is solely responsible for paying the renovation deposit to the management office and for handling all
+                related matters.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                For all goods, products, and materials under the renovation work, BeLive reserves the right to remove any
+                furniture and/or fittings up to the value of the amount owing to BeLive.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">
+                If the Client opts to make payment using a credit card, an additional admin fee of 2% will apply. This charge is
+                not applicable for credit card installment plans, FPX, or bank transfers.
+            </li>
+            <li className="[&::marker]:font-bold pl-2">Any payment made is non-refundable.</li>
+            <li className="[&::marker]:font-bold pl-2">
+                By signing this quotation, the Client acknowledges and agrees to the terms and conditions outlined in the
+                quotation and the attached renovation agreement.
+            </li>
+        </ol>
     );
 
     const renoAgreement = (
