@@ -40,7 +40,7 @@ import OwnerLogin from './pages/OwnerPages/OwnerLogin';
 import UsersMain from './pages/User/UsersMain';
 import AddInternalUser from './pages/User/AddInternalUser';
 import OrderPreview from './pages/Order/OrderPreview';
-import OwnerRenoRegistrationForm from './pages/OwnerPages/OwnerRenoRegistrationForm';
+import OwnerRenoRegistrationForm from './pages/OwnerPages/OwnerQuotationRequestForm';
 import OwnerFormSubmitSuccess from './pages/OwnerPages/FormSubmitSuccess';
 import RegistrationFormMain from './pages/RegistrationForm/RegistrationFormMain';
 import EditRegistrationForm from './pages/RegistrationForm/EditRegistrationForm';

@@ -375,6 +375,31 @@ function App() {
         return daysDiff;
     }
 
+    const calculateDateRange = (project_date: string, completion_date: string): { type: string, range: string } => {
+        // Convert completion_date (in DD/MM/YYYY) to ISO Date
+        const [day, month, year] = completion_date.split("/");
+        const completedAtObj = new Date(`${year}-${month}-${day}`);
+        const chDateObj = new Date(project_date); // project_date is in YYYY-MM-DD
+
+        console.log(`Calculating date range: project_date=${project_date}, completion_date=${completion_date}`);
+        
+
+        // Calculate the difference in milliseconds
+        const diffInMs = completedAtObj.getTime() - chDateObj.getTime();
+
+        // Convert milliseconds to days
+        const diffInDays = Math.ceil(Math.abs(diffInMs) / (1000 * 60 * 60 * 24));
+
+        // Determine type: 'Delayed' if project_date is after completion_date, 'Ahead' if before
+        const type = diffInMs > 0 ? 'Delayed' : 'Ahead';
+
+        // Format the range string
+        const range = `${diffInDays} day${diffInDays !== 1 ? "s" : ""}`;
+
+        return { type, range };
+    };
+
+
     const getRundownColor = (day: number) => {
         if (day < 0) {
             return 'text-red-500 '
@@ -493,7 +518,7 @@ function App() {
                         >
                             <ArrowPathIcon className="h-5 w-5" />
                         </button>
-                        <button
+                        {/* <button
                             onClick={toggleViewMode}
                             className={`p-2 rounded-lg transition ${viewMode === 'card' ? 'bg-gray-200 text-gray-800' : 'bg-blue-500 text-white'
                                 } hover:bg-opacity-80`}
@@ -504,7 +529,7 @@ function App() {
                             ) : (
                                 <Squares2X2Icon className="h-5 w-5" />
                             )}
-                        </button>
+                        </button> */}
                         <button
                             onClick={() => setIsCreateRenoProgressModalOpen(true)}
                             className={`flex items-center px-4 py-2 rounded-xl font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600`}
@@ -773,36 +798,45 @@ function App() {
                                         {renderSortIndicator('property.name')}
                                     </div>
                                 </th>
+                                <th className="px-4 py-3">Owner</th>
                                 {/* New Columns */}
                                 <th className="px-4 py-3">Room Config</th>
                                 <th className="px-4 py-3 text-center">Partition</th>
-                                <th className="px-4 py-3">Payment Progress</th>
-                                <th className="px-4 py-3">Owner</th>
+                                <th className="px-4 py-3">Payment Status</th>
                                 {/* Sortable Date Columns */}
                                 <th
-                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 text"
                                     onClick={() => handleSortChange('date_management.sales_date')}
                                 >
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex justify-center gap-1">
                                         Sales Date
                                         {renderSortIndicator('date_management.sales_date')}
                                     </div>
                                 </th>
                                 <th
-                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-center"
                                     onClick={() => handleSortChange('date_management.defect_permit_date')}
                                 >
-                                    <div className="flex gap-1">
-                                        Permit Date
+                                    <div className="flex gap-1 justify-center">
+                                        Defect Status
                                         {renderSortIndicator('date_management.defect_permit_date')}
                                     </div>
                                 </th>
                                 <th
-                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-center"
+                                    onClick={() => handleSortChange('date_management.defect_permit_date')}
+                                >
+                                    <div className="flex gap-1 justify-center">
+                                        Permit Status
+                                        {renderSortIndicator('date_management.defect_permit_date')}
+                                    </div>
+                                </th>
+                                <th
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-center"
                                     onClick={() => handleSortChange('date_management.ch_date')}
                                 >
-                                    <div className="flex items-center gap-1">
-                                        Completion Date
+                                    <div className="flex justify-center gap-1">
+                                        Completion Status
                                         {renderSortIndicator('date_management.ch_date')}
                                     </div>
                                 </th>
@@ -816,11 +850,11 @@ function App() {
                                     </div>
                                 </th> */}
                                 <th
-                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-center"
                                     onClick={() => handleSortChange('date_management.oh_date')}
                                 >
-                                    <div className="flex items-center gap-1">
-                                        Handover Date
+                                    <div className="flex justify-center gap-1">
+                                        Handover Status
                                         {renderSortIndicator('date_management.oh_date')}
                                     </div>
                                 </th>
@@ -834,14 +868,14 @@ function App() {
                                     </div>
                                 </th> */}
                                 <th
-                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 flex justify-center"
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-center items-center"
                                 >
-                                    <div className="flex items-center gap-1">
-                                        RPM
+                                    <div className="flex justify-center gap-1">
+                                        RPM Status
                                     </div>
                                 </th>
                                 <th
-                                    className="px-4 py-3 text-center cursor-pointer hover:bg-gray-100"
+                                    className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-center"
                                     onClick={() => handleSortChange('overall_completion')}
                                 >
                                     <div className="flex items-center justify-center gap-1">
@@ -867,6 +901,11 @@ function App() {
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-full"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-3/4 mt-1"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-3/4 mt-1"></div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="h-4 bg-gray-200 rounded w-full"></div>
                                             <div className="h-4 bg-gray-200 rounded w-full mt-1"></div>
                                             <div className="h-4 bg-gray-200 rounded w-full mt-1"></div>
                                         </td>
@@ -878,8 +917,6 @@ function App() {
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-full"></div>
-                                            <div className="h-3 bg-gray-200 rounded w-3/4 mt-1"></div>
-                                            <div className="h-3 bg-gray-200 rounded w-3/4 mt-1"></div>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-full"></div>
@@ -940,6 +977,19 @@ function App() {
                                                     </span>
                                                 </div>
                                             </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex flex-col">
+                                                    {progress.sale.order.user ? (
+                                                        <>
+                                                            <span className="font-medium">{progress.sale.order.user.name}</span>
+                                                            <span className="text-xs text-gray-500">+{progress.sale.order.user.country_code} {progress.sale.order.user.phone_no}</span>
+                                                            <span className="text-xs text-gray-500">{progress.sale.order.user.email}</span>
+                                                        </>
+                                                    ) : (
+                                                        '-'
+                                                    )}
+                                                </div>
+                                            </td>
                                             {/* <td className="px-4 py-3">{progress.room_config || '-'}</td>
                                             <td className="px-4 py-3">{progress.partition || '-'}</td> */}
                                             <td className="px-4 py-3">
@@ -957,40 +1007,93 @@ function App() {
                                                     }
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex gap-2">
-                                                    <span className="text-md text-gray-900">
-                                                        {(progress.paid_percentage * 100).toFixed(2)}%
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col space-y-3">
+                                                    {/* Payment Amount Display */}
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 transition-colors duration-200">
+                                                            RM {progress.paid_amount.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </span>
+                                                        <span className="text-gray-400 font-medium">/</span>
+                                                        <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-gray-50 text-gray-700 transition-colors duration-200">
+                                                            RM {progress.total_amount.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Percentage Badge */}
+                                                    <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 w-fit transition-colors duration-200">
+                                                        {(progress.paid_percentage * 100).toFixed(1)}%
                                                     </span>
                                                 </div>
                                             </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-center">{formatDate(progress.date_management.sales_date)}</td>
                                             <td className="px-4 py-3">
-                                                <div className="flex flex-col">
-                                                    {progress.sale.order.user ? (
+                                                <div className="flex flex-col items-center">
+                                                    {progress.rpm_jobs[0].rpm_tasks[2].status === 'completed' ? (
                                                         <>
-                                                            <span className="font-medium">{progress.sale.order.user.name}</span>
-                                                            <span className="text-xs text-gray-500">+{progress.sale.order.user.country_code} {progress.sale.order.user.phone_no}</span>
-                                                            <span className="text-xs text-gray-500">{progress.sale.order.user.email}</span>
+                                                            <span>{formatDateTime(progress.defect_updated_at)}</span>
+                                                            <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-green-100 text-green-800 items-center w-fit`}>
+                                                                Rectified
+                                                            </span>
+                                                        </>
+                                                    ) : progress.rpm_jobs[0].rpm_tasks[1].status === 'completed' ? (
+                                                        <>
+                                                            <span>{formatDateTime(progress.defect_updated_at)}</span>
+                                                            <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 items-center w-fit`}>
+                                                                Submitted
+                                                            </span>
+                                                        </>
+                                                    ) : progress.rpm_jobs[0].rpm_tasks[0].status === 'completed' ? (
+                                                        <>
+                                                            <span>{formatDateTime(progress.defect_updated_at)}</span>
+                                                            <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 items-center w-fit`}>
+                                                                Inspected
+                                                            </span>
                                                         </>
                                                     ) : (
-                                                        '-'
+                                                        <span>-</span>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3">{formatDate(progress.date_management.sales_date)}</td>
                                             <td className="px-4 py-3">
-                                                <div className="flex flex-col">
-                                                    {formatDate(progress.date_management.defect_permit_date) !== '-' ? formatDate(progress.date_management.defect_permit_date) : ''}
-                                                    <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full ${permitStatusColors[getStatusKey(progress.rpm_jobs[0].rpm_tasks[2].status)]} items-center w-fit`}>
-                                                        {getStatusKey(progress.rpm_jobs[0].rpm_tasks[2].status)}
-                                                    </span>
+                                                <div className="flex flex-col justify-center items-center">
+                                                    {progress.rpm_jobs[1].rpm_tasks[2].status === 'completed' ? (
+                                                        <>
+                                                            <span>{formatDateTime(progress.permit_updated_at)}</span>
+                                                            <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-green-100 text-green-800 items-center w-fit`}>
+                                                                Approved
+                                                            </span>
+                                                        </>
+                                                    ) : progress.rpm_jobs[1].rpm_tasks[1].status === 'completed' ? (
+                                                        <>
+                                                            <span>{formatDateTime(progress.permit_updated_at)}</span>
+                                                            <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 items-center w-fit`}>
+                                                                Depo Paid
+                                                            </span>
+                                                        </>
+                                                    ) : progress.rpm_jobs[1].rpm_tasks[0].status === 'completed' ? (
+                                                        <>
+                                                            <span>{formatDateTime(progress.permit_updated_at)}</span>
+                                                            <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 items-center w-fit`}>
+                                                                Submitted
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <span>-</span>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className="flex flex-col gap-1">
+                                                <span className="flex flex-col gap-1 items-center">
                                                     {formatDate(progress.date_management.ch_date)}
                                                     {progress.status === 'handed-over' ?
-                                                        <span className="font-bold">-</span>
+                                                        <span className={`inline-flex space-x-2 text-sm font-bold rounded-full items-center text-center
+                                                            ${calculateDateRange(progress.date_management.ch_date, progress.completed_at).type === 'Delayed'
+                                                                ? 'text-red-500'
+                                                                : 'text-green-500'
+                                                            } items-center w-fit`}>
+                                                            {calculateDateRange(progress.date_management.ch_date, progress.completed_at).type} {calculateDateRange(progress.date_management.ch_date, progress.completed_at).range}
+                                                        </span>
                                                         :
                                                         <div className={"inline-flex space-x-2 text-sm font-medium rounded-full items-center " + getRundownColor(calculateChdRundown(progress))}>
                                                             {getRundownIcon(calculateChdRundown(progress))}
@@ -1000,23 +1103,17 @@ function App() {
                                                 </span>
 
                                             </td>
-                                            {/* {progress.status === 'handed-over' ?
-                                                <td className='px-4 py-3 text-center'>
-                                                    <span className="font-bold">-</span>
-                                                </td>
-                                                :
-                                                <td className={"px-4 py-3 text-center " + getRundownColor(calculateChdRundown(progress))}>
-                                                    <div className="flex items-center justify-center text-center space-x-2 font-bold">
-                                                        {getRundownIcon(calculateChdRundown(progress))}
-                                                        <span className="font-bold">{getRundownDayLabel(calculateChdRundown(progress))}</span>
-                                                    </div>
-                                                </td>
-                                            } */}
                                             <td className="px-4 py-3">
-                                                <span className="flex flex-col gap-1">
+                                                <span className="flex flex-col gap-1 items-center">
                                                     {formatDate(progress.date_management.oh_date)}
                                                     {progress.status === 'handed-over' ?
-                                                        <span className="font-bold">-</span>
+                                                        <span className={`inline-flex space-x-2 text-sm font-bold rounded-full items-center text-center
+                                                            ${calculateDateRange(progress.date_management.oh_date, progress.completed_at).type === 'Delayed'
+                                                                ? 'text-red-500'
+                                                                : 'text-green-500'
+                                                            } items-center w-fit`}>
+                                                            {calculateDateRange(progress.date_management.oh_date, progress.completed_at).type} {calculateDateRange(progress.date_management.oh_date, progress.completed_at).range}
+                                                        </span>
                                                         :
                                                         <div className={"inline-flex space-x-2 text-sm font-medium rounded-full items-center " + getRundownColor(calculateOhdRundown(progress))}>
                                                             {getRundownIcon(calculateOhdRundown(progress))}

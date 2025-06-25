@@ -3,7 +3,7 @@ import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
 import Loading from "../../components/Loading";
 import { useNavigate } from "react-router-dom";
-import { OwnerRegistrationForm } from "../../types";
+import { QuotationRequestForm } from "../../types";
 import { approveRegistrationForm, registrationFormIndex, rejectRegistrationForm } from "../../services/api";
 import { Link } from "react-router-dom";
 
@@ -24,7 +24,7 @@ function RegistrationFormMain() {
     const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const [regForms, setRegForm] = useState<OwnerRegistrationForm[]>([]); // Initialize as an empty array
+    const [regForms, setRegForm] = useState<QuotationRequestForm[]>([]); // Initialize as an empty array
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);

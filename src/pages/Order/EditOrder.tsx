@@ -8,7 +8,7 @@ import {
     fetchRegistrationForm,
     updateOrder,
 } from "../../services/api";
-import { User, Order, Property, OwnerRegistrationForm, Package, OrderQuotation } from "../../types";
+import { User, Order, Property, QuotationRequestForm, Package, OrderQuotation } from "../../types";
 import { KTAccordion, KTTooltip } from "../../metronic/core";
 import { Slide, toast } from "react-toastify";
 import useFetchOrder from "../../hook/useFetchOrder";
@@ -55,7 +55,7 @@ function EditOrder() {
     const [users, setUsers] = useState<User[]>([]);
     const [properties, setProperties] = useState<Property[]>([]);
     const [selectedPackages, setSelectedPackages] = useState<Package[]>([]);
-    const [formDetail, setFormDetail] = useState<OwnerRegistrationForm | null>(null);
+    const [formDetail, setFormDetail] = useState<QuotationRequestForm | null>(null);
 
     const inputUserRef = useRef<HTMLInputElement>(null);
     const inputPropertyRef = useRef<HTMLInputElement>(null);
@@ -289,7 +289,7 @@ function EditOrder() {
     const handleSearchForm = async (formId: string) => {
         try {
             const response = await fetchRegistrationForm(Number(formId));
-            const registrationForm: OwnerRegistrationForm = response.data.data;
+            const registrationForm: QuotationRequestForm = response.data.data;
             if (registrationForm) setFormDetail(registrationForm);
             else toast.error("Registration form not found");
         } catch (error) {

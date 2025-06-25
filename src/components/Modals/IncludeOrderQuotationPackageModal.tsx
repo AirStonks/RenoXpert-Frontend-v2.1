@@ -1,9 +1,9 @@
 // src\components\Modals\IncludeProductModal.tsx
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { KTAccordion, KTDataTable } from "../../metronic/core";
-import { Package, Product } from "../../types";
-import { fetchPackages, packageIndex } from "../../services/api";
+import { useEffect, useRef, useState } from "react";
+import { KTAccordion } from "../../metronic/core";
+import { Package } from "../../types";
+import { packageIndex } from "../../services/api";
 import Loading from "../Loading";
 
 interface IncludeOrderQuotationPackageModalProps {

@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { DiscountFee, Invoice, KeyManagement, Order, OwnerRegistrationForm, Package, Payment, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
+import { DiscountFee, Invoice, KeyManagement, Order, QuotationRequestForm, Package, Payment, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
 import exp from 'constants';
 
 const API_URL =
@@ -1451,7 +1451,7 @@ export const rejectRegistrationForm = async (formId: number) => {
     }
 }
 
-export const updateRegistrationForm = async (form: OwnerRegistrationForm) => {
+export const updateRegistrationForm = async (form: QuotationRequestForm) => {
     try {
         const response = await axios.put(API_URL + `owner/quotation-request-form/${form.id}`, form, {
             headers: {

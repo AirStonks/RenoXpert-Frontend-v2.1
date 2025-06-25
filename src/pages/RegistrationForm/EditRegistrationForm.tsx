@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import useFetchRegistrationForm from "../../hook/useFetchRegistrationForm";
 import Loading from "../../components/Loading";
 import React, { useEffect, useState } from "react";
-import { OwnerRegistrationForm, Property } from "../../types";
+import { QuotationRequestForm, Property } from "../../types";
 import { fetchProperties, updateRegistrationForm } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 
@@ -84,7 +84,7 @@ const q8Options = [
     { value: 'no', label: 'No' },
 ];
 
-const initialFormData: OwnerRegistrationForm = {
+const initialFormData: QuotationRequestForm = {
     salutations: 'mr',
     name_first: '',
     name_last: '',
@@ -191,7 +191,7 @@ function EditRegistrationForm() {
     const formId = id ? parseInt(id, 10) : null;
 
     const { formDetail, loading: fetchLoading, error } = useFetchRegistrationForm(formId, true);
-    const [formData, setFormData] = useState<OwnerRegistrationForm | null>(null);
+    const [formData, setFormData] = useState<QuotationRequestForm | null>(null);
     const [properties, setProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState<boolean>(true); // Local loading state
     const [errors, setErrors] = useState<FormErrors>({});
@@ -359,7 +359,7 @@ function EditRegistrationForm() {
                                         [q]: value,
                                     },
                                 },
-                            } as OwnerRegistrationForm['furnishing'],
+                            } as QuotationRequestForm['furnishing'],
                         };
                     });
                 }
@@ -373,7 +373,7 @@ function EditRegistrationForm() {
                             ...(prevData!.furnishing?.[category] || {}),
                             [property]: value,
                         },
-                    } as OwnerRegistrationForm['furnishing'],
+                    } as QuotationRequestForm['furnishing'],
                 }));
             }
             setErrors((prevErrors) => ({
@@ -467,13 +467,13 @@ function EditRegistrationForm() {
                 }
             });
 
-            // Ensure the furnishing object matches the OwnerRegistrationForm type
+            // Ensure the furnishing object matches the QuotationRequestForm type
             return {
                 ...prevFormData,
                 furnishing: {
                     ...prevFormData.furnishing,
                     bedrooms: updatedBedrooms,
-                } as OwnerRegistrationForm['furnishing'],
+                } as QuotationRequestForm['furnishing'],
             };
         });
     };
@@ -522,13 +522,13 @@ function EditRegistrationForm() {
                 }
             });
 
-            // Ensure the furnishing object matches the OwnerRegistrationForm type
+            // Ensure the furnishing object matches the QuotationRequestForm type
             return {
                 ...prevFormData,
                 furnishing: {
                     ...prevFormData.furnishing,
                     bathrooms: updatedBathrooms,
-                } as OwnerRegistrationForm['furnishing'],
+                } as QuotationRequestForm['furnishing'],
             };
         });
     };
