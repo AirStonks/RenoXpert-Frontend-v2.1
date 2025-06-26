@@ -47,15 +47,7 @@ const OTPConfirmOrder: React.FC = () => {
 
     useEffect(() => {
         const handleRequestOTP = async () => {
-            const response = await axios.post(`${API_URL}sms-otp/request/60/${state.mobile}`);
-
-            if (response.data.status === 'success') {
-                notify('success', 'OTP has been sent to the mobile no.');
-                setCountdown(5);
-                setCanResend(false);
-            } else {
-                notify('error', 'Error while sending the OTP');
-            }
+            await axios.post(`${API_URL}sms-otp/request/60/${state.mobile}`);
         }
 
         const handleLocalOTP = () => {

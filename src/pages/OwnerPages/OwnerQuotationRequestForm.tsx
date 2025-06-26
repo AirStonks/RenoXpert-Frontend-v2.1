@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { submitRegistrationForm, userDetail } from "../../services/ownerApi";
-import { OwnerRegistrationForm, Property, User } from "../../types";
+import { QuotationRequestForm, Property, User } from "../../types";
 import Loading from "../../components/Loading";
 import { useNavigate } from "react-router-dom";
 import KTComponent from "../../metronic/core";
@@ -134,7 +134,7 @@ const acceptedFileTypes = [
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILES = 10;
 
-const initialFormData: OwnerRegistrationForm = {
+const initialFormData: QuotationRequestForm = {
     salutations: 'mr',
     name_first: '',
     name_last: '',
@@ -235,9 +235,9 @@ const initialFormData: OwnerRegistrationForm = {
     }
 };
 
-function OwnerRenoRegistrationForm() {
+function OwnerQuotationRequestForm() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState<OwnerRegistrationForm>(initialFormData);
+    const [formData, setFormData] = useState<QuotationRequestForm>(initialFormData);
     const [properties, setProperties] = useState<Property[] | null>(null);
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [owner, setOwner] = useState<User | null>(null);
@@ -436,7 +436,7 @@ function OwnerRenoRegistrationForm() {
                                         [q]: value,
                                     },
                                 },
-                            } as OwnerRegistrationForm['furnishing'],
+                            } as QuotationRequestForm['furnishing'],
                         };
                     });
                 }
@@ -450,7 +450,7 @@ function OwnerRenoRegistrationForm() {
                             ...(prevData.furnishing?.[category] || {}),
                             [property]: value,
                         },
-                    } as OwnerRegistrationForm['furnishing'],
+                    } as QuotationRequestForm['furnishing'],
                 }));
             }
         } else {
@@ -840,7 +840,7 @@ function OwnerRenoRegistrationForm() {
 
         const selectElements = document.querySelectorAll('select');
         selectElements.forEach((select: HTMLSelectElement) => {
-            const name = select.name as keyof OwnerRegistrationForm;
+            const name = select.name as keyof QuotationRequestForm;
             const value = initialFormData[name];
             if (typeof value === 'string') {
                 select.value = value || '';
@@ -912,7 +912,7 @@ function OwnerRenoRegistrationForm() {
                 notify('success', 'OTP has been verified successfully.');
 
                 // Iterate over formData keys with proper typing
-                (Object.keys(formData) as Array<keyof OwnerRegistrationForm>).forEach((key) => {
+                (Object.keys(formData) as Array<keyof QuotationRequestForm>).forEach((key) => {
                     const value = formData[key];
                     if (value !== undefined && value !== null) {
                         formDataToSend.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
@@ -3535,4 +3535,4 @@ function OwnerRenoRegistrationForm() {
     )
 }
 
-export default OwnerRenoRegistrationForm;
+export default OwnerQuotationRequestForm;

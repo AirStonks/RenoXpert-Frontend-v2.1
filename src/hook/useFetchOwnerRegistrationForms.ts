@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { retrieveRegistrationForms } from '../services/ownerApi';
-import { OwnerRegistrationForm } from '../types';
+import { QuotationRequestForm } from '../types';
 
 const useFetchOwnerRegistrationForms = () => {
-    const [forms, setForms] = useState<OwnerRegistrationForm[] | null>(null);
+    const [forms, setForms] = useState<QuotationRequestForm[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 

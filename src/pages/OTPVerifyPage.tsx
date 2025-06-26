@@ -61,15 +61,7 @@ const OTPVerifyPage: React.FC<{
 
         useEffect(() => {
             const handleRequestOTP = async () => {
-                const response = await axios.post(`${API_URL}sms-otp/request/${countryCode}/${mobile}`);
-
-                if (response.data.status === 'success') {
-                    notify('success', 'OTP has been sent to the mobile no.');
-                    setCountdown(5);
-                    setCanResend(false);
-                } else {
-                    notify('error', 'Error while sending the OTP');
-                }
+                await axios.post(`${API_URL}sms-otp/request/${countryCode}/${mobile}`);
             }
 
             const handleLocalOTP = () => {
@@ -175,7 +167,7 @@ const OTPVerifyPage: React.FC<{
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900 text-center mb-2">Verify Your Phone</h3>
                     <p className="text-sm text-gray-500 text-center mb-4">
-                        Click <span className="font-medium text-gray-900">"Request OTP"</span> to receive the OTP code
+                        An OTP has been sent to your mobile number.
                     </p>
                     <p className="text-sm text-gray-500 text-center mb-4 flex flex-col">
                         <span className="font-medium text-gray-900">+{countryCode} {mobile}</span>

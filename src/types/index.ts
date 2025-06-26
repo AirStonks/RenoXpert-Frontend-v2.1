@@ -402,7 +402,7 @@ export interface Payment {
     updated_at?: string,
 }
 
-export interface OwnerRegistrationForm {
+export interface QuotationRequestForm {
     id?: string;
     form_no?: string;
     salutations?: string;
@@ -1164,6 +1164,8 @@ export interface RenoProgress {
         ch_date?: string,
         oh_date?: string,
     }
+    total_amount?: number,
+    paid_amount?: number,
     remaining_percentage?: number,
     paid_percentage?: number,
     resource_id?: string,
@@ -1171,6 +1173,8 @@ export interface RenoProgress {
     resourceItem?: ResourceItem,
     permission_id?: string;
     permissions?: User[],
+    defect_updated_at?: string,
+    permit_updated_at?: string,
     completed_at?: string,
     rpm_version?: number,
     sent_to_lark_date?: string,

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { createOrder, fetchOrder, fetchProperties, fetchProperty, fetchRegistrationForm, fetchUser, fetchUsers } from "../../services/api";
-import { Order, OwnerRegistrationForm, Property, User, Package, Quotation, OrderQuotation } from "../../types";
+import { Order, QuotationRequestForm, Property, User, Package, Quotation, OrderQuotation } from "../../types";
 import { KTAccordion, KTTooltip } from "../../metronic/core";
 import { Slide, toast } from "react-toastify";
 import Loading from "../../components/Loading";
@@ -50,7 +50,7 @@ function CreateOrder() {
     const [users, setUsers] = useState<User[]>([]);
     const [properties, setProperties] = useState<Property[]>([]);
     const [selectedPackages, setSelectedPackages] = useState<Package[]>([]);
-    const [formDetail, setFormDetail] = useState<OwnerRegistrationForm | null>(null);
+    const [formDetail, setFormDetail] = useState<QuotationRequestForm | null>(null);
     const [loading, setLoading] = useState(false);
 
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; cogs: number; quantity: number }[]>([]);
@@ -266,7 +266,7 @@ function CreateOrder() {
         setLoading(true);
         try {
             const response = await fetchRegistrationForm(Number(formId));
-            const registrationForm: OwnerRegistrationForm = response.data.data;
+            const registrationForm: QuotationRequestForm = response.data.data;
 
             if (registrationForm) {
                 setFormDetail(registrationForm);
@@ -692,7 +692,6 @@ function CreateOrder() {
     };
 
     const toggleIsAddonIncluded = (packId: number) => {
-        console.log(packId);
         setSelectedPackages((prevPackages: Package[]) => {
             const updatedPackages = prevPackages.map((prodPackage: Package) => {
                 if (prodPackage.id === packId) {
