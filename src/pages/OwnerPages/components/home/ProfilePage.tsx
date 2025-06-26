@@ -76,7 +76,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ owner }) => {
                     {/* User Info */}
                     <div className="flex-grow text-center sm:text-left">
                         <h2 className="text-xl font-bold text-gray-900 mb-1">
-                            {owner.name_preferred}
+                            {owner.name_preferred ? owner.name_preferred : owner.name}
                         </h2>
                         <p className="text-sm text-gray-500 mb-4">Account Owner</p>
 
@@ -100,7 +100,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ owner }) => {
                     <ProfileInfoItem
                         icon={UserIcon}
                         label="Full Name"
-                        value={owner.name}
+                        value={owner.name ? owner.name : `${owner.name_first} ${owner.name_last}`}
                     />
                     <ProfileInfoItem
                         icon={PhoneIcon}

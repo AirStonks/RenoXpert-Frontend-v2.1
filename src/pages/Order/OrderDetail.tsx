@@ -556,7 +556,7 @@ function OrderDetail() {
             </div>
 
             <div className="flex flex-wrap gap-8 mb-8">
-                <div className="flex flex-col flex-[2] gap-8">
+                <div className="flex flex-col flex-[2] gap-8 flex-2-container">
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
@@ -731,7 +731,6 @@ function OrderDetail() {
                             </table>
                         </div>
                     </div>
-
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
@@ -779,7 +778,6 @@ function OrderDetail() {
                             }
                         </div>
                     </div>
-
                     <div className="card bg-info-light">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
@@ -828,7 +826,6 @@ function OrderDetail() {
                             </table>
                         </div>
                     </div>
-
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
@@ -940,7 +937,6 @@ function OrderDetail() {
                             </table>
                         </div>
                     </div>
-
                     <div className="card">
                         <div className="card-header flex justify-between items-center">
                             <h3 className="card-title">
