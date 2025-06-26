@@ -73,7 +73,7 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
 
                                                         {/* Tooltip */}
                                                         {task.qc_task.internal_comment && (
-                                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                                 {task.qc_task.internal_comment}
                                                             </div>
                                                         )}
@@ -145,7 +145,7 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
 
                                                         {/* Tooltip */}
                                                         {task.qc_task.internal_comment && (
-                                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                                 {task.qc_task.internal_comment}
                                                             </div>
                                                         )}
@@ -211,7 +211,7 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
 
                                                     {/* Tooltip */}
                                                     {task.qc_task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                             {task.qc_task.internal_comment}
                                                         </div>
                                                     )}
@@ -274,7 +274,7 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
 
                                                     {/* Tooltip */}
                                                     {task.qc_task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                             {task.qc_task.internal_comment}
                                                         </div>
                                                     )}
@@ -337,7 +337,7 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
 
                                                     {/* Tooltip */}
                                                     {task.qc_task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                             {task.qc_task.internal_comment}
                                                         </div>
                                                     )}
@@ -400,7 +400,7 @@ const RenovationQCTask = ({ renoProgress, getStatusKey, getQcStatusKey, statusCo
 
                                                     {/* Tooltip */}
                                                     {task.qc_task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                             {task.qc_task.internal_comment}
                                                         </div>
                                                     )}

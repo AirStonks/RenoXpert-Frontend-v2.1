@@ -580,7 +580,7 @@ export const TaskDetailDrawer = ({
                                                     rows={4}
                                                 />
                                             ) : (
-                                                <p className="text-2xs text-gray-700 bg-white border border-gray-300 p-3 rounded-md">{selectedTask.qc_task.internal_comment || "No comment"}</p>
+                                                <p className="text-2xs text-gray-700 bg-white border border-gray-300 p-3 rounded-md whitespace-pre-wrap">{selectedTask.qc_task.internal_comment || "No comment"}</p>
                                             )}
                                         </div>
                                         {renderAttachmentsSection("qc")}
@@ -673,7 +673,7 @@ export const TaskDetailDrawer = ({
                                             rows={4}
                                         />
                                     ) : (
-                                        <p className="text-2xs text-gray-700 bg-white border border-gray-300 p-3 rounded-md">{selectedTask.internal_comment || "No comment"}</p>
+                                        <p className="text-2xs text-gray-700 bg-white border border-gray-300 p-3 rounded-md whitespace-pre-wrap">{selectedTask.internal_comment || "No comment"}</p>
                                     )}
                                 </div>
                                 {selectedTask.item_name !== "Key Management" && selectedTask.item_name !== "Defect Inspection" && renderAttachmentsSection("internal")}
@@ -713,7 +713,7 @@ export const TaskDetailDrawer = ({
                                             rows={4}
                                         />
                                     ) : (
-                                        <p className="text-2xs text-gray-700 bg-white border border-gray-300 p-3 rounded-md">{selectedTask.owner_comment || "No comment"}</p>
+                                        <p className="text-2xs text-gray-700 bg-white border border-gray-300 p-3 rounded-md whitespace-pre-wrap">{selectedTask.owner_comment || "No comment"}</p>
                                     )}
                                 </div>
                                 {selectedTask.item_name !== "Key Management" && selectedTask.item_name !== "Defect Inspection" && renderAttachmentsSection("external")}

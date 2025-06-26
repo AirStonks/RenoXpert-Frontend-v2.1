@@ -8,6 +8,7 @@ import {
     TableCellsIcon,
     LightBulbIcon,
 } from '@heroicons/react/24/outline';
+import { CircleAlert } from 'lucide-react';
 
 const jobCategories = [
     { name: 'VP Status', category: 'vp', icon: HomeIcon },
@@ -105,10 +106,14 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
                                                     return (
                                                         <td
                                                             key={`${room}-${item}`}
-                                                            className={`p-3 text-center text-3xs min-w-[120px] ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline" : ""}`}
+                                                            className={`relative p-2 text-xs text-center ${statusColors[statusKey]} ${task ? "cursor-pointer hover:underline group" : ""} ${getStatusKey(task.status) === "Not Applicable" && "font-bold"}`}
                                                             onClick={() => task && setSelectedTask(task)}
                                                         >
-                                                            {task ? getStatusKey(task.status) : "-"}
+                                                            {/* Icon and Status Text */}
+                                                            {task.internal_comment && (
+                                                                <CircleAlert className="inline-block mr-1 h-4 w-4 text-warning" />
+                                                            )}
+                                                            {task ? (getStatusKey(task.status) === "Not Applicable" ? "N/A" : getStatusKey(task.status)) : "-"}
                                                         </td>
                                                     );
                                                 })}
@@ -144,7 +149,12 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
                                         >
                                             <div className="flex items-center justify-between">
                                                 <span className="font-medium text-2xs">{task.item_name}</span>
-                                                <TaskStatusBadge status={task.status as TaskStatus} isStatic={true} />
+                                                <div className="flex items-center">
+                                                    {task.internal_comment && (
+                                                        <CircleAlert className="inline-block mr-1 h-4 w-4 text-warning" />
+                                                    )}
+                                                    <TaskStatusBadge status={task.status as TaskStatus} isStatic={true} />
+                                                </div>
                                             </div>
                                             <p className="text-3xs text-gray-500 mt-0.5">
                                                 Updated: {task.updated_at || 'N/A'} by {task.updated_by?.name || 'N/A'}

@@ -1056,7 +1056,7 @@ function App() {
                                                 <div className="flex flex-col justify-center items-center">
                                                     {progress.rpm_jobs[1].rpm_tasks[2].status === 'completed' ? (
                                                         <>
-                                                            <span className='whitespace-nowrap'>{formatDateTime(progress.permit_updated_at)}</span>
+                                                            <span className='whitespace-nowrap'>{formatDate(progress.date_management.defect_permit_date)}</span>
                                                             <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-green-100 text-green-800 items-center w-fit`}>
                                                                 Approved
                                                             </span>

@@ -63,7 +63,9 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                             {/* Tooltip */}
                                                             {task.internal_comment && (
-                                                                <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                                <div
+                                                                    className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-20 w-full max-w-48 whitespace-pre-wrap"
+                                                                >
                                                                     {task.internal_comment}
                                                                 </div>
                                                             )}
@@ -128,7 +130,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                             {/* Tooltip */}
                                                             {task.internal_comment && (
-                                                                <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                                <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                                     {task.internal_comment}
                                                                 </div>
                                                             )}
@@ -185,7 +187,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                     {/* Tooltip */}
                                                     {task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                             {task.internal_comment}
                                                         </div>
                                                     )}
@@ -238,7 +240,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                     {/* Tooltip */}
                                                     {task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                             {task.internal_comment}
                                                         </div>
                                                     )}
@@ -291,7 +293,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                     {/* Tooltip */}
                                                     {task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                             {task.internal_comment}
                                                         </div>
                                                     )}
@@ -344,7 +346,7 @@ const RenovationTask = ({ renoProgress, getStatusKey, statusColors, setSelectedT
 
                                                     {/* Tooltip */}
                                                     {task.internal_comment && (
-                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48">
+                                                        <div className="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2 bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-48 whitespace-pre-wrap">
                                                             {task.internal_comment}
                                                         </div>
                                                     )}
