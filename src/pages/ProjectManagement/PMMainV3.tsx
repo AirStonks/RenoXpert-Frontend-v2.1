@@ -871,7 +871,7 @@ function App() {
                                         RPM Status
                                     </div>
                                 </th>
-                                <th
+                                {/* <th
                                     className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-center"
                                     onClick={() => handleSortChange('overall_completion')}
                                 >
@@ -879,7 +879,7 @@ function App() {
                                         Completion
                                         {renderSortIndicator('overall_completion')}
                                     </div>
-                                </th>
+                                </th> */}
                                 <th className="px-4 py-3 text-center">Status</th>
                                 <th className="px-4 py-3">Details</th>
                             </tr>
@@ -936,9 +936,9 @@ function App() {
                                         <td className="px-4 py-3">
                                             <div className="h-4 bg-gray-200 rounded w-full"></div>
                                         </td>
-                                        <td className="px-4 py-3 text-center">
+                                        {/* <td className="px-4 py-3 text-center">
                                             <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-                                        </td>
+                                        </td> */}
                                         <td className="px-4 py-3 text-center">
                                             <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
                                         </td>
@@ -990,7 +990,7 @@ function App() {
                                             {/* <td className="px-4 py-3">{progress.room_config || '-'}</td>
                                             <td className="px-4 py-3">{progress.partition || '-'}</td> */}
                                             <td className="px-4 py-3">
-                                                <div className="flex flex-col space-y-1">
+                                                <div className="flex flex-col space-y-1 whitespace-nowrap">
                                                     <span>Queen: {progress.sale.order.queen_bedroom_count || 0}</span>
                                                     <span>Single: {progress.sale.order.single_bedroom_count || 0}</span>
                                                     <span>Studio: {progress.sale.order.studio_count || 0}</span>
@@ -1007,7 +1007,7 @@ function App() {
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col space-y-3">
                                                     {/* Payment Amount Display */}
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 whitespace-nowrap">
                                                         <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 transition-colors duration-200">
                                                             RM {progress.paid_amount.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </span>
@@ -1028,21 +1028,21 @@ function App() {
                                                 <div className="flex flex-col items-center">
                                                     {progress.rpm_jobs[0].rpm_tasks[2].status === 'completed' ? (
                                                         <>
-                                                            <span>{formatDateTime(progress.defect_updated_at)}</span>
+                                                            <span className='whitespace-nowrap'>{formatDateTime(progress.defect_updated_at)}</span>
                                                             <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-green-100 text-green-800 items-center w-fit`}>
                                                                 Rectified
                                                             </span>
                                                         </>
                                                     ) : progress.rpm_jobs[0].rpm_tasks[1].status === 'completed' ? (
                                                         <>
-                                                            <span>{formatDateTime(progress.defect_updated_at)}</span>
+                                                            <span className='whitespace-nowrap'>{formatDateTime(progress.defect_updated_at)}</span>
                                                             <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 items-center w-fit`}>
                                                                 Submitted
                                                             </span>
                                                         </>
                                                     ) : progress.rpm_jobs[0].rpm_tasks[0].status === 'completed' ? (
                                                         <>
-                                                            <span>{formatDateTime(progress.defect_updated_at)}</span>
+                                                            <span className='whitespace-nowrap'>{formatDateTime(progress.defect_updated_at)}</span>
                                                             <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 items-center w-fit`}>
                                                                 Inspected
                                                             </span>
@@ -1056,21 +1056,21 @@ function App() {
                                                 <div className="flex flex-col justify-center items-center">
                                                     {progress.rpm_jobs[1].rpm_tasks[2].status === 'completed' ? (
                                                         <>
-                                                            <span>{formatDateTime(progress.permit_updated_at)}</span>
+                                                            <span className='whitespace-nowrap'>{formatDateTime(progress.permit_updated_at)}</span>
                                                             <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-green-100 text-green-800 items-center w-fit`}>
                                                                 Approved
                                                             </span>
                                                         </>
                                                     ) : progress.rpm_jobs[1].rpm_tasks[1].status === 'completed' ? (
                                                         <>
-                                                            <span>{formatDateTime(progress.permit_updated_at)}</span>
+                                                            <span className='whitespace-nowrap'>{formatDateTime(progress.permit_updated_at)}</span>
                                                             <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 items-center w-fit`}>
                                                                 Depo Paid
                                                             </span>
                                                         </>
                                                     ) : progress.rpm_jobs[1].rpm_tasks[0].status === 'completed' ? (
                                                         <>
-                                                            <span>{formatDateTime(progress.permit_updated_at)}</span>
+                                                            <span className='whitespace-nowrap'>{formatDateTime(progress.permit_updated_at)}</span>
                                                             <span className={`inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 items-center w-fit`}>
                                                                 Submitted
                                                             </span>
@@ -1082,7 +1082,7 @@ function App() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className="flex flex-col gap-1 items-center">
-                                                    {formatDate(progress.date_management.ch_date)}
+                                                    <span className='whitespace-nowrap'>{formatDate(progress.date_management.ch_date)}</span>
                                                     {progress.status === 'handed-over' ?
                                                         <span className={`inline-flex space-x-2 text-sm font-bold rounded-full items-center text-center
                                                             ${calculateDateRange(progress.date_management.ch_date, progress.completed_at).type === 'Delayed'
@@ -1102,7 +1102,7 @@ function App() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className="flex flex-col gap-1 items-center">
-                                                    {formatDate(progress.date_management.oh_date)}
+                                                    <span className='whitespace-nowrap'>{formatDate(progress.date_management.oh_date)}</span>
                                                     {progress.status === 'handed-over' ?
                                                         <span className={`inline-flex space-x-2 text-sm font-bold rounded-full items-center text-center
                                                             ${calculateDateRange(progress.date_management.oh_date, progress.completed_at).type === 'Delayed'
@@ -1113,7 +1113,7 @@ function App() {
                                                         </span>
                                                         :
                                                         <div className={"inline-flex space-x-2 text-sm font-medium rounded-full items-center " + getRundownColor(calculateOhdRundown(progress))}>
-                                                            {getRundownIcon(calculateOhdRundown(progress))}
+                                                            <span className='whitespace-nowrap'>{getRundownIcon(calculateOhdRundown(progress))}</span>
                                                             <span className="font-bold">{getRundownDayLabel(calculateOhdRundown(progress))}</span>
                                                         </div>
                                                     }
@@ -1121,7 +1121,7 @@ function App() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex flex-col justify-center items-center">
-                                                    {progress.rpm_acknowledge_status !== 'pending' ? formatDateTime(progress.sent_to_lark_date) : '-'}
+                                                    <span className='whitespace-nowrap'>{progress.rpm_acknowledge_status !== 'pending' ? formatDateTime(progress.sent_to_lark_date) : '-'}</span>
                                                     {progress.rpm_acknowledge_status === 'informed' && (
                                                         <span className="inline-flex px-2.5 py-1.5 text-xs font-medium rounded-full bg-yellow-100 text-center text-yellow-800 items-center">Informed</span>
                                                     )}
@@ -1142,12 +1142,12 @@ function App() {
                                                     </div>
                                                 </td>
                                             } */}
-                                            <td className="px-4 py-3 text-center">
+                                            {/* <td className="px-4 py-3 text-center">
                                                 <span className="text-sm">{(progress.completion.overall_completion * 100).toFixed(2)}%</span>
-                                            </td>
+                                            </td> */}
                                             <td className="px-4 py-3 text-center">
                                                 <div className="flex flex-col">
-                                                    {formatDateTime(progress.completed_at)}
+                                                    <span className='whitespace-nowrap'>{formatDateTime(progress.completed_at)}</span>
                                                     <span
                                                         className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[getStatus(progress)]}`}
                                                     >
