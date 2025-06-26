@@ -381,9 +381,6 @@ function App() {
         const completedAtObj = new Date(`${year}-${month}-${day}`);
         const chDateObj = new Date(project_date); // project_date is in YYYY-MM-DD
 
-        console.log(`Calculating date range: project_date=${project_date}, completion_date=${completion_date}`);
-        
-
         // Calculate the difference in milliseconds
         const diffInMs = completedAtObj.getTime() - chDateObj.getTime();
 
