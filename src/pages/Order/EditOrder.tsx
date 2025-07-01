@@ -430,13 +430,14 @@ export default function EditOrder() {
 
         // Clear previous errors
         setStepErrors({});
+        console.log(selectedCustomer);
 
         // Prepare order data
         const orderData: Order = {
             id: orderDetail.id,
-            user_id: selectedCustomer?.id || '0',
-            property_id: selectedProperty?.id || '0',
-            quotation_id: '0',
+            user_id: selectedCustomer?.id || null,
+            property_id: selectedProperty?.id || null,
+            quotation_id: null,
             total_amount: netAmount,
             final_amount: null,
             unit_type: formData.unitType,
