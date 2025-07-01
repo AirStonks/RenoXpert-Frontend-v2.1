@@ -108,7 +108,7 @@ export default function EditOrder() {
                     block: orderDetail.block || "",
                     floor: orderDetail.floor || "",
                     unitNo: orderDetail.unit_no || "",
-                    isDraftMode: !orderDetail.user,
+                    isDraftMode: !orderDetail.user_id,
                     singleBedrooms: orderDetail.single_bedroom_count,
                     queenBedrooms: orderDetail.queen_bedroom_count,
                     studios: orderDetail.studio_count,
@@ -124,6 +124,7 @@ export default function EditOrder() {
                 if (orderDetail.user_id) await handleSelectUserById(Number(orderDetail.user_id));
                 if (orderDetail.property_id) await handleSelectPropertytById(Number(orderDetail.property_id));
 
+                setIsDraftMode(!orderDetail.user_id);
                 setSelectedPackages(orderDetail.latest_quotation.packages ? orderDetail.latest_quotation.packages : []);
             };
             runAsyncTasks();
@@ -430,13 +431,14 @@ export default function EditOrder() {
 
         // Clear previous errors
         setStepErrors({});
+        console.log(selectedCustomer);
 
         // Prepare order data
         const orderData: Order = {
             id: orderDetail.id,
-            user_id: selectedCustomer?.id || '0',
-            property_id: selectedProperty?.id || '0',
-            quotation_id: '0',
+            user_id: selectedCustomer?.id || null,
+            property_id: selectedProperty?.id || null,
+            quotation_id: null,
             total_amount: netAmount,
             final_amount: null,
             unit_type: formData.unitType,

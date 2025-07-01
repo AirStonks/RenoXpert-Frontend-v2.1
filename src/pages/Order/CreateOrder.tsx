@@ -100,6 +100,7 @@ export default function CreateOrder() {
                     }));
                     if (response.data.property_id) setSelectedProperty(response.data.property);
                     setSelectedPackages(response.data.latest_quotation.packages);
+                    setIsDraftMode(!response.data.user_id);
                     notify("success", "Order duplicated successfully!");
                 }
             } catch (error) {
