@@ -1,16 +1,25 @@
-// src\pages\Order\OrderMain.tsx
-
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { orderIndex, releaseOrder, removeOrder, voidOrder } from '../../services/api';
+import { Link } from 'react-router-dom';
+import { fetchProperties, orderIndex, releaseOrder, removeOrder, voidOrder } from '../../services/api';
 import DeleteModal from '../../components/Modals/DeleteModal';
-import Loading from '../../components/Loading';
-import { Order } from '../../types';
+import { Order, Property } from '../../types';
 import { Slide, toast } from 'react-toastify';
 import ClipboardJS from 'clipboard';
 import ConfirmOrderModal from './components/ConfirmOrderModal';
 import VoidQuotationModal from './components/VoidQuotationModal';
 import { KTModal } from '../../metronic/core';
+import {
+    ArrowPathIcon,
+    MagnifyingGlassIcon,
+    ChevronUpIcon,
+    ChevronDownIcon,
+} from '@heroicons/react/24/solid';
+import {
+    PlusIcon,
+    XCircle,
+    ListFilterIcon,
+} from 'lucide-react';
+import React from 'react';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -25,20 +34,47 @@ const CLIENT_URL =
 
 type SortOrder = 'asc' | 'desc' | null;
 
+type FilterTerms = {
+    status: 'all' | 'confirmed' | 'released' | 'unreleased' | 'draft' | 'voided';
+    property_id: string;
+};
+
+const getStatusLabel = (status: string) => {
+    switch (status) {
+        case 'confirmed':
+            return 'Sale';
+        case 'released':
+            return 'Released';
+        case 'unreleased':
+            return 'Unreleased';
+        case 'draft':
+            return 'Draft';
+        case 'voided':
+            return 'Voided';
+        default:
+            return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+}
+
 function OrderMain() {
-    const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const [orders, setOrders] = useState<Order[]>([]); // Initialize as an empty array
+    const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(1);
     const [size, setSize] = useState<number>(10);
     const [totalItems, setTotalItems] = useState<number>(0);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [filter, setFilter] = useState<string>('');
+    const [propertyFilter, setPropertyFilter] = useState<string>('');
+    const [filterStatus, setFilterStatus] = useState<FilterTerms>({
+        status: 'all',
+        property_id: '',
+    });
     const [sortField, setSortField] = useState<string>('');
     const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+    const [openDropdowns, setOpenDropdowns] = useState<number[]>([]);
+    const [properties, setProperties] = useState<Property[]>([])
 
     const [selectedOrder, setSelectedOrder] = useState<{ id: number | string, name: string } | null>(null);
 
@@ -57,7 +93,19 @@ function OrderMain() {
 
     useEffect(() => {
         document.title = "Quotation Orders | RenoXpert";
-        initOrderTable(1, 10, '', null, '');
+        initOrderTable(1, 10, '', null, '', filterStatus);
+
+        const getProperties = async () => {
+            try {
+                const response = await fetchProperties();
+
+                setProperties(response.data);
+            } catch (error) {
+                notify("error", "Failed to fetch properties")
+            }
+        }
+
+        getProperties()
 
         const clipboard = new ClipboardJS('.copy-link');
 
@@ -66,11 +114,9 @@ function OrderMain() {
             e.clearSelection();
         });
 
-        // Cleanup the ClipboardJS instance
         return () => {
             clipboard.destroy();
         };
-
     }, []);
 
     const initOrderTable = async (
@@ -79,15 +125,22 @@ function OrderMain() {
         searchTerm?: string,
         order?: string,
         field?: string,
-        filter?: string
+        status?: FilterTerms
     ) => {
+        const filters = [{
+            field: 'status',
+            value: status.status,
+        },
+        {
+            field: 'property_id',
+            value: status.property_id,
+        }];
+
         try {
             setIsLoading(true);
-            const response = await orderIndex(size, page, searchTerm, order, field, filter);
-
+            const response = await orderIndex(size, page, searchTerm, order, field, filters);
             const data = response?.data || [];
             setOrders(data);
-
             setTotalItems(response?.totalCount || 0);
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -98,12 +151,31 @@ function OrderMain() {
     };
 
     const handleRefreshTable = async () => {
-        initOrderTable(page, size, searchTerm, sortOrder, sortField);
+        setPage(1);
+        await initOrderTable(1, size, searchTerm, sortOrder, sortField, filterStatus);
+        notify('success', 'Orders refreshed');
     };
 
-    const handleFilterTable = async (selectedFilter: string) => {
-        const newFilter = selectedFilter === filter ? '' : selectedFilter;
-        setFilter(prevStatus => (prevStatus === selectedFilter ? '' : selectedFilter));
+    const handleFilterTable = async (selectedFilter: "all" | "confirmed" | "released" | "unreleased" | "draft" | "voided") => {
+        const newFilter: FilterTerms = {
+            status: selectedFilter === filterStatus.status ? 'all' : selectedFilter,
+            property_id: propertyFilter,
+        };
+        setFilterStatus(newFilter);
+        setPage(1);
+        initOrderTable(1, size, searchTerm, sortOrder, sortField, newFilter);
+    };
+
+    const handleFilterProperty = (propertyId: string) => {
+        const newFilter: FilterTerms = {
+            status: filterStatus.status,
+            property_id: propertyId,
+        };
+        setPropertyFilter(propertyId);
+        setFilterStatus(prevStatus => ({
+            ...prevStatus,
+            property_id: propertyId,
+        }));
         setPage(1);
         initOrderTable(1, size, searchTerm, sortOrder, sortField, newFilter);
     };
@@ -112,46 +184,30 @@ function OrderMain() {
         const value = event.target.value;
         setSearchTerm(value);
 
-        // Debounce logic remains the same
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
 
         debounceTimeout.current = setTimeout(async () => {
             setPage(1);
-
-            try {
-                setIsLoading(true);
-                const response = await orderIndex(size, 1, value, sortOrder, sortField);
-
-                const data = response?.data || [];
-                setOrders(data);
-                setTotalItems(response?.totalCount || 0);
-            } catch (error) {
-                console.error('Error searching products:', error);
-                setError('Failed to search products');
-            } finally {
-                setIsLoading(false);
-            }
-
+            initOrderTable(1, size, value, sortOrder, sortField, filterStatus);
         }, 500);
     };
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
         setPage(newPage);
-        initOrderTable(newPage, size, searchTerm, sortOrder, sortField, filter);
+        initOrderTable(newPage, size, searchTerm, sortOrder, sortField, filterStatus);
     };
 
     const handleSizeChange = (newSize: number) => {
         setSize(newSize);
-        setPage(1); // Reset to the first page when changing the page size
-        initOrderTable(1, newSize, searchTerm, sortOrder, sortField, filter);
+        setPage(1);
+        initOrderTable(1, newSize, searchTerm, sortOrder, sortField, filterStatus);
     };
 
     const handleSort = (field: string) => {
         if (sortField === field) {
-            // Cycle through states: null -> asc -> desc -> null
             if (sortOrder === null) {
                 setSortOrder('asc');
                 initOrderTable(page, size, searchTerm, 'asc', field);
@@ -164,7 +220,6 @@ function OrderMain() {
                 initOrderTable(page, size, searchTerm, null, '');
             }
         } else {
-            // New field, start with ascending
             setSortField(field);
             setSortOrder('asc');
             initOrderTable(page, size, searchTerm, 'asc', field);
@@ -173,15 +228,15 @@ function OrderMain() {
 
     const getSortIcon = (field: string) => {
         if (sortField !== field) {
-            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+            return <span className="text-gray-400">↕</span>;
         }
         switch (sortOrder) {
             case 'asc':
-                return <i className="ki-outline ki-arrow-up text-primary" />;
+                return <ChevronUpIcon className="h-4 w-4 text-blue-500" />;
             case 'desc':
-                return <i className="ki-outline ki-arrow-down text-primary" />;
+                return <ChevronDownIcon className="h-4 w-4 text-blue-500" />;
             default:
-                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
+                return <span className="text-gray-400">↕</span>;
         }
     };
 
@@ -191,12 +246,10 @@ function OrderMain() {
         setIsLoading(true);
         try {
             const response = await releaseOrder(orderId);
-
             if (response?.success) {
                 notify('success', 'Order released successfully!');
                 await handleRefreshTable();
             }
-
         } catch (error) {
             console.error(error);
         }
@@ -207,13 +260,11 @@ function OrderMain() {
         setIsLoading(true);
         try {
             const response = await removeOrder(orderId);
-
             if (response?.success) {
                 initOrderTable(page, size);
                 return { success: true };
             }
             return { success: false };
-
         } catch (error) {
             console.log(error);
             return { success: false, message: 'Quotation removal failed' };
@@ -223,20 +274,15 @@ function OrderMain() {
 
     const handleVoidQuotation = async () => {
         setIsLoading(true);
-
         try {
             const response = await voidOrder(selectedOrder.id as number);
-
             if (response?.success) {
-
                 const modalEl = document.querySelector('#void_quotation_modal') as HTMLElement;
                 const modal = KTModal.getInstance(modalEl);
                 modal.hide();
-
                 notify('success', 'Order voided successfully!');
                 await handleRefreshTable();
             }
-
         } catch (error) {
             notify('error', 'Failed to re-release order.');
         } finally {
@@ -244,474 +290,504 @@ function OrderMain() {
         }
     }
 
-    return (
-        <>
-            {/* Loading Overlay */}
-            {isLoading && <Loading />}
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'released':
+                return `bg-blue-100 text-blue-800`;
+            case 'confirmed':
+                return `bg-green-100 text-green-800`;
+            case 'revoked':
+            case 'voided':
+                return `bg-red-100 text-red-800`;
+            case 'draft':
+                return `bg-yellow-100 text-yellow-800`;
+            default:
+                return `bg-gray-100 text-gray-800`;
+        }
+    };
 
-            <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-center flex-wrap">
-                    <span className="text-2xl font-bold text-gray-900">
-                        Quotation Orders
-                    </span>
-                    <div className="flex gap-3 flex-wrap">
+    return (
+        <div className="min-h-screen bg-gray-100 p-4">
+            {/* Sticky Header */}
+            <div className="sticky top-0 bg-white shadow-md rounded-lg p-4 mb-6 z-10">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+                    {/* Filter Buttons */}
+                    <div className="flex gap-4">
+                        <h1 className="text-2xl font-bold text-gray-800">Quotation Orders</h1>
+                        <div className="flex items-center gap-2">
+                            <ListFilterIcon className="w-5 h-5 text-gray-600" />
+                            <div className="flex gap-2">
+                                {[
+                                    { key: 'confirmed', label: 'Sales', color: 'bg-green-100 text-green-800 hover:bg-green-200' },
+                                    { key: 'released', label: 'Released', color: 'bg-blue-100 text-blue-800 hover:bg-blue-200' },
+                                    { key: 'unreleased', label: 'Unreleased', color: 'bg-purple-100 text-purple-800 hover:bg-purple-200' },
+                                    { key: 'draft', label: 'Draft', color: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' },
+                                    { key: 'voided', label: 'Voided', color: 'bg-red-100 text-red-800 hover:bg-red-200' },
+                                ].map(filter => (
+                                    <button
+                                        key={filter.key}
+                                        className={`btn btn-sm rounded-md btn-light ${filterStatus.status === filter.key ? 'btn-success btn-outline' : 'btn-light'}`}
+                                        onClick={() => handleFilterTable(filter.key as FilterTerms['status'])}
+                                    >
+                                        {filter.label}
+                                        {filterStatus.status === filter.key && (
+                                            <XCircle className="h-3 w-3" />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4 w-full lg:w-auto">
+                        <div className="relative flex-1 lg:flex-none">
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search orders..."
+                                value={searchTerm}
+                                onChange={handleSearch}
+                                className="pl-10 pr-4 py-2 w-full lg:w-64 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <select
+                            value={propertyFilter}
+                            onChange={(e) => handleFilterProperty(e.target.value)}
+                            className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value={""}>All Properties</option>
+                            {properties.map((property) => (
+                                <option key={property.id} value={property.id}>{property.name}</option>
+                            ))}
+                        </select>
+                        <button
+                            onClick={handleRefreshTable}
+                            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                        >
+                            <ArrowPathIcon className="h-5 w-5" />
+                        </button>
                         <Link
                             to={LOCAL_PATH_PREFIX + 'orders/create'}
-                            className='btn btn-primary btn-sm'
-                            data-modal-toggle="#create_order_modal"
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
                         >
-                            <i className="ki-outline ki-plus-squared"></i>
-                            Add New Quotation Order
+                            <PlusIcon className="h-5 w-5" />
+                            Add New Order
                         </Link>
-                    </div>
-                </div>
-
-                <div className="flex items-center">
-                    <span className='font-semibold mr-4'>Quick Filter: </span>
-
-                    <div className="flex gap-2">
-                        <button
-                            className={`btn btn-sm rounded-full btn-light ${filter === 'confirmed' ? 'btn-success btn-outline' : 'btn-light'}`}
-                            onClick={() => handleFilterTable('confirmed')}
-                        >
-                            Sales
-                            {
-                                filter === 'confirmed' &&
-                                <i className="ki-filled ki-cross"></i>
-                            }
-                        </button>
-                        <button
-                            className={`btn btn-sm rounded-full btn-light ${filter === 'released' ? 'btn-success btn-outline' : 'btn-light'}`}
-                            onClick={() => handleFilterTable('released')}
-                        >
-                            Released
-                            {
-                                filter === 'released' &&
-                                <i className="ki-filled ki-cross"></i>
-                            }
-                        </button>
-                        <button
-                            className={`btn btn-sm rounded-full btn-light ${filter === 'unreleased' ? 'btn-success btn-outline' : 'btn-light'}`}
-                            onClick={() => handleFilterTable('unreleased')}
-                        >
-                            Unreleased
-                            {
-                                filter === 'unreleased' &&
-                                <i className="ki-filled ki-cross"></i>
-                            }
-                        </button>
-                        <button
-                            className={`btn btn-sm rounded-full btn-light ${filter === 'draft' ? 'btn-success btn-outline' : 'btn-light'}`}
-                            onClick={() => handleFilterTable('draft')}
-                        >
-                            Draft
-                            {
-                                filter === 'draft' &&
-                                <i className="ki-filled ki-cross"></i>
-                            }
-                        </button>
-                        <button
-                            className={`btn btn-sm rounded-full btn-light ${filter === 'voided' ? 'btn-success btn-outline' : 'btn-light'}`}
-                            onClick={() => handleFilterTable('voided')}
-                        >
-                            Voided
-                            {
-                                filter === 'voided' &&
-                                <i className="ki-filled ki-cross"></i>
-                            }
-                        </button>
-                    </div>
-                </div>
-
-                <div className="card">
-                    <div className="card-header flex-wrap gap-2">
-                        <div className="card-title">
-                            Quotation Orders Overview
-                        </div>
-                        <div className="flex flex-wrap gap-2 lg:gap-5 items-center">
-                            <button
-                                className="btn-refresh"
-                                onClick={handleRefreshTable}
-                            >
-                                <i className="ki-solid ki-arrows-circle text-lg"></i>
-                            </button>
-                            <div className="flex">
-                                <label className="input input-sm">
-                                    <i className="ki-filled ki-magnifier"></i>
-                                    <input
-                                        placeholder="Search packages"
-                                        type="text"
-                                        value={searchTerm}
-                                        onChange={handleSearch}
-                                    />
-                                </label>
-                            </div>
-                            <div className="flex flex-wrap gap-2.5">
-                                {/* <select className="select select-sm w-28">
-                                    <option value="1">
-                                        Latest
-                                    </option>
-                                    <option value="2">
-                                        Older
-                                    </option>
-                                    <option value="3">
-                                        Oldest
-                                    </option>
-                                </select>
-                                <button className="btn btn-sm btn-outline btn-primary">
-                                    <i className="ki-filled ki-setting-4">
-                                    </i>
-                                    Filters
-                                </button>
-                                <label className="switch switch-sm">
-                                    <input className="order-2" name="check" type="checkbox" value="1" />
-                                    <span className="switch-label order-1">Push Alerts</span>
-                                </label> */}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="card-table">
-                        <table className="table align-middle text-gray-700 font-medium text-sm">
-                            <thead>
-                                <tr>
-                                    <th className='w-[120px]'>Order No.</th>
-                                    <th className='w-[100px] text-center'>Status</th>
-                                    <th className='w-[220px] text-center'>Internal Remark</th>
-                                    <th className='w-[120px] text-center'>Owner</th>
-                                    <th className='w-[80px] text-center'>Property</th>
-                                    <th className='w-[60px] text-center'>Unit</th>
-                                    <th className='w-[20px] text-center'>Partition</th>
-                                    <th className='w-[100px] text-center'>Price</th>
-                                    <th
-                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('created_at')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Created Date {getSortIcon('created_at')}
-                                        </div>
-                                    </th>
-                                    <th
-                                        className='w-[80px] text-center cursor-pointer hover:bg-gray-50'
-                                        onClick={() => handleSort('updated_at')}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            Updated Date {getSortIcon('updated_at')}
-                                        </div>
-                                    </th>
-                                    <th className='w-[50px] text-center'>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {orders.length > 0 ? (
-                                    orders.map((order, orderIndex) => (
-                                        <tr
-                                            key={orderIndex}
-                                            className={orderIndex % 2 === 1 ? 'bg-gray-100' : ''}
-                                        >
-                                            <td>
-                                                <div className="flex flex-col gap-1">
-                                                    <Link
-                                                        to={LOCAL_PATH_PREFIX + `orders/${order.id}`}
-                                                        className="cursor-pointer text-orange-500"
-                                                    >
-                                                        {order.order_no}
-                                                    </Link>
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                <span className={`badge badge-pill p-2 cursor-default capitalize
-                                                    ${order.status === 'released' ? 'badge-primary' : ''} 
-                                                    ${order.status === 'confirmed' ? 'badge-success' : ''} 
-                                                    ${order.status === 'revoked' || order.status === 'voided' ? 'badge-danger' : ''} 
-                                                    ${order.status === 'draft' ? 'badge-warning' : ''} 
-                                                    badge-outline`}
-                                                >
-                                                    {order.status === 'confirmed' ? 'sale' : order.status}
-                                                </span>
-                                            </td>
-                                            <td className={!order.internal_remark && 'text-center'}>
-                                                {order.internal_remark ? order.internal_remark : '-'}
-                                            </td>
-                                            <td>
-                                                <div className="flex flex-col gap-1">
-                                                    {order.user ?
-                                                        <>
-                                                            <span>{order.user.name}</span>
-                                                            <span className="text-xs text-slate-400">{order.user.email}</span>
-                                                            <span className="text-xs text-slate-700">+{order.user.country_code} {order.user.phone_no}</span>
-                                                        </>
-                                                        :
-                                                        '-'
-                                                    }
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                <div className="flex flex-col gap-1">
-                                                    <span>{order.property ? order.property.name : '-'}</span>
-                                                    <div className="badge">
-                                                        <span className="text-xs text-gray-900">{order.unit_type}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                <div className="flex flex-col gap-1">
-                                                    <span>{order.block}-{order.floor}-{order.unit_no}</span>
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                <div className="flex flex-col gap-1">
-                                                    <span>{order.include_partition ? 'Yes' : 'No'}</span>
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                <div className="flex flex-col gap-1">
-                                                    <span>RM {(order.f_1 ? (order.latest_quotation.bonus ? (order.final_amount - Number(order.latest_quotation.bonus.value)) : order.final_amount) : order.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                <div className="flex flex-col">
-                                                    <span>{order.created_by ? order.created_by.name : '-'}</span>
-                                                    <div className="inline-block">
-                                                        <span className="text-sm font-semibold badge badge-outline badge-sm my-1">{order.created_at}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                <div className="flex flex-col">
-                                                    <span>{order.updated_by ? order.updated_by.name : '-'}</span>
-                                                    <div className="inline-block">
-                                                        <span className="text-sm font-semibold badge badge-outline badge-sm my-1">{order.updated_at}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className='text-center'>
-                                                <div className="flex justify-around gap-2">
-                                                    <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
-                                                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
-                                                            <i className="ki-filled ki-dots-vertical"></i>
-                                                        </button>
-
-                                                        <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
-                                                            {order.user &&
-                                                                <div className="menu-item">
-                                                                    <button
-                                                                        className="menu-link copy-link"
-                                                                        data-clipboard-text={`${CLIENT_URL}order/overview/id/${order.id}`}
-                                                                    >
-                                                                        <span className="menu-title">
-                                                                            <div className="flex gap-2 items-center">
-                                                                                <i className="ki-outline ki-copy"></i>
-                                                                                <span className="text-gray-900">
-                                                                                    Copy Quotation Order Link
-                                                                                </span>
-                                                                            </div>
-                                                                        </span>
-                                                                    </button>
-                                                                </div>
-                                                            }
-
-                                                            {order.status === 'unreleased' && order.user &&
-                                                                <div className="menu-item">
-                                                                    <button
-                                                                        className="menu-link"
-                                                                        onClick={() => handleReleaseOrder(Number(order.id))}
-                                                                    >
-                                                                        <span className="menu-title">
-                                                                            <div className="flex gap-2 items-center">
-                                                                                <i className="ki-outline ki-check-circle"></i>
-                                                                                <span>Release Order</span>
-                                                                            </div>
-                                                                        </span>
-                                                                    </button>
-                                                                </div>
-                                                            }
-                                                            {order.status === 'released' &&
-                                                                <>
-                                                                    <div className="menu-item">
-                                                                        <button
-                                                                            className="menu-link"
-                                                                            data-modal-toggle="#confirm_order_modal"
-                                                                            onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
-                                                                        >
-                                                                            <span className="menu-title">
-                                                                                <div className="flex gap-2 items-center text-success">
-                                                                                    <i className="ki-outline ki-check-circle"></i>
-                                                                                    <span>Confirm Order</span>
-                                                                                </div>
-                                                                            </span>
-                                                                        </button>
-                                                                    </div>
-                                                                    <div className="menu-item">
-                                                                        <button
-                                                                            className="menu-link"
-                                                                            data-modal-toggle="#void_quotation_modal"
-                                                                            onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
-                                                                        >
-                                                                            <span className="menu-title">
-                                                                                <div className="flex gap-2 items-center">
-                                                                                    <i className="ki-outline ki-cross-circle"></i>
-                                                                                    <span>Void Order</span>
-                                                                                </div>
-                                                                            </span>
-                                                                        </button>
-                                                                    </div>
-                                                                </>
-                                                            }
-                                                            <div className="menu-item">
-                                                                <Link
-                                                                    to={LOCAL_PATH_PREFIX + `orders/create?dp=${order.id}`}
-                                                                    className="menu-link"
-                                                                    target="_blank"
-                                                                >
-                                                                    <span className="menu-title">
-                                                                        <div className="flex gap-2 items-center">
-                                                                            <i className="ki-outline ki-save-2"></i>
-                                                                            <span>Duplicate Order</span>
-                                                                        </div>
-                                                                    </span>
-                                                                </Link>
-                                                            </div>
-                                                            {order.status !== 'confirmed' &&
-                                                                <>
-                                                                    <div className="menu-item">
-                                                                        <Link
-                                                                            to={LOCAL_PATH_PREFIX + `orders/edit/${order.id}`}
-                                                                            className="menu-link"
-                                                                        >
-                                                                            <span className="menu-title">
-                                                                                <div className="flex gap-2 items-center">
-                                                                                    <i className="ki-outline ki-notepad-edit"></i>
-                                                                                    <span>Edit Order</span>
-                                                                                </div>
-                                                                            </span>
-                                                                        </Link>
-                                                                    </div>
-                                                                    <div className="menu-item">
-                                                                        <button
-                                                                            className="menu-link"
-                                                                            data-modal-toggle="#delete_item_modal"
-                                                                            onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
-                                                                        >
-                                                                            <span className="menu-title">
-                                                                                <div className="flex gap-2 items-center text-danger">
-                                                                                    <i className="ki-outline ki-trash"></i>
-                                                                                    <span>Delete Order</span>
-                                                                                </div>
-                                                                            </span>
-                                                                        </button>
-                                                                    </div>
-                                                                </>
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={11} className="text-center text-gray-500">
-                                            No orders available
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="card-footer justify-center md:justify-between flex-col md:flex-row gap-3 text-gray-600 text-2sm font-medium">
-                        <div className="flex items-center gap-2">
-                            Show
-                            <select
-                                className="select select-sm w-16"
-                                name="perpage"
-                                value={size}
-                                onChange={(e) => handleSizeChange(parseInt(e.target.value))}
-                            >
-                                <option value="5">5</option>
-                                <option value="10">10</option>
-                                <option value="20">20</option>
-                                <option value="30">30</option>
-                                <option value="50">50</option>
-                            </select>
-                            per page
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span>
-                            <div className="pagination">
-                                {/* Previous Page Button */}
-                                <button
-                                    className={`btn ${page === 1 ? 'disabled' : ''}`}
-                                    onClick={() => handlePageChange(page - 1)}
-                                >
-                                    <i className="ki-outline ki-black-left"></i>
-                                </button>
-
-                                {/* Page Number Buttons with Ellipses */}
-                                {totalPages > 0 && (
-                                    <>
-                                        {page > 3 && (
-                                            <>
-                                                <button
-                                                    className="btn"
-                                                    onClick={() => handlePageChange(1)}
-                                                >
-                                                    1
-                                                </button>
-                                                <span className="btn btn-disabled">...</span>
-                                            </>
-                                        )}
-
-                                        {Array.from({
-                                            length: Math.min(3, totalPages)
-                                        }, (_, index) => {
-                                            // Determine the start of the 3-page window
-                                            const startPage = Math.max(1,
-                                                Math.min(
-                                                    page - 1,
-                                                    totalPages - 2
-                                                )
-                                            );
-
-                                            const currentPage = startPage + index;
-                                            return (
-                                                <button
-                                                    key={currentPage}
-                                                    className={`btn ${page === currentPage ? 'active' : ''}`}
-                                                    onClick={() => handlePageChange(currentPage)}
-                                                >
-                                                    {currentPage}
-                                                </button>
-                                            );
-                                        })}
-
-                                        {page < totalPages - 2 && (
-                                            <>
-                                                <span className="btn btn-disabled">...</span>
-                                                <button
-                                                    className="btn"
-                                                    onClick={() => handlePageChange(totalPages)}
-                                                >
-                                                    {totalPages}
-                                                </button>
-                                            </>
-                                        )}
-                                    </>
-                                )}
-
-                                {/* Next Page Button */}
-                                <button
-                                    className={`btn ${page === totalPages ? 'disabled' : ''}`}
-                                    onClick={() => handlePageChange(page + 1)}
-                                >
-                                    <i className="ki-outline ki-black-right"></i>
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
 
+            {/* Error State */}
+            {error && (
+                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-6">
+                    <p>{error}</p>
+                    <button onClick={handleRefreshTable} className="mt-2 underline hover:text-red-900">
+                        Try Again
+                    </button>
+                </div>
+            )}
+
+            {/* Loading Overlay */}
+            {isLoading && (
+                <></>
+                // <div className="flex flex-col md:flex-row items-center justify-between mt-6 bg-white p-4 rounded-lg shadow-md">
+                //     <div className="flex items-center gap-2 mb-4 md:mb-0">
+                //         <span>Show</span>
+                //         <select
+                //             value={size}
+                //             onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                //             className="border rounded-lg px-3 py-1"
+                //         >
+                //             <option value="5">5</option>
+                //             <option value="10">10</option>
+                //             <option value="20">20</option>
+                //             <option value="30">30</option>
+                //             <option value="50">50</option>
+                //         </select>
+                //         <span>per page</span>
+                //     </div>
+                //     <div className="flex items-center gap-4">
+                //         <span>
+                //             {(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}
+                //         </span>
+                //         <div className="flex gap-2">
+                //             <button
+                //                 disabled={page === 1}
+                //                 onClick={() => handlePageChange(page - 1)}
+                //                 className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+                //             >
+                //                 Previous
+                //             </button>
+                //             {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                //                 const startPage = Math.max(1, Math.min(page - 2, totalPages - 4));
+                //                 const currentPage = startPage + index;
+                //                 return (
+                //                     <button
+                //                         key={currentPage}
+                //                         onClick={() => handlePageChange(currentPage)}
+                //                         className={`px-3 py-1 border rounded-lg ${page === currentPage ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
+                //                             }`}
+                //                     >
+                //                         {currentPage}
+                //                     </button>
+                //                 );
+                //             })}
+                //             <button
+                //                 disabled={page === totalPages}
+                //                 onClick={() => handlePageChange(page + 1)}
+                //                 className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+                //             >
+                //                 Next
+                //             </button>
+                //         </div>
+                //     </div>
+                // </div>
+            )}
+
+            {/* Table */}
+            <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-700">
+                    <thead className="bg-gray-50 text-gray-800 sticky top-0">
+                        <tr>
+                            <th className="px-4 py-3 w-32">Order No.</th>
+                            <th className="px-4 py-3 w-24 text-center">Status</th>
+                            <th className="px-4 py-3 w-48">Internal Remark</th>
+                            <th className="px-4 py-3 w-40">Owner</th>
+                            <th className="px-4 py-3 w-32 text-center">Property</th>
+                            <th className="px-4 py-3 w-24 text-center">Unit</th>
+                            <th className="px-4 py-3 w-24 text-center">Partition</th>
+                            <th className="px-4 py-3 w-32 text-center">Price</th>
+                            <th
+                                className="px-4 py-3 w-32 text-center cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSort('created_at')}
+                            >
+                                <div className="flex items-center justify-center gap-1">
+                                    Created Date {getSortIcon('created_at')}
+                                </div>
+                            </th>
+                            <th
+                                className="px-4 py-3 w-32 text-center cursor-pointer hover:bg-gray-100"
+                                onClick={() => handleSort('updated_at')}
+                            >
+                                <div className="flex items-center justify-center gap-1">
+                                    Updated Date {getSortIcon('updated_at')}
+                                </div>
+                            </th>
+                            <th className="px-4 py-3 w-16 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {isLoading ? (
+                            // Skeleton Loader
+                            Array.from({ length: 8 }).map((_, index) => (
+                                <tr key={index} className="border-b animate-pulse">
+                                    <td className="px-4 py-3">
+                                        <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-6 bg-gray-200 rounded-full w-16 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="h-4 bg-gray-200 rounded w-32"></div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="space-y-1">
+                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-32"></div>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-4 bg-gray-200 rounded w-8 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-8 bg-gray-200 rounded w-8 mx-auto"></div>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : orders.length > 0 ? (
+                            orders.map((order, orderIndex) => (
+                                <tr
+                                    key={orderIndex}
+                                    className="border-b hover:bg-gray-50"
+                                >
+                                    <td className="px-4 py-3">
+                                        <Link
+                                            to={LOCAL_PATH_PREFIX + `orders/${order.id}`}
+                                            className="text-orange-500 hover:text-orange-700 font-medium hover:underline"
+                                        >
+                                            {order.order_no}
+                                        </Link>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(order.status)}`}>
+                                            {order.status === 'confirmed' ? getStatusLabel('sale') : getStatusLabel(order.status)}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <span className="text-gray-600">
+                                            {order.internal_remark || '-'}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        {order.user ? (
+                                            <div className="space-y-1">
+                                                <div className="font-medium">{order.user.name}</div>
+                                                <div className="text-xs text-gray-500">{order.user.email}</div>
+                                                <div className="text-xs text-gray-500">+{order.user.country_code} {order.user.phone_no}</div>
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400">-</span>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="space-y-1">
+                                            <div className="font-medium">{order.property ? order.property.name : '-'}</div>
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                                {order.unit_type}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className="font-sans text-base font-semibold">{order.block}-{order.floor}-{order.unit_no}</span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className={order.include_partition ? 'text-green-600' : 'text-gray-400'}>
+                                            {order.include_partition ? 'Yes' : 'No'}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className="font-semibold text-green-600">
+                                            RM {(order.f_1 ? (order.latest_quotation.bonus ? (order.final_amount - Number(order.latest_quotation.bonus.value)) : order.final_amount) : order.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="space-y-1">
+                                            <div className="text-sm font-medium">{order.created_by ? order.created_by.name : '-'}</div>
+                                            <div className="text-xs text-gray-500">{order.created_at}</div>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="space-y-1">
+                                            <div className="text-sm font-medium">{order.updated_by ? order.updated_by.name : '-'}</div>
+                                            <div className="text-xs text-gray-500">{order.updated_at}</div>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="flex justify-around gap-2">
+                                            <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
+                                                <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
+                                                    <i className="ki-filled ki-dots-vertical"></i>
+                                                </button>
+
+                                                <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
+                                                    {order.user &&
+                                                        <div className="menu-item">
+                                                            <button
+                                                                className="menu-link copy-link"
+                                                                data-clipboard-text={`${CLIENT_URL}order/overview/id/${order.id}`}
+                                                            >
+                                                                <span className="menu-title">
+                                                                    <div className="flex gap-2 items-center">
+                                                                        <i className="ki-outline ki-copy"></i>
+                                                                        <span className="text-gray-900">
+                                                                            Copy Quotation Order Link
+                                                                        </span>
+                                                                    </div>
+                                                                </span>
+                                                            </button>
+                                                        </div>
+                                                    }
+
+                                                    {order.status === 'unreleased' && order.user &&
+                                                        <div className="menu-item">
+                                                            <button
+                                                                className="menu-link"
+                                                                onClick={() => handleReleaseOrder(Number(order.id))}
+                                                            >
+                                                                <span className="menu-title">
+                                                                    <div className="flex gap-2 items-center">
+                                                                        <i className="ki-outline ki-check-circle"></i>
+                                                                        <span>Release Order</span>
+                                                                    </div>
+                                                                </span>
+                                                            </button>
+                                                        </div>
+                                                    }
+                                                    {order.status === 'released' &&
+                                                        <>
+                                                            <div className="menu-item">
+                                                                <button
+                                                                    className="menu-link"
+                                                                    data-modal-toggle="#confirm_order_modal"
+                                                                    onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
+                                                                >
+                                                                    <span className="menu-title">
+                                                                        <div className="flex gap-2 items-center text-success">
+                                                                            <i className="ki-outline ki-check-circle"></i>
+                                                                            <span>Confirm Order</span>
+                                                                        </div>
+                                                                    </span>
+                                                                </button>
+                                                            </div>
+                                                            <div className="menu-item">
+                                                                <button
+                                                                    className="menu-link"
+                                                                    data-modal-toggle="#void_quotation_modal"
+                                                                    onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
+                                                                >
+                                                                    <span className="menu-title">
+                                                                        <div className="flex gap-2 items-center">
+                                                                            <i className="ki-outline ki-cross-circle"></i>
+                                                                            <span>Void Order</span>
+                                                                        </div>
+                                                                    </span>
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    }
+                                                    <div className="menu-item">
+                                                        <Link
+                                                            to={LOCAL_PATH_PREFIX + `orders/create?dp=${order.id}`}
+                                                            className="menu-link"
+                                                            target="_blank"
+                                                        >
+                                                            <span className="menu-title">
+                                                                <div className="flex gap-2 items-center">
+                                                                    <i className="ki-outline ki-save-2"></i>
+                                                                    <span>Duplicate Order</span>
+                                                                </div>
+                                                            </span>
+                                                        </Link>
+                                                    </div>
+                                                    {order.status !== 'confirmed' &&
+                                                        <>
+                                                            <div className="menu-item">
+                                                                <Link
+                                                                    to={LOCAL_PATH_PREFIX + `orders/edit/${order.id}`}
+                                                                    className="menu-link"
+                                                                >
+                                                                    <span className="menu-title">
+                                                                        <div className="flex gap-2 items-center">
+                                                                            <i className="ki-outline ki-notepad-edit"></i>
+                                                                            <span>Edit Order</span>
+                                                                        </div>
+                                                                    </span>
+                                                                </Link>
+                                                            </div>
+                                                            <div className="menu-item">
+                                                                <button
+                                                                    className="menu-link"
+                                                                    data-modal-toggle="#delete_item_modal"
+                                                                    onClick={() => setSelectedOrder({ id: order.id, name: order.order_no })}
+                                                                >
+                                                                    <span className="menu-title">
+                                                                        <div className="flex gap-2 items-center text-danger">
+                                                                            <i className="ki-outline ki-trash"></i>
+                                                                            <span>Delete Order</span>
+                                                                        </div>
+                                                                    </span>
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={11} className="px-4 py-8 text-center text-gray-500">
+                                    No orders available
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Pagination */}
+            {!isLoading && orders.length > 0 && (
+                <div className="flex flex-col md:flex-row items-center justify-between mt-6 bg-white p-4 rounded-lg shadow-md">
+                    <div className="flex items-center gap-2 mb-4 md:mb-0">
+                        <span>Show</span>
+                        <select
+                            value={size}
+                            onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                            className="border rounded-lg px-3 py-1"
+                        >
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                        </select>
+                        <span>per page</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <span>
+                            {(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}
+                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                disabled={page === 1}
+                                onClick={() => handlePageChange(page - 1)}
+                                className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+                            >
+                                Previous
+                            </button>
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                                const startPage = Math.max(1, Math.min(page - 2, totalPages - 4));
+                                const currentPage = startPage + index;
+                                return (
+                                    <button
+                                        key={currentPage}
+                                        onClick={() => handlePageChange(currentPage)}
+                                        className={`px-3 py-1 border rounded-lg ${page === currentPage
+                                            ? 'bg-blue-500 text-white'
+                                            : 'hover:bg-gray-100'
+                                            }`}
+                                    >
+                                        {currentPage}
+                                    </button>
+                                );
+                            })}
+                            <button
+                                disabled={page === totalPages}
+                                onClick={() => handlePageChange(page + 1)}
+                                className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Click outside to close dropdowns */}
+            {openDropdowns.length > 0 && (
+                <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setOpenDropdowns([])}
+                />
+            )}
+
+            {/* Modals */}
             <ConfirmOrderModal
                 order={selectedOrder}
                 onSubmit={handleRefreshTable}
@@ -730,7 +806,7 @@ function OrderMain() {
                 navigateUrl='/orders'
                 deleteFunction={handleRemoveOrder}
             />
-        </>
+        </div>
     );
 }
 

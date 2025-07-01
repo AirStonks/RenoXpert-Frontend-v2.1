@@ -9,8 +9,6 @@ import {
     ChevronUpIcon,
     ArrowPathIcon,
     MagnifyingGlassIcon,
-    Squares2X2Icon,
-    ListBulletIcon,
 } from '@heroicons/react/24/solid';
 import { CheckIcon, ListFilterIcon, MinusCircleIcon, XIcon } from 'lucide-react';
 import AddRenoProgressModal from './components/Modals/AddRenoProgressModal';
@@ -190,6 +188,10 @@ function App() {
             property_id: propertyId,
         };
         setPropertyFilter(propertyId);
+        setFilterStatus(prevStatus => ({
+            ...prevStatus,
+            property_id: propertyId,
+        }));
         setPage(1);
         fetchProjects(1, size, searchTerm, sortOrder, sortField, newFilter);
     };
@@ -202,9 +204,9 @@ function App() {
             clearTimeout(debounceTimeout.current);
         }
 
-        debounceTimeout.current = setTimeout(async () => {
+        debounceTimeout.current = setTimeout(() => {
             setPage(1);
-            await fetchProjects(1, size, value, sortOrder, sortField, filterStatus);
+            fetchProjects(1, size, value, sortOrder, sortField, filterStatus);
         }, 500);
     };
 
