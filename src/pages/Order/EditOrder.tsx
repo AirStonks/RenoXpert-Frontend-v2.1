@@ -108,7 +108,7 @@ export default function EditOrder() {
                     block: orderDetail.block || "",
                     floor: orderDetail.floor || "",
                     unitNo: orderDetail.unit_no || "",
-                    isDraftMode: !orderDetail.user,
+                    isDraftMode: !orderDetail.user_id,
                     singleBedrooms: orderDetail.single_bedroom_count,
                     queenBedrooms: orderDetail.queen_bedroom_count,
                     studios: orderDetail.studio_count,
@@ -124,6 +124,7 @@ export default function EditOrder() {
                 if (orderDetail.user_id) await handleSelectUserById(Number(orderDetail.user_id));
                 if (orderDetail.property_id) await handleSelectPropertytById(Number(orderDetail.property_id));
 
+                setIsDraftMode(!orderDetail.user_id);
                 setSelectedPackages(orderDetail.latest_quotation.packages ? orderDetail.latest_quotation.packages : []);
             };
             runAsyncTasks();
