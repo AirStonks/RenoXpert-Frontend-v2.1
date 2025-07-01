@@ -260,10 +260,11 @@ export const fetchContact = async (contactId: number) => {
     }
 }
 
-export const productIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+export const productIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, signal?: AbortSignal) => {
     try {
         const response = await axios.get(API_URL + 'products', {
             headers: getAuthHeaders(),
+            signal,
             params: {
                 size: size,
                 page: page,
@@ -274,6 +275,11 @@ export const productIndex = async (size: number = 5, page: number = 1, searchTer
         });
         return response.data;
     } catch (error) {
+        if (error.code === 'ERR_CANCELED') {
+            console.log('Request canceled:', error.message);
+            return;
+        }
+
         handle401Error(error as AxiosError);
     }
 };
@@ -502,10 +508,11 @@ export const removeProductCategory = async (productCategoryId: number) => {
     }
 }
 
-export const packageIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
+export const packageIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true, signal?: AbortSignal) => {
     try {
         const response = await axios.get(API_URL + 'packages', {
             headers: getAuthHeaders(),
+            signal,
             params: {
                 size: size,
                 page: page,
@@ -517,6 +524,11 @@ export const packageIndex = async (size: number = 5, page: number = 1, searchTer
         });
         return response.data;
     } catch (error) {
+        if (error.code === 'ERR_CANCELED') {
+            console.log('Request canceled:', error.message);
+            return;
+        }
+
         handle401Error(error as AxiosError);
     }
 };
@@ -900,7 +912,16 @@ export const removeProperty = async (propertyId: number) => {
     }
 }
 
-export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, filter?: string, isHead: boolean = true) => {
+export const orderIndex = async (size: number = 5,
+    page: number = 1,
+    searchTerm?: string,
+    order?: string,
+    field?: string,
+    filters?: {
+        field: string;
+        value: string;
+    }[],
+    isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + 'orders', {
             headers: getAuthHeaders(),
@@ -910,7 +931,7 @@ export const orderIndex = async (size: number = 5, page: number = 1, searchTerm?
                 search: searchTerm,
                 sortOrder: order,
                 sortField: field,
-                filter: filter,
+                filters: filters,
                 head: isHead,
             }
         });
