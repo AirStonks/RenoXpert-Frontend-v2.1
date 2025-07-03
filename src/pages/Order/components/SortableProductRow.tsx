@@ -200,9 +200,9 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
                     className="p-1 rounded hover:bg-gray-200 transition-colors"
                 >
                     {product.pivot?.visibility ? (
-                        <Eye className="h-4 w-4 text-gray-600" />
+                        <Eye className="h-6 w-6 text-green-600" />
                     ) : (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
+                        <EyeOff className="h-6 w-6 text-gray-400" />
                     )}
                 </button>
             </td>
@@ -213,7 +213,7 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
                     onClick={() => onRemoveProduct(product.id!)}
                     className="p-1 rounded hover:bg-red-100 text-red-500 hover:text-red-700 transition-colors"
                 >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-6 w-6" />
                 </button>
             </td>
         </tr>
