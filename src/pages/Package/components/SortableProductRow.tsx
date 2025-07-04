@@ -45,7 +45,7 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
             <td className='text-center'>
                 {product.supplier_name || '-'}
             </td>
-            <td className="text-center text-lg">
+            <td className="text-center text-lg whitespace-nowrap">
                 <button onClick={() => adjustQuantity(product.id!, 'decrease')}>
                     <i className="ki-solid ki-minus-squared"></i>
                 </button>
