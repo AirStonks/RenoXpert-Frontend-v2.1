@@ -380,8 +380,8 @@ export default function CreateOrder() {
         setStepErrors({});
 
         const orderData: Order = {
-            user_id: selectedCustomer?.id || '0',
-            property_id: selectedProperty?.id || '0',
+            user_id: selectedCustomer?.id || null,
+            property_id: selectedProperty?.id || null,
             quotation_id: '0',
             total_amount: netAmount,
             final_amount: null,
@@ -584,7 +584,7 @@ export default function CreateOrder() {
                             {currentStep === steps.length - 1 ? (
                                 <button
                                     onClick={handleCreateOrder}
-                                    className="px-8 py-3 rounded-xl font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/25"
+                                    className="flex px-8 py-3 rounded-xl font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/25"
                                 >
                                     Create Order
                                 </button>
