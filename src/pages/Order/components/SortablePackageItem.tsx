@@ -266,19 +266,46 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                 <span className="text-md text-gray-500 mt-1">{pkg.description}</span>
                             </div>
 
-                            <div className="flex items-center gap-6 mb-4">
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <span>Quantity: {pkg.quantity || 1}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <span>Products: {productCount}</span>
-                                </div>
-                                {pkg.is_addon && !isAddonIncluded && (
-                                    <div className="flex items-center gap-2 text-sm text-amber-600">
-                                        <span className="font-medium">⚠ Excluded from pricing</span>
+
+                        </div>
+                    </div>
+
+                    {/* Package Actions */}
+                    <div className="flex flex-col justify-end items-end">
+                        <div className="flex flex-col items-end">
+                            <div className="flex gap-8 items-center mb-2">
+                                <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <span>Quantity: {pkg.quantity || 1}</span>
                                     </div>
-                                )}
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <span>Products: {productCount}</span>
+                                    </div>
+                                </div>
+                                <div className={`text-lg font-semibold ${pkg.is_addon && !isAddonIncluded ? 'text-gray-400 line-through' : 'text-gray-900'
+                                    }`}>
+                                    RM {packageTotal.toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    })}
+                                </div>
                             </div>
+                            {pkg.is_addon && !isAddonIncluded && (
+                                <div className="text-xs text-amber-600 mb-2">
+                                    ⚠ Not included in total
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => onRemove(pkg.id!)}
+                                className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                aria-label={`Remove ${pkg.name} package`}
+                            >
+                                <Trash2 className="h-3 w-3" />
+                                Remove
+                            </button>
 
                             {/* Expand/Collapse Button */}
                             <button
@@ -298,30 +325,6 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                 <span>{isExpanded ? 'Hide Details' : 'Show Details'}</span>
                             </button>
                         </div>
-                    </div>
-
-                    {/* Package Actions */}
-                    <div className="text-right">
-                        <div className={`text-lg font-semibold mb-2 ${pkg.is_addon && !isAddonIncluded ? 'text-gray-400 line-through' : 'text-gray-900'
-                            }`}>
-                            RM {packageTotal.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            })}
-                        </div>
-                        {pkg.is_addon && !isAddonIncluded && (
-                            <div className="text-xs text-amber-600 mb-2">
-                                Not included in total
-                            </div>
-                        )}
-                        <button
-                            onClick={() => onRemove(pkg.id!)}
-                            className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                            aria-label={`Remove ${pkg.name} package`}
-                        >
-                            <Trash2 className="h-3 w-3" />
-                            Remove
-                        </button>
                     </div>
                 </div>
             </div>

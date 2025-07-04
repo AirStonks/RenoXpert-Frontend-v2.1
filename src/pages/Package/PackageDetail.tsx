@@ -467,6 +467,7 @@ function PackageDetail() {
                                     <tr className="bg-gray-200">
                                         <td></td>
                                         <td></td>
+                                        <td></td>
                                         <td className="text-center py-3">
                                             <span className="text-lg font-bold">Total</span>
                                         </td>

@@ -55,19 +55,7 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
     };
 
     const calculateTotal = () => {
-        if (!product.pivot?.included) return 0;
-
-        const supplyPrice = product.pivot?.includeSupply ?
-            (product.provisioning?.supply?.retail_price || 0) * (product.pivot.quantity || 1) : 0;
-        const installPrice = product.pivot?.includeInstall ?
-            (product.provisioning?.install?.retail_price || 0) * (product.pivot.quantity || 1) : 0;
-
-        const supplyDiscount = !product.pivot?.includeSupply ?
-            (product.provisioning?.supply?.excluded_price || 0) * (product.pivot.quantity || 1) : 0;
-        const installDiscount = !product.pivot?.includeInstall ?
-            (product.provisioning?.install?.excluded_price || 0) * (product.pivot.quantity || 1) : 0;
-
-        return (supplyPrice + installPrice) - (supplyDiscount + installDiscount);
+        return calculateUnitPrice() - calculateDiscount();
     };
 
     const isExcluded = !product.pivot?.includeSupply && !product.pivot?.includeInstall;
@@ -181,16 +169,12 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
 
             {/* Total */}
             <td className="py-3 px-2 text-center text-sm font-medium">
-                {product.pivot?.included ? (
-                    <span className={isExcluded ? 'text-red-600' : 'text-gray-900'}>
-                        RM {calculateTotal().toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        })}
-                    </span>
-                ) : (
-                    <span className="text-gray-400">-</span>
-                )}
+                <span className="text-gray-900">
+                    RM {calculateTotal().toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })}
+                </span>
             </td>
 
             {/* Visibility */}

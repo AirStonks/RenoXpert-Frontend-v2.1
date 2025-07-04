@@ -345,6 +345,7 @@ function EditPackage() {
                                                     <tr>
                                                         <th className="w-[50px]"></th> {/* Drag handle column */}
                                                         <th className='w-[250px]'>Product</th>
+                                                        <th className='w-[200px] text-center'>Supplier</th>
                                                         <th className='w-[150px] text-center'>Quantity</th>
                                                         <th className='w-[100px] whitespace-nowrap'>Supply RRP</th>
                                                         <th className='w-[100px] whitespace-nowrap'>Install RRP</th>

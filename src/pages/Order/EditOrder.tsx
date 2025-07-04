@@ -431,7 +431,6 @@ export default function EditOrder() {
 
         // Clear previous errors
         setStepErrors({});
-        console.log(selectedCustomer);
 
         // Prepare order data
         const orderData: Order = {
