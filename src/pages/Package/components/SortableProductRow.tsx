@@ -7,6 +7,7 @@ interface SortableProductRowProps {
     adjustQuantity: (id: number, action: 'increase' | 'decrease') => void;
     handleVisibilityToggle: (id: number) => void;
     handleRemoveProduct: (id: number) => void;
+    index: number;
 }
 
 export const SortableProductRow: React.FC<SortableProductRowProps> = ({
@@ -14,6 +15,7 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
     adjustQuantity,
     handleVisibilityToggle,
     handleRemoveProduct,
+    index,
 }) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: `product-${product.id}`,
@@ -32,6 +34,9 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
         <tr ref={setNodeRef} style={style} {...attributes}>
             <td>
                 <span {...listeners} className='cursor-move text-xl'>☰</span>
+            </td>
+            <td>
+                {index + 1}.
             </td>
             <td>
                 <div className="flex flex-col">

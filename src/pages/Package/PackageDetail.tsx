@@ -344,6 +344,7 @@ function PackageDetail() {
                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                 <thead>
                                     <tr>
+                                        <th className="w-[10px]">#</th>
                                         <th className="w-[250px]">Product</th>
                                         <th className="w-[200px]">Supplier</th>
                                         <th className="w-[50px] text-center">Quantity</th>
@@ -361,6 +362,9 @@ function PackageDetail() {
                                 <tbody>
                                     {packageDetail.products.map((product, index) => (
                                         <tr key={index} className="hover:bg-gray-50">
+                                            <td className="text-center">
+                                                {index + 1}
+                                            </td>
                                             <td>
                                                 <div className="flex flex-col">
                                                     <span>{product.name}</span>
@@ -465,6 +469,7 @@ function PackageDetail() {
                                 </tbody>
                                 <tfoot>
                                     <tr className="bg-gray-200">
+                                        <td></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>

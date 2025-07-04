@@ -343,7 +343,8 @@ function EditPackage() {
                                             <table className="table align-middle text-gray-700 font-medium text-sm">
                                                 <thead>
                                                     <tr>
-                                                        <th className="w-[50px]"></th> {/* Drag handle column */}
+                                                        <th className="w-[50px]"></th>
+                                                        <th className="w-[50px]">#</th>
                                                         <th className='w-[250px]'>Product</th>
                                                         <th className='w-[200px] text-center'>Supplier</th>
                                                         <th className='w-[150px] text-center'>Quantity</th>
@@ -363,9 +364,10 @@ function EditPackage() {
                                                         items={selectedProducts.map((p) => `product-${p.id}`)}
                                                         strategy={verticalListSortingStrategy}
                                                     >
-                                                        {selectedProducts.map((product) => (
+                                                        {selectedProducts.map((product, index) => (
                                                             <SortableProductRow
                                                                 key={product.id}
+                                                                index={index}
                                                                 product={product}
                                                                 adjustQuantity={adjustQuantity}
                                                                 handleVisibilityToggle={handleVisibilityToggle}
