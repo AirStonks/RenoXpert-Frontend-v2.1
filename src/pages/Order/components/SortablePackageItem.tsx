@@ -100,7 +100,8 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
         return packageTotal * (pkg.quantity || 1);
     };
 
-    const handleAddonToggleClick = () => {
+    const handleAddonToggleClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering the header click
         if (pkg.is_addon && onAddonToggle) {
             const newIncludedState = !pkg.is_addon_included;
             onAddonToggle(pkg.id!, newIncludedState);
@@ -192,6 +193,20 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
         }
     };
 
+    const handleHeaderClick = (e: React.MouseEvent) => {
+        // Prevent click propagation if clicking on interactive elements
+        const target = e.target as HTMLElement;
+        if (
+            target.closest('button') ||
+            target.closest('input') ||
+            target.closest('.cursor-grab') ||
+            target.closest('.cursor-grabbing')
+        ) {
+            return;
+        }
+        toggleExpanded();
+    };
+
     const productCount = pkg.products?.length || 0;
     const packageTotal = calculatePackageTotal();
     const isAddonIncluded = pkg.is_addon_included !== false; // Default to true if undefined
@@ -206,7 +221,16 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                 }`}
         >
             {/* Package Header - Always Visible */}
-            <div className="p-6">
+            <div
+                className="p-6 cursor-pointer"
+                onClick={handleHeaderClick}
+                onKeyDown={handleKeyDown}
+                role="button"
+                tabIndex={0}
+                aria-expanded={isExpanded}
+                aria-controls={`package-details-${pkg.id}`}
+                aria-label={`${isExpanded ? 'Collapse' : 'Expand'} package details for ${pkg.name}`}
+            >
                 <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
                         {/* Drag Handle */}
@@ -228,7 +252,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                 <h3 className="font-semibold text-gray-900">{pkg.name}</h3>
                                 <span className="text-sm text-gray-500">#{index + 1}</span>
                                 {pkg.is_addon && (
-                                    <span className={`px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700`}>
+                                    <span className={`px-2 py-1 text-xs font-medium rounded-full bg-purple- Lillian-100 text-purple-700`}>
                                         Add-on {isAddonIncluded ? '(Included)' : '(Excluded)'}
                                     </span>
                                 )}
@@ -265,66 +289,60 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                             <div className="flex items-center gap-6 mb-4">
                                 <span className="text-md text-gray-500 mt-1">{pkg.description}</span>
                             </div>
-
-
                         </div>
                     </div>
 
                     {/* Package Actions */}
-                    <div className="flex flex-col justify-end items-end">
-                        <div className="flex flex-col items-end">
-                            <div className="flex gap-8 items-center mb-2">
-                                <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                        <span>Quantity: {pkg.quantity || 1}</span>
+                    <div className="flex">
+                        <div className="flex flex-col justify-end items-end">
+                            <div className="flex flex-col items-end">
+                                <div className="flex gap-8 items-center mb-2">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <span>Quantity: {pkg.quantity || 1}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <span>Products: {productCount}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                                        <span>Products: {productCount}</span>
+                                    <div className={`text-lg font-semibold ${pkg.is_addon && !isAddonIncluded ? 'text-gray-400 line-through' : 'text-gray-900'
+                                        }`}>
+                                        RM {packageTotal.toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}
                                     </div>
                                 </div>
-                                <div className={`text-lg font-semibold ${pkg.is_addon && !isAddonIncluded ? 'text-gray-400 line-through' : 'text-gray-900'
-                                    }`}>
-                                    RM {packageTotal.toLocaleString(undefined, {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                    })}
-                                </div>
+                                {pkg.is_addon && !isAddonIncluded && (
+                                    <div className="text-xs text-amber-600 mb-2">
+                                        ⚠ Not included in total
+                                    </div>
+                                )}
                             </div>
-                            {pkg.is_addon && !isAddonIncluded && (
-                                <div className="text-xs text-amber-600 mb-2">
-                                    ⚠ Not included in total
-                                </div>
-                            )}
-                        </div>
 
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => onRemove(pkg.id!)}
-                                className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                                aria-label={`Remove ${pkg.name} package`}
-                            >
-                                <Trash2 className="h-3 w-3" />
-                                Remove
-                            </button>
-
-                            {/* Expand/Collapse Button */}
-                            <button
-                                onClick={toggleExpanded}
-                                onKeyDown={handleKeyDown}
-                                className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                aria-expanded={isExpanded}
-                                aria-controls={`package-details-${pkg.id}`}
-                                aria-label={`${isExpanded ? 'Collapse' : 'Expand'} package details for ${pkg.name}`}
-                            >
-                                <motion.div
-                                    animate={{ rotate: isExpanded ? 90 : 0 }}
-                                    transition={{ duration: 0.2 }}
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRemove(pkg.id!);
+                                    }}
+                                    className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                    aria-label={`Remove ${pkg.name} package`}
                                 >
-                                    <ChevronRight className="h-4 w-4" />
-                                </motion.div>
-                                <span>{isExpanded ? 'Hide Details' : 'Show Details'}</span>
-                            </button>
+                                    <Trash2 className="h-3 w-3" />
+                                    Remove
+                                </button>
+                            </div>
                         </div>
+
+                        {/* Expand/Collapse Indicator */}
+                        <motion.div
+                            animate={{ rotate: isExpanded ? 90 : 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 transition-all duration-200"
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </motion.div>
                     </div>
                 </div>
             </div>
@@ -397,7 +415,6 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                     <Plus className="h-3 w-3" />
                                     Add Products
                                 </button>
-
                             </div>
 
                             {/* Products Table */}

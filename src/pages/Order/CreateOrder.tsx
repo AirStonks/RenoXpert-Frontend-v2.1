@@ -325,9 +325,6 @@ export default function CreateOrder() {
         );
     };
 
-    console.log(selectedPackages);
-
-
     const handleCreateOrder = async () => {
         setIsCreatingOrder(true);
         const errors: { [key: string]: string } = {};
