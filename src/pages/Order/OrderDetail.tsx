@@ -1247,7 +1247,7 @@ function OrderDetail() {
                                                                 <span className="text-sm text-gray-600 text-start">{prodPackage.description}</span>
                                                                 <span className="text-base text-gray-700">
                                                                     RM{" "}
-                                                                    {(prodPackage.total_price * (prodPackage.quantity ? prodPackage.quantity : 1)).toLocaleString(
+                                                                    {calculatePackageTotal(prodPackage).toLocaleString(
                                                                         undefined,
                                                                         { minimumFractionDigits: 2, maximumFractionDigits: 2 }
                                                                     )}
