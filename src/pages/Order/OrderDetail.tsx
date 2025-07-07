@@ -415,6 +415,50 @@ function OrderDetail() {
         };
     };
 
+    const calculatePackageTotal = (pkg: Package) => {
+        // If it's an addon package that's not included, return 0
+        // if (pkg.is_addon && pkg.is_addon_included === false) {
+        //     return 0;
+        // }
+
+        // if (!pkg.products || pkg.products.length === 0) {
+        //     return (pkg.total_price || 0) * (pkg.quantity || 1);
+        // }
+
+        const packageTotal = pkg.products.reduce((prodSum, product) => {
+            let supplyPrice = 0;
+            let installPrice = 0;
+
+            // Calculate supply price
+            if (product.provisioning?.supply) {
+                if (product.pivot?.includeSupply) {
+                    supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1);
+                } else {
+                    supplyPrice = Math.max(0,
+                        (product.provisioning.supply.retail_price || 0) -
+                        (product.provisioning.supply.excluded_price || 0)
+                    ) * (product.pivot?.quantity || 1);
+                }
+            }
+
+            // Calculate install price
+            if (product.provisioning?.install) {
+                if (product.pivot?.includeInstall) {
+                    installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1);
+                } else {
+                    installPrice = Math.max(0,
+                        (product.provisioning.install.retail_price || 0) -
+                        (product.provisioning.install.excluded_price || 0)
+                    ) * (product.pivot?.quantity || 1);
+                }
+            }
+
+            return prodSum + supplyPrice + installPrice;
+        }, 0);
+
+        return packageTotal * (pkg.quantity || 1);
+    };
+
     const { totalCogs, marginInAmount, marginInPercentage } = calculateQuotationMargin();
 
     const discount = selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0;
@@ -1452,8 +1496,8 @@ function OrderDetail() {
                                                                             </td> {/* Added padding for better spacing */}
                                                                             <td className="whitespace-nowrap text-gray-600">
                                                                                 <span className="text-sm">
-                                                                                    {totals.supplyRRP >= 0 &&
-                                                                                        `RM ${totals.supplyRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                    {calculatePackageTotal(prodPackage) >= 0 &&
+                                                                                        `RM ${calculatePackageTotal(prodPackage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                                 </span>
                                                                             </td>
                                                                             <td className="whitespace-nowrap text-gray-600">
