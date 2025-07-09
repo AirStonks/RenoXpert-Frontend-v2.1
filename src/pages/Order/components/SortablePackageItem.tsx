@@ -243,6 +243,9 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                             <GripVertical className="h-4 w-4 text-gray-500" />
                         </div>
 
+                        {/* Package Index */}
+                        <span className="text-md text-gray-500 mt-2">#{index + 1}</span>
+
                         {/* Package Info */}
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
@@ -250,12 +253,6 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                     <PackageIcon className="h-4 w-4 text-blue-600" />
                                 </div>
                                 <h3 className="font-semibold text-gray-900">{pkg.name}</h3>
-                                <span className="text-sm text-gray-500">#{index + 1}</span>
-                                {pkg.is_addon && (
-                                    <span className={`px-2 py-1 text-xs font-medium rounded-full bg-purple- Lillian-100 text-purple-700`}>
-                                        Add-on {isAddonIncluded ? '(Included)' : '(Excluded)'}
-                                    </span>
-                                )}
                                 {pkg.category && (
                                     <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full border">
                                         {pkg.category}
@@ -263,10 +260,15 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                 )}
                             </div>
 
+                            {/* Collapsed Summary Info */}
+                            <div className="flex items-center gap-6 mb-2">
+                                <span className="text-md text-gray-500 mt-1">{pkg.description}</span>
+                            </div>
+
                             {/* Addon Toggle Control */}
                             {pkg.is_addon && (
                                 <div className="flex items-center gap-3 mb-4">
-                                    <span className="text-sm text-gray-600">Include in quotation:</span>
+                                    <span className="text-sm text-gray-600">Add-On Quotation:</span>
                                     <button
                                         onClick={handleAddonToggleClick}
                                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${isAddonIncluded ? 'bg-purple-500' : 'bg-gray-200'
@@ -285,9 +287,8 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                 </div>
                             )}
 
-                            {/* Collapsed Summary Info */}
-                            <div className="flex items-center gap-6 mb-4">
-                                <span className="text-md text-gray-500 mt-1">{pkg.description}</span>
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <span>Products: {productCount}</span>
                             </div>
                         </div>
                     </div>
@@ -296,13 +297,13 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                     <div className="flex">
                         <div className="flex flex-col justify-end items-end">
                             <div className="flex flex-col items-end">
-                                <div className="flex gap-8 items-center mb-2">
+                                <div className="flex gap-6 items-center mb-2">
                                     <div className="flex items-center gap-6">
                                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <span>Quantity: {pkg.quantity || 1}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <span>Products: {productCount}</span>
+                                            <span>RM {(packageTotal / (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Unit Price)</span>
+                                            <span>x</span>
+                                            <span>{pkg.quantity || 1} (Qty)</span>
+                                            <span>=</span>
                                         </div>
                                     </div>
                                     <div className={`text-lg font-semibold ${pkg.is_addon && !isAddonIncluded ? 'text-gray-400 line-through' : 'text-gray-900'
