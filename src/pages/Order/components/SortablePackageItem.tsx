@@ -321,7 +321,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                 )}
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 mt-8">
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -423,6 +423,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                 <ProductTable
                                     products={pkg.products}
                                     packageId={pkg.id!}
+                                    packageQty={pkg.quantity || 1}
                                     onProductsUpdate={onProductsUpdate}
                                     onToggleProperty={handleProductToggle}
                                     onQuantityAdjust={handleQuantityAdjustment}

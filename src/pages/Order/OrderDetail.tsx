@@ -1266,18 +1266,32 @@ function OrderDetail() {
                                                                     )}
                                                                 </span>
                                                             </div>
-                                                            <div className="flex items-center gap-8">
-                                                                {prodPackage.is_addon && (
-                                                                    <span className="text-gray-700 font-semibold py-2 px-4 bg-slate-200 rounded-md whitespace-nowrap">
-                                                                        {`Add-on Included: ${prodPackage.is_addon_included ? "Yes" : "No"}`}
-                                                                    </span>
-                                                                )}
-                                                                <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md whitespace-nowrap">
-                                                                    Quantity: {prodPackage.quantity ? prodPackage.quantity : 1}
-                                                                </span>
-                                                                <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                                <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                            <div className="flex gap-4 items-center">
+                                                                <div className="flex flex-col gap-4">
+                                                                    <div className="flex items-center justify-end gap-8">
+                                                                        {prodPackage.is_addon && (
+                                                                            <span className="text-gray-700 font-semibold py-2 px-4 bg-slate-200 rounded-md whitespace-nowrap">
+                                                                                {`Add-on Included: ${prodPackage.is_addon_included ? "Yes" : "No"}`}
+                                                                            </span>
+                                                                        )}
+                                                                        <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md whitespace-nowrap">
+                                                                            Quantity: {prodPackage.quantity ? prodPackage.quantity : 1}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center justify-end gap-2 text-sm text-gray-600">
+                                                                        <span>RM {(totals.totalRRP / (prodPackage.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Unit Price)</span>
+                                                                        <span>x</span>
+                                                                        <span>{prodPackage.quantity || 1} (Qty)</span>
+                                                                        <span>=</span>
+                                                                        <span className="font-semibold text-lg text-gray-800">RM {totals.totalRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex">
+                                                                    <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                                    <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
+                                                                </div>
                                                             </div>
+
                                                         </button>
                                                         <div
                                                             className="accordion-content active border-t"

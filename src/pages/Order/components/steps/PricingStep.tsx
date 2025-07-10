@@ -120,16 +120,16 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
 
                     {addonPackages && addonPackages.length > 0 && (
                         <div className="border-t border-gray-200 pt-6">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Addon Packages Summary</h4>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Add-On Packages Summary</h4>
                             <div className="space-y-2">
                                 <div className="text-sm text-gray-600">
-                                    Total Addon Packages: {addonPackages.length}
+                                    Total Add-On Packages: {addonPackages.length}
                                 </div>
                                 <div className="text-sm text-gray-600">
-                                    Included Addon Packages: {includedAddonPackages ? includedAddonPackages.length : 0}
+                                    Included Add-On Packages: {includedAddonPackages ? includedAddonPackages.length : 0}
                                 </div>
                                 <div className="text-sm text-gray-600">
-                                    Excluded Addon Packages: {addonPackages.length - (includedAddonPackages ? includedAddonPackages.length : 0)}
+                                    Excluded Add-On Packages: {addonPackages.length - (includedAddonPackages ? includedAddonPackages.length : 0)}
                                 </div>
                             </div>
                         </div>
@@ -153,7 +153,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                     <span className="text-gray-500 ml-2">× {pkg.quantity || 1}</span>
                                     {pkg.is_addon && (
                                         <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
-                                            Addon
+                                            Add-On
                                         </span>
                                     )}
                                 </div>
