@@ -55,7 +55,7 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
     };
 
     const calculateTotal = () => {
-        return calculateUnitPrice() - calculateDiscount();
+        return (calculateUnitPrice() - calculateDiscount() || 0) * (product.pivot?.quantity || 1);
     };
 
     const isExcluded = !product.pivot?.includeSupply && !product.pivot?.includeInstall;
@@ -145,16 +145,145 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
                 </div>
             </td>
 
-            {/* Unit Price */}
-            <td className="py-3 px-2 text-center text-sm font-medium">
-                RM {calculateUnitPrice().toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                })}
+            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                <span className="text-gray-500">
+                    {
+                        `RM ${product.provisioning.supply.retail_price.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        })}`
+                    }
+                </span>
+            </td>
+
+
+            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                <span className="text-gray-500">
+                    {
+                        `RM ${product.provisioning.install.retail_price.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        })}`
+                    }
+                </span>
+            </td>
+
+
+            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                <span className="text-gray-900 text-green-600">
+                    {
+                        `RM ${(
+                            (product.pivot.includeSupply
+                                ? product.provisioning.supply.retail_price * product.pivot.quantity
+                                : 0) +
+                            (product.pivot.includeInstall
+                                ? product.provisioning.install.retail_price * product.pivot.quantity
+                                : 0)
+                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                </span>
+            </td>
+
+
+            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                <span className="text-gray-500">
+                    {
+                        `RM ${product.provisioning.supply.cogs.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        })}`
+                    }
+                </span>
+            </td>
+
+
+            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                <span className="text-gray-500">
+                    {
+                        `RM ${product.provisioning.install.cogs.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        })}`
+                    }
+                </span>
+            </td>
+
+
+            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                <span className="text-gray-900 text-red-600">
+                    {
+                        `RM ${(
+                            (product.pivot.includeSupply
+                                ? product.provisioning.supply.cogs * product.pivot.quantity
+                                : 0) +
+                            (product.pivot.includeInstall
+                                ? product.provisioning.install.cogs * product.pivot.quantity
+                                : 0)
+                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                </span>
+            </td>
+
+            {/* Margin % */}
+            <td className="py-3 px-2 text-center text-sm whitespace-nowrap">
+                {product.pivot.included
+                    ? (() => {
+                        const totalRRP =
+                            (product.pivot.includeSupply
+                                ? product.provisioning.supply.retail_price * product.pivot.quantity
+                                : 0) +
+                            (product.pivot.includeInstall
+                                ? product.provisioning.install.retail_price * product.pivot.quantity
+                                : 0);
+                        const totalCOGS =
+                            (product.pivot.includeSupply
+                                ? product.provisioning.supply.cogs * product.pivot.quantity
+                                : 0) +
+                            (product.pivot.includeInstall
+                                ? product.provisioning.install.cogs * product.pivot.quantity
+                                : 0);
+                        return product.pivot.includeSupply || product.pivot.includeInstall
+                            ? totalRRP !== 0
+                                ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                })}%`
+                                : totalCOGS > 0
+                                    ? "-100.00%"
+                                    : "0.00%"
+                            : "";
+                    })()
+                    : ""}
+            </td>
+
+            <td className="py-3 px-2 text-center text-sm whitespace-nowrap">
+                {product.pivot.included
+                    ? (() => {
+                        const totalRRP =
+                            (product.pivot.includeSupply
+                                ? product.provisioning.supply.retail_price * product.pivot.quantity
+                                : 0) +
+                            (product.pivot.includeInstall
+                                ? product.provisioning.install.retail_price * product.pivot.quantity
+                                : 0);
+                        const totalCOGS =
+                            (product.pivot.includeSupply
+                                ? product.provisioning.supply.cogs * product.pivot.quantity
+                                : 0) +
+                            (product.pivot.includeInstall
+                                ? product.provisioning.install.cogs * product.pivot.quantity
+                                : 0);
+                        const marginAmount = totalRRP - totalCOGS;
+                        return product.pivot.includeSupply || product.pivot.includeInstall
+                            ? `RM ${marginAmount.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                            })}`
+                            : "";
+                    })()
+                    : ""}
             </td>
 
             {/* Discount */}
-            <td className="py-3 px-2 text-center text-sm">
+            <td className="py-3 px-2 text-center text-sm whitespace-nowrap">
                 {calculateDiscount() > 0 ? (
                     <span className="text-red-600">
                         - RM {calculateDiscount().toLocaleString(undefined, {
@@ -168,7 +297,7 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
             </td>
 
             {/* Total */}
-            <td className="py-3 px-2 text-center text-sm font-medium">
+            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
                 <span className="text-gray-900">
                     RM {calculateTotal().toLocaleString(undefined, {
                         minimumFractionDigits: 2,

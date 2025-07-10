@@ -494,7 +494,7 @@ export default function EditOrder() {
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-4">
                             <Link
-                                to={LOCAL_PATH_PREFIX + 'orders'}
+                                to={LOCAL_PATH_PREFIX + 'orders/' + orderId}
                                 className="p-2 rounded-full hover:bg-gray-100/80 transition-colors duration-200"
                             >
                                 <ArrowLeft className="h-5 w-5 text-gray-700" />
