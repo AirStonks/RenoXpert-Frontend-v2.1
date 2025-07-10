@@ -576,10 +576,10 @@ const OrderPreviewModal = ({
                                 <div className="p-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         {[
-                                            { label: "Name", value: orderDetail.property.name },
+                                            { label: "Name", value: orderDetail.property ? orderDetail.property.name : "-" },
                                             {
                                                 label: "Unit",
-                                                value: `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}`,
+                                                value: orderDetail.property ? `${orderDetail.block}-${orderDetail.floor}-${orderDetail.unit_no}` : '-'
                                             },
                                             { label: "Unit Type", value: orderDetail.unit_type || "-" },
                                             {
@@ -596,15 +596,17 @@ const OrderPreviewModal = ({
                                     <div className="mt-4">
                                         <span className="text-xs text-gray-600">Address:</span>
                                         <p className="text-xs text-gray-900">
-                                            {[
-                                                orderDetail.property.address,
-                                                orderDetail.property.street,
-                                                orderDetail.property.postcode,
-                                                orderDetail.property.city,
-                                                orderDetail.property.state,
-                                            ]
-                                                .filter(Boolean)
-                                                .join(", ")}
+                                            {orderDetail.property
+                                                ? [
+                                                    orderDetail.property.address,
+                                                    orderDetail.property.street,
+                                                    orderDetail.property.postcode,
+                                                    orderDetail.property.city,
+                                                    orderDetail.property.state,
+                                                ]
+                                                    .filter(Boolean)
+                                                    .join(", ")
+                                                : '-'}
                                         </p>
                                     </div>
                                 </div>
