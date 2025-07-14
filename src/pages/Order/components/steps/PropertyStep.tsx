@@ -17,6 +17,7 @@ interface FormData {
     completionDays: number;
     isProgressivePayment: boolean;
     isDraftMode: boolean;
+    isBePowered: boolean;
     finalAmount: number;
     bonusDescription: string;
     bonusValue: number;

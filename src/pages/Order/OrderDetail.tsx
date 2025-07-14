@@ -4,11 +4,11 @@ import React, { useEffect, useState } from "react";
 import Loading from "../../components/Loading";
 import useFetchOrder from "../../hook/useFetchOrder";
 import { KTAccordion, KTModal, KTTooltip } from "../../metronic/core";
-import { OrderQuotation, Package, Product } from "../../types";
+import { Order, OrderQuotation, Package, Product } from "../../types";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import ClipboardJS from "clipboard";
 import { Slide, toast } from "react-toastify";
-import { releaseOrder, reReleaseOrder, updateOrderInternalRemark, voidOrder } from "../../services/api";
+import { releaseOrder, reReleaseOrder, toggleBePowered, updateOrderInternalRemark, voidOrder } from "../../services/api";
 import ConfirmOrderModal from "./components/ConfirmOrderModal";
 import ReReleaseOrderModal from "./components/ReReleaseOrderModal";
 import VoidQuotationModal from "./components/VoidQuotationModal";
@@ -51,12 +51,15 @@ function OrderDetail() {
     const { id } = useParams<{ id: string }>();
     const orderId = id ? parseInt(id, 10) : null;
 
-    const { orderDetail, loading, error, refetch } = useFetchOrder(orderId);
+    const { orderDetail: order, loading, error, refetch } = useFetchOrder(orderId);
+    const [orderDetail, setOrderDetail] = useState<Order | null>(null);
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; cogs: number; quantity: number }[]>([]);
     const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
 
     const [isEditingInternalRemark, setIsEditingInternalRemark] = useState(false);
+    const [isEditingBePowered, setIsEditingBePowered] = useState(false);
     const [editableInternalRemark, setEditableInternalRemark] = useState('');
+    const [editableBePowered, setEditableBePowered] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({});
 
@@ -79,9 +82,13 @@ function OrderDetail() {
         KTAccordion.init();
         KTTooltip.init();
 
-        // if (orderDetail) {
-        //     console.log(JSON.parse(JSON.stringify(orderDetail.total_amount)));
-        // }
+        setIsLoading(loading);
+
+        if (order) {
+            setOrderDetail(order);
+        } else if (!loading && !order && !error) {
+            setOrderDetail(null);
+        }
 
         const clipboard = new ClipboardJS('.copy-link');
 
@@ -94,7 +101,7 @@ function OrderDetail() {
             clipboard.destroy();
         };
 
-    }, []);
+    }, [order, loading, error]);
 
     useEffect(() => {
         if (!orderDetail?.latest_quotation?.packages) return;
@@ -272,8 +279,29 @@ function OrderDetail() {
         setIsEditingInternalRemark(true);
     }
 
+    const handleEditBePowered = () => {
+        setEditableBePowered(orderDetail.is_be_powered);
+        setIsEditingBePowered(true);
+    }
+
     const handleChangeInternalRemark = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setEditableInternalRemark(event.target.value);
+    }
+
+    const handleChangeBePowered = async () => {
+        setEditableBePowered(!editableBePowered);
+
+        try {
+            const response = await toggleBePowered(orderId);
+
+            if (response?.success) {
+                notify('success', 'Be powered updated!');
+                setOrderDetail(orderDetail => orderDetail ? { ...orderDetail, is_be_powered: !orderDetail.is_be_powered } : null);
+            }
+        } catch (error) {
+            console.error(error);
+            notify('error', 'Error occurred while updating be powered.');
+        }
     }
 
     const handleSaveInternalRemark = async () => {
@@ -343,7 +371,7 @@ function OrderDetail() {
         }
     }
 
-    if (loading) return <Loading />;
+    if (isLoading) return <Loading />;
     if (error) return <div>{error}</div>;
     if (!orderDetail) return <div>Order not found</div>;
 
@@ -784,6 +812,95 @@ function OrderDetail() {
                                         <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated by:</td>
                                         <td className="text-sm text-gray-900 pb-3">
                                             {orderDetail.latest_quotation.created_by.name}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="card">
+                        <div className="card-header flex justify-between items-center">
+                            <h3 className="card-title">
+                                BePowered 2.0 Program
+                            </h3>
+                            <div className="flex">
+                                {isEditingBePowered ?
+                                    <button
+                                        className="btn btn-secondary btn-sm"
+                                        onClick={() => setIsEditingBePowered(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                    :
+                                    <button
+                                        className="btn btn-primary btn-sm"
+                                        onClick={handleEditBePowered}
+                                    >
+                                        Edit
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                        <div className="card-body pt-3.5 pb-3.5">
+                            <table className="table-auto">
+                                <tbody>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Status:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            {isEditingBePowered ?
+                                                <button
+                                                    onClick={handleChangeBePowered}
+                                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${editableBePowered ? "bg-blue-500" : "bg-gray-200"
+                                                        }`}
+                                                >
+                                                    <span
+                                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${editableBePowered ? "translate-x-6" : "translate-x-1"
+                                                            }`}
+                                                    />
+                                                </button>
+                                                : orderDetail.is_be_powered ?
+                                                    <span className="badge badge-sm badge-outline p-2 cursor-default capitalize badge-success">Active</span>
+                                                    : <span className="badge badge-sm badge-outline p-2 cursor-default capitalize badge-danger">Inactive</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Original Nett Amount:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            <span className="text-sm text-gray-900 pb-3">
+                                                RM {(totalExcludedAddonAmount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </span>
+
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Markup Price:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            <span className="text-sm text-gray-900 pb-3">
+                                                RM {(Math.ceil(((totalExcludedAddonAmount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) * 1.2) / 50) * 50).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Upfront Amount:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            RM 25,000.00
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
+                                            Remaining Balance:
+                                        </td>
+                                        <td className="text-sm text-gray-900 pb-3">
+                                            RM {(totalExcludedAddonAmount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0) - 25000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </td>
                                     </tr>
                                 </tbody>

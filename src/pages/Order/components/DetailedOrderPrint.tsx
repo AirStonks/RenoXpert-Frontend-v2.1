@@ -574,6 +574,65 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                 </View>
             </View>
 
+            {/* BePowered 2.0 Section */}
+            <View wrap={false}>
+                <View style={styles.summaryTable}>
+                    <View style={styles.summaryHeader}>
+                        <Text style={styles.summaryTitle}>BePowered 2.0</Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Original Nett Amount</Text>
+                        <Text style={styles.summaryValue}>
+                            RM{" "}
+                            {(totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)).toLocaleString(
+                                undefined,
+                                { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+                            )}
+                        </Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Markup Price (20%)</Text>
+                        <Text style={styles.summaryValue}>
+                            RM{" "}
+                            {((totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)) * 1.20).toLocaleString(
+                                undefined,
+                                { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+                            )}
+                        </Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Upfront Amount</Text>
+                        <Text style={styles.summaryValue}>
+                            RM{" "}
+                            {(25000).toLocaleString(
+                                undefined,
+                                { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+                            )}
+                        </Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Upfront EPP (60 months)</Text>
+                        <Text style={styles.summaryValue}>
+                            RM{" "}
+                            {((25000 * 1.14) / 60).toLocaleString(
+                                undefined,
+                                { minimumFractionDigits: 0, maximumFractionDigits: 0 },
+                            )}/month
+                        </Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Remaining Balance</Text>
+                        <Text style={styles.summaryValue}>
+                            RM{" "}
+                            {((totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)) - 25000).toLocaleString(
+                                undefined,
+                                { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+                            )}
+                        </Text>
+                    </View>
+                </View>
+            </View>
+
             {/* Quotation Body */}
             <View>
                 {/* Package Table with Detailed Products */}

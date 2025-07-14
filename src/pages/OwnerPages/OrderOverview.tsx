@@ -76,6 +76,7 @@ function OrderOverview() {
     const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0)
 
     const [selectedPlan, setSelectedPlan] = useState<string>("60")
+    const [selectedProgram, setSelectedProgram] = useState<string>("normal")
 
     const [activeTab, setActiveTab] = useState("tab_1_1")
     const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({})
@@ -277,6 +278,15 @@ function OrderOverview() {
         document.title = "Order Overview | RenoXpert"
         KTComponent.init()
     }, [])
+
+    const handleProgramChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedProgram = e.target.value
+        setSelectedProgram(selectedProgram)
+
+        if (selectedProgram === 'bePowered') {
+            setSelectedPlan("60")
+        }
+    }
 
     const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedPlan = e.target.value
@@ -917,8 +927,8 @@ function OrderOverview() {
     return (
         <>
             <div className={`flex w-full px-2 ${openAccordions["amount_breakdown"]
-                ? "mb-40"
-                : "mb-0"
+                ? "mb-60"
+                : "mb-10"
                 }`}>
                 <div className="card flex-auto w-full max-w-4xl">
                     {/* Header */}
@@ -1176,53 +1186,124 @@ function OrderOverview() {
                                                         </div>
                                                         <select
                                                             className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
-                                                            id="payment_plan"
-                                                            value={selectedPlan}
-                                                            onChange={handlePlanChange}
-                                                            name="payment_plan"
+                                                            id="program"
+                                                            value={selectedProgram}
+                                                            onChange={handleProgramChange}
+                                                            name="program"
                                                         >
-                                                            <option value="36">36 months</option>
-                                                            <option value="60">60 months</option>
+                                                            <option value="normal">Normal</option>
+                                                            <option value="bePowered">BePowered 2.0</option>
                                                         </select>
                                                     </div>
 
-                                                    <div className="flex">
-                                                        <div className="flex flex-col items-start">
-                                                            <p className="text-lg text-[#d71e42] font-bold">
-                                                                RM{" "}
-                                                                {(
-                                                                    ((totalExcludedAddonAmount - (bonus?.value || 0)) *
-                                                                        (selectedPlan === "60" ? 1.14 : 1.105)) /
-                                                                    Number(selectedPlan)
-                                                                ).toLocaleString(undefined, {
-                                                                    minimumFractionDigits: 0,
-                                                                    maximumFractionDigits: 0,
-                                                                })}
-                                                                <span className="text-sm text-gray-600">/month </span>
-                                                                <span className="text-xs text-gray-600">
-                                                                    for {selectedPlan === "60" ? "60" : "36"} months
-                                                                </span>
-                                                            </p>
-                                                            <p className="italic text-gray-600 text-xs flex items-center">
-                                                                <span>(Terms & Conditions)</span>
-                                                                <button className="mx-1" data-modal-toggle="#payment_info_modal">
-                                                                    <InformationCircleIcon
-                                                                        className="w-4 h-4 text-yellow-500"
-                                                                        aria-label="Payment Info"
-                                                                    />
-                                                                </button>
-                                                            </p>
-                                                        </div>
+                                                    <div className="flex justify-between">
+                                                        {selectedProgram !== "bePowered" ? (
+                                                            <>
+                                                                <div className="flex flex-col items-start w-full">
+                                                                    <p className="text-lg text-[#d71e42] font-bold">
+                                                                        RM{" "}
+                                                                        {selectedProgram === "bePowered" ?
+                                                                            ((25000 *
+                                                                                (selectedPlan === "60" ? 1.14 : 1.105)) /
+                                                                                Number(selectedPlan)
+                                                                            ).toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 0,
+                                                                                maximumFractionDigits: 0,
+                                                                            })
+                                                                            :
+                                                                            (((totalExcludedAddonAmount - (bonus?.value || 0)) *
+                                                                                (selectedPlan === "60" ? 1.14 : 1.105)) /
+                                                                                Number(selectedPlan)
+                                                                            ).toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 0,
+                                                                                maximumFractionDigits: 0,
+                                                                            })
+                                                                        }
+                                                                        <span className="text-sm text-gray-600">/month </span>
+                                                                        <span className="text-xs text-gray-600">
+                                                                            for {selectedPlan === "60" ? "60" : "36"} months
+                                                                        </span>
+                                                                    </p>
+                                                                    <div className="flex justify-between w-full">
+                                                                        <p className="italic text-gray-600 text-xs flex items-center">
+                                                                            <span>(Terms & Conditions)</span>
+                                                                            <button className="mx-1" data-modal-toggle="#payment_info_modal">
+                                                                                <InformationCircleIcon
+                                                                                    className="w-4 h-4 text-yellow-500"
+                                                                                    aria-label="Payment Info"
+                                                                                />
+                                                                            </button>
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <select
+                                                                    className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
+                                                                    id="payment_plan"
+                                                                    value={selectedPlan}
+                                                                    onChange={handlePlanChange}
+                                                                    name="payment_plan"
+                                                                >
+                                                                    <option value="36">36 months</option>
+                                                                    <option value="60">60 months</option>
+                                                                </select>
+                                                            </>
+                                                        ) :
+                                                            <div className="flex flex-col items-start w-full">
+                                                                <p className="text-lg text-[#d71e42] font-bold">
+                                                                    <span className="text-sm text-gray-600">Total </span>
+                                                                    RM{" "}25,000
+                                                                    <span className="text-sm text-gray-600"> Upfront</span>
+                                                                </p>
+                                                                <p className="text-sm text-[#d71e42] font-bold">
+                                                                    RM{" "}
+                                                                    {orderDetail.is_be_powered ?
+                                                                        ((25000 *
+                                                                            (selectedPlan === "60" ? 1.14 : 1.105)) /
+                                                                            Number(selectedPlan)
+                                                                        ).toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 0,
+                                                                        })
+                                                                        :
+                                                                        (((totalExcludedAddonAmount - (bonus?.value || 0)) *
+                                                                            (selectedPlan === "60" ? 1.14 : 1.105)) /
+                                                                            Number(selectedPlan)
+                                                                        ).toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 0,
+                                                                        })
+                                                                    }
+                                                                    <span className="text-sm text-gray-600">/month </span>
+                                                                    <span className="text-xs text-gray-600">
+                                                                        for {selectedPlan === "60" ? "60" : "36"} months
+                                                                    </span>
+                                                                </p>
+                                                                <div className="flex justify-between w-full">
+                                                                    <p className="italic text-gray-600 text-xs flex items-center">
+                                                                        <span>(Terms & Conditions)</span>
+                                                                        <button className="mx-1" data-modal-toggle="#payment_info_modal">
+                                                                            <InformationCircleIcon
+                                                                                className="w-4 h-4 text-yellow-500"
+                                                                                aria-label="Payment Info"
+                                                                            />
+                                                                        </button>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        }
                                                     </div>
 
                                                     <div className="flex items-start justify-between mt-4">
-                                                        <span className="text-xs text-gray-600">
-                                                            <strong>Or</strong> pay one-time: RM{" "}
-                                                            {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })}
-                                                        </span>
+                                                        {selectedProgram !== 'bePowered' &&
+                                                            <span className="text-xs text-gray-600">
+                                                                <strong>Or</strong> pay one-time: RM{" "}
+                                                                {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}
+                                                            </span>
+                                                        }
                                                         <button
                                                             className="md:hidden italic underline text-blue-600 text-xs"
                                                             onClick={() => toggleAccordion("amount_breakdown")}
@@ -1238,69 +1319,73 @@ function OrderOverview() {
                                                             : "max-h-0 md:max-h-screen md:border-t md:border-gray-200 md:pt-3"
                                                             }`}
                                                     >
-                                                        <div className="mt-2 space-y-4">
-                                                            <div className="flex flex-col">
-                                                                {packageCategories.map((category, index) => (
-                                                                    <div key={index} className="flex justify-between space-y-2">
-                                                                        <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                                        <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                                            RM{" "}
-                                                                            {category.total_price.toLocaleString(undefined, {
-                                                                                minimumFractionDigits: 2,
-                                                                                maximumFractionDigits: 2,
-                                                                            })}
-                                                                        </span>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                            {bonus && (
-                                                                <div className="">
-                                                                    <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                                                    <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                                        {(bonus.description?.split("\n") || ["No Details"]).map(
-                                                                            (item: string, index: number) => (
-                                                                                <p key={index} className="mb-1 last:mb-0">
-                                                                                    {item}
-                                                                                </p>
-                                                                            ),
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="mt-2">
-                                                                        <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                                        <p className="text-md text-teal-600 font-bold">
-                                                                            RM{" "}
-                                                                            {bonus.value.toLocaleString(undefined, {
-                                                                                minimumFractionDigits: 2,
-                                                                                maximumFractionDigits: 2,
-                                                                            })}
-                                                                        </p>
-                                                                    </div>
+                                                        {selectedProgram === 'bePowered' ?
+                                                            ''
+                                                            :
+                                                            <div className="mt-2 space-y-4">
+                                                                <div className="flex flex-col">
+                                                                    {packageCategories.map((category, index) => (
+                                                                        <div key={index} className="flex justify-between space-y-2">
+                                                                            <span className="text-xs text-gray-600">Total {category.category}</span>
+                                                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                                                RM{" "}
+                                                                                {category.total_price.toLocaleString(undefined, {
+                                                                                    minimumFractionDigits: 2,
+                                                                                    maximumFractionDigits: 2,
+                                                                                })}
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
-                                                            )}
-                                                            <div className="">
-                                                                <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
-                                                                <p className="text-sm text-gray-900 font-semibold">
-                                                                    RM{" "}
-                                                                    {(
-                                                                        (orderDetail.final_amount > 0
-                                                                            ? orderDetail.final_amount
-                                                                            : totalExcludedAddonAmount) - (bonus?.value || 0)
-                                                                    ).toLocaleString(undefined, {
-                                                                        minimumFractionDigits: 2,
-                                                                        maximumFractionDigits: 2,
-                                                                    })}
-                                                                </p>
                                                                 {bonus && (
-                                                                    <p className="text-xs text-gray-900">
-                                                                        Original Price: RM{" "}
-                                                                        {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                                    <div className="">
+                                                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
+                                                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
+                                                                            {(bonus.description?.split("\n") || ["No Details"]).map(
+                                                                                (item: string, index: number) => (
+                                                                                    <p key={index} className="mb-1 last:mb-0">
+                                                                                        {item}
+                                                                                    </p>
+                                                                                ),
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="mt-2">
+                                                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
+                                                                            <p className="text-md text-teal-600 font-bold">
+                                                                                RM{" "}
+                                                                                {bonus.value.toLocaleString(undefined, {
+                                                                                    minimumFractionDigits: 2,
+                                                                                    maximumFractionDigits: 2,
+                                                                                })}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                                <div className="">
+                                                                    <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
+                                                                    <p className="text-sm text-gray-900 font-semibold">
+                                                                        RM{" "}
+                                                                        {(
+                                                                            (orderDetail.final_amount > 0
+                                                                                ? orderDetail.final_amount
+                                                                                : totalExcludedAddonAmount) - (bonus?.value || 0)
+                                                                        ).toLocaleString(undefined, {
                                                                             minimumFractionDigits: 2,
                                                                             maximumFractionDigits: 2,
                                                                         })}
                                                                     </p>
-                                                                )}
+                                                                    {bonus && (
+                                                                        <p className="text-xs text-gray-900">
+                                                                            Original Price: RM{" "}
+                                                                            {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                        </div>
+                                                        }
                                                     </div>
                                                 </div>
                                             </div>
@@ -1977,70 +2062,73 @@ function OrderOverview() {
                             : "max-h-0 md:max-h-screen"
                             }`}
                     >
-                        <div className="space-y-4">
-                            <div className="flex flex-col">
-                                <h3 className="text-sm text-purple-600 font-bold mb-1">Summary:</h3>
-                                {packageCategories.map((category, index) => (
-                                    <div key={index} className="flex justify-between space-y-2">
-                                        <span className="text-xs text-gray-600">Total {category.category}</span>
-                                        <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                            RM{" "}
-                                            {category.total_price.toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                            {bonus && (
-                                <div className="">
-                                    <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                    <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                        {(bonus.description?.split("\n") || ["No Details"]).map(
-                                            (item: string, index: number) => (
-                                                <p key={index} className="mb-1 last:mb-0">
-                                                    {item}
-                                                </p>
-                                            ),
-                                        )}
-                                    </div>
-                                    <div className="mt-2">
-                                        <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                        <p className="text-md text-teal-600 font-bold">
-                                            RM{" "}
-                                            {bonus.value.toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                        </p>
-                                    </div>
+                        {selectedProgram === 'bePowered' ?
+                            ''
+                            :
+                            <div className="mt-2 space-y-4">
+                                <div className="flex flex-col">
+                                    {packageCategories.map((category, index) => (
+                                        <div key={index} className="flex justify-between space-y-2">
+                                            <span className="text-xs text-gray-600">Total {category.category}</span>
+                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                RM{" "}
+                                                {category.total_price.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </span>
+                                        </div>
+                                    ))}
                                 </div>
-                            )}
-                            <div className="">
-                                <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
-                                <p className="text-sm text-gray-900 font-semibold">
-                                    RM{" "}
-                                    {(
-                                        (orderDetail.final_amount > 0
-                                            ? orderDetail.final_amount
-                                            : totalExcludedAddonAmount) - (bonus?.value || 0)
-                                    ).toLocaleString(undefined, {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2,
-                                    })}
-                                </p>
                                 {bonus && (
-                                    <p className="text-xs text-gray-900">
-                                        Original Price: RM{" "}
-                                        {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                    <div className="">
+                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
+                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
+                                            {(bonus.description?.split("\n") || ["No Details"]).map(
+                                                (item: string, index: number) => (
+                                                    <p key={index} className="mb-1 last:mb-0">
+                                                        {item}
+                                                    </p>
+                                                ),
+                                            )}
+                                        </div>
+                                        <div className="mt-2">
+                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
+                                            <p className="text-md text-teal-600 font-bold">
+                                                RM{" "}
+                                                {bonus.value.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="">
+                                    <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
+                                    <p className="text-sm text-gray-900 font-semibold">
+                                        RM{" "}
+                                        {(
+                                            (orderDetail.final_amount > 0
+                                                ? orderDetail.final_amount
+                                                : totalExcludedAddonAmount) - (bonus?.value || 0)
+                                        ).toLocaleString(undefined, {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 2,
                                         })}
                                     </p>
-                                )}
+                                    {bonus && (
+                                        <p className="text-xs text-gray-900">
+                                            Original Price: RM{" "}
+                                            {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        }
 
                         <hr className="my-2" />
                     </div>
@@ -2053,59 +2141,140 @@ function OrderOverview() {
                             </div>
                             <select
                                 className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
-                                id="payment_plan"
-                                value={selectedPlan}
-                                onChange={handlePlanChange}
-                                name="payment_plan"
+                                id="program"
+                                value={selectedProgram}
+                                onChange={handleProgramChange}
+                                name="program"
                             >
-                                <option value="36">36 months</option>
-                                <option value="60">60 months</option>
+                                <option value="normal">Normal</option>
+                                <option value="bePowered">BePowered 2.0</option>
                             </select>
                         </div>
-                        <div className="flex">
-                            <div className="flex flex-col items-start w-full">
-                                <p className="text-lg text-[#d71e42] font-bold">
-                                    RM{" "}
-                                    {(
-                                        ((totalExcludedAddonAmount - (bonus?.value || 0)) *
-                                            (selectedPlan === "60" ? 1.14 : 1.105)) /
-                                        Number(selectedPlan)
-                                    ).toLocaleString(undefined, {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 0,
-                                    })}
-                                    <span className="text-sm text-gray-600">/month </span>
-                                    <span className="text-xs text-gray-600">
-                                        for {selectedPlan === "60" ? "60" : "36"} months
-                                    </span>
-                                </p>
-                                <div className="flex justify-between w-full">
-                                    <p className="italic text-gray-600 text-xs flex items-center">
-                                        <span>(Terms & Conditions)</span>
-                                        <button className="mx-1" data-modal-toggle="#payment_info_modal">
-                                            <InformationCircleIcon
-                                                className="w-4 h-4 text-yellow-500"
-                                                aria-label="Payment Info"
-                                            />
-                                        </button>
+                        <div className="flex justify-between">
+                            {selectedProgram !== "bePowered" ? (
+                                <>
+                                    <div className="flex flex-col items-start w-full">
+                                        <p className="text-lg text-[#d71e42] font-bold">
+                                            RM{" "}
+                                            {selectedProgram === "bePowered" ?
+                                                ((25000 *
+                                                    (selectedPlan === "60" ? 1.14 : 1.105)) /
+                                                    Number(selectedPlan)
+                                                ).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0,
+                                                })
+                                                :
+                                                (((totalExcludedAddonAmount - (bonus?.value || 0)) *
+                                                    (selectedPlan === "60" ? 1.14 : 1.105)) /
+                                                    Number(selectedPlan)
+                                                ).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0,
+                                                })
+                                            }
+                                            <span className="text-sm text-gray-600">/month </span>
+                                            <span className="text-xs text-gray-600">
+                                                for {selectedPlan === "60" ? "60" : "36"} months
+                                            </span>
+                                        </p>
+                                        <div className="flex justify-between w-full">
+                                            <p className="italic text-gray-600 text-xs flex items-center">
+                                                <span>(Terms & Conditions)</span>
+                                                <button className="mx-1" data-modal-toggle="#payment_info_modal">
+                                                    <InformationCircleIcon
+                                                        className="w-4 h-4 text-yellow-500"
+                                                        aria-label="Payment Info"
+                                                    />
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <select
+                                        className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
+                                        id="payment_plan"
+                                        value={selectedPlan}
+                                        onChange={handlePlanChange}
+                                        name="payment_plan"
+                                    >
+                                        <option value="36">36 months</option>
+                                        <option value="60">60 months</option>
+                                    </select>
+                                </>
+                            ) :
+                                <div className="flex flex-col items-start w-full">
+                                    <p className="text-lg text-[#d71e42] font-bold">
+                                        <span className="text-sm text-gray-600">Total </span>
+                                        RM{" "}25,000
+                                        <span className="text-sm text-gray-600"> Upfront</span>
                                     </p>
+                                    <p className="text-sm text-[#d71e42] font-bold">
+                                        RM{" "}
+                                        {orderDetail.is_be_powered ?
+                                            ((25000 *
+                                                (selectedPlan === "60" ? 1.14 : 1.105)) /
+                                                Number(selectedPlan)
+                                            ).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0,
+                                            })
+                                            :
+                                            (((totalExcludedAddonAmount - (bonus?.value || 0)) *
+                                                (selectedPlan === "60" ? 1.14 : 1.105)) /
+                                                Number(selectedPlan)
+                                            ).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0,
+                                            })
+                                        }
+                                        <span className="text-sm text-gray-600">/month </span>
+                                        <span className="text-xs text-gray-600">
+                                            for {selectedPlan === "60" ? "60" : "36"} months
+                                        </span>
+                                    </p>
+                                    <div className="flex justify-between w-full">
+                                        <p className="italic text-gray-600 text-xs flex items-center">
+                                            <span>(Terms & Conditions)</span>
+                                            <button className="mx-1" data-modal-toggle="#payment_info_modal">
+                                                <InformationCircleIcon
+                                                    className="w-4 h-4 text-yellow-500"
+                                                    aria-label="Payment Info"
+                                                />
+                                            </button>
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
+                            }
                         </div>
                         <div className="flex items-start justify-between mt-4">
-                            <span className="text-xs text-gray-600">
-                                <strong>Or</strong> pay one-time: RM{" "}
-                                {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                })}
-                            </span>
-                            <button
-                                className="md:hidden italic underline text-blue-600 text-xs"
-                                onClick={() => toggleAccordion("amount_breakdown")}
-                            >
-                                {openAccordions["amount_breakdown"] ? "Hide Details" : "See Details"}
-                            </button>
+                            {selectedProgram === 'bePowered' ?
+                                <div className="flex flex-col space-y-2">
+                                    <span className="text-2xs font-semibold text-gray-600 p-2 border border-gray-300 rounded-md">
+                                        Normal Price: RM {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })}</span>
+                                </div>
+                                :
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-gray-600">
+                                        <strong>Or</strong> pay one-time: RM{" "}
+                                        {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                    </span>
+                                </div>
+                            }
+                            {selectedProgram !== 'bePowered' &&
+                                <button
+                                    className="md:hidden italic underline text-blue-600 text-xs"
+                                    onClick={() => toggleAccordion("amount_breakdown")}
+                                >
+                                    {openAccordions["amount_breakdown"] ? "Hide Details" : "See Details"}
+                                </button>
+                            }
                         </div>
                     </div>
                 </div>

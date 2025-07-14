@@ -3,7 +3,6 @@
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
 import { DiscountFee, Invoice, KeyManagement, Order, QuotationRequestForm, Package, Payment, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
-import exp from 'constants';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -1090,6 +1089,18 @@ export const updateOrderInternalRemark = async (orderId: number, internal_remark
         handle401Error(error as AxiosError);
     }
 };
+
+export const toggleBePowered = async (orderId: number) => {
+    try {
+        const response = await axios.get(API_URL + `orders/${orderId}/toggle-is-be-powered`, {
+            headers: getAuthHeaders()
+        });
+        return response.data; // Return product data
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error; // Ensure to throw the error if needed
+    }
+}
 
 export const salesIndex = async (
     size: number = 5,
