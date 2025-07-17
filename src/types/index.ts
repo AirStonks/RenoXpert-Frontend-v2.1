@@ -14,7 +14,8 @@ export type TaskStatus =
     | "completed"
     | "to-rectified"
     | "rejected"
-    | "not-available";
+    | "not-available"
+    | "not-started";
 
 export type TaskQCStatus =
     | "not-started"
