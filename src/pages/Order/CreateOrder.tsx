@@ -31,6 +31,7 @@ interface FormData {
     completionDays: number;
     isProgressivePayment: boolean;
     isDraftMode: boolean;
+    isBePowered: boolean;
     finalAmount: number;
     bonusDescription: string;
     bonusValue: number;
@@ -371,6 +372,7 @@ export default function CreateOrder() {
         if (Object.keys(errors).length > 0) {
             setStepErrors(errors);
             Object.values(errors).forEach((error) => notify("error", error));
+            setIsCreatingOrder(false);
             return;
         }
 
@@ -392,6 +394,7 @@ export default function CreateOrder() {
             bathroom_count: formData.bathrooms,
             include_partition: formData.includePartition,
             is_progressive_payment: formData.isProgressivePayment,
+            is_be_powered: formData.isBePowered,
             description: "",
             internal_remark: formData.internalRemark,
             completion_day: formData.completionDays,
@@ -433,7 +436,7 @@ export default function CreateOrder() {
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-4">
                             <Link
-                                to={LOCAL_PATH_PREFIX + 'orders'}
+                                to={LOCAL_PATH_PREFIX + 'orders' }
                                 className="p-2 rounded-full hover:bg-gray-100/80 transition-colors duration-200"
                             >
                                 <ArrowLeft className="h-5 w-5 text-gray-700" />

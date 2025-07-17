@@ -13,6 +13,7 @@ interface FormData {
     completionDays: number;
     isProgressivePayment: boolean;
     isDraftMode: boolean;
+    isBePowered: boolean;
     finalAmount: number;
     bonusDescription: string;
     bonusValue: number;
@@ -88,8 +89,25 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                         />
                                     </button>
                                 </div>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-sm text-gray-500 font-semibold">
                                     {formData.isProgressivePayment ? "Payment in stages" : "Full payment upfront"}
+                                </p>
+                            </div>
+
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-sm font-medium text-gray-700">BePowered 2.0 Program</label>
+                                    <button
+                                        onClick={() => setFormData({ ...formData, isBePowered: !formData.isBePowered })}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isBePowered ? "bg-blue-500" : "bg-gray-200"}`}
+                                    >
+                                        <span
+                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isBePowered ? "translate-x-6" : "translate-x-1"}`}
+                                        />
+                                    </button>
+                                </div>
+                                <p className="text-sm text-gray-500 font-semibold">
+                                    {formData.isBePowered ? "Active" : "Inactive"}
                                 </p>
                             </div>
                         </div>
@@ -136,6 +154,73 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                     )}
                 </div>
             </div>
+
+            {formData.isBePowered &&
+                <div className="p-8 backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl rounded-3xl">
+                    <div className="space-y-8">
+                        <div>
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-2">BePowered 2.0 Program Pricing</h2>
+                            {/* <p className="text-gray-600"></p> */}
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <span className="font-medium text-gray-900">Original Nett Amount</span>
+                            </div>
+                            <span className="font-medium">RM {netAmount.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}
+                            </span>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <span className="font-medium text-gray-900">Markup Price</span>
+                            </div>
+                            <span className="font-medium">
+                                RM {(Math.ceil((netAmount * 1.2) / 50) * 50).toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </span>
+                        </div>
+
+
+                        <div>
+                            <div className="flex justify-between items-center">
+                                <span className="font-medium text-gray-900">Upfront Payment</span>
+                                <span className="font-medium">RM {(25000).toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center text-green-600 mt-2">
+                                <span>EPP (36 months)</span>
+                                <span>RM {((25000 * 1.105) / 36).toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })}/mth</span>
+                            </div>
+
+                            <div className="flex justify-between items-center text-green-600 mt-2">
+                                <span>EPP (60 months)</span>
+                                <span>RM {((25000 * 1.14) / 60).toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })}/mth</span>
+                            </div>
+                        </div>
+                        <div className="flex justify-between items-center text-xl font-bold text-gray-900 mt-4 pt-4 border-t border-gray-200">
+                            <span>Remaining Balance</span>
+                            <span>RM {((netAmount * 1.2) - 25000).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}</span>
+                        </div>
+                    </div>
+                </div>
+            }
 
             <div className="p-8 backdrop-blur-xl bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border border-white/20 shadow-xl rounded-3xl">
                 <h3 className="text-xl font-semibold text-gray-900 mb-6">Pricing Summary</h3>

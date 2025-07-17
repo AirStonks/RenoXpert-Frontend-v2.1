@@ -34,6 +34,7 @@ const formatDate = (date: string) => {
 };
 
 const statusColors = {
+    'Not Started': 'bg-gray-100 text-gray-800',
     'Not Applicable': 'bg-gray-100 text-gray-800',
     'Procurement Done': 'bg-purple-100 text-purple-800',
     'Pending Stocks': 'bg-orange-100 text-orange-800',
@@ -208,7 +209,7 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
             case 'rejected':
                 return 'Rejected';
             default:
-                return 'Not Available';
+                return 'Not Started';
         }
     };
 

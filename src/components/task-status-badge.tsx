@@ -44,6 +44,14 @@ const statusConfig = {
         iconColor: "text-gray-600",
         hoverColor: "hover:bg-gray-200",
     },
+    "not-started": {
+        label: "Not Started",
+        icon: HelpCircle,
+        bgColor: "bg-gray-100",
+        textColor: "text-gray-800",
+        iconColor: "text-gray-600",
+        hoverColor: "hover:bg-gray-200",
+    },
     "not-available": {
         label: "Not Available",
         icon: XCircle,
@@ -105,6 +113,7 @@ const statusOptions: TaskStatus[] = [
     "to-rectified",
     "rejected",
     "not-available",
+    "not-started",
 ]
 
 export function TaskStatusBadge({ status, isStatic = false, disabled, onStatusChange }: TaskStatusBadgeProps) {
@@ -112,7 +121,7 @@ export function TaskStatusBadge({ status, isStatic = false, disabled, onStatusCh
     const dropdownRef = useRef<HTMLDivElement>(null)
     const badgeRef = useRef<HTMLButtonElement>(null)
 
-    const config = statusConfig[status] || statusConfig["not-applicable"]
+    const config = statusConfig[status] || statusConfig["not-started"]
     const Icon = config.icon
 
     const handleBadgeClick = () => {

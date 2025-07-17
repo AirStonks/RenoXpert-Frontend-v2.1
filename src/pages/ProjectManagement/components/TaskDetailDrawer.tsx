@@ -731,7 +731,12 @@ export const TaskDetailDrawer = ({
                                 {selectedTask.item_name !== "Key Management" && selectedTask.item_name !== "Defect Inspection" && renderAttachmentsSection("external")}
                             </div>
 
-                            {selectedTask.updated_at && <div className="text-2xs text-gray-500">Last updated: {selectedTask.updated_at}</div>}
+                            <div className="text-2xs text-gray-500 flex flex-col gap-1">
+                                <span>Last Updated: {selectedTask.updated_by && selectedTask.updated_by.name}</span>
+                                {selectedTask.updated_at &&
+                                    <span>{selectedTask.updated_at}</span>
+                                }
+                            </div>
                         </div>
                     )}
                 </div>

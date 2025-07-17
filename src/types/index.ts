@@ -14,7 +14,8 @@ export type TaskStatus =
     | "completed"
     | "to-rectified"
     | "rejected"
-    | "not-available";
+    | "not-available"
+    | "not-started";
 
 export type TaskQCStatus =
     | "not-started"
@@ -280,6 +281,7 @@ export interface Order {
     bathroom_count?: number,
     include_partition?: boolean,
     is_progressive_payment?: boolean,
+    is_be_powered?: boolean,
     sale?: Sale,
     quotation_id?: string,
     order_quotations?: OrderQuotation[],

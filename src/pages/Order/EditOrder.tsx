@@ -33,6 +33,7 @@ interface FormData {
     completionDays: number;
     isProgressivePayment: boolean;
     isDraftMode: boolean;
+    isBePowered: boolean;
     finalAmount: number;
     bonusDescription: string;
     bonusValue: number;
@@ -78,6 +79,7 @@ export default function EditOrder() {
         completionDays: 30,
         isProgressivePayment: true,
         isDraftMode: false,
+        isBePowered: false,
         finalAmount: 0,
         bonusDescription: "",
         bonusValue: 0,
@@ -117,6 +119,7 @@ export default function EditOrder() {
                     internalRemark: orderDetail.internal_remark || "",
                     includePartition: !!orderDetail.include_partition,
                     isProgressivePayment: !!orderDetail.is_progressive_payment,
+                    isBePowered: !!orderDetail.is_be_powered,
                     bonusDescription: orderDetail.latest_quotation.bonus?.description || "",
                     bonusValue: Number(orderDetail.latest_quotation.bonus?.value) || 0,
                 });
@@ -450,6 +453,7 @@ export default function EditOrder() {
             bathroom_count: formData.bathrooms,
             include_partition: formData.includePartition,
             is_progressive_payment: formData.isProgressivePayment,
+            is_be_powered: formData.isBePowered,
             description: "",
             internal_remark: formData.internalRemark,
             completion_day: formData.completionDays,

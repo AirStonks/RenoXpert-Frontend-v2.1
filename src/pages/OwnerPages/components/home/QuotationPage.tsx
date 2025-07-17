@@ -61,7 +61,14 @@ function calculateTotalAmount(order: Order) {
         return acc;
     }, {} as Record<string, { total_price: number; quantity: number }>);
 
-    return Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0);
+    const bonus: { description?: string; value?: number | string; } = JSON.parse(JSON.parse(JSON.stringify(order?.latest_quotation?.bonus)));
+
+    const total = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0);
+
+    // Deduct bonus value if available and is a number
+    return bonus?.value && typeof bonus.value === 'number'
+        ? total - bonus.value
+        : total;
 }
 
 function QuotationContent({ orders, abort }: { orders: Order[]; abort: () => void }) {
