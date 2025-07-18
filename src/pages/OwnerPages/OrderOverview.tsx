@@ -1184,16 +1184,18 @@ function OrderOverview() {
                                                             <CreditCardIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
                                                             <span className="text-xs font-semibold text-gray-700">Easy Payment Plan</span>
                                                         </div>
-                                                        <select
-                                                            className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
-                                                            id="program"
-                                                            value={selectedProgram}
-                                                            onChange={handleProgramChange}
-                                                            name="program"
-                                                        >
-                                                            <option value="normal">Normal</option>
-                                                            <option value="bePowered">BePowered 2.0</option>
-                                                        </select>
+                                                        {orderDetail.is_be_powered &&
+                                                            <select
+                                                                className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
+                                                                id="program"
+                                                                value={selectedProgram}
+                                                                onChange={handleProgramChange}
+                                                                name="program"
+                                                            >
+                                                                <option value="normal">Normal</option>
+                                                                <option value="bePowered">BePowered 2.0</option>
+                                                            </select>
+                                                        }
                                                     </div>
 
                                                     <div className="flex justify-between">
@@ -2139,16 +2141,18 @@ function OrderOverview() {
                                 <CreditCardIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
                                 <span className="text-xs font-semibold text-gray-700">Easy Payment Plan</span>
                             </div>
-                            <select
-                                className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
-                                id="program"
-                                value={selectedProgram}
-                                onChange={handleProgramChange}
-                                name="program"
-                            >
-                                <option value="normal">Normal</option>
-                                <option value="bePowered">BePowered 2.0</option>
-                            </select>
+                            {orderDetail.is_be_powered &&
+                                <select
+                                    className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
+                                    id="program"
+                                    value={selectedProgram}
+                                    onChange={handleProgramChange}
+                                    name="program"
+                                >
+                                    <option value="normal">Normal</option>
+                                    <option value="bePowered">BePowered 2.0</option>
+                                </select>
+                            }
                         </div>
                         <div className="flex justify-between">
                             {selectedProgram !== "bePowered" ? (

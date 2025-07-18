@@ -1,20 +1,21 @@
-// src\pages\Order\OrderDetailPage.tsx
+"use client"
 
-import React, { useEffect, useState } from "react";
-import Loading from "../../components/Loading";
-import useFetchOrder from "../../hook/useFetchOrder";
-import { KTAccordion, KTModal, KTTooltip } from "../../metronic/core";
-import { Order, OrderQuotation, Package, Product } from "../../types";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import ClipboardJS from "clipboard";
-import { Slide, toast } from "react-toastify";
-import { releaseOrder, reReleaseOrder, toggleBePowered, updateOrderInternalRemark, voidOrder } from "../../services/api";
-import ConfirmOrderModal from "./components/ConfirmOrderModal";
-import ReReleaseOrderModal from "./components/ReReleaseOrderModal";
-import VoidQuotationModal from "./components/VoidQuotationModal";
-import OrderPreviewModal from "./components/OrderPreviewModal";
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
+import Loading from "../../components/Loading"
+import useFetchOrder from "../../hook/useFetchOrder"
+import { KTAccordion, KTModal, KTTooltip } from "../../metronic/core"
+import type { Order, OrderQuotation, Package } from "../../types"
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
+import ClipboardJS from "clipboard"
+import { Slide, toast } from "react-toastify"
+import { releaseOrder, reReleaseOrder, toggleBePowered, updateOrderInternalRemark, voidOrder } from "../../services/api"
+import ConfirmOrderModal from "./components/ConfirmOrderModal"
+import ReReleaseOrderModal from "./components/ReReleaseOrderModal"
+import VoidQuotationModal from "./components/VoidQuotationModal"
+import OrderPreviewModal from "./components/OrderPreviewModal"
 
-const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+const LOCAL_PATH_PREFIX = window.location.hostname === "localhost" ? "/staff/" : "/"
 
 const CLIENT_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -22,18 +23,14 @@ const CLIENT_URL =
         : import.meta.env.VITE_APP_ENV === "staging"
             ? import.meta.env.VITE_STAGING_CLIENT_URL
             : import.meta.env.VITE_APP_ENV === "local"
-                ? 'localhost:5173/owner/'
-                : null;
-
-
-// orderDetail.latest_quotation.packages.map((quotationPackage: Package, index: number) => ()
-// 
+                ? "localhost:5173/owner/"
+                : null
 
 const formatDate = (dateStr: string) => {
-    const [day, month, year] = dateStr.split("/");
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return `${day} ${monthNames[parseInt(month) - 1]} ${year}`;
-};
+    const [day, month, year] = dateStr.split("/")
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    return `${day} ${monthNames[Number.parseInt(month) - 1]} ${year}`
+}
 
 const categoryOptions = [
     { value: "renovation", label: "Renovation" },
@@ -43,27 +40,33 @@ const categoryOptions = [
     { value: "electrical_appliances", label: "Electrical Appliances" },
     { value: "air_conditioning", label: "Air Conditioning" },
     { value: "others", label: "Others" },
-];
+]
 
 function OrderDetail() {
-    const navigate = useNavigate();
-    const { state } = useLocation();
-    const { id } = useParams<{ id: string }>();
-    const orderId = id ? parseInt(id, 10) : null;
+    const navigate = useNavigate()
+    const { state } = useLocation()
+    const { id } = useParams<{ id: string }>()
+    const orderId = id ? Number.parseInt(id, 10) : null
 
-    const { orderDetail: order, loading, error, refetch } = useFetchOrder(orderId);
-    const [orderDetail, setOrderDetail] = useState<Order | null>(null);
-    const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; cogs: number; quantity: number }[]>([]);
-    const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
+    const { orderDetail: order, loading, error, refetch } = useFetchOrder(orderId)
+    const [orderDetail, setOrderDetail] = useState<Order | null>(null)
+    const [packageCategories, setPackageCategories] = useState<
+        { category: string; total_price: number; cogs: number; quantity: number }[]
+    >([])
+    const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0)
 
-    const [isEditingInternalRemark, setIsEditingInternalRemark] = useState(false);
-    const [isEditingBePowered, setIsEditingBePowered] = useState(false);
-    const [editableInternalRemark, setEditableInternalRemark] = useState('');
-    const [editableBePowered, setEditableBePowered] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({});
+    const [isEditingInternalRemark, setIsEditingInternalRemark] = useState(false)
+    const [isEditingBePowered, setIsEditingBePowered] = useState(false)
+    const [editableInternalRemark, setEditableInternalRemark] = useState("")
+    const [editableBePowered, setEditableBePowered] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const [openAccordions, setOpenAccordions] = useState<{ [key: string]: boolean }>({})
 
-    const notify = (type: 'success' | 'error', message: string) => {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    const buttonRef = useRef(null);
+
+    const notify = (type: "success" | "error", message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
             position: "top-center",
             autoClose: 3000,
@@ -71,1620 +74,1630 @@ function OrderDetail() {
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
-            theme: localStorage.getItem('theme'),
+            theme: localStorage.getItem("theme"),
             transition: Slide,
-        });
-    };
+        })
+    }
 
     useEffect(() => {
-        document.title = "Quotation Order Detail | RenoXpert";
+        document.title = "Quotation Order Detail | RenoXpert"
 
-        KTAccordion.init();
-        KTTooltip.init();
+        KTAccordion.init()
+        KTTooltip.init()
 
-        setIsLoading(loading);
+        setIsLoading(loading)
 
         if (order) {
-            setOrderDetail(order);
+            setOrderDetail(order)
         } else if (!loading && !order && !error) {
-            setOrderDetail(null);
+            setOrderDetail(null)
         }
 
-        const clipboard = new ClipboardJS('.copy-link');
+        const clipboard = new ClipboardJS(".copy-link")
 
-        clipboard.on('success', function (e) {
-            notify('success', 'Copied to clipboard!');
-            e.clearSelection();
-        });
+        clipboard.on("success", (e) => {
+            notify("success", "Copied to clipboard!")
+            e.clearSelection()
+        })
 
         return () => {
-            clipboard.destroy();
-        };
-
-    }, [order, loading, error]);
+            clipboard.destroy()
+        }
+    }, [order, loading, error])
 
     useEffect(() => {
-        if (!orderDetail?.latest_quotation?.packages) return;
+        if (!orderDetail?.latest_quotation?.packages) return
 
-        let addonCounter = 0; // To number each add-on uniquely
+        let addonCounter = 0
 
-        const packages: Package[] = orderDetail.latest_quotation.packages;
+        const packages: Package[] = orderDetail.latest_quotation.packages
 
-        const categoryTotals = packages.reduce((acc, quotationPackage) => {
-            let category;
-            if (quotationPackage.is_addon === true) {
-                addonCounter += 1;
-                category = `Add-on Option ${addonCounter} (${quotationPackage.name})`;
-            } else {
-                category = quotationPackage.category;
-            }
-
-            const categoryData = quotationPackage.products.reduce(
-                (data, product) => {
-                    // Calculate retail prices (existing logic)
-                    let supplyPrice = 0;
-                    if (product.pivot.includeSupply) {
-                        supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
-                    } else {
-                        supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
-                    }
-
-                    let installPrice = 0;
-                    if (product.pivot.includeInstall) {
-                        installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
-                    } else {
-                        installPrice = (product.provisioning.install.retail_price - product.provisioning.install.excluded_price) || 0;
-                    }
-
-                    // Calculate COGS
-                    let supplyCogs = 0;
-                    if (product.pivot.includeSupply) {
-                        supplyCogs = (product.provisioning.supply.cogs * product.pivot.quantity) || 0;
-                    }
-
-                    let installCogs = 0;
-                    if (product.pivot.includeInstall) {
-                        installCogs = (product.provisioning.install.cogs * product.pivot.quantity) || 0;
-                    }
-
-                    return {
-                        total_price: data.total_price + supplyPrice + installPrice,
-                        cogs: data.cogs + supplyCogs + installCogs,
-                    };
-                },
-                { total_price: 0, cogs: 0 }
-            );
-
-            const categoryTotalPrice = categoryData.total_price * (quotationPackage.quantity || 1);
-            const categoryCogs = categoryData.cogs * (quotationPackage.quantity || 1);
-
-            if (!(quotationPackage.is_addon === true && quotationPackage.is_addon_included === false)) {
-                if (!acc[category]) {
-                    acc[category] = { total_price: 0, cogs: 0, quantity: 0 };
+        const categoryTotals = packages.reduce(
+            (acc, quotationPackage) => {
+                let category
+                if (quotationPackage.is_addon === true) {
+                    addonCounter += 1
+                    category = `Add-on Option ${addonCounter} (${quotationPackage.name})`
+                } else {
+                    category = quotationPackage.category
                 }
-                acc[category].total_price += categoryTotalPrice;
-                acc[category].cogs += categoryCogs;
-                acc[category].quantity += quotationPackage.quantity;
-            }
 
-            return acc;
-        }, {} as Record<string, { total_price: number; cogs: number; quantity: number }>);
+                const categoryData = quotationPackage.products.reduce(
+                    (data, product) => {
+                        let supplyPrice = 0
+                        if (product.pivot.includeSupply) {
+                            supplyPrice = product.provisioning.supply.retail_price * product.pivot.quantity || 0
+                        } else {
+                            supplyPrice = product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price || 0
+                        }
 
-        // Calculate filtered total_amount (based on total_price)
-        const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0);
+                        let installPrice = 0
+                        if (product.pivot.includeInstall) {
+                            installPrice = product.provisioning.install.retail_price * product.pivot.quantity || 0
+                        } else {
+                            installPrice =
+                                product.provisioning.install.retail_price - product.provisioning.install.excluded_price || 0
+                        }
 
-        // Calculate total COGS
-        const filteredTotalCogs = Object.values(categoryTotals).reduce((sum, { cogs }) => sum + cogs, 0);
+                        let supplyCogs = 0
+                        if (product.pivot.includeSupply) {
+                            supplyCogs = product.provisioning.supply.cogs * product.pivot.quantity || 0
+                        }
+
+                        let installCogs = 0
+                        if (product.pivot.includeInstall) {
+                            installCogs = product.provisioning.install.cogs * product.pivot.quantity || 0
+                        }
+
+                        return {
+                            total_price: data.total_price + supplyPrice + installPrice,
+                            cogs: data.cogs + supplyCogs + installCogs,
+                        }
+                    },
+                    { total_price: 0, cogs: 0 },
+                )
+
+                const categoryTotalPrice = categoryData.total_price * (quotationPackage.quantity || 1)
+                const categoryCogs = categoryData.cogs * (quotationPackage.quantity || 1)
+
+                if (!(quotationPackage.is_addon === true && quotationPackage.is_addon_included === false)) {
+                    if (!acc[category]) {
+                        acc[category] = { total_price: 0, cogs: 0, quantity: 0 }
+                    }
+                    acc[category].total_price += categoryTotalPrice
+                    acc[category].cogs += categoryCogs
+                    acc[category].quantity += quotationPackage.quantity
+                }
+
+                return acc
+            },
+            {} as Record<string, { total_price: number; cogs: number; quantity: number }>,
+        )
+
+        const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0)
+        const filteredTotalCogs = Object.values(categoryTotals).reduce((sum, { cogs }) => sum + cogs, 0)
 
         const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, cogs, quantity }]) => ({
-            category: category.startsWith('Add-on Option')
+            category: category.startsWith("Add-on Option")
                 ? category
-                : categoryOptions.find(option => option.value === category)?.label || category,
+                : categoryOptions.find((option) => option.value === category)?.label || category,
             total_price,
             cogs,
             quantity,
-        }));
+        }))
 
         const sortedCategories = [
-            ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')),
-            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option')),
-        ];
+            ...categoriesArray.filter((item) => !item.category.startsWith("Add-on Option")),
+            ...categoriesArray.filter((item) => item.category.startsWith("Add-on Option")),
+        ]
 
-        setPackageCategories(sortedCategories);
+        setPackageCategories(sortedCategories)
 
         if (orderDetail.latest_quotation.packages.length > 0) {
-            KTAccordion.createInstances();
+            KTAccordion.createInstances()
         }
-    }, [orderDetail?.latest_quotation?.packages]);
+    }, [orderDetail?.latest_quotation?.packages])
 
     useEffect(() => {
         if (orderDetail) {
-            const totalRetailPrice = orderDetail.final_amount ? orderDetail.final_amount : orderDetail.latest_quotation.packages.reduce((total, pkg) => {
-                if (pkg.is_addon === true && pkg.is_addon_included === false) {
-                    return total;
-                }
-
-                const packageRetail = pkg.products.reduce((pkgTotal, product) => {
-                    let supplyPrice = 0;
-                    if (product.pivot.includeSupply) {
-                        supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
-                    } else {
-                        supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
+            const totalRetailPrice = orderDetail.final_amount
+                ? orderDetail.final_amount
+                : orderDetail.latest_quotation.packages.reduce((total, pkg) => {
+                    if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                        return total
                     }
 
-                    let installPrice = 0;
-                    if (product.pivot.includeInstall) {
-                        installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
-                    } else {
-                        installPrice = (product.provisioning.install.retail_price - product.provisioning.install.excluded_price) || 0;
-                    }
+                    const packageRetail = pkg.products.reduce((pkgTotal, product) => {
+                        let supplyPrice = 0
+                        if (product.pivot.includeSupply) {
+                            supplyPrice = product.provisioning.supply.retail_price * product.pivot.quantity || 0
+                        } else {
+                            supplyPrice = product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price || 0
+                        }
 
-                    return pkgTotal + (supplyPrice + installPrice);
-                }, 0);
-                return total + (packageRetail * (pkg.quantity || 1));
-            }, 0);
+                        let installPrice = 0
+                        if (product.pivot.includeInstall) {
+                            installPrice = product.provisioning.install.retail_price * product.pivot.quantity || 0
+                        } else {
+                            installPrice =
+                                product.provisioning.install.retail_price - product.provisioning.install.excluded_price || 0
+                        }
 
-            setTotalExcludedAddonAmount(totalRetailPrice);
+                        return pkgTotal + (supplyPrice + installPrice)
+                    }, 0)
+                    return total + packageRetail * (pkg.quantity || 1)
+                }, 0)
+
+            setTotalExcludedAddonAmount(totalRetailPrice)
         }
-    }, [orderDetail]);
+    }, [orderDetail])
 
     useEffect(() => {
         if (orderDetail) {
             setOpenAccordions(() => {
-                const initialState: { [key: string]: boolean } = {};
+                const initialState: { [key: string]: boolean } = {}
                 if (orderDetail) {
                     orderDetail.latest_quotation.packages.forEach((_, index) => {
-                        initialState[`content_${index}`] = false;
-                    });
+                        initialState[`content_${index}`] = false
+                    })
                 }
-                return initialState;
-            });
+                return initialState
+            })
 
             setOpenAccordions((prev) => ({
                 ...prev,
-                property: false
-            }));
+                property: false,
+            }))
         }
-    }, [orderDetail]); // Empty dependency array to run only once on mount
+    }, [orderDetail])
 
-    if (!orderId) return null; // Early return for null orderId
+    // Toggle dropdown visibility
+    const toggleDropdown = () => {
+        setIsDropdownOpen((prev) => !prev);
+    };
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target) &&
+                buttonRef.current &&
+                !buttonRef.current.contains(event.target)
+            ) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    if (!orderId) return null
 
     const handleBackClick = () => {
         if (state) {
-            navigate(state.fromUrl);
+            navigate(state.fromUrl)
         } else {
-            navigate(LOCAL_PATH_PREFIX + 'orders');
+            navigate(LOCAL_PATH_PREFIX + "orders")
         }
-    };
+    }
 
     const handleReleaseOrder = async () => {
-        setIsLoading(true);
+        setIsLoading(true)
         try {
-            const response = await releaseOrder(orderId);
+            const response = await releaseOrder(orderId)
 
             if (response?.success) {
-                notify('success', 'Order released successfully!');
-                refetch();
+                notify("success", "Order released successfully!")
+                refetch()
             }
-
         } catch (error) {
-            console.error(error);
+            console.error(error)
         }
-        setIsLoading(false);
-    };
+        setIsLoading(false)
+    }
 
     const handleEditInternalRemark = () => {
-        setEditableInternalRemark(orderDetail.internal_remark || '');
-        setIsEditingInternalRemark(true);
+        setEditableInternalRemark(orderDetail.internal_remark || "")
+        setIsEditingInternalRemark(true)
     }
 
     const handleEditBePowered = () => {
-        setEditableBePowered(orderDetail.is_be_powered);
-        setIsEditingBePowered(true);
+        setEditableBePowered(orderDetail.is_be_powered)
+        setIsEditingBePowered(true)
     }
 
     const handleChangeInternalRemark = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setEditableInternalRemark(event.target.value);
+        setEditableInternalRemark(event.target.value)
     }
 
     const handleChangeBePowered = async () => {
-        setEditableBePowered(!editableBePowered);
+        setEditableBePowered(!editableBePowered)
 
         try {
-            const response = await toggleBePowered(orderId);
+            const response = await toggleBePowered(orderId)
 
             if (response?.success) {
-                notify('success', 'Be powered updated!');
-                setOrderDetail(orderDetail => orderDetail ? { ...orderDetail, is_be_powered: !orderDetail.is_be_powered } : null);
+                notify("success", "Be powered updated!")
+                setOrderDetail((orderDetail) =>
+                    orderDetail ? { ...orderDetail, is_be_powered: !orderDetail.is_be_powered } : null,
+                )
             }
         } catch (error) {
-            console.error(error);
-            notify('error', 'Error occurred while updating be powered.');
+            console.error(error)
+            notify("error", "Error occurred while updating be powered.")
         }
     }
 
     const handleSaveInternalRemark = async () => {
-        setIsLoading(true);
+        setIsLoading(true)
 
         try {
-            const response = await updateOrderInternalRemark(orderId, editableInternalRemark);
+            const response = await updateOrderInternalRemark(orderId, editableInternalRemark)
 
             if (response?.success) {
-                setIsEditingInternalRemark(false);
-                refetch();
-                notify('success', 'Internal remark updated!');
+                setIsEditingInternalRemark(false)
+                refetch()
+                notify("success", "Internal remark updated!")
             }
-
         } catch (error) {
-            console.error(error);
-            notify('error', 'Error occurred while saving internal remark.');
+            console.error(error)
+            notify("error", "Error occurred while saving internal remark.")
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
     }
 
     const handleReReleaseOrder = async () => {
-
-        setIsLoading(true);
+        setIsLoading(true)
 
         try {
-            const response = await reReleaseOrder(orderId);
+            const response = await reReleaseOrder(orderId)
 
             if (response?.success) {
+                const modalEl = document.querySelector("#re_release_order_modal") as HTMLElement
+                const modal = KTModal.getInstance(modalEl)
+                modal.hide()
 
-                const modalEl = document.querySelector('#re_release_order_modal') as HTMLElement;
-                const modal = KTModal.getInstance(modalEl);
-                modal.hide();
-
-                notify('success', 'Order re-released successfully!');
-                refetch();
+                notify("success", "Order re-released successfully!")
+                refetch()
             }
-
         } catch (error) {
-            notify('error', 'Failed to re-release order.');
+            notify("error", "Failed to re-release order.")
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
     }
 
     const handleVoidQuotation = async () => {
-        setIsLoading(true);
+        setIsLoading(true)
 
         try {
-            const response = await voidOrder(orderId);
+            const response = await voidOrder(orderId)
 
             if (response?.success) {
+                const modalEl = document.querySelector("#void_quotation_modal") as HTMLElement
+                const modal = KTModal.getInstance(modalEl)
+                modal.hide()
 
-                const modalEl = document.querySelector('#void_quotation_modal') as HTMLElement;
-                const modal = KTModal.getInstance(modalEl);
-                modal.hide();
-
-                notify('success', 'Order voided successfully!');
-                refetch();
+                notify("success", "Order voided successfully!")
+                refetch()
             }
-
         } catch (error) {
-            notify('error', 'Failed to re-release order.');
+            notify("error", "Failed to re-release order.")
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
     }
 
-    if (isLoading) return <Loading />;
-    if (error) return <div>{error}</div>;
-    if (!orderDetail) return <div>Order not found</div>;
+    if (isLoading) return <Loading />
+    if (error) return <div>{error}</div>
+    if (!orderDetail) return <div>Order not found</div>
 
-
-    // console.log(orderDetail);
-    const selectedQuotation = orderDetail.latest_quotation;
-    const selectedPackages = orderDetail.latest_quotation.packages;
-
+    const selectedQuotation = orderDetail.latest_quotation
+    const selectedPackages = orderDetail.latest_quotation.packages
 
     const calculateQuotationMargin = () => {
-        // Calculate total retail price
-        const totalRetailPrice = orderDetail.final_amount ? orderDetail.final_amount : selectedPackages.reduce((total, pkg) => {
-            if (pkg.is_addon === true && pkg.is_addon_included === false) {
-                return total;
-            }
-
-            const packageRetail = pkg.products.reduce((pkgTotal, product) => {
-                let supplyPrice = 0;
-                if (product.pivot.includeSupply) {
-                    supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
-                } else {
-                    supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
+        const totalRetailPrice = orderDetail.final_amount
+            ? orderDetail.final_amount
+            : selectedPackages.reduce((total, pkg) => {
+                if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                    return total
                 }
 
-                let installPrice = 0;
-                if (product.pivot.includeInstall) {
-                    installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
-                } else {
-                    installPrice = (product.provisioning.install.retail_price - product.provisioning.install.excluded_price) || 0;
-                }
+                const packageRetail = pkg.products.reduce((pkgTotal, product) => {
+                    let supplyPrice = 0
+                    if (product.pivot.includeSupply) {
+                        supplyPrice = product.provisioning.supply.retail_price * product.pivot.quantity || 0
+                    } else {
+                        supplyPrice = product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price || 0
+                    }
 
-                return pkgTotal + (supplyPrice + installPrice);
-            }, 0);
-            return total + (packageRetail * (pkg.quantity || 1));
-        }, 0);
+                    let installPrice = 0
+                    if (product.pivot.includeInstall) {
+                        installPrice = product.provisioning.install.retail_price * product.pivot.quantity || 0
+                    } else {
+                        installPrice =
+                            product.provisioning.install.retail_price - product.provisioning.install.excluded_price || 0
+                    }
 
-        const totalDiscountPrice = Number(selectedQuotation.bonus?.value || 0);
+                    return pkgTotal + (supplyPrice + installPrice)
+                }, 0)
+                return total + packageRetail * (pkg.quantity || 1)
+            }, 0)
 
-        // Calculate total COGS (Cost of Goods Sold)
+        const totalDiscountPrice = Number(selectedQuotation.bonus?.value || 0)
+
         const totalCogs = selectedPackages.reduce((total, pkg) => {
             if (pkg.is_addon === true && pkg.is_addon_included === false) {
-                return total;
+                return total
             }
 
             const packageCogs = pkg.products.reduce((pkgTotal, product) => {
-                const supplyCogs = product.pivot.includeSupply
-                    ? product.provisioning.supply.cogs * product.pivot.quantity
-                    : 0;
+                const supplyCogs = product.pivot.includeSupply ? product.provisioning.supply.cogs * product.pivot.quantity : 0
                 const installCogs = product.pivot.includeInstall
                     ? product.provisioning.install.cogs * product.pivot.quantity
-                    : 0;
-                return pkgTotal + (supplyCogs + installCogs);
-            }, 0);
-            return total + (packageCogs * (pkg.quantity || 1));
-        }, 0);
+                    : 0
+                return pkgTotal + (supplyCogs + installCogs)
+            }, 0)
+            return total + packageCogs * (pkg.quantity || 1)
+        }, 0)
 
-        // Calculate margin in amount
-        const marginInAmount = totalRetailPrice - totalCogs;
-
-        // Calculate margin in percentage
-        const marginInPercentage = totalRetailPrice > 0
-            ? (marginInAmount / totalRetailPrice) * 100
-            : 0;
+        const marginInAmount = totalRetailPrice - totalCogs
+        const marginInPercentage = totalRetailPrice > 0 ? (marginInAmount / totalRetailPrice) * 100 : 0
 
         return {
             totalCogs,
             marginInAmount,
-            marginInPercentage
-        };
-    };
+            marginInPercentage,
+        }
+    }
 
     const calculatePackageTotal = (pkg: Package) => {
-        // If it's an addon package that's not included, return 0
-        // if (pkg.is_addon && pkg.is_addon_included === false) {
-        //     return 0;
-        // }
-
-        // if (!pkg.products || pkg.products.length === 0) {
-        //     return (pkg.total_price || 0) * (pkg.quantity || 1);
-        // }
-
         const packageTotal = pkg.products.reduce((prodSum, product) => {
-            let supplyPrice = 0;
-            let installPrice = 0;
+            let supplyPrice = 0
+            let installPrice = 0
 
-            // Calculate supply price
             if (product.provisioning?.supply) {
                 if (product.pivot?.includeSupply) {
-                    supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1);
+                    supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1)
                 } else {
-                    supplyPrice = Math.max(0,
-                        (product.provisioning.supply.retail_price || 0) -
-                        (product.provisioning.supply.excluded_price || 0)
-                    ) * (product.pivot?.quantity || 1);
+                    supplyPrice =
+                        Math.max(
+                            0,
+                            (product.provisioning.supply.retail_price || 0) - (product.provisioning.supply.excluded_price || 0),
+                        ) * (product.pivot?.quantity || 1)
                 }
             }
 
-            // Calculate install price
             if (product.provisioning?.install) {
                 if (product.pivot?.includeInstall) {
-                    installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1);
+                    installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1)
                 } else {
-                    installPrice = Math.max(0,
-                        (product.provisioning.install.retail_price || 0) -
-                        (product.provisioning.install.excluded_price || 0)
-                    ) * (product.pivot?.quantity || 1);
+                    installPrice =
+                        Math.max(
+                            0,
+                            (product.provisioning.install.retail_price || 0) - (product.provisioning.install.excluded_price || 0),
+                        ) * (product.pivot?.quantity || 1)
                 }
             }
 
-            return prodSum + supplyPrice + installPrice;
-        }, 0);
+            return prodSum + supplyPrice + installPrice
+        }, 0)
 
-        return packageTotal * (pkg.quantity || 1);
-    };
+        return packageTotal * (pkg.quantity || 1)
+    }
 
-    const { totalCogs, marginInAmount, marginInPercentage } = calculateQuotationMargin();
+    const { totalCogs, marginInAmount, marginInPercentage } = calculateQuotationMargin()
 
-    const discount = selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0;
-    const nettAmount = totalExcludedAddonAmount - discount;
-    const nettMargin = nettAmount - totalCogs;
-    const nettMarginPercentage = nettAmount > 0 ? (nettMargin / nettAmount) * 100 : 0;
+    const discount = selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0
+    const nettAmount = totalExcludedAddonAmount - discount
+    const nettMargin = nettAmount - totalCogs
+    const nettMarginPercentage = nettAmount > 0 ? (nettMargin / nettAmount) * 100 : 0
 
     return (
         <>
             {isLoading && <Loading />}
 
-            <div className="flex justify-between items-center flex-wrap mb-6">
-                <div className="flex gap-4 items-center">
-                    <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
-                        <i className="ki-solid ki-arrow-left"></i>
-                    </button>
-                    <span className="text-2xl font-bold text-gray-900">
-                        Quotation Order Detail
-                    </span>
-                </div>
-                <div className="flex gap-3">
-                    {orderDetail?.status === 'unreleased' && (
+            {/* iOS-style Header */}
+            <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200/50 px-6 py-4 mb-8">
+                <div className="flex justify-between items-center">
+                    <div className="flex gap-4 items-center">
                         <button
-                            className="btn btn-primary btn-sm"
-                            onClick={handleReleaseOrder}
+                            className="w-10 h-10 rounded-full bg-gray-100/80 hover:bg-gray-200/80 flex items-center justify-center transition-all duration-200 active:scale-95"
+                            onClick={handleBackClick}
                         >
-                            Release Order
+                            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
                         </button>
-                    )}
-                    {orderDetail?.status === 'released' &&
-                        <button
-                            className="btn btn-success btn-sm"
-                            data-modal-toggle="#confirm_order_modal"
-                        >
-                            Confirm Order
-                        </button>
-                    }
-                    {
-                        orderDetail?.status === 'voided' &&
-                        <button
-                            className="btn btn-primary btn-sm"
-                            data-modal-toggle="#re_release_order_modal"
-                        >
-                            Re-release Order
-                        </button>
-                    }
-                    {orderDetail?.status !== 'confirmed' &&
-                        <Link
-                            to={LOCAL_PATH_PREFIX + `orders/edit/${orderId}`}
-                            className="btn btn-sm btn-info"
-                            data-tooltip="#edit_tooltip"
-                            data-action="edit"
-                            data-id={orderId}
-                        >
-                            <i className="ki-outline ki-notepad-edit"></i>
-                            Edit Order Quotation
-                        </Link>
-                    }
+                        <div>
+                            <h1 className="text-2xl font-semibold text-gray-900 -tracking-wide">Quotation Order Detail</h1>
+                            <p className="text-sm text-gray-500 mt-1">Order #{orderDetail?.order_no}</p>
+                        </div>
+                    </div>
 
-                    <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
-                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
-                            <i className="ki-filled ki-dots-vertical"></i>
-                        </button>
+                    <div className="flex gap-3">
+                        {orderDetail?.status === "unreleased" && (
+                            <button
+                                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm"
+                                onClick={handleReleaseOrder}
+                            >
+                                Release Order
+                            </button>
+                        )}
+                        {orderDetail?.status === "released" && (
+                            <button
+                                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm"
+                                data-modal-toggle="#confirm_order_modal"
+                            >
+                                Confirm Order
+                            </button>
+                        )}
+                        {orderDetail?.status === "voided" && (
+                            <button
+                                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm"
+                                data-modal-toggle="#re_release_order_modal"
+                            >
+                                Re-release Order
+                            </button>
+                        )}
+                        {orderDetail?.status !== "confirmed" && (
+                            <Link
+                                to={LOCAL_PATH_PREFIX + `orders/edit/${orderId}`}
+                                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-2"
+                                data-tooltip="#edit_tooltip"
+                                data-action="edit"
+                                data-id={orderId}
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                    />
+                                </svg>
+                                Edit Order
+                            </Link>
+                        )}
 
-                        <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
-                            {orderDetail.user &&
-                                <div className="menu-item">
-                                    <button
-                                        className="menu-link copy-link"
-                                        data-clipboard-text={`${CLIENT_URL}order/overview/id/${orderId}`}
+                        <div className="relative">
+                            <button
+                                ref={buttonRef}
+                                className="w-10 h-10 rounded-full bg-gray-100/80 hover:bg-gray-200/80 flex items-center justify-center transition-all duration-200 active:scale-95"
+                                onClick={toggleDropdown}
+                            >
+                                <svg className="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                </svg>
+                            </button>
+
+                            {isDropdownOpen && (
+                                <div
+                                    ref={dropdownRef}
+                                    className="absolute right-0 mt-2 w-64 bg-white/95 border border-gray-200 backdrop-blur-xl rounded-2xl shadow-xl py-2 z-50"
+                                >
+                                    {orderDetail?.user && (
+                                        <button
+                                            className="w-full px-4 p-3 text-left hover:bg-gray-50/80 transition-colors duration-200 flex items-center gap-3"
+                                            data-clipboard-text={`${CLIENT_URL}order/overview/id/${orderId}`}
+                                        >
+                                            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                                />
+                                            </svg>
+                                            <span className="text-sm text-gray-700">Copy Quotation Link</span>
+                                        </button>
+                                    )}
+                                    <Link
+                                        to={`${LOCAL_PATH_PREFIX}orders/create?dp=${orderId}`}
+                                        className="w-full px-4 p-3 text-left hover:bg-gray-50/80 transition-colors duration-200 flex items-center gap-3"
+                                        target="_blank"
+                                        onClick={() => setIsDropdownOpen(false)}
                                     >
-                                        <span className="menu-title">
-                                            <div className="flex gap-2 items-center">
-                                                <i className="ki-outline ki-copy text-lg"></i>
-                                                <span className="text-gray-900">
-                                                    Copy Quotation Order Link
-                                                </span>
-                                            </div>
-                                        </span>
-                                    </button>
-                                </div>
-                            }
-                            <div className="menu-item">
-                                <Link
-                                    to={LOCAL_PATH_PREFIX + `orders/create?dp=${orderId}`}
-                                    className="menu-link"
-                                    target="_blank"
-                                >
-                                    <span className="menu-title">
-                                        <div className="flex gap-2 items-center">
-                                            <i className="ki-outline ki-save-2 text-lg"></i>
-                                            <span className="text-gray-900">
-                                                Duplicate Order
-                                            </span>
-                                        </div>
-                                    </span>
-                                </Link>
-                            </div>
-                            <div className="menu-item">
-                                <button
-                                    className="menu-link"
-                                    data-modal-toggle="#preview_order_modal"
-                                >
-                                    <span className="menu-title">
-                                        <div className="flex gap-2 items-center">
-                                            <i className="ki-filled ki-phone text-lg"></i>
-                                            <span>Preview in Owner View</span>
-                                        </div>
-                                    </span>
-                                </button>
-                            </div>
-                            <div className="menu-item">
-                                <Link
-                                    to={LOCAL_PATH_PREFIX + `orders/print/${orderId}`}
-                                    className="menu-link"
-                                >
-                                    <span className="menu-title">
-                                        <div className="flex gap-2 items-center">
-                                            <i className="ki-filled ki-file-down text-lg"></i>
-                                            <span>Print Quotation</span>
-                                        </div>
-                                    </span>
-                                </Link>
-                                <Link
-                                    to={LOCAL_PATH_PREFIX + `orders/print/${orderId}/internal`}
-                                    className="menu-link"
-                                >
-                                    <span className="menu-title">
-                                        <div className="flex gap-2 items-center">
-                                            <i className="ki-filled ki-file-down text-lg"></i>
-                                            <span>Internal Quotation PDF</span>
-                                        </div>
-                                    </span>
-                                </Link>
-                            </div>
-                            {orderDetail?.status === 'released' &&
-                                <div className="menu-item">
+                                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+                                            />
+                                        </svg>
+                                        <span className="text-sm text-gray-700">Duplicate Order</span>
+                                    </Link>
                                     <button
-                                        className="menu-link"
-                                        data-modal-toggle="#void_quotation_modal"
+                                        className="w-full px-4 p-3 text-left hover:bg-gray-50/80 transition-colors duration-200 flex items-center gap-3"
+                                        data-modal-toggle="#preview_order_modal"
                                     >
-                                        <span className="menu-title">
-                                            <div className="flex gap-2 items-center text-red-600">
-                                                <i className="ki-filled ki-cross-square text-lg"></i>
-                                                <span>Void Quotation</span>
-                                            </div>
-                                        </span>
+                                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                            />
+                                        </svg>
+                                        <span className="text-sm text-gray-700">Preview in Owner View</span>
                                     </button>
+                                    <Link
+                                        to={`${LOCAL_PATH_PREFIX}orders/print/${orderId}`}
+                                        className="w-full px-4 p-3 text-left hover:bg-gray-50/80 transition-colors duration-200 flex items-center gap-3"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                            />
+                                        </svg>
+                                        <span className="text-sm text-gray-700">Print Quotation</span>
+                                    </Link>
+                                    <Link
+                                        to={`${LOCAL_PATH_PREFIX}orders/print/${orderId}/internal`}
+                                        className="w-full px-4 p-3 text-left hover:bg-gray-50/80 transition-colors duration-200 flex items-center gap-3"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                            />
+                                        </svg>
+                                        <span className="text-sm text-gray-700">Internal Quotation PDF</span>
+                                    </Link>
+                                    {orderDetail?.status === 'released' && (
+                                        <button
+                                            className="w-full px-4 p-3 text-left hover:bg-red-50/80 transition-colors duration-200 flex items-center gap-3 text-red-600"
+                                            data-modal-toggle="#void_quotation_modal"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            <span className="text-sm">Void Quotation</span>
+                                        </button>
+                                    )}
                                 </div>
-                            }
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-8 mb-8">
-                <div className="flex flex-col flex-[2] gap-8 flex-2-container">
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Owner
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    {orderDetail.user ?
-                                        <>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Name:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.user.name}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Email:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.user.email}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Phone No.:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    +{orderDetail.user.country_code} {orderDetail.user.phone_no}
-                                                </td>
-                                            </tr>
-                                        </>
-                                        :
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            N/A
-                                        </td>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                General Info
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            QUO No:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.order_no}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Original Amount:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {`RM ${totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                        </td>
-                                    </tr>
-                                    {orderDetail.final_amount &&
-                                        <tr>
-                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                Final Amount:
-                                            </td>
-                                            <td className="text-sm text-gray-900 pb-3">
-                                                RM {(orderDetail.final_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                        </tr>
-                                    }
-                                    {selectedQuotation.bonus &&
-                                        <tr>
-                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                Discount Amount:
-                                            </td>
-                                            <td className="text-sm text-gray-900 pb-3">
-                                                - RM {Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                        </tr>
-                                    }
-                                    {orderDetail.final_amount ?
-                                        <tr>
-                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8 flex items-center gap-1">
-                                                <i data-tooltip="#final_pricing_tooltip" className="ki-filled ki-information-2 textlg text-warning mt-[1.5px]"></i>
-                                                <span>Nett Amount:</span>
-                                            </td>
-                                            <td className="text-sm text-gray-900 pb-3">
-                                                <span className="text-sm text-gray-900 pb-3">
-                                                    RM {(orderDetail.final_amount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        :
-                                        <tr>
-                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                Nett Amount:
-                                            </td>
-                                            <td className="text-sm text-gray-900 pb-3">
-                                                <span className="text-sm text-gray-900 pb-3">
-                                                    RM {(totalExcludedAddonAmount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </span>
-
-                                            </td>
-                                        </tr>
-                                    }
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Status:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <span className={`badge badge-sm p-2 cursor-default capitalize
-                                                ${orderDetail.status === 'released' ? 'badge-primary' : ''} 
-                                                ${orderDetail.status === 'confirmed' ? 'badge-success' : ''} 
-                                                ${orderDetail.status === 'revoked' || orderDetail.status === 'voided' ? 'badge-danger' : ''} 
-                                                ${orderDetail.status === 'draft' ? 'badge-warning' : ''} 
-                                                badge-outline`}
-                                            >
-                                                {orderDetail.status === 'confirmed' ? 'sale' : orderDetail.status}
+            <div className="w-full mx-auto px-6 pb-8">
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                    {/* Left Column - Order Details */}
+                    <div className="xl:col-span-3 space-y-6">
+                        {/* Owner Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                            <div className="px-6 py-4 border-b border-gray-200/50">
+                                <h3 className="text-lg font-semibold text-gray-900">Owner</h3>
+                            </div>
+                            <div className="p-6">
+                                {orderDetail.user ? (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Name:</span>
+                                            <span className="text-sm font-medium text-gray-900">{orderDetail.user.name}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Email:</span>
+                                            <span className="text-sm font-medium text-gray-900">{orderDetail.user.email}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Phone:</span>
+                                            <span className="text-sm font-medium text-gray-900">
+                                                +{orderDetail.user.country_code} {orderDetail.user.phone_no}
                                             </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Version:</td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.latest_quotation.version ?
-                                                String.fromCharCode(64 + orderDetail.latest_quotation.version)
-                                                : "N/A"}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Quotation Released Date:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.released_at ? formatDate(orderDetail.released_at) : 'N/A'}
-                                        </td>
-                                    </tr>
-                                    {orderDetail.status === 'confirmed' &&
-                                        <tr>
-                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                Quotation Agreed Date:
-                                            </td>
-                                            <td className="text-sm text-gray-900 pb-3">
-                                                {formatDate(orderDetail.confirmed_at)}
-                                            </td>
-                                        </tr>
-                                    }
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated Date:</td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {formatDate(orderDetail.latest_quotation.created_at)}
-
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">Updated by:</td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.latest_quotation.created_by.name}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span className="text-sm text-gray-500">N/A</span>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                BePowered 2.0 Program
-                            </h3>
-                            <div className="flex">
-                                {isEditingBePowered ?
+
+                        {/* General Info Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                            <div className="px-6 py-4 border-b border-gray-200/50">
+                                <h3 className="text-lg font-semibold text-gray-900">General Info</h3>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">QUO No:</span>
+                                        <span className="text-sm font-medium text-gray-900">{orderDetail.order_no}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Original Amount:</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            RM{" "}
+                                            {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                        </span>
+                                    </div>
+                                    {orderDetail.final_amount && (
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Final Amount:</span>
+                                            <span className="text-sm font-medium text-gray-900">
+                                                RM{" "}
+                                                {orderDetail.final_amount.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {selectedQuotation.bonus && (
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Discount Amount:</span>
+                                            <span className="text-sm font-medium text-red-600">
+                                                - RM{" "}
+                                                {Number(selectedQuotation.bonus.value).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Nett Amount:</span>
+                                        <span className="text-sm font-semibold text-gray-900">
+                                            RM {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Status:</span>
+                                        <span
+                                            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${orderDetail.status === "released"
+                                                ? "bg-blue-100 text-blue-800"
+                                                : orderDetail.status === "confirmed"
+                                                    ? "bg-green-100 text-green-800"
+                                                    : orderDetail.status === "revoked" || orderDetail.status === "voided"
+                                                        ? "bg-red-100 text-red-800"
+                                                        : orderDetail.status === "draft"
+                                                            ? "bg-yellow-100 text-yellow-800"
+                                                            : "bg-gray-100 text-gray-800"
+                                                }`}
+                                        >
+                                            {orderDetail.status === "confirmed" ? "sale" : orderDetail.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Version:</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            {orderDetail.latest_quotation.version
+                                                ? String.fromCharCode(64 + orderDetail.latest_quotation.version)
+                                                : "N/A"}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Released Date:</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            {orderDetail.released_at ? formatDate(orderDetail.released_at) : "N/A"}
+                                        </span>
+                                    </div>
+                                    {orderDetail.status === "confirmed" && (
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Agreed Date:</span>
+                                            <span className="text-sm font-medium text-gray-900">{formatDate(orderDetail.confirmed_at)}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Updated Date:</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            {formatDate(orderDetail.latest_quotation.created_at)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Updated by:</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            {orderDetail.latest_quotation.created_by.name}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* BePowered 2.0 Program Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                            <div className="px-6 py-4 border-b border-gray-200/50 flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-gray-900">BePowered 2.0 Program</h3>
+                                {!isEditingBePowered ? (
                                     <button
-                                        className="btn btn-secondary btn-sm"
-                                        onClick={() => setIsEditingBePowered(false)}
-                                    >
-                                        Cancel
-                                    </button>
-                                    :
-                                    <button
-                                        className="btn btn-primary btn-sm"
+                                        className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition-all duration-200 active:scale-95"
                                         onClick={handleEditBePowered}
                                     >
                                         Edit
                                     </button>
+                                )
+                                    :
+                                    <button
+                                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-all duration-200 active:scale-95"
+                                        onClick={() => setIsEditingBePowered(false)}
+                                    >
+                                        Cancel
+                                    </button>
                                 }
                             </div>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Status:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {isEditingBePowered ?
-                                                <button
-                                                    onClick={handleChangeBePowered}
-                                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${editableBePowered ? "bg-blue-500" : "bg-gray-200"
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Status:</span>
+                                        {isEditingBePowered ? (
+                                            <button
+                                                onClick={handleChangeBePowered}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${editableBePowered ? "bg-blue-500" : "bg-gray-200"
+                                                    }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${editableBePowered ? "translate-x-6" : "translate-x-1"
                                                         }`}
-                                                >
-                                                    <span
-                                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${editableBePowered ? "translate-x-6" : "translate-x-1"
-                                                            }`}
-                                                    />
-                                                </button>
-                                                : orderDetail.is_be_powered ?
-                                                    <span className="badge badge-sm badge-outline p-2 cursor-default capitalize badge-success">Active</span>
-                                                    : <span className="badge badge-sm badge-outline p-2 cursor-default capitalize badge-danger">Inactive</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Original Nett Amount:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <span className="text-sm text-gray-900 pb-3">
-                                                RM {(totalExcludedAddonAmount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                />
+                                            </button>
+                                        ) : (
+                                            <span
+                                                className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${orderDetail.is_be_powered ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                                    }`}
+                                            >
+                                                {orderDetail.is_be_powered ? "Active" : "Inactive"}
                                             </span>
-
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Markup Price:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            <span className="text-sm text-gray-900 pb-3">
-                                                RM {(Math.ceil(((totalExcludedAddonAmount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0)) * 1.2) / 50) * 50).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Upfront Amount:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            RM 25,000.00
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Remaining Balance:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            RM {(totalExcludedAddonAmount - (selectedQuotation.bonus ? Number(selectedQuotation.bonus?.value) : 0) - 25000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                        )}
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Original Nett Amount:</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            RM {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Markup Price:</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            RM{" "}
+                                            {(Math.ceil((nettAmount * 1.2) / 50) * 50).toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Upfront Amount:</span>
+                                        <span className="text-sm font-medium text-gray-900">RM 25,000.00</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Remaining Balance:</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            RM{" "}
+                                            {(nettAmount - 25000).toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Internal Remark
-                            </h3>
-                            <div className="flex">
-                                {isEditingInternalRemark === false &&
+
+                        {/* Internal Remark Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                            <div className="px-6 py-4 border-b border-gray-200/50 flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-gray-900">Internal Remark</h3>
+                                {!isEditingInternalRemark && (
                                     <button
-                                        className="btn btn-primary btn-sm"
+                                        className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition-all duration-200 active:scale-95"
                                         onClick={handleEditInternalRemark}
                                     >
                                         Edit
                                     </button>
-                                }
+                                )}
+                            </div>
+                            <div className="p-6">
+                                {isEditingInternalRemark ? (
+                                    <div className="space-y-4">
+                                        <textarea
+                                            className="w-full h-32 px-4 p-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            value={editableInternalRemark || ""}
+                                            onChange={handleChangeInternalRemark}
+                                            placeholder="Enter internal remark..."
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-all duration-200 active:scale-95"
+                                                onClick={() => setIsEditingInternalRemark(false)}
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-all duration-200 active:scale-95"
+                                                onClick={handleSaveInternalRemark}
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-700">
+                                        {orderDetail.internal_remark || <span className="text-gray-500">N/A</span>}
+                                    </p>
+                                )}
                             </div>
                         </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            {isEditingInternalRemark ?
-                                <div className="flex flex-col gap-4">
-                                    <textarea
-                                        className="textarea textarea-bordered w-full h-32"
-                                        value={editableInternalRemark || ''}
-                                        onChange={(e) => handleChangeInternalRemark(e)}
-                                    />
-                                    <div className="flex justify-end gap-2">
-                                        <button
-                                            className="btn btn-secondary btn-sm"
-                                            onClick={() => setIsEditingInternalRemark(false)}
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            className="btn btn-success btn-sm"
-                                            onClick={handleSaveInternalRemark}
-                                        >
-                                            Save
-                                        </button>
-                                    </div>
-                                </div>
-                                :
-                                orderDetail.internal_remark ?
-                                    <span className="text-gray-900">{orderDetail.internal_remark}</span>
-                                    :
-                                    <span className="text-gray-600">N/A</span>
-                            }
-                        </div>
-                    </div>
-                    <div className="card bg-info-light">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Discount/Bonus
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    {selectedQuotation.bonus ?
-                                        <>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Description:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    <ul className='text-sm text-gray-900 list-inside'>
-                                                        {selectedQuotation.bonus.description ?
-                                                            selectedQuotation.bonus.description.split('\n').map((item, index) => (
-                                                                <li key={index}>{item}</li>
-                                                            ))
-                                                            :
-                                                            <li>No Details</li>
-                                                        }
+
+                        {/* Discount/Bonus Card */}
+                        <div className="bg-blue-50/80 backdrop-blur-xl rounded-2xl border border-blue-200/50 shadow-sm">
+                            <div className="px-6 py-4 border-b border-blue-200/50">
+                                <h3 className="text-lg font-semibold text-blue-900">Discount/Bonus</h3>
+                            </div>
+                            <div className="p-6">
+                                {selectedQuotation.bonus ? (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <span className="text-sm text-blue-700 font-medium">Description:</span>
+                                            <div className="mt-2">
+                                                {selectedQuotation.bonus.description ? (
+                                                    <ul className="text-sm text-blue-800 space-y-1">
+                                                        {selectedQuotation.bonus.description.split("\n").map((item, index) => (
+                                                            <li key={index} className="flex items-start">
+                                                                {item}
+                                                            </li>
+                                                        ))}
                                                     </ul>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Value:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    RM {Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
-                                        </>
-                                        :
-                                        <tr>
-                                            <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                N/A
-                                            </td>
-                                        </tr>
-                                    }
-
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Property
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    {orderDetail.property ?
-                                        <>
-
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-24">
-                                                    Property Name:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.property ? orderDetail.property.name : 'N/A'}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-12">
-                                                    Unit:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-12">
-                                                    Unit Type:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.unit_type ? orderDetail.unit_type : "-"}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-12">
-                                                    Address:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {[
-                                                        orderDetail.property.address,
-                                                        orderDetail.property.street,
-                                                        orderDetail.property.postcode,
-                                                        orderDetail.property.city,
-                                                        orderDetail.property.state,
-                                                    ]
-                                                        .filter(Boolean)
-                                                        .join(', ')
-                                                    }
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Total Bedroom:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.bedroom_count}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Total Single Bedroom:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.single_bedroom_count}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Total Queen Bedroom:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.queen_bedroom_count}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Total Studio Room:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.studio_count}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Total Bathroom:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.bathroom_count}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Partition:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {orderDetail.include_partition ? 'Yes' : 'No'}
-                                                </td>
-                                            </tr>
-                                        </>
-                                        :
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            N/A
-                                        </td>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Reno Agreement Detail
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Completion Day(s):
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.completion_day} Working Days
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Payment Schedule:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {orderDetail.is_progressive_payment ? 'Progressive Payment' : 'Full Payment'}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                        </div>
-                    </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Revision History
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <div className="grid gap-2.5">
-                                {orderDetail.order_quotations.length > 0 ?
-                                    orderDetail.order_quotations.slice().reverse().map((orderQuotation: OrderQuotation, index: number) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center justify-between flex-wrap border border-gray-200 rounded-xl gap-2 px-3.5 py-2.5"
-                                        >
-                                            <div className="flex flex-col">
-                                                <Link
-                                                    to={LOCAL_PATH_PREFIX + `orders/${orderDetail.id}/ver/${orderQuotation.version}`}
-                                                    className="flex items-center flex-wrap gap-3.5 cursor-pointer text-orange-500 font-semibold text-sm">
-                                                    {orderDetail.order_no}-{String.fromCharCode(64 + orderQuotation.version)}
-                                                </Link>
-                                                <span className="text-xs text-gray-500">
-                                                    Updated At:
-                                                    <span className="font-semibold ml-1">{orderQuotation.updated_at}</span>
-                                                </span>
-                                                <span className="text-xs text-gray-700">
-                                                    Updated By:
-                                                    <span className="font-semibold ml-1">{orderQuotation.created_by.name}</span>
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center flex-wrap gap-3.5">
-                                                <button className="btn btn-outline btn-info btn-sm disabled">
-                                                    Revise
-                                                </button>
+                                                ) : (
+                                                    <span className="text-sm text-blue-600">No Details</span>
+                                                )}
                                             </div>
                                         </div>
-                                    ))
-                                    :
-                                    <div className="text-sm text-gray-600">No Revision History on this Quotation Order</div>}
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-blue-700 font-medium">Value:</span>
+                                            <span className="text-sm font-semibold text-blue-900">
+                                                RM{" "}
+                                                {Number(selectedQuotation.bonus.value).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span className="text-sm text-blue-600">N/A</span>
+                                )}
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div className='flex flex-col flex-[6] gap-4'>
-                    <div className="flex gap-4">
-                        <div className="card w-full">
-                            <div className="card-header flex justify-between items-center">
-                                <h3 className="card-title">Summary Pricing</h3>
+                        {/* Property Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                            <div className="px-6 py-4 border-b border-gray-200/50">
+                                <h3 className="text-lg font-semibold text-gray-900">Property</h3>
                             </div>
-                            <div className="card-group pt-3.5 pb-3.5">
-                                <table className="table-auto w-full">
-                                    <thead>
-                                        <tr>
-                                            <th className="text-sm text-gray-600 pb-3 text-left">Category</th>
-                                            <th className="text-sm text-gray-600 pb-3 text-right">Total Price</th>
-                                            <th className="text-sm text-gray-600 pb-3 text-right">COGS</th>
-                                            <th className="text-sm text-gray-600 pb-3 text-right">Nett Margin</th>
-                                            <th className="text-sm text-gray-600 pb-3 text-right">Margin %</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {packageCategories.map((category, index) => {
-                                            const categoryMargin = category.total_price - category.cogs;
-                                            const categoryMarginPercentage =
-                                                category.total_price > 0 ? (categoryMargin / category.total_price) * 100 : 0;
-
-                                            return (
-                                                <tr key={index}>
-                                                    <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">{category.category}</td>
-                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
-                                                        RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </td>
-                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
-                                                        RM {category.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </td>
-                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
-                                                        RM {categoryMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </td>
-                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
-                                                        {categoryMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                        {/* Totals Row */}
-                                        <tr className="border-t">
-                                            <td className="text-sm text-gray-600 font-bold pt-3 pe-4 lg:pe-8">Total</td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {marginInAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                {marginInPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                            </td>
-                                        </tr>
-                                        {/* Bonus/Discount Row (if applicable) */}
-                                        {selectedQuotation.bonus && (
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pt-3 whitespace-nowrap">Bonus/Discount</td>
-                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
-                                                    - RM {Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </td>
-                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">-</td>
-                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
-                                                    - RM {Number(selectedQuotation.bonus.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </td>
-                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
-                                                    - {(marginInPercentage - nettMarginPercentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                                </td>
-                                            </tr>
-                                        )}
-                                        {/* Nett Amount Row */}
-                                        <tr>
-                                            <td className="text-sm text-gray-600 font-bold pt-3 pe-4 lg:pe-8">Nett Amount</td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {(totalCogs).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {nettMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                {nettMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div className="p-6">
+                                {orderDetail.property ? (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Property Name:</span>
+                                            <span className="text-sm font-medium text-gray-900">{orderDetail.property.name}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Unit:</span>
+                                            <span className="text-sm font-medium text-gray-900">
+                                                {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Unit Type:</span>
+                                            <span className="text-sm font-medium text-gray-900">{orderDetail.unit_type || "-"}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Address:</span>
+                                            <span className="text-sm font-medium text-gray-900 text-right max-w-xs">
+                                                {[
+                                                    orderDetail.property.address,
+                                                    orderDetail.property.street,
+                                                    orderDetail.property.postcode,
+                                                    orderDetail.property.city,
+                                                    orderDetail.property.state,
+                                                ]
+                                                    .filter(Boolean)
+                                                    .join(", ")}
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="flex justify-between">
+                                                <span className="text-sm text-gray-600">Bedrooms:</span>
+                                                <span className="text-sm font-medium text-gray-900">{orderDetail.bedroom_count}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-sm text-gray-600">Bathrooms:</span>
+                                                <span className="text-sm font-medium text-gray-900">{orderDetail.bathroom_count}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-sm text-gray-600">Single Beds:</span>
+                                                <span className="text-sm font-medium text-gray-900">{orderDetail.single_bedroom_count}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-sm text-gray-600">Queen Beds:</span>
+                                                <span className="text-sm font-medium text-gray-900">{orderDetail.queen_bedroom_count}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-sm text-gray-600">Studios:</span>
+                                                <span className="text-sm font-medium text-gray-900">{orderDetail.studio_count}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-sm text-gray-600">Partition:</span>
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    {orderDetail.include_partition ? "Yes" : "No"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <span className="text-sm text-gray-500">N/A</span>
+                                )}
                             </div>
                         </div>
-                    </div>
 
-                    {selectedQuotation && (
-                        <div className="card">
-                            <div className="card-body">
-                                <div className="text-base font-semibold text-gray-900 mb-2">
-                                    Packages:
+                        {/* Reno Agreement Detail Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                            <div className="px-6 py-4 border-b border-gray-200/50">
+                                <h3 className="text-lg font-semibold text-gray-900">Reno Agreement Detail</h3>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Completion Day(s):</span>
+                                        <span className="text-sm font-medium text-gray-900">{orderDetail.completion_day} Working Days</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-sm text-gray-600">Payment Schedule:</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            {orderDetail.is_progressive_payment ? "Progressive Payment" : "Full Payment"}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col gap-5" data-accordion="true">
-                                    {(() => {
-                                        let packageCounter = 0;
-                                        let addonCounter = 0;
+                            </div>
+                        </div>
 
-                                        return selectedPackages.map((prodPackage: Package) => {
-                                            const isAddon = prodPackage.is_addon;
-                                            const counter = isAddon ? addonCounter++ : packageCounter++;
-                                            const label = isAddon ? `ADD-ON OPTIONAL ${counter + 1}: \n${prodPackage.name}` : prodPackage.name;
+                        {/* Revision History Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                            <div className="px-6 py-4 border-b border-gray-200/50">
+                                <h3 className="text-lg font-semibold text-gray-900">Revision History</h3>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-3">
+                                    {orderDetail.order_quotations.length > 0 ? (
+                                        orderDetail.order_quotations
+                                            .slice()
+                                            .reverse()
+                                            .map((orderQuotation: OrderQuotation, index: number) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center justify-between p-4 bg-gray-50/80 rounded-xl border border-gray-200/50"
+                                                >
+                                                    <div className="flex flex-col">
+                                                        <Link
+                                                            to={LOCAL_PATH_PREFIX + `orders/${orderDetail.id}/ver/${orderQuotation.version}`}
+                                                            className="text-orange-600 hover:text-orange-700 font-semibold text-sm transition-colors duration-200"
+                                                        >
+                                                            {orderDetail.order_no}-{String.fromCharCode(64 + orderQuotation.version)}
+                                                        </Link>
+                                                        <span className="text-xs text-gray-500 mt-1">
+                                                            Updated: <span className="font-medium">{orderQuotation.updated_at}</span>
+                                                        </span>
+                                                        <span className="text-xs text-gray-600">
+                                                            By: <span className="font-medium">{orderQuotation.created_by.name}</span>
+                                                        </span>
+                                                    </div>
+                                                    <button className="px-3 py-1.5 bg-gray-200 text-gray-500 text-xs font-medium rounded-lg cursor-not-allowed">
+                                                        Revise
+                                                    </button>
+                                                </div>
+                                            ))
+                                    ) : (
+                                        <div className="text-sm text-gray-500">No Revision History on this Quotation Order</div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                            // Calculate totals for each column
-                                            const totals = prodPackage.products.reduce(
-                                                (acc, product) => {
-                                                    if (!product.pivot.included) return acc;
-                                                    const supplyRRP = product.pivot.includeSupply
-                                                        ? product.provisioning.supply.retail_price * product.pivot.quantity
-                                                        : 0;
-                                                    const installRRP = product.pivot.includeInstall
-                                                        ? product.provisioning.install.retail_price * product.pivot.quantity
-                                                        : 0;
-                                                    const supplyCOGS = product.pivot.includeSupply
-                                                        ? product.provisioning.supply.cogs * product.pivot.quantity
-                                                        : 0;
-                                                    const installCOGS = product.pivot.includeInstall
-                                                        ? product.provisioning.install.cogs * product.pivot.quantity
-                                                        : 0;
+                    {/* Right Column - Summary & Packages */}
+                    <div className="xl:col-span-9 space-y-6">
+                        {/* Summary Pricing Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                            <div className="px-6 py-4 border-b border-gray-200/50">
+                                <h3 className="text-lg font-semibold text-gray-900">Summary Pricing</h3>
+                            </div>
+                            <div className="p-6">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead>
+                                            <tr className="border-b border-gray-200/50">
+                                                <th className="text-left text-sm font-medium text-gray-600 p-3">Category</th>
+                                                <th className="text-right text-sm font-medium text-gray-600 p-3">Total Price</th>
+                                                <th className="text-right text-sm font-medium text-gray-600 p-3">COGS</th>
+                                                <th className="text-right text-sm font-medium text-gray-600 p-3">Nett Margin</th>
+                                                <th className="text-right text-sm font-medium text-gray-600 p-3">Margin %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {packageCategories.map((category, index) => {
+                                                const categoryMargin = category.total_price - category.cogs
+                                                const categoryMarginPercentage =
+                                                    category.total_price > 0 ? (categoryMargin / category.total_price) * 100 : 0
 
-                                                    return {
-                                                        supplyRRP: acc.supplyRRP + supplyRRP,
-                                                        installRRP: acc.installRRP + installRRP,
-                                                        totalRRP: acc.totalRRP + supplyRRP + installRRP,
-                                                        supplyCOGS: acc.supplyCOGS + supplyCOGS,
-                                                        installCOGS: acc.installCOGS + installCOGS,
-                                                        totalCOGS: acc.totalCOGS + supplyCOGS + installCOGS,
-                                                    };
-                                                },
-                                                {
-                                                    supplyRRP: 0,
-                                                    installRRP: 0,
-                                                    totalRRP: 0,
-                                                    supplyCOGS: 0,
-                                                    installCOGS: 0,
-                                                    totalCOGS: 0,
-                                                }
-                                            );
+                                                return (
+                                                    <tr key={index} className="hover:bg-gray-50/50 transition-colors duration-200 p-2">
+                                                        <td className="p-3 text-sm text-gray-700">{category.category}</td>
+                                                        <td className="p-3 text-sm font-medium text-gray-900 text-right">
+                                                            RM{" "}
+                                                            {category.total_price.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </td>
+                                                        <td className="p-3 text-sm font-medium text-gray-900 text-right">
+                                                            RM{" "}
+                                                            {category.cogs.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </td>
+                                                        <td className="p-3 text-sm font-medium text-gray-900 text-right">
+                                                            RM{" "}
+                                                            {categoryMargin.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                        </td>
+                                                        <td className="p-3 text-sm font-medium text-gray-900 text-right">
+                                                            {categoryMarginPercentage.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}
+                                                            %
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })}
 
-                                            // Calculate Margin % and Margin Amount
-                                            const marginPercent =
-                                                totals.totalRRP !== 0
-                                                    ? (((totals.totalRRP - totals.totalCOGS) / totals.totalRRP) * 100).toLocaleString(undefined, {
+                                            {/* Total Row */}
+                                            <tr className="border-t-2 border-gray-200 bg-gray-50/50">
+                                                <td className="p-3 text-sm font-semibold text-gray-900">Total</td>
+                                                <td className="p-3 text-sm font-semibold text-gray-900 text-right">
+                                                    RM{" "}
+                                                    {totalExcludedAddonAmount.toLocaleString(undefined, {
                                                         minimumFractionDigits: 2,
                                                         maximumFractionDigits: 2,
-                                                    }) + "%"
-                                                    : totals.totalCOGS > 0
-                                                        ? "-100.00%"
-                                                        : "0.00%";
-                                            const marginAmount = (totals.totalRRP - totals.totalCOGS).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            });
+                                                    })}
+                                                </td>
+                                                <td className="p-3 text-sm font-semibold text-gray-900 text-right">
+                                                    RM{" "}
+                                                    {totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="p-3 text-sm font-semibold text-gray-900 text-right">
+                                                    RM{" "}
+                                                    {marginInAmount.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </td>
+                                                <td className="p-3 text-sm font-semibold text-gray-900 text-right">
+                                                    {marginInPercentage.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                    %
+                                                </td>
+                                            </tr>
 
-                                            return (
-                                                <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
-                                                    <div
-                                                        className="accordion-item active border rounded-xl w-full"
-                                                        data-accordion-item="true"
-                                                        id={"package_item_" + prodPackage.id.toString()}
-                                                    >
-                                                        <button
-                                                            className="accordion-toggle flex justify-between p-4"
-                                                            data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}
+                                            {/* Bonus/Discount Row */}
+                                            {selectedQuotation.bonus && (
+                                                <tr className="bg-red-50/50">
+                                                    <td className="p-3 text-sm text-gray-700">Bonus/Discount</td>
+                                                    <td className="p-3 text-sm font-medium text-red-600 text-right">
+                                                        - RM{" "}
+                                                        {Number(selectedQuotation.bonus.value).toLocaleString(undefined, {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </td>
+                                                    <td className="p-3 text-sm text-gray-500 text-right">-</td>
+                                                    <td className="p-3 text-sm font-medium text-red-600 text-right">
+                                                        - RM{" "}
+                                                        {Number(selectedQuotation.bonus.value).toLocaleString(undefined, {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </td>
+                                                    <td className="p-3 text-sm font-medium text-red-600 text-right">
+                                                        -{" "}
+                                                        {(marginInPercentage - nettMarginPercentage).toLocaleString(undefined, {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                        %
+                                                    </td>
+                                                </tr>
+                                            )}
+
+                                            {/* Nett Amount Row */}
+                                            <tr className="border-t-2 border-blue-200 bg-blue-50/50">
+                                                <td className="p-3 text-sm font-bold text-blue-900">Nett Amount</td>
+                                                <td className="p-3 text-sm font-bold text-blue-900 text-right">
+                                                    RM{" "}
+                                                    {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="p-3 text-sm font-bold text-blue-900 text-right">
+                                                    RM{" "}
+                                                    {totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="p-3 text-sm font-bold text-blue-900 text-right">
+                                                    RM{" "}
+                                                    {nettMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="p-3 text-sm font-bold text-blue-900 text-right">
+                                                    {nettMarginPercentage.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                    %
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Packages Section - Maintaining exact structure as requested */}
+                        {selectedQuotation && (
+                            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                                <div className="px-6 py-4 border-b border-gray-200/50">
+                                    <h3 className="text-lg font-semibold text-gray-900">Packages</h3>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex flex-col gap-5" data-accordion="true">
+                                        {(() => {
+                                            let packageCounter = 0
+                                            let addonCounter = 0
+
+                                            return selectedPackages.map((prodPackage: Package) => {
+                                                const isAddon = prodPackage.is_addon
+                                                const counter = isAddon ? addonCounter++ : packageCounter++
+                                                const label = isAddon
+                                                    ? `ADD-ON OPTIONAL ${counter + 1}: \n${prodPackage.name}`
+                                                    : prodPackage.name
+
+                                                // Calculate totals for each column
+                                                const totals = prodPackage.products.reduce(
+                                                    (acc, product) => {
+                                                        if (!product.pivot.included) return acc
+                                                        const supplyRRP = product.pivot.includeSupply
+                                                            ? product.provisioning.supply.retail_price * product.pivot.quantity
+                                                            : 0
+                                                        const installRRP = product.pivot.includeInstall
+                                                            ? product.provisioning.install.retail_price * product.pivot.quantity
+                                                            : 0
+                                                        const supplyCOGS = product.pivot.includeSupply
+                                                            ? product.provisioning.supply.cogs * product.pivot.quantity
+                                                            : 0
+                                                        const installCOGS = product.pivot.includeInstall
+                                                            ? product.provisioning.install.cogs * product.pivot.quantity
+                                                            : 0
+
+                                                        return {
+                                                            supplyRRP: acc.supplyRRP + supplyRRP,
+                                                            installRRP: acc.installRRP + installRRP,
+                                                            totalRRP: acc.totalRRP + supplyRRP + installRRP,
+                                                            supplyCOGS: acc.supplyCOGS + supplyCOGS,
+                                                            installCOGS: acc.installCOGS + installCOGS,
+                                                            totalCOGS: acc.totalCOGS + supplyCOGS + installCOGS,
+                                                        }
+                                                    },
+                                                    {
+                                                        supplyRRP: 0,
+                                                        installRRP: 0,
+                                                        totalRRP: 0,
+                                                        supplyCOGS: 0,
+                                                        installCOGS: 0,
+                                                        totalCOGS: 0,
+                                                    },
+                                                )
+
+                                                // Calculate Margin % and Margin Amount
+                                                const marginPercent =
+                                                    totals.totalRRP !== 0
+                                                        ? (((totals.totalRRP - totals.totalCOGS) / totals.totalRRP) * 100).toLocaleString(
+                                                            undefined,
+                                                            {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            },
+                                                        ) + "%"
+                                                        : totals.totalCOGS > 0
+                                                            ? "-100.00%"
+                                                            : "0.00%"
+                                                const marginAmount = (totals.totalRRP - totals.totalCOGS).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })
+
+                                                return (
+                                                    <div className="package flex items-center" key={prodPackage.id} data-id={prodPackage.id}>
+                                                        <div
+                                                            className="accordion-item active border rounded-xl w-full"
+                                                            data-accordion-item="true"
+                                                            id={"package_item_" + prodPackage.id.toString()}
                                                         >
-                                                            <div className="flex flex-col items-start">
-                                                                <span className="text-base text-gray-900 font-medium text-start">{label}</span>
-                                                                <span className="text-sm text-gray-600 text-start">{prodPackage.description}</span>
-                                                                <span className="text-base text-gray-700">
-                                                                    RM{" "}
-                                                                    {calculatePackageTotal(prodPackage).toLocaleString(
-                                                                        undefined,
-                                                                        { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-                                                                    )}
-                                                                </span>
-                                                                {prodPackage.category && (
-                                                                    <div className="badge text-sm">
-                                                                        {categoryOptions.find((option) => option.value === prodPackage.category)?.label}
-                                                                    </div>
-                                                                )}
-                                                                <span className="text-sm text-gray-600 font-medium text-start">
-                                                                    {prodPackage.description_internal && (
-                                                                        <div className="flex items-center gap-2">
-                                                                            <i className="ki-filled ki-information-2 text-warning text-xl"></i>
-                                                                            {prodPackage.description_internal}
+                                                            <button
+                                                                className="accordion-toggle flex justify-between p-4"
+                                                                data-accordion-toggle={"#package_content_" + prodPackage.id.toString()}
+                                                            >
+                                                                <div className="flex flex-col items-start">
+                                                                    <span className="text-base text-gray-900 font-medium text-start">{label}</span>
+                                                                    <span className="text-sm text-gray-600 text-start">{prodPackage.description}</span>
+                                                                    <span className="text-base text-gray-700">
+                                                                        RM{" "}
+                                                                        {calculatePackageTotal(prodPackage).toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 2,
+                                                                            maximumFractionDigits: 2,
+                                                                        })}
+                                                                    </span>
+                                                                    {prodPackage.category && (
+                                                                        <div className="badge text-sm">
+                                                                            {categoryOptions.find((option) => option.value === prodPackage.category)?.label}
                                                                         </div>
                                                                     )}
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex gap-4 items-center">
-                                                                <div className="flex flex-col gap-4">
-                                                                    <div className="flex items-center justify-end gap-8">
-                                                                        {prodPackage.is_addon && (
-                                                                            <span className="text-gray-700 font-semibold py-2 px-4 bg-slate-200 rounded-md whitespace-nowrap">
-                                                                                {`Add-on Included: ${prodPackage.is_addon_included ? "Yes" : "No"}`}
-                                                                            </span>
+                                                                    <span className="text-sm text-gray-600 font-medium text-start">
+                                                                        {prodPackage.description_internal && (
+                                                                            <div className="flex items-center gap-2">
+                                                                                <i className="ki-filled ki-information-2 text-warning text-xl"></i>
+                                                                                {prodPackage.description_internal}
+                                                                            </div>
                                                                         )}
-                                                                        <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md whitespace-nowrap">
-                                                                            Quantity: {prodPackage.quantity ? prodPackage.quantity : 1}
-                                                                        </span>
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex gap-4 items-center">
+                                                                    <div className="flex flex-col gap-4">
+                                                                        <div className="flex items-center justify-end gap-8">
+                                                                            {prodPackage.is_addon && (
+                                                                                <span className="text-gray-700 font-semibold py-2 px-4 bg-slate-200 rounded-md whitespace-nowrap">
+                                                                                    {`Add-on Included: ${prodPackage.is_addon_included ? "Yes" : "No"}`}
+                                                                                </span>
+                                                                            )}
+                                                                            <span className="text-gray-600 font-semibold py-2 px-4 bg-gray-200 rounded-md whitespace-nowrap">
+                                                                                Quantity: {prodPackage.quantity ? prodPackage.quantity : 1}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="flex items-center justify-end gap-2 text-sm text-gray-600">
+                                                                            <span>
+                                                                                RM{" "}
+                                                                                {totals.totalRRP.toLocaleString(undefined, {
+                                                                                    minimumFractionDigits: 2,
+                                                                                    maximumFractionDigits: 2,
+                                                                                })}{" "}
+                                                                                (Unit Price)
+                                                                            </span>
+                                                                            <span>x</span>
+                                                                            <span>{prodPackage.quantity || 1} (Qty)</span>
+                                                                            <span>=</span>
+                                                                            <span className="font-semibold text-lg text-gray-800">
+                                                                                RM{" "}
+                                                                                {(totals.totalRRP * (prodPackage.quantity || 1)).toLocaleString(undefined, {
+                                                                                    minimumFractionDigits: 2,
+                                                                                    maximumFractionDigits: 2,
+                                                                                })}
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="flex items-center justify-end gap-2 text-sm text-gray-600">
-                                                                        <span>RM {(totals.totalRRP).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Unit Price)</span>
-                                                                        <span>x</span>
-                                                                        <span>{prodPackage.quantity || 1} (Qty)</span>
-                                                                        <span>=</span>
-                                                                        <span className="font-semibold text-lg text-gray-800">RM {(totals.totalRRP * (prodPackage.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                                    <div className="flex">
+                                                                        <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
+                                                                        <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex">
-                                                                    <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>
-                                                                    <i className="ki-outline ki-down text-gray-600 text-2sm accordion-active:block hidden"></i>
-                                                                </div>
-                                                            </div>
-
-                                                        </button>
-                                                        <div
-                                                            className="accordion-content active border-t"
-                                                            id={"package_content_" + prodPackage.id.toString()}
-                                                        >
-                                                            <div className="product-list flex flex-col">
-                                                                <table className="table align-middle text-gray-700 text-sm">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th className="w-[10px] text-center">Supply</th>
-                                                                            <th className="w-[10px] text-center">Install</th>
-                                                                            <th className="w-[10px] text-center">No.</th>
-                                                                            <th className="w-[450px]">Product</th>
-                                                                            <th className="w-[10px] text-center"></th>
-                                                                            <th className="w-[160px] text-center">Supplier</th>
-                                                                            <th className="w-[100px] text-center">Quantity</th>
-                                                                            <th className="w-[100px] whitespace-nowrap">Supply RRP</th>
-                                                                            <th className="w-[100px] whitespace-nowrap">Install RRP</th>
-                                                                            <th className="w-[100px] whitespace-nowrap">Total RRP</th>
-                                                                            <th className="w-[100px] whitespace-nowrap">Supply COGS</th>
-                                                                            <th className="w-[100px] whitespace-nowrap">Install COGS</th>
-                                                                            <th className="w-[100px] whitespace-nowrap">Total COGS</th>
-                                                                            <th className="w-[100px] whitespace-nowrap">Margin %</th>
-                                                                            <th className="w-[100px] whitespace-nowrap">Margin Amount</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {prodPackage.products.map((product, index) => (
-                                                                            <tr
-                                                                                key={product.id}
-                                                                                className={`${!product.pivot.includeSupply && !product.pivot.includeInstall
-                                                                                    ? "light:bg-orange-50 dark:bg-orange-950"
-                                                                                    : ""
-                                                                                    }`}
-                                                                            >
-                                                                                <td>
-                                                                                    <span></span>
-                                                                                    <div className="flex flex-col items-center">
-                                                                                        <input
-                                                                                            className="checkbox"
-                                                                                            name="supply"
-                                                                                            type="checkbox"
-                                                                                            checked={!!product.pivot.includeSupply}
-                                                                                            readOnly
-                                                                                        />
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td>
-                                                                                    <div className="flex flex-col items-center">
-                                                                                        <input
-                                                                                            className="checkbox"
-                                                                                            name="install"
-                                                                                            type="checkbox"
-                                                                                            checked={!!product.pivot.includeInstall}
-                                                                                            readOnly
-                                                                                        />
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td className="text-center">
-                                                                                    <span>{index + 1}</span>
-                                                                                </td>
-                                                                                <td>
-                                                                                    <div className="flex flex-col">
-                                                                                        <span>{product.name}</span>
-                                                                                        <span className="text-xs text-gray-500">
-                                                                                            {(!product.description || product.description === "")
-                                                                                                ? ""
-                                                                                                : [
-                                                                                                    product.pivot.includeSupply && "Supply",
-                                                                                                    product.pivot.includeInstall && "Install",
-                                                                                                ]
-                                                                                                    .filter(Boolean)
-                                                                                                    .join(" and ") + (product.description ? " " + product.description : "")}
+                                                            </button>
+                                                            <div
+                                                                className="accordion-content active border-t"
+                                                                id={"package_content_" + prodPackage.id.toString()}
+                                                            >
+                                                                <div className="product-list flex flex-col">
+                                                                    <table className="table align-middle text-gray-700 text-sm">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th className="w-[10px] text-center">Supply</th>
+                                                                                <th className="w-[10px] text-center">Install</th>
+                                                                                <th className="w-[10px] text-center">No.</th>
+                                                                                <th className="w-[450px]">Product</th>
+                                                                                <th className="w-[10px] text-center"></th>
+                                                                                <th className="w-[160px] text-center">Supplier</th>
+                                                                                <th className="w-[100px] text-center">Quantity</th>
+                                                                                <th className="w-[100px] whitespace-nowrap">Supply RRP</th>
+                                                                                <th className="w-[100px] whitespace-nowrap">Install RRP</th>
+                                                                                <th className="w-[100px] whitespace-nowrap">Total RRP</th>
+                                                                                <th className="w-[100px] whitespace-nowrap">Supply COGS</th>
+                                                                                <th className="w-[100px] whitespace-nowrap">Install COGS</th>
+                                                                                <th className="w-[100px] whitespace-nowrap">Total COGS</th>
+                                                                                <th className="w-[100px] whitespace-nowrap">Margin %</th>
+                                                                                <th className="w-[100px] whitespace-nowrap">Margin Amount</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {prodPackage.products.map((product, index) => (
+                                                                                <tr
+                                                                                    key={product.id}
+                                                                                    className={`${!product.pivot.includeSupply && !product.pivot.includeInstall
+                                                                                        ? "light:bg-orange-50 dark:bg-orange-950"
+                                                                                        : ""
+                                                                                        }`}
+                                                                                >
+                                                                                    <td>
+                                                                                        <span></span>
+                                                                                        <div className="flex flex-col items-center">
+                                                                                            <input
+                                                                                                className="checkbox"
+                                                                                                name="supply"
+                                                                                                type="checkbox"
+                                                                                                checked={!!product.pivot.includeSupply}
+                                                                                                readOnly
+                                                                                            />
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <div className="flex flex-col items-center">
+                                                                                            <input
+                                                                                                className="checkbox"
+                                                                                                name="install"
+                                                                                                type="checkbox"
+                                                                                                checked={!!product.pivot.includeInstall}
+                                                                                                readOnly
+                                                                                            />
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className="text-center">
+                                                                                        <span>{index + 1}</span>
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <div className="flex flex-col">
+                                                                                            <span>{product.name}</span>
+                                                                                            <span className="text-xs text-gray-500">
+                                                                                                {!product.description || product.description === ""
+                                                                                                    ? ""
+                                                                                                    : [
+                                                                                                        product.pivot.includeSupply && "Supply",
+                                                                                                        product.pivot.includeInstall && "Install",
+                                                                                                    ]
+                                                                                                        .filter(Boolean)
+                                                                                                        .join(" and ") +
+                                                                                                    (product.description ? " " + product.description : "")}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                    <td className="text-center">
+                                                                                        {!product.pivot.visibility && (
+                                                                                            <i className="ki-solid ki-eye-slash text-2xl"></i>
+                                                                                        )}
+                                                                                    </td>
+                                                                                    <td className="text-center">
+                                                                                        <span>{product.supplier_name ? product.supplier_name : "-"}</span>
+                                                                                    </td>
+                                                                                    <td className="text-center text-lg">
+                                                                                        <span className="mx-2 text-base">
+                                                                                            {product.pivot.included
+                                                                                                ? !product.pivot.includeSupply && !product.pivot.includeInstall
+                                                                                                    ? 0
+                                                                                                    : product.pivot.quantity
+                                                                                                : "0"}
                                                                                         </span>
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td className="text-center">
-                                                                                    {!product.pivot.visibility && <i className="ki-solid ki-eye-slash text-2xl"></i>}
-                                                                                </td>
-                                                                                <td className="text-center">
-                                                                                    <span>{product.supplier_name ? product.supplier_name : "-"}</span>
-                                                                                </td>
-                                                                                <td className="text-center text-lg">
-                                                                                    <span className="mx-2 text-base">
-                                                                                        {product.pivot.included
-                                                                                            ? !product.pivot.includeSupply && !product.pivot.includeInstall
-                                                                                                ? 0
-                                                                                                : product.pivot.quantity
-                                                                                            : "0"}
-                                                                                    </span>
-                                                                                </td>
-                                                                                <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
-                                                                                    {product.pivot.includeSupply &&
-                                                                                        `RM ${product.provisioning.supply.retail_price.toLocaleString(undefined, {
-                                                                                            minimumFractionDigits: 2,
-                                                                                            maximumFractionDigits: 2,
-                                                                                        })}`}
-                                                                                </td>
-                                                                                <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
-                                                                                    {product.pivot.includeInstall &&
-                                                                                        `RM ${product.provisioning.install.retail_price.toLocaleString(undefined, {
-                                                                                            minimumFractionDigits: 2,
-                                                                                            maximumFractionDigits: 2,
-                                                                                        })}`}
-                                                                                </td>
-                                                                                <td className="whitespace-nowrap font-semibold text-success">
-                                                                                    {!product.pivot.includeSupply && !product.pivot.includeInstall
-                                                                                        ? null
-                                                                                        : `RM ${(
-                                                                                            (product.pivot.includeSupply
-                                                                                                ? product.provisioning.supply.retail_price * product.pivot.quantity
-                                                                                                : 0) +
-                                                                                            (product.pivot.includeInstall
-                                                                                                ? product.provisioning.install.retail_price * product.pivot.quantity
-                                                                                                : 0)
-                                                                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                                </td>
-                                                                                <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
-                                                                                    {product.pivot.includeSupply &&
-                                                                                        `RM ${product.provisioning.supply.cogs.toLocaleString(undefined, {
-                                                                                            minimumFractionDigits: 2,
-                                                                                            maximumFractionDigits: 2,
-                                                                                        })}`}
-                                                                                </td>
-                                                                                <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
-                                                                                    {product.pivot.includeInstall &&
-                                                                                        `RM ${product.provisioning.install.cogs.toLocaleString(undefined, {
-                                                                                            minimumFractionDigits: 2,
-                                                                                            maximumFractionDigits: 2,
-                                                                                        })}`}
-                                                                                </td>
-                                                                                <td className="whitespace-nowrap font-semibold text-danger">
-                                                                                    {!product.pivot.includeSupply && !product.pivot.includeInstall
-                                                                                        ? null
-                                                                                        : `RM ${(
-                                                                                            (product.pivot.includeSupply
-                                                                                                ? product.provisioning.supply.cogs * product.pivot.quantity
-                                                                                                : 0) +
-                                                                                            (product.pivot.includeInstall
-                                                                                                ? product.provisioning.install.cogs * product.pivot.quantity
-                                                                                                : 0)
-                                                                                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                                </td>
-                                                                                <td className="whitespace-nowrap font-semibold">
-                                                                                    {product.pivot.included
-                                                                                        ? (() => {
-                                                                                            const totalRRP =
-                                                                                                (product.pivot.includeSupply
-                                                                                                    ? product.provisioning.supply.retail_price * product.pivot.quantity
-                                                                                                    : 0) +
-                                                                                                (product.pivot.includeInstall
-                                                                                                    ? product.provisioning.install.retail_price * product.pivot.quantity
-                                                                                                    : 0);
-                                                                                            const totalCOGS =
-                                                                                                (product.pivot.includeSupply
-                                                                                                    ? product.provisioning.supply.cogs * product.pivot.quantity
-                                                                                                    : 0) +
-                                                                                                (product.pivot.includeInstall
-                                                                                                    ? product.provisioning.install.cogs * product.pivot.quantity
-                                                                                                    : 0);
-                                                                                            return product.pivot.includeSupply || product.pivot.includeInstall
-                                                                                                ? totalRRP !== 0
-                                                                                                    ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(undefined, {
-                                                                                                        minimumFractionDigits: 2,
-                                                                                                        maximumFractionDigits: 2,
-                                                                                                    })}%`
-                                                                                                    : totalCOGS > 0
-                                                                                                        ? "-100.00%"
-                                                                                                        : "0.00%"
-                                                                                                : "";
-                                                                                        })()
-                                                                                        : ""}
-                                                                                </td>
-                                                                                <td className="whitespace-nowrap font-semibold">
-                                                                                    {product.pivot.included
-                                                                                        ? (() => {
-                                                                                            const totalRRP =
-                                                                                                (product.pivot.includeSupply
-                                                                                                    ? product.provisioning.supply.retail_price * product.pivot.quantity
-                                                                                                    : 0) +
-                                                                                                (product.pivot.includeInstall
-                                                                                                    ? product.provisioning.install.retail_price * product.pivot.quantity
-                                                                                                    : 0);
-                                                                                            const totalCOGS =
-                                                                                                (product.pivot.includeSupply
-                                                                                                    ? product.provisioning.supply.cogs * product.pivot.quantity
-                                                                                                    : 0) +
-                                                                                                (product.pivot.includeInstall
-                                                                                                    ? product.provisioning.install.cogs * product.pivot.quantity
-                                                                                                    : 0);
-                                                                                            const marginAmount = totalRRP - totalCOGS;
-                                                                                            return product.pivot.includeSupply || product.pivot.includeInstall
-                                                                                                ? `RM ${marginAmount.toLocaleString(undefined, {
+                                                                                    </td>
+                                                                                    <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
+                                                                                        {product.pivot.includeSupply &&
+                                                                                            `RM ${product.provisioning.supply.retail_price.toLocaleString(undefined, {
+                                                                                                minimumFractionDigits: 2,
+                                                                                                maximumFractionDigits: 2,
+                                                                                            })}`}
+                                                                                    </td>
+                                                                                    <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
+                                                                                        {product.pivot.includeInstall &&
+                                                                                            `RM ${product.provisioning.install.retail_price.toLocaleString(
+                                                                                                undefined,
+                                                                                                {
                                                                                                     minimumFractionDigits: 2,
                                                                                                     maximumFractionDigits: 2,
-                                                                                                })}`
-                                                                                                : "";
-                                                                                        })()
-                                                                                        : ""}
+                                                                                                },
+                                                                                            )}`}
+                                                                                    </td>
+                                                                                    <td className="whitespace-nowrap font-semibold text-success">
+                                                                                        {!product.pivot.includeSupply && !product.pivot.includeInstall
+                                                                                            ? null
+                                                                                            : `RM ${(
+                                                                                                (product.pivot.includeSupply
+                                                                                                    ? product.provisioning.supply.retail_price * product.pivot.quantity
+                                                                                                    : 0) +
+                                                                                                (product.pivot.includeInstall
+                                                                                                    ? product.provisioning.install.retail_price *
+                                                                                                    product.pivot.quantity
+                                                                                                    : 0)
+                                                                                            ).toLocaleString(undefined, {
+                                                                                                minimumFractionDigits: 2,
+                                                                                                maximumFractionDigits: 2,
+                                                                                            })}`}
+                                                                                    </td>
+                                                                                    <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
+                                                                                        {product.pivot.includeSupply &&
+                                                                                            `RM ${product.provisioning.supply.cogs.toLocaleString(undefined, {
+                                                                                                minimumFractionDigits: 2,
+                                                                                                maximumFractionDigits: 2,
+                                                                                            })}`}
+                                                                                    </td>
+                                                                                    <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
+                                                                                        {product.pivot.includeInstall &&
+                                                                                            `RM ${product.provisioning.install.cogs.toLocaleString(undefined, {
+                                                                                                minimumFractionDigits: 2,
+                                                                                                maximumFractionDigits: 2,
+                                                                                            })}`}
+                                                                                    </td>
+                                                                                    <td className="whitespace-nowrap font-semibold text-danger">
+                                                                                        {!product.pivot.includeSupply && !product.pivot.includeInstall
+                                                                                            ? null
+                                                                                            : `RM ${(
+                                                                                                (product.pivot.includeSupply
+                                                                                                    ? product.provisioning.supply.cogs * product.pivot.quantity
+                                                                                                    : 0) +
+                                                                                                (product.pivot.includeInstall
+                                                                                                    ? product.provisioning.install.cogs * product.pivot.quantity
+                                                                                                    : 0)
+                                                                                            ).toLocaleString(undefined, {
+                                                                                                minimumFractionDigits: 2,
+                                                                                                maximumFractionDigits: 2,
+                                                                                            })}`}
+                                                                                    </td>
+                                                                                    <td className="whitespace-nowrap font-semibold">
+                                                                                        {product.pivot.included
+                                                                                            ? (() => {
+                                                                                                const totalRRP =
+                                                                                                    (product.pivot.includeSupply
+                                                                                                        ? product.provisioning.supply.retail_price *
+                                                                                                        product.pivot.quantity
+                                                                                                        : 0) +
+                                                                                                    (product.pivot.includeInstall
+                                                                                                        ? product.provisioning.install.retail_price *
+                                                                                                        product.pivot.quantity
+                                                                                                        : 0)
+                                                                                                const totalCOGS =
+                                                                                                    (product.pivot.includeSupply
+                                                                                                        ? product.provisioning.supply.cogs * product.pivot.quantity
+                                                                                                        : 0) +
+                                                                                                    (product.pivot.includeInstall
+                                                                                                        ? product.provisioning.install.cogs * product.pivot.quantity
+                                                                                                        : 0)
+                                                                                                return product.pivot.includeSupply || product.pivot.includeInstall
+                                                                                                    ? totalRRP !== 0
+                                                                                                        ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(
+                                                                                                            undefined,
+                                                                                                            {
+                                                                                                                minimumFractionDigits: 2,
+                                                                                                                maximumFractionDigits: 2,
+                                                                                                            },
+                                                                                                        )}%`
+                                                                                                        : totalCOGS > 0
+                                                                                                            ? "-100.00%"
+                                                                                                            : "0.00%"
+                                                                                                    : ""
+                                                                                            })()
+                                                                                            : ""}
+                                                                                    </td>
+                                                                                    <td className="whitespace-nowrap font-semibold">
+                                                                                        {product.pivot.included
+                                                                                            ? (() => {
+                                                                                                const totalRRP =
+                                                                                                    (product.pivot.includeSupply
+                                                                                                        ? product.provisioning.supply.retail_price *
+                                                                                                        product.pivot.quantity
+                                                                                                        : 0) +
+                                                                                                    (product.pivot.includeInstall
+                                                                                                        ? product.provisioning.install.retail_price *
+                                                                                                        product.pivot.quantity
+                                                                                                        : 0)
+                                                                                                const totalCOGS =
+                                                                                                    (product.pivot.includeSupply
+                                                                                                        ? product.provisioning.supply.cogs * product.pivot.quantity
+                                                                                                        : 0) +
+                                                                                                    (product.pivot.includeInstall
+                                                                                                        ? product.provisioning.install.cogs * product.pivot.quantity
+                                                                                                        : 0)
+                                                                                                const marginAmount = totalRRP - totalCOGS
+                                                                                                return product.pivot.includeSupply || product.pivot.includeInstall
+                                                                                                    ? `RM ${marginAmount.toLocaleString(undefined, {
+                                                                                                        minimumFractionDigits: 2,
+                                                                                                        maximumFractionDigits: 2,
+                                                                                                    })}`
+                                                                                                    : ""
+                                                                                            })()
+                                                                                            : ""}
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                        <tfoot>
+                                                                            <tr className="bg-gray-500">
+                                                                                <td></td>
+                                                                                <td></td>
+                                                                                <td></td>
+                                                                                <td></td>
+                                                                                <td></td>
+                                                                                <td></td>
+                                                                                <td className="text-center p-3">
+                                                                                    <span className="text-lg font-bold">Total</span>
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap text-gray-600">
+                                                                                    <span className="text-sm">
+                                                                                        {calculatePackageTotal(prodPackage) >= 0 &&
+                                                                                            `RM ${calculatePackageTotal(prodPackage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap text-gray-600">
+                                                                                    <span className="text-sm">
+                                                                                        {totals.installRRP >= 0 &&
+                                                                                            `RM ${totals.installRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap text-success font-extrabold highlight-total">
+                                                                                    <span className="text-sm font-bold text-success">
+                                                                                        {totals.totalRRP >= 0 &&
+                                                                                            `RM ${totals.totalRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap text-gray-600">
+                                                                                    <span className="text-sm">
+                                                                                        {totals.supplyCOGS >= 0 &&
+                                                                                            `RM ${totals.supplyCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap text-gray-600">
+                                                                                    <span className="text-sm">
+                                                                                        {totals.installCOGS >= 0 &&
+                                                                                            `RM ${totals.installCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap text-danger font-extrabold highlight-total-cogs">
+                                                                                    <span className="text-sm font-bold text-danger">
+                                                                                        {totals.totalCOGS >= 0 &&
+                                                                                            `RM ${totals.totalCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap text-gray-600">
+                                                                                    <span className="text-sm font-bold">{marginPercent}</span>
+                                                                                </td>
+                                                                                <td className="whitespace-nowrap text-gray-600">
+                                                                                    <span className="text-sm font-bold">{`RM ${marginAmount}`}</span>
                                                                                 </td>
                                                                             </tr>
-                                                                        ))}
-                                                                    </tbody>
-                                                                    <tfoot>
-                                                                        <tr className="bg-gray-500">
-                                                                            <td></td>
-                                                                            <td></td>
-                                                                            <td></td>
-                                                                            <td></td>
-                                                                            <td></td>
-                                                                            <td></td>
-                                                                            <td className="text-center py-3">
-                                                                                <span className="text-lg font-bold">
-                                                                                    Total
-                                                                                </span>
-                                                                            </td> {/* Added padding for better spacing */}
-                                                                            <td className="whitespace-nowrap text-gray-600">
-                                                                                <span className="text-sm">
-                                                                                    {calculatePackageTotal(prodPackage) >= 0 &&
-                                                                                        `RM ${calculatePackageTotal(prodPackage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td className="whitespace-nowrap text-gray-600">
-                                                                                <span className="text-sm">
-                                                                                    {totals.installRRP >= 0 &&
-                                                                                        `RM ${totals.installRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td className="whitespace-nowrap text-success font-extrabold highlight-total"> {/* Added font-extrabold for emphasis */}
-                                                                                <span className="text-sm font-bold text-success">
-                                                                                    {totals.totalRRP >= 0 &&
-                                                                                        `RM ${totals.totalRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td className="whitespace-nowrap text-gray-600">
-                                                                                <span className="text-sm">
-                                                                                    {totals.supplyCOGS >= 0 &&
-                                                                                        `RM ${totals.supplyCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td className="whitespace-nowrap text-gray-600">
-                                                                                <span className="text-sm">
-                                                                                    {totals.installCOGS >= 0 &&
-                                                                                        `RM ${totals.installCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td className="whitespace-nowrap text-danger font-extrabold highlight-total-cogs"> {/* Added font-extrabold for emphasis */}
-                                                                                <span className="text-sm font-bold text-danger">
-                                                                                    {totals.totalCOGS >= 0 &&
-                                                                                        `RM ${totals.totalCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td className="whitespace-nowrap text-gray-600">
-                                                                                <span className="text-sm font-bold">
-                                                                                    {marginPercent}
-                                                                                </span>
-                                                                            </td>
-                                                                            <td className="whitespace-nowrap text-gray-600">
-                                                                                <span className="text-sm font-bold">
-                                                                                    {`RM ${marginAmount}`}
-                                                                                </span>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tfoot>
-                                                                </table>
+                                                                        </tfoot>
+                                                                    </table>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            );
-                                        });
-                                    })()}
+                                                )
+                                            })
+                                        })()}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -1696,18 +1709,11 @@ function OrderDetail() {
                 totalExcludedAddonAmount={totalExcludedAddonAmount}
             />
 
-            <ConfirmOrderModal
-                order={{ id: orderDetail.id, name: orderDetail.order_no }}
-                onSubmit={refetch}
-            />
+            <ConfirmOrderModal order={{ id: orderDetail.id, name: orderDetail.order_no }} onSubmit={refetch} />
 
-            <ReReleaseOrderModal
-                handleConfirm={handleReReleaseOrder}
-            />
+            <ReReleaseOrderModal handleConfirm={handleReReleaseOrder} />
 
-            <VoidQuotationModal
-                handleConfirm={handleVoidQuotation}
-            />
+            <VoidQuotationModal handleConfirm={handleVoidQuotation} />
 
             <div className="tooltip" id="final_pricing_tooltip">
                 This is the price that will be display to the owner
@@ -1716,4 +1722,4 @@ function OrderDetail() {
     )
 }
 
-export default OrderDetail;
+export default OrderDetail
