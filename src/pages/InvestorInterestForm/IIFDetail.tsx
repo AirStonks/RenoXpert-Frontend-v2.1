@@ -20,23 +20,6 @@ import type { InvestorInterest } from "../../types"
 
 const LOCAL_PATH_PREFIX = window.location.hostname === "localhost" ? "/staff/" : "/"
 
-interface Submission {
-    id: number
-    submittedAt: string
-    status: "new" | "reviewed" | "contacted" | "closed"
-    fullName: string
-    email: string
-    mobileNumber: string
-    propertyName: string
-    unitType: string
-    keysCollected: string
-    concerns: string[]
-    rentalStrategy: string[]
-    supportNeeded: string[]
-    preferredContact: string
-    preferredTime: string
-}
-
 const statusConfig = {
     new: { label: "New", color: "bg-[#F9A533]", textColor: "text-white" },
     reviewed: { label: "Reviewed", color: "bg-blue-500", textColor: "text-white" },
