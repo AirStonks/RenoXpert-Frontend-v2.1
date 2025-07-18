@@ -566,9 +566,12 @@ export interface InvestorInterest {
     mobile_number: string;
     property_name: string;
     unit_type: string;
+    units_owned: string;
     keys_collected: string;
     concerns: string[];
     rental_strategy: string[];
+    expected_rental_return: string;
+    investment_goals: string[];
     support_needed: string[];
     preferred_contact: string;
     preferred_time: string;

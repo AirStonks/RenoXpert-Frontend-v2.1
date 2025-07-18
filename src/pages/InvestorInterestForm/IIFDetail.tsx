@@ -12,12 +12,13 @@ import {
     Users,
     CheckCircle,
     ArrowLeft,
+    DollarSign,
 } from "lucide-react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
-import useFetchInvestorInterest from "../../hook/useFetchInvestorInterest";
-import { InvestorInterest } from "../../types";
+import useFetchInvestorInterest from "../../hook/useFetchInvestorInterest"
+import type { InvestorInterest } from "../../types"
 
-const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+const LOCAL_PATH_PREFIX = window.location.hostname === "localhost" ? "/staff/" : "/"
 
 interface Submission {
     id: number
@@ -62,7 +63,7 @@ const strategyLabels: { [key: string]: string } = {
 }
 
 const supportLabels: { [key: string]: string } = {
-    "be_powererd": "I'm interested about BePowered 2.0 Program",
+    be_powererd: "I'm interested about BePowered 2.0 Program",
     quotation: "Renovation quotation",
     feasibility: "CoLiving feasibility check",
     consultant: "Speak to consultant",
@@ -70,22 +71,39 @@ const supportLabels: { [key: string]: string } = {
     info: "More information",
 }
 
-export default function IIFDetail() {
-    const navigate = useNavigate();
-    const { state } = useLocation();
-    const { id } = useParams<{ id: string }>();
-    const formId = id ? parseInt(id, 10) : null;
-    const { investorInterestDetail, loading, error, abort } = useFetchInvestorInterest(formId);
+// New labels for the additional fields
+const expectedReturnLabels: { [key: string]: string } = {
+    "below-2000": "Below RM 2,000",
+    "2000-3500": "RM 2,000 - RM 3,500",
+    "3500-5000": "RM 3,500 - RM 5,000",
+    "others": "Others",
+    "na": "N/A",
+}
 
-    const [investorInterest, setInvestorInterest] = useState<InvestorInterest | null>(null);
+const investmentGoalLabels: { [key: string]: string } = {
+    "high-monthly-return": "High monthly rental return",
+    "hassle-free-management": "Hassle-free management",
+    "fast-tenant-placement": "Fast tenant placement",
+    "long-term-appreciation": "Long-term property capital appreciation",
+    "na": "N/A",
+}
+
+export default function IIFDetail() {
+    const navigate = useNavigate()
+    const { state } = useLocation()
+    const { id } = useParams<{ id: string }>()
+    const formId = id ? Number.parseInt(id, 10) : null
+    const { investorInterestDetail, loading, error, abort } = useFetchInvestorInterest(formId)
+
+    const [investorInterest, setInvestorInterest] = useState<InvestorInterest | null>(null)
 
     const handleBack = () => {
-        navigate(LOCAL_PATH_PREFIX + 'investor-interest-forms');
+        navigate(LOCAL_PATH_PREFIX + "investor-interest-forms")
     }
 
     useEffect(() => {
         if (investorInterestDetail) {
-            setInvestorInterest(investorInterestDetail);
+            setInvestorInterest(investorInterestDetail)
         }
     }, [investorInterestDetail])
 
@@ -99,48 +117,12 @@ export default function IIFDetail() {
         })
     }
 
-    // const updateSubmissionStatus = (id: number, newStatus: Submission["status"]) => {
-    //     // Update the selected submission if it matches
-    //     if (investorInterest && investorInterest.id === id) {
-    //         setSelectedSubmission({ ...investorInterest, status: newStatus })
-    //     }
-    //     console.log(`Updating submission ${id} to status: ${newStatus}`)
-    //     // In a real app, this would make an API call and update the submissions list
-    // }
-
     if (!investorInterest) {
         return <div>Loading...</div>
     }
 
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-            {/* Header */}
-            {/* <div className="bg-white shadow-sm border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-[#D71E42] rounded-xl flex items-center justify-center mr-3">
-                                <Building2 className="w-6 h-6 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold bg-gradient-to-r from-[#D71E42] to-[#F05A22] bg-clip-text text-transparent">
-                                    RenoXpert Staff Portal
-                                </h1>
-                                <p className="text-sm text-gray-600">Submission Details</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setSelectedSubmission(null)}
-                            className="flex items-center px-4 py-2 text-gray-600 hover:text-[#D71E42] transition-colors"
-                        >
-                            <X className="w-4 h-4 mr-2" />
-                            Back to Dashboard
-                        </button>
-                    </div>
-                </div>
-            </div> */}
-
             <div className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
                 <div className="px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-4">
@@ -166,7 +148,6 @@ export default function IIFDetail() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-bold text-white">{investorInterest.full_name}</h2>
-                                {/* <p className="text-white/80">Submission ID: {investorInterest.id}</p> */}
                                 <p className="text-white/80">Submitted: {formatDate(investorInterest.created_at)}</p>
                             </div>
                             <div className="flex items-center space-x-3">
@@ -176,18 +157,6 @@ export default function IIFDetail() {
                                 >
                                     {statusConfig[investorInterest.status].label}
                                 </span>
-                                {/* <select
-                                    value={investorInterest.status}
-                                    // onChange={(e) =>
-                                    //     updateSubmissionStatus(investorInterest.id, e.target.value as Submission["status"])
-                                    // }
-                                    className="bg-white/20 text-white border border-white/30 rounded-lg px-3 py-1 text-sm"
-                                >
-                                    <option className="text-gray-800" value="new">New</option>
-                                    <option className="text-gray-800" value="reviewed">Reviewed</option>
-                                    <option className="text-gray-800" value="contacted">Contacted</option>
-                                    <option className="text-gray-800" value="closed">Closed</option>
-                                </select> */}
                             </div>
                         </div>
                     </div>
@@ -236,6 +205,20 @@ export default function IIFDetail() {
                                     <p className="text-sm text-gray-600">Keys Collected</p>
                                     <p className="font-medium capitalize">{investorInterest.keys_collected}</p>
                                 </div>
+                                {/* New field: Units Owned */}
+                                {investorInterest.units_owned && (
+                                    <div className="p-4 bg-gray-50 rounded-xl">
+                                        <p className="text-sm text-gray-600">Units Owned</p>
+                                        <p className="font-medium">
+                                            {investorInterest.units_owned === "4-or-more"
+                                                ? "4 or more"
+                                                : investorInterest.units_owned === "na"
+                                                    ? "N/A"
+                                                    : investorInterest.units_owned
+                                            }
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -271,6 +254,44 @@ export default function IIFDetail() {
                             </div>
                         </div>
 
+                        {/* Investment Goals & Expected Return - New Section */}
+                        {(investorInterest.expected_rental_return ||
+                            (investorInterest.investment_goals && investorInterest.investment_goals.length > 0)) && (
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                        <DollarSign className="w-5 h-5 text-[#D71E42] mr-2" />
+                                        Investment Goals & Expected Return
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {/* Expected Rental Return */}
+                                        {investorInterest.expected_rental_return && (
+                                            <div className="p-4 bg-green-50 rounded-xl">
+                                                <p className="text-sm text-gray-600">Expected Rental Return</p>
+                                                <p className="font-medium text-green-800">
+                                                    {expectedReturnLabels[investorInterest.expected_rental_return] ||
+                                                        investorInterest.expected_rental_return}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {/* Investment Goals */}
+                                        {investorInterest.investment_goals && investorInterest.investment_goals.length > 0 && (
+                                            <div>
+                                                <p className="text-sm text-gray-600 mb-2">Investment Goals</p>
+                                                <div className="space-y-2">
+                                                    {investorInterest.investment_goals.map((goal) => (
+                                                        <div key={goal} className="flex items-center p-3 bg-blue-50 rounded-lg">
+                                                            <CheckCircle className="w-4 h-4 text-blue-500 mr-2" />
+                                                            <span className="text-gray-800">{investmentGoalLabels[goal] || goal}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                         {/* Support Needed */}
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -300,25 +321,10 @@ export default function IIFDetail() {
                                 </div>
                                 <div className="p-4 bg-gray-50 rounded-xl">
                                     <p className="text-sm text-gray-600">Preferred Time</p>
-                                    <p className="font-medium">
-                                        {investorInterest.preferred_time?.replace("-", " ") || "Not specified"}
-                                    </p>
+                                    <p className="font-medium">{investorInterest.preferred_time?.replace("-", " ") || "Not specified"}</p>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Action Buttons */}
-                        {/* <div className="flex flex-wrap gap-3 pt-6 border-t border-gray-200">
-                            <button className="bg-gradient-to-r from-[#D71E42] to-[#F05A22] text-white px-6 py-3 rounded-xl hover:from-[#B91C3C] hover:to-[#DC2626] transition-all duration-300 transform hover:scale-105 shadow-lg">
-                                Contact Client
-                            </button>
-                            <button className="bg-white border-2 border-[#D71E42] text-[#D71E42] px-6 py-3 rounded-xl hover:bg-red-50 transition-all duration-300">
-                                Add Notes
-                            </button>
-                            <button className="bg-white border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-50 transition-all duration-300">
-                                Export Details
-                            </button>
-                        </div> */}
                     </div>
                 </div>
             </div>

@@ -3,7 +3,6 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import {
-    Building2,
     MessageSquare,
     CheckCircle,
     User,
@@ -17,13 +16,12 @@ import {
     Shield,
     AlertCircle,
 } from "lucide-react"
-import { submitInvestorInterestForm } from "../services/publicApi";
-import { Slide, toast, ToastContainer } from "react-toastify";
+import { submitInvestorInterestForm } from "../services/publicApi"
+import { Slide, toast } from "react-toastify"
+import { ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
-const MEDIA_URL =
-    import.meta.env.VITE_APP_ENV === "local"
-        ? '/public/app/'
-        : '/app/';
+const MEDIA_URL = import.meta.env.VITE_APP_ENV === "local" ? "/public/app/" : "/app/"
 
 interface FormData {
     // Owner & Unit Details
@@ -32,6 +30,7 @@ interface FormData {
     email: string
     propertyName: string
     unitType: string
+    unitsOwned: string // Add this new field
     keysCollected: string
 
     // What's On Your Mind
@@ -39,6 +38,8 @@ interface FormData {
 
     // Rental Strategy
     rentalStrategy: string[]
+    expectedRentalReturn: string // Add this new field
+    investmentGoals: string[] // Add this new field
 
     // Support Needed
     supportNeeded: string[]
@@ -59,9 +60,12 @@ function InvestorInterestForm() {
         email: "",
         propertyName: "",
         unitType: "",
+        unitsOwned: "", // Add this
         keysCollected: "",
         concerns: [],
         rentalStrategy: [],
+        expectedRentalReturn: "", // Add this
+        investmentGoals: [], // Add this
         supportNeeded: [],
         preferredContact: "",
         preferredTime: "",
@@ -80,8 +84,8 @@ function InvestorInterestForm() {
             draggable: true,
             theme: localStorage.getItem("theme"),
             transition: Slide,
-        });
-    };
+        })
+    }
 
     const unitTypes = ["Studio", "2 Rooms", "3 Rooms", "4+ Rooms", "Dual Key", "Other"]
 
@@ -134,8 +138,29 @@ function InvestorInterestForm() {
         { value: "weekend", label: "Weekend" },
     ]
 
+    const unitsOwnedOptions = [
+        { value: "1", label: "1" },
+        { value: "2", label: "2" },
+        { value: "3", label: "3" },
+        { value: "4-or-more", label: "4 or more" },
+    ]
+
+    const expectedReturnOptions = [
+        { value: "below-2000", label: "Below RM 2,000" },
+        { value: "2000-3500", label: "RM 2,000 - RM 3,500" },
+        { value: "3500-5000", label: "RM 3,500 - RM 5,000" },
+        { value: "others", label: "Others" },
+    ]
+
+    const investmentGoalOptions = [
+        { id: "high-monthly-return", label: "High monthly rental return" },
+        { id: "hassle-free-management", label: "Hassle-free management" },
+        { id: "fast-tenant-placement", label: "Fast tenant placement" },
+        { id: "long-term-appreciation", label: "Long-term property capital appreciation" },
+    ]
+
     useEffect(() => {
-        document.title = 'Investor Interest Form';
+        document.title = "Investor Interest Form"
     }, [])
 
     const validateForm = (): boolean => {
@@ -161,6 +186,9 @@ function InvestorInterestForm() {
             newErrors.rentalStrategy = "Please select at least one rental strategy option"
         if (formData.supportNeeded.length === 0) newErrors.supportNeeded = "Please select at least one support option"
         if (!formData.preferredContact) newErrors.preferredContact = "Please select preferred contact method"
+        if (!formData.unitsOwned) newErrors.unitsOwned = "Please select number of units owned"
+        if (!formData.expectedRentalReturn) newErrors.expectedRentalReturn = "Please select expected rental return"
+        if (formData.investmentGoals.length === 0) newErrors.investmentGoals = "Please select at least one investment goal"
 
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
@@ -173,7 +201,10 @@ function InvestorInterestForm() {
         }
     }
 
-    const handleMultiSelectChange = (field: "concerns" | "rentalStrategy" | "supportNeeded", optionId: string) => {
+    const handleMultiSelectChange = (
+        field: "concerns" | "rentalStrategy" | "supportNeeded" | "investmentGoals",
+        optionId: string,
+    ) => {
         const currentValues = formData[field]
         const newValues = currentValues.includes(optionId)
             ? currentValues.filter((id) => id !== optionId)
@@ -190,17 +221,16 @@ function InvestorInterestForm() {
 
         if (validateForm()) {
             try {
-                const response = await submitInvestorInterestForm(formData);
+                const response = await submitInvestorInterestForm(formData)
 
                 if (response?.success) {
                     setIsSubmitted(true)
                 }
-
             } catch (error) {
-                console.log(error);
+                console.log(error)
             }
         } else {
-            console.log('yes');
+            console.log("yes")
 
             notify("error", "Please fix the errors in the form before submitting.")
         }
@@ -227,9 +257,12 @@ function InvestorInterestForm() {
                                 email: "",
                                 propertyName: "",
                                 unitType: "",
+                                unitsOwned: "", // Add this
                                 keysCollected: "",
                                 concerns: [],
                                 rentalStrategy: [],
+                                expectedRentalReturn: "", // Add this
+                                investmentGoals: [], // Add this
                                 supportNeeded: [],
                                 preferredContact: "",
                                 preferredTime: "",
@@ -251,16 +284,10 @@ function InvestorInterestForm() {
                 <div className="text-center mb-12">
                     <div className="flex items-center justify-center mb-8">
                         <div className="w-16 h-16 bg-[#D71E42] rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                            <img
-                                src={`${MEDIA_URL}red-bg-ico.jpg`}
-                                alt=""
-                                className="object-cover w-16 h-16 rounded-2xl shadow-lg"
-                            />
+                            <img src={`${MEDIA_URL}red-bg-ico.jpg`} alt="" className="object-cover w-16 h-16 rounded-2xl shadow-lg" />
                         </div>
                         <div className="text-left">
-                            <h1 className="text-4xl font-bold bg-[#D71E42] bg-clip-text text-transparent">
-                                RenoXpert
-                            </h1>
+                            <h1 className="text-4xl font-bold bg-[#D71E42] bg-clip-text text-transparent">RenoXpert</h1>
                             <p className="text-lg text-gray-500 font-medium text-right">Reno for ROI</p>
                         </div>
                     </div>
@@ -446,6 +473,46 @@ function InvestorInterestForm() {
                                 )}
                             </div>
                         </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                How many units do you own at mentioned development? *
+                            </label>
+                            <div className="flex flex-wrap gap-3">
+                                {unitsOwnedOptions.map((option) => (
+                                    <label
+                                        key={option.value}
+                                        className={`flex items-center p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${formData.unitsOwned === option.value
+                                            ? "border-[#D71E42] bg-red-50 shadow-md"
+                                            : "border-gray-200 hover:border-[#F9A533]"
+                                            }`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="unitsOwned"
+                                            value={option.value}
+                                            checked={formData.unitsOwned === option.value}
+                                            onChange={(e) => handleInputChange("unitsOwned", e.target.value)}
+                                            className="sr-only"
+                                        />
+                                        <div
+                                            className={`w-4 h-4 rounded-full border-2 mr-2 flex items-center justify-center transition-colors ${formData.unitsOwned === option.value ? "border-[#D71E42] bg-[#D71E42]" : "border-gray-300"
+                                                }`}
+                                        >
+                                            {formData.unitsOwned === option.value && <div className="w-2 h-2 rounded-full bg-white"></div>}
+                                        </div>
+                                        <Home className="w-4 h-4 text-gray-600 mr-2" />
+                                        <span className="text-sm font-medium text-gray-900">{option.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            {errors.unitsOwned && (
+                                <p className="mt-2 text-sm text-red-600 flex items-center">
+                                    <AlertCircle className="w-4 h-4 mr-1" />
+                                    {errors.unitsOwned}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Step 2: What's On Your Mind */}
@@ -533,6 +600,89 @@ function InvestorInterestForm() {
                                     <span className="font-medium text-gray-900">{strategy.label}</span>
                                 </label>
                             ))}
+                        </div>
+
+                        {/* Expected Rental Return */}
+                        <div className="mt-8">
+                            <label className="block text-sm font-semibold text-gray-800 mb-4">
+                                What monthly rental amount do you realistically expect to earn from your property? *
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {expectedReturnOptions.map((option) => (
+                                    <label
+                                        key={option.value}
+                                        className={`flex items-center p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${formData.expectedRentalReturn === option.value
+                                            ? "border-[#D71E42] bg-red-50 shadow-md"
+                                            : "border-gray-200 hover:border-[#F9A533]"
+                                            }`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="expectedRentalReturn"
+                                            value={option.value}
+                                            checked={formData.expectedRentalReturn === option.value}
+                                            onChange={(e) => handleInputChange("expectedRentalReturn", e.target.value)}
+                                            className="sr-only"
+                                        />
+                                        <div
+                                            className={`w-4 h-4 rounded-full border-2 mr-2 flex items-center justify-center transition-colors ${formData.expectedRentalReturn === option.value
+                                                ? "border-[#D71E42] bg-[#D71E42]"
+                                                : "border-gray-300"
+                                                }`}
+                                        >
+                                            {formData.expectedRentalReturn === option.value && (
+                                                <div className="w-2 h-2 rounded-full bg-white"></div>
+                                            )}
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-900">{option.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            {errors.expectedRentalReturn && (
+                                <p className="mt-2 text-sm text-red-600 flex items-center">
+                                    <AlertCircle className="w-4 h-4 mr-1" />
+                                    {errors.expectedRentalReturn}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Investment Goals */}
+                        <div className="mt-8">
+                            <label className="block text-sm font-semibold text-gray-800 mb-4">
+                                What is your main investment goal? *
+                            </label>
+                            <p className="text-gray-600 mb-4 text-sm">Can choose more than 1</p>
+                            <div className="space-y-3">
+                                {investmentGoalOptions.map((goal) => (
+                                    <label
+                                        key={goal.id}
+                                        className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md ${formData.investmentGoals.includes(goal.id)
+                                            ? "border-[#D71E42] bg-red-50 shadow-md"
+                                            : "border-gray-200 hover:border-[#F9A533]"
+                                            }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.investmentGoals.includes(goal.id)}
+                                            onChange={() => handleMultiSelectChange("investmentGoals", goal.id)}
+                                            className="sr-only"
+                                        />
+                                        <div
+                                            className={`w-5 h-5 rounded border-2 mr-3 flex items-center justify-center transition-colors ${formData.investmentGoals.includes(goal.id) ? "border-[#D71E42] bg-[#D71E42]" : "border-gray-300"
+                                                }`}
+                                        >
+                                            {formData.investmentGoals.includes(goal.id) && <CheckCircle className="w-3 h-3 text-white" />}
+                                        </div>
+                                        <span className="font-medium text-gray-900">{goal.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            {errors.investmentGoals && (
+                                <p className="mt-3 text-sm text-red-600 flex items-center">
+                                    <AlertCircle className="w-4 h-4 mr-1" />
+                                    {errors.investmentGoals}
+                                </p>
+                            )}
                         </div>
 
                         <div className="mt-6 p-6 bg-gradient-to-r from-yellow-50 to-red-50 border-l-4 border-[#F9A533] rounded-r-xl">
@@ -704,7 +854,6 @@ function InvestorInterestForm() {
                     </div>
                 </form>
             </div>
-
 
             <ToastContainer />
         </div>
