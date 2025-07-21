@@ -5,6 +5,8 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Slide, toast, ToastContainer } from "react-toastify";
 import { confirmOrder } from "../services/api";
+import Loading from "../components/Loading";
+import { motion } from 'framer-motion';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
@@ -31,6 +33,7 @@ const OTPConfirmOrder: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [countdown, setCountdown] = useState(0);
     const [canResend, setCanResend] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -105,10 +108,12 @@ const OTPConfirmOrder: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault(); // Prevent default form submission
+        setIsLoading(true);
 
         // Check for missing inputs
         if (otp.some(digit => digit === '')) {
             setError("Please fill in all the digits.");
+            setIsLoading(false);
             return; // Stop submission if there are missing inputs
         } else {
             setError(null); // Clear any previous error messages
@@ -145,6 +150,8 @@ const OTPConfirmOrder: React.FC = () => {
         } catch (error) {
             console.error('Error fetching order details:', error);
             notify('error', 'Error verifying OTP. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -178,6 +185,44 @@ const OTPConfirmOrder: React.FC = () => {
 
     return (
         <>
+            {isLoading && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-white/70 backdrop-blur-md"
+                >
+                    <motion.div
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex flex-col items-center gap-4"
+                    >
+                        <svg
+                            className="animate-spin h-10 w-10 text-blue-500"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                            />
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0v4a8 8 0 018 8h-4l3.5 3.5L24 12h-4a8 8 0 01-8 8v-4l-3.5 3.5L12 24v-4a8 8 0 01-8-8z"
+                            />
+                        </svg>
+                        <p className="text-gray-700 font-medium text-sm">Processing...</p>
+                    </motion.div>
+                </motion.div>
+            )}
+
             <div className="absolute top-5 right-5">
                 <button className="btn btn-icon btn-light dark:hidden" data-theme-toggle="true" data-tooltip="#theme_mode_dark">
                     <i className="ki-outline ki-sun"></i>
