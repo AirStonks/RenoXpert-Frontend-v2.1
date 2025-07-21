@@ -167,7 +167,7 @@ const OwnerLogin: React.FC = () => {
             if (response.data.status === 'verified') {
                 localStorage.setItem('o_token', response.data.o_token);
                 const searchParams = new URLSearchParams(location.search);
-                const redirectUrl = location.state?.from || searchParams.get('redirect') || '/';
+                const redirectUrl = location.state?.from || searchParams.get('redirect') || CLIENT_URL;
                 navigate(redirectUrl);
             } else {
                 console.log('Invalid');
@@ -183,7 +183,7 @@ const OwnerLogin: React.FC = () => {
         try {
             const userData = await staffLoginToOwner(countryCode, mobile, passphrase);
             if (userData) {
-                navigate('/owner');
+                navigate(CLIENT_URL);
             }
         } catch (err) {
             setError('Invalid user credentials. Please try again.');
@@ -299,7 +299,7 @@ const OwnerLogin: React.FC = () => {
                     setShowOtpForm={setShowOtpForm}
                 />
             )}
-            
+
             <ToastContainer />
         </>
     );
