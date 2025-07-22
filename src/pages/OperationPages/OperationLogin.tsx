@@ -4,7 +4,14 @@ import KTComponents from '../../metronic/core';
 import { operationLogin } from '../../services/auth';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 
-const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/op/' : '/';
+const OP_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_OP_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_OP_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? 'localhost:5173/op/'
+                : null;
 
 const MEDIA_URL =
     import.meta.env.VITE_APP_ENV === "local"
@@ -57,7 +64,7 @@ const OperationLogin: React.FC = () => {
         try {
             const userData = await operationLogin(formData.mobile, formData.password);
             if (userData) {
-                navigate(LOCAL_PATH_PREFIX + 'home');
+                navigate(OP_URL);
             }
         } catch (err) {
             setError('Invalid user credentials. Please try again.');

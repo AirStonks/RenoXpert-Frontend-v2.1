@@ -97,7 +97,18 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
                     maximumFractionDigits: 2,
                 })}</td>
             <td className='whitespace-nowrap'>
-                {product.pivot.included
+                {product
+                    ? (() => {
+                        const totalRRP = (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
+                        const totalCOGS = (product.provisioning.supply.cogs * product.pivot.quantity) + (product.provisioning.install.cogs * product.pivot.quantity);
+                        const marginPercentage = ((totalRRP - totalCOGS) / totalRRP) * 100;
+
+                        return `${marginPercentage ? marginPercentage.toFixed(2) : 0}%`
+                    })()
+                    : ""}
+            </td>
+            <td className='whitespace-nowrap'>
+                {product
                     ? (() => {
                         const totalRRP = (product.provisioning.supply.retail_price * product.pivot.quantity) + (product.provisioning.install.retail_price * product.pivot.quantity);
                         const totalCOGS = (product.provisioning.supply.cogs * product.pivot.quantity) + (product.provisioning.install.cogs * product.pivot.quantity);
