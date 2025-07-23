@@ -151,6 +151,20 @@ export const deactivateUser = async (userId: number) => {
     }
 };
 
+export const updateUser = async (userId: number, userData: User) => {
+    try {
+        const response = await axios.put(API_URL + `users/${userId}`, userData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
 export const permissionIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
     try {
         const response = await axios.get(API_URL + 'permissions', {
