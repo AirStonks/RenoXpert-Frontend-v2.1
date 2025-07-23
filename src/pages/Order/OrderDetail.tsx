@@ -358,17 +358,17 @@ function OrderDetail() {
             const response = await reReleaseOrder(orderId)
 
             if (response?.success) {
-                const modalEl = document.querySelector("#re_release_order_modal") as HTMLElement
-                const modal = KTModal.getInstance(modalEl)
-                modal.hide()
-
                 notify("success", "Order re-released successfully!")
-                refetch()
             }
         } catch (error) {
             notify("error", "Failed to re-release order.")
         } finally {
+            const modalEl = document.querySelector("#re_release_order_modal") as HTMLElement
+            const modal = KTModal.getInstance(modalEl)
+            modal.hide()
+
             setIsLoading(false)
+            refetch()
         }
     }
 
@@ -379,21 +379,20 @@ function OrderDetail() {
             const response = await voidOrder(orderId)
 
             if (response?.success) {
-                const modalEl = document.querySelector("#void_quotation_modal") as HTMLElement
-                const modal = KTModal.getInstance(modalEl)
-                modal.hide()
-
                 notify("success", "Order voided successfully!")
-                refetch()
             }
         } catch (error) {
             notify("error", "Failed to re-release order.")
         } finally {
+            const modalEl = document.querySelector("#void_quotation_modal") as HTMLElement
+            const modal = KTModal.getInstance(modalEl)
+            modal.hide()
+            
             setIsLoading(false)
+            refetch()
         }
     }
 
-    if (isLoading) return <Loading />
     if (error) return <div>{error}</div>
     if (!orderDetail) return <div>Order not found</div>
 
