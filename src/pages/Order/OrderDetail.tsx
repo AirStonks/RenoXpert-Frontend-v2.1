@@ -92,17 +92,6 @@ function OrderDetail() {
         } else if (!loading && !order && !error) {
             setOrderDetail(null)
         }
-
-        const clipboard = new ClipboardJS(".copy-link")
-
-        clipboard.on("success", (e) => {
-            notify("success", "Copied to clipboard!")
-            e.clearSelection()
-        })
-
-        return () => {
-            clipboard.destroy()
-        }
     }, [order, loading, error])
 
     useEffect(() => {
@@ -229,6 +218,17 @@ function OrderDetail() {
                 }, 0)
 
             setTotalExcludedAddonAmount(totalRetailPrice)
+
+            const clipboard = new ClipboardJS(".copy-link")
+
+            clipboard.on("success", (e) => {
+                notify("success", "Copied to clipboard!")
+                e.clearSelection()
+            })
+
+            return () => {
+                clipboard.destroy()
+            }
         }
     }, [orderDetail])
 
@@ -387,7 +387,7 @@ function OrderDetail() {
             const modalEl = document.querySelector("#void_quotation_modal") as HTMLElement
             const modal = KTModal.getInstance(modalEl)
             modal.hide()
-            
+
             setIsLoading(false)
             refetch()
         }
@@ -582,7 +582,7 @@ function OrderDetail() {
                                 >
                                     {orderDetail?.user && (
                                         <button
-                                            className="w-full px-4 p-3 text-left hover:bg-gray-50/80 transition-colors duration-200 flex items-center gap-3"
+                                            className="w-full px-4 p-3 text-left hover:bg-gray-50/80 transition-colors duration-200 flex items-center gap-3 copy-link"
                                             data-clipboard-text={`${CLIENT_URL}order/overview/id/${orderId}`}
                                         >
                                             <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -2,12 +2,13 @@
 
 import type React from "react"
 
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { Slide, toast } from "react-toastify"
 import { useEffect, useState } from "react"
-import ClipboardJS from "clipboard"
 import type { User } from "../../types"
-import { addUser } from "../../services/api"
+// import { updateUser } from "../../services/api"
+import useFetchUser from "../../hook/useFetchUser"
+import Loading from "../../components/Loading"
 import {
     ArrowLeft,
     Save,
@@ -16,7 +17,6 @@ import {
     Phone,
     MapPin,
     CreditCard,
-    UserPlus,
     CheckCircle,
     AlertCircle,
     RefreshCw,
@@ -24,7 +24,10 @@ import {
     Building,
     Wrench,
     Home,
+    Lock,
+    Edit3,
 } from "lucide-react"
+import { updateUser } from "../../services/api"
 
 const LOCAL_PATH_PREFIX = window.location.hostname === "localhost" ? "/staff/" : "/"
 
@@ -52,7 +55,7 @@ const roles = [
     {
         value: "owner",
         label: "Owner",
-        description: "Create an owner account with full property access",
+        description: "Property owner with full access",
         icon: Home,
         color: "text-blue-600",
         bg: "bg-blue-100",
@@ -61,7 +64,7 @@ const roles = [
     {
         value: "vendor",
         label: "Vendor",
-        description: "Create a vendor account for service providers",
+        description: "Service provider account",
         icon: Building,
         color: "text-green-600",
         bg: "bg-green-100",
@@ -70,7 +73,7 @@ const roles = [
     {
         value: "technician",
         label: "Technician",
-        description: "Create a technician account for maintenance staff",
+        description: "Maintenance staff account",
         icon: Wrench,
         color: "text-orange-600",
         bg: "bg-orange-100",
@@ -96,8 +99,12 @@ const countryOptions = [
     { code: "65", name: "Singapore", flag: MEDIA_URL + "flags/singapore.svg" },
 ]
 
-function AddUser() {
+function EditUser() {
     const navigate = useNavigate()
+    const { id } = useParams<{ id: string }>()
+    const userId = id ? Number.parseInt(id, 10) : null
+
+    const { userDetail, loading: fetchLoading, error: fetchError } = useFetchUser(userId)
 
     const [formData, setFormData] = useState({
         email: "",
@@ -117,12 +124,15 @@ function AddUser() {
             postcode: "",
         },
     })
+
+    const [originalData, setOriginalData] = useState(formData)
     const [isLoading, setIsLoading] = useState(false)
     const [validationErrors, setValidationErrors] = useState<ValidationErrors>({})
     const [success, setSuccess] = useState(false)
+    const [hasChanges, setHasChanges] = useState(false)
 
     const notify = (type: "success" | "error", message: string) => {
-        ; (toast[type] as (message: string, options?: object) => void)(message, {
+        (toast[type] as (message: string, options?: object) => void)(message, {
             position: "top-center",
             autoClose: 3000,
             hideProgressBar: true,
@@ -135,23 +145,44 @@ function AddUser() {
     }
 
     const handleBackClick = () => {
-        navigate(LOCAL_PATH_PREFIX + "users")
+        navigate(LOCAL_PATH_PREFIX + "users/" + userId)
     }
 
     useEffect(() => {
-        document.title = "Add User | RenoXpert"
-
-        const clipboard = new ClipboardJS(".copy-link")
-
-        clipboard.on("success", (e) => {
-            notify("success", "Copied to clipboard!")
-            e.clearSelection()
-        })
-
-        return () => {
-            clipboard.destroy()
-        }
+        document.title = "Edit User | RenoXpert"
     }, [])
+
+    // Populate form data when user details are loaded
+    useEffect(() => {
+        if (userDetail) {
+            const newFormData = {
+                email: userDetail.email || "",
+                type: userDetail.type || "",
+                country_code: userDetail.country_code || "60",
+                phone: userDetail.phone_no || "",
+                name_first: userDetail.name_first || "",
+                name_last: userDetail.name_last || "",
+                name_preferred: userDetail.name_preferred || "",
+                salutations: userDetail.salutations || "mr",
+                ic: userDetail.ic || "",
+                address: {
+                    address_1: userDetail.address?.address_1 || "",
+                    address_2: userDetail.address?.address_2 || "",
+                    city: userDetail.address?.city || "",
+                    state: userDetail.address?.state || "",
+                    postcode: userDetail.address?.postcode || "",
+                },
+            }
+            setFormData(newFormData)
+            setOriginalData(newFormData)
+        }
+    }, [userDetail])
+
+    // Check for changes
+    useEffect(() => {
+        const hasFormChanges = JSON.stringify(formData) !== JSON.stringify(originalData)
+        setHasChanges(hasFormChanges)
+    }, [formData, originalData])
 
     const formatICNumber = (value: string): string => {
         const digits = value.replace(/\D/g, "")
@@ -215,37 +246,23 @@ function AddUser() {
     }
 
     const handleReset = () => {
-        setFormData({
-            email: "",
-            type: "",
-            country_code: "60",
-            phone: "",
-            name_first: "",
-            name_last: "",
-            name_preferred: "",
-            salutations: "mr",
-            ic: "",
-            address: {
-                address_1: "",
-                address_2: "",
-                city: "",
-                state: "",
-                postcode: "",
-            },
-        })
+        setFormData(originalData)
         setValidationErrors({})
+        setHasChanges(false)
     }
 
     const handleSubmit = async () => {
+        console.log(formData);
+
         if (!formData.name_first || !formData.name_last || !formData.email || !formData.phone) {
-            notify("error", "Please fill in all fields.")
+            notify("error", "Please fill in all required fields.")
             return
         }
 
         setIsLoading(true)
         setValidationErrors({})
         try {
-            let userData: User
+            let userData: Partial<User>
 
             if (formData.type === "owner") {
                 userData = {
@@ -255,7 +272,6 @@ function AddUser() {
                     salutations: formData.salutations,
                     ic: formData.ic,
                     email: formData.email,
-                    type: formData.type,
                     country_code: formData.country_code,
                     phone_no: formData.phone,
                     address: {
@@ -272,37 +288,53 @@ function AddUser() {
                     name_last: formData.name_last,
                     email: formData.email,
                     country_code: formData.country_code,
-                    type: formData.type,
                     phone_no: formData.phone,
                 }
             }
 
-            const response = await addUser(userData)
+            const response = await updateUser(userId, userData)
 
             if (response?.success) {
-                notify("success", "User Created Successfully!")
+                notify("success", "User updated successfully!")
+                setSuccess(true)
+                setOriginalData(formData)
+                setHasChanges(false)
 
-                if (formData.type === "owner") {
-                    setIsLoading(false)
-                    navigate(LOCAL_PATH_PREFIX + "users/" + response.data.id)
-                    return
-                } else {
-                    setFormData({
-                        ...formData,
-                        email: response.data[0].email,
-                    })
-
-                    setSuccess(true)
-                }
+                // Navigate back to user detail after a short delay
+                setTimeout(() => {
+                    navigate(LOCAL_PATH_PREFIX + "users/" + userId)
+                }, 2000)
             } else {
                 console.log(response.data)
                 setValidationErrors(response.data)
             }
         } catch (error: any) {
-            setValidationErrors(error.response?.data?.data)
+            setValidationErrors(error.response?.data?.data || {})
+            notify("error", "Failed to update user. Please try again.")
         }
 
         setIsLoading(false)
+    }
+
+    // Determine if field should be editable
+    const isFieldEditable = (fieldName: string) => {
+        // Owner type users have all fields editable
+        if (formData.type === "owner") {
+            return true
+        }
+
+        // For non-owner types, restrict certain fields
+        const restrictedFields = ["type", "ic", "salutations", "name_preferred"]
+        if (restrictedFields.includes(fieldName)) {
+            return false
+        }
+
+        // Address fields are only editable for owners
+        if (fieldName.startsWith("address")) {
+            return false
+        }
+
+        return true
     }
 
     const renderSuccessView = () => (
@@ -312,49 +344,82 @@ function AddUser() {
                     <CheckCircle className="w-10 h-10 text-white" />
                 </div>
 
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Account Created Successfully</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">User Updated Successfully</h2>
 
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
                     <div className="flex items-center gap-3 text-green-700">
                         <AlertCircle className="w-5 h-5" />
                         <span className="text-sm">
-                            An email has been sent to the associated email address. Please ask the user to check their email.
+                            User information has been updated successfully. Redirecting to user details...
                         </span>
                     </div>
-                </div>
-
-                <div className="flex justify-center gap-4">
-                    <button
-                        onClick={handleBackClick}
-                        className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Users
-                    </button>
-                    <button
-                        onClick={() => {
-                            setSuccess(false)
-                            handleReset()
-                        }}
-                        className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
-                    >
-                        <UserPlus className="w-4 h-4" />
-                        Add Another User
-                    </button>
                 </div>
             </div>
         </div>
     )
 
+    if (fetchLoading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+                <Loading />
+            </div>
+        )
+    }
+
+    if (fetchError || !userDetail) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
+                <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl border border-white/20 p-8 text-center">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="w-8 h-8 text-red-600" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">User Not Found</h2>
+                    <p className="text-gray-600 mb-6">The user you're trying to edit could not be found.</p>
+                    <button
+                        onClick={() => navigate(LOCAL_PATH_PREFIX + "users")}
+                        className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 mx-auto"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        Back to Users
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
     const renderForm = () => (
         <div className="px-4 py-6 max-w-4xl mx-auto">
             <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl border border-white/20 p-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-8 flex items-center gap-2">
-                    <UserIcon className="w-6 h-6" />
-                    User Details
-                </h2>
+                <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                        <Edit3 className="w-6 h-6" />
+                        Edit User Details
+                    </h2>
+                    {hasChanges && (
+                        <div className="flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-sm">
+                            <AlertCircle className="w-4 h-4" />
+                            Unsaved changes
+                        </div>
+                    )}
+                </div>
 
                 <div className="space-y-8">
+                    {/* User Type Display */}
+                    <div className="bg-gray-50 rounded-xl p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <UserIcon className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <div className="font-medium text-gray-900">Current User Type</div>
+                                <div className="text-sm text-gray-600 capitalize">{formData.type}</div>
+                            </div>
+                            <div className="ml-auto">
+                                <Lock className="w-5 h-5 text-gray-400" />
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Basic Information */}
                     <div className="space-y-6">
                         <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">Basic Information</h3>
@@ -367,8 +432,9 @@ function AddUser() {
                                     name="name_first"
                                     value={formData.name_first}
                                     onChange={handleChange}
-                                    placeholder="John"
-                                    className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    disabled={!isFieldEditable("name_first")}
+                                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("name_first") ? "bg-white/70" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                        }`}
                                 />
                                 {validationErrors.name_first && (
                                     <span className="text-red-500 text-sm mt-1 block">{validationErrors.name_first.join(", ")}</span>
@@ -381,8 +447,9 @@ function AddUser() {
                                     name="name_last"
                                     value={formData.name_last}
                                     onChange={handleChange}
-                                    placeholder="Doe"
-                                    className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    disabled={!isFieldEditable("name_last")}
+                                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("name_last") ? "bg-white/70" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                        }`}
                                 />
                                 {validationErrors.name_last && (
                                     <span className="text-red-500 text-sm mt-1 block">{validationErrors.name_last.join(", ")}</span>
@@ -400,7 +467,9 @@ function AddUser() {
                                             name="salutations"
                                             value={formData.salutations}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                            disabled={!isFieldEditable("salutations")}
+                                            className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("salutations") ? "bg-white/70" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                                }`}
                                         >
                                             <option value="">Please Select</option>
                                             {salutationOptions.map((option) => (
@@ -420,7 +489,11 @@ function AddUser() {
                                             name="name_preferred"
                                             value={formData.name_preferred}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                            disabled={!isFieldEditable("name_preferred")}
+                                            className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("name_preferred")
+                                                ? "bg-white/70"
+                                                : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                                }`}
                                         />
                                         {validationErrors.name_preferred && (
                                             <span className="text-red-500 text-sm mt-1 block">
@@ -442,8 +515,9 @@ function AddUser() {
                                     name="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    placeholder="user@example.com"
-                                    className="w-full pl-10 pr-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    disabled={!isFieldEditable("email")}
+                                    className={`w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("email") ? "bg-white/70" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                        }`}
                                 />
                             </div>
                             {validationErrors.email && (
@@ -458,7 +532,9 @@ function AddUser() {
                                     <select
                                         value={formData.country_code}
                                         onChange={(e) => handleChangeCountryCode(e.target.value)}
-                                        className="appearance-none px-4 py-3 pr-8 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        disabled={!isFieldEditable("phone")}
+                                        className={`appearance-none px-4 py-3 pr-8 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("phone") ? "bg-white/70" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     >
                                         {countryOptions.map((country) => (
                                             <option key={country.code} value={country.code}>
@@ -475,8 +551,9 @@ function AddUser() {
                                         name="phone"
                                         value={formData.phone}
                                         onChange={handleChange}
-                                        placeholder="123456789"
-                                        className="w-full pl-10 pr-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        disabled={!isFieldEditable("phone")}
+                                        className={`w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("phone") ? "bg-white/70" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     />
                                 </div>
                             </div>
@@ -496,8 +573,9 @@ function AddUser() {
                                         name="ic"
                                         value={formData.ic}
                                         onChange={handleChange}
-                                        placeholder="xxxxxx-xx-xxxx"
-                                        className="w-full pl-10 pr-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        disabled={!isFieldEditable("ic")}
+                                        className={`w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("ic") ? "bg-white/70" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     />
                                 </div>
                                 {validationErrors.ic && (
@@ -512,7 +590,7 @@ function AddUser() {
                         <div className="space-y-6">
                             <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2 flex items-center gap-2">
                                 <MapPin className="w-5 h-5" />
-                                Owner Current Residence Address
+                                Current Residence Address
                             </h3>
 
                             <div className="space-y-4">
@@ -522,8 +600,12 @@ function AddUser() {
                                         name="address.address_1"
                                         value={formData.address.address_1}
                                         onChange={handleChange}
+                                        disabled={!isFieldEditable("address.address_1")}
                                         placeholder="Address Line 1"
-                                        className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("address.address_1")
+                                            ? "bg-white/70"
+                                            : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     />
                                     <span className="text-xs text-gray-500 mt-1 block">Address Line 1</span>
                                     {validationErrors.address_1 && (
@@ -537,8 +619,12 @@ function AddUser() {
                                         name="address.address_2"
                                         value={formData.address.address_2}
                                         onChange={handleChange}
+                                        disabled={!isFieldEditable("address.address_2")}
                                         placeholder="Address Line 2 (optional)"
-                                        className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("address.address_2")
+                                            ? "bg-white/70"
+                                            : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     />
                                     <span className="text-xs text-gray-500 mt-1 block">Address Line 2 (optional)</span>
                                 </div>
@@ -550,8 +636,10 @@ function AddUser() {
                                             name="address.city"
                                             value={formData.address.city}
                                             onChange={handleChange}
+                                            disabled={!isFieldEditable("address.city")}
                                             placeholder="City"
-                                            className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                            className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("address.city") ? "bg-white/70" : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                                }`}
                                         />
                                         <span className="text-xs text-gray-500 mt-1 block">City</span>
                                         {validationErrors["address.city"] && (
@@ -564,8 +652,12 @@ function AddUser() {
                                             name="address.state"
                                             value={formData.address.state}
                                             onChange={handleChange}
+                                            disabled={!isFieldEditable("address.state")}
                                             placeholder="State / Province"
-                                            className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                            className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("address.state")
+                                                ? "bg-white/70"
+                                                : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                                }`}
                                         />
                                         <span className="text-xs text-gray-500 mt-1 block">State / Province</span>
                                         {validationErrors["address.state"] && (
@@ -580,8 +672,12 @@ function AddUser() {
                                         name="address.postcode"
                                         value={formData.address.postcode}
                                         onChange={handleChange}
+                                        disabled={!isFieldEditable("address.postcode")}
                                         placeholder="Postal / Zip Code"
-                                        className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isFieldEditable("address.postcode")
+                                            ? "bg-white/70"
+                                            : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                                            }`}
                                     />
                                     <span className="text-xs text-gray-500 mt-1 block">Postal / Zip Code</span>
                                     {validationErrors.postcode && (
@@ -592,57 +688,38 @@ function AddUser() {
                         </div>
                     )}
 
-                    {/* User Role Selection */}
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">User Type/Role</h3>
-                        <div className="space-y-3">
-                            {roles.map((role) => {
-                                const IconComponent = role.icon
-                                return (
-                                    <label
-                                        key={role.value}
-                                        className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${formData.type === role.value
-                                                ? `${role.border} ${role.bg}`
-                                                : "border-gray-200 hover:border-gray-300"
-                                            }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="type"
-                                            value={role.value}
-                                            checked={formData.type === role.value}
-                                            onChange={handleChange}
-                                            className="w-4 h-4 text-blue-600"
-                                        />
-                                        <div className={`w-10 h-10 ${role.bg} rounded-xl flex items-center justify-center`}>
-                                            <IconComponent className={`w-5 h-5 ${role.color}`} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="font-medium text-gray-900">{role.label}</div>
-                                            <div className="text-sm text-gray-500">{role.description}</div>
-                                        </div>
-                                    </label>
-                                )
-                            })}
+                    {/* Restricted Fields Notice */}
+                    {formData.type !== "owner" && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                            <div className="flex items-center gap-3 text-amber-700">
+                                <Lock className="w-5 h-5" />
+                                <div>
+                                    <div className="font-medium">Limited Edit Access</div>
+                                    <div className="text-sm">
+                                        Some fields are restricted for this user type. Contact an administrator for additional changes.
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="flex justify-end gap-4 pt-6">
                         <button
                             onClick={handleReset}
-                            className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200"
+                            disabled={!hasChanges}
+                            className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <RefreshCw className="w-4 h-4" />
-                            Reset
+                            Reset Changes
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={isLoading}
+                            disabled={isLoading || !hasChanges}
                             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Save className="w-4 h-4" />
-                            {isLoading ? "Creating..." : "Create User"}
+                            {isLoading ? "Updating..." : "Update User"}
                         </button>
                     </div>
                 </div>
@@ -663,8 +740,8 @@ function AddUser() {
                             <ArrowLeft className="w-5 h-5 text-gray-700" />
                         </button>
                         <div>
-                            <h1 className="text-xl font-bold text-gray-900">Add User</h1>
-                            <p className="text-sm text-gray-600">Create a new user account</p>
+                            <h1 className="text-xl font-bold text-gray-900">Edit User</h1>
+                            <p className="text-sm text-gray-600">Modify user information for {userDetail?.name || "Unknown User"}</p>
                         </div>
                     </div>
                 </div>
@@ -675,4 +752,4 @@ function AddUser() {
     )
 }
 
-export default AddUser
+export default EditUser

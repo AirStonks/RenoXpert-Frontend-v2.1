@@ -107,6 +107,7 @@ import InvestorInterestForm from './pages/InvestorInterestForm';
 import IIFMain from './pages/InvestorInterestForm/IIFMain';
 import IIFDetail from './pages/InvestorInterestForm/IIFDetail';
 import OrderConfirmSuccess from './pages/OwnerPages/OrderConfirmSuccess';
+import EditUser from './pages/User/EditUser';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -195,6 +196,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/di-forms', element: <DIFormMain />, layout: ProtectedLayout },
         { path: '/users', element: <UsersMain />, layout: ProtectedLayout },
         { path: '/users/:id', element: <UserDetail />, layout: ProtectedLayout },
+        { path: '/users/edit/:id', element: <EditUser />, layout: ProtectedLayout },
         { path: '/users/internal/add', element: <AddInternalUser />, layout: ProtectedLayout },
         { path: '/users/add', element: <AddUser />, layout: ProtectedLayout },
         { path: '/users/add/owner', element: <AddOwner />, layout: ProtectedLayout },
@@ -315,6 +317,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/di-forms', element: <DIFormMain />, layout: ProtectedLayout },
         { path: '/staff/users', element: <UsersMain />, layout: ProtectedLayout },
         { path: '/staff/users/:id', element: <UserDetail />, layout: ProtectedLayout },
+        { path: '/staff/users/edit/:id', element: <EditUser />, layout: ProtectedLayout },
         { path: '/staff/users/internal/add', element: <AddInternalUser />, layout: ProtectedLayout },
         { path: '/staff/users/add', element: <AddUser />, layout: ProtectedLayout },
         { path: '/staff/users/add/owner', element: <AddOwner />, layout: ProtectedLayout },
