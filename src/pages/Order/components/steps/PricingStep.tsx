@@ -170,7 +170,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
 
                             <div>
                                 <div className="flex items-center justify-between mb-2">
-                                    <label className="text-sm font-medium text-gray-700">BePowered 2.0</label>
+                                    <label className="text-sm font-medium text-gray-700">Installment Plan</label>
                                     <button
                                         onClick={handleQuoBePoweredChange}
                                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isBePowered ? "bg-blue-500" : "bg-gray-200"}`}
@@ -233,7 +233,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                 <div className="p-8 backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl rounded-3xl">
                     <div className="space-y-8">
                         <div>
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-2">BePowered 2.0 Pricing</h2>
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Installment Plan Detail</h2>
                             {/* <p className="text-gray-600"></p> */}
                         </div>
                         <div className="flex justify-between items-center">
@@ -314,7 +314,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                             ))}
                         </div>
 
-                        {/* BePowered 2.0 Total Pricing */}
+                        {/* Installment Plan Detail */}
                         <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
                             <div className="flex justify-between items-center text-xl font-bold text-gray-900">
                                 <span>Total</span>

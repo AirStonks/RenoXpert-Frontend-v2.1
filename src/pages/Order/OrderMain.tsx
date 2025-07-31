@@ -59,7 +59,7 @@ const getStatusLabel = (status: string) => {
 const getProgramLabel = (program: string) => {
     switch (program) {
         case 'be-powered':
-            return 'BePowered 2.0';
+            return 'Installment Plan';
         default:
             return program.charAt(0).toUpperCase() + program.slice(1);
     }

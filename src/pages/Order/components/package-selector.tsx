@@ -192,7 +192,13 @@ export function PackageSelector({ isOpen, onClose, selectedPackages, onSelectPac
                                                         </span>
                                                     )}
                                                 </div>
-                                                <p className="text-gray-600 text-sm mb-2">{pkg.description}</p>
+                                                <ul className="text-gray-600 text-sm mb-2">
+                                                    {pkg?.description?.split("\n").map((item, index) => (
+                                                        <li key={index} className="flex items-start">
+                                                            {item}
+                                                        </li>
+                                                    ))}
+                                                </ul>
                                                 {pkg.description_internal && (
                                                     <div className="flex flex-col">
                                                         <p className="text-gray-800 text-sm">Internal Description:</p>

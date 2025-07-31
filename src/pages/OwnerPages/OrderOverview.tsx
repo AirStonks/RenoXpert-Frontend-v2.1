@@ -1588,9 +1588,13 @@ function OrderOverview() {
                                                                                     </span>
                                                                                 </div>
                                                                             )}
-                                                                            <span className="text-xs text-gray-500 mt-1 max-w-md">
-                                                                                {prodPackage.description}
-                                                                            </span>
+                                                                            <ul className="text-xs text-gray-500 mt-1 max-w-md">
+                                                                                {prodPackage?.description?.split("\n").map((item, index) => (
+                                                                                    <li key={index} className="flex items-start">
+                                                                                        {item}
+                                                                                    </li>
+                                                                                ))}
+                                                                            </ul>
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex items-center space-x-4">
@@ -1714,59 +1718,71 @@ function OrderOverview() {
                                                 : null}
                                             <hr className="my-4" />
 
-                                            <div className="card mb-4 shadow-sm rounded-md">
-                                                <div className="card-body p-4">
-                                                    <div className="flex flex-col mb-2">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-1 mb-2">
-                                                                <CalendarDateRangeIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
-                                                                <span className="text-xs font-semibold text-gray-700">
-                                                                    Progressive Payment of the Contract Sum
-                                                                </span>
+                                            {!orderDetail.is_be_powered && (
+                                                <div className="card mb-4 shadow-sm rounded-md">
+                                                    <div className="card-body p-4">
+                                                        <div className="flex flex-col mb-2">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-1 mb-2">
+                                                                    <CalendarDateRangeIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
+                                                                    <span className="text-xs font-semibold text-gray-700">
+                                                                        Progressive Payment of the Contract Sum
+                                                                    </span>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    <table className="w-full text-xs text-gray-700 font-medium border-collapse">
-                                                        <thead>
-                                                            <tr className="bg-gray-50 border-b border-gray-200">
-                                                                <th className="p-3 text-left font-semibold text-gray-700">Description</th>
-                                                                <th className="p-3 text-center font-semibold text-gray-700">%</th>
-                                                                <th className="p-3 text-center font-semibold text-gray-700">Amount (RM)</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {orderDetail.is_progressive_payment ? (
-                                                                [
-                                                                    {
-                                                                        desc: "Upon Confirmation and before Commencement of Phase 1",
-                                                                        percent: 50,
-                                                                    },
-                                                                    {
-                                                                        desc: "Upon Completion of Phase 1 and before Commencement of Phase 2",
-                                                                        percent: 50,
-                                                                    },
-                                                                ].map((row, idx) => (
-                                                                    <tr
-                                                                        key={idx}
-                                                                        className="border-b border-gray-200 hover:bg-gray-50 transition duration-150"
-                                                                    >
-                                                                        <td className="p-3 text-gray-600 max-w-xs">{row.desc}</td>
-                                                                        <td className="p-3 text-center">{row.percent}%</td>
+                                                        <table className="w-full text-xs text-gray-700 font-medium border-collapse">
+                                                            <thead>
+                                                                <tr className="bg-gray-50 border-b border-gray-200">
+                                                                    <th className="p-3 text-left font-semibold text-gray-700">Description</th>
+                                                                    <th className="p-3 text-center font-semibold text-gray-700">%</th>
+                                                                    <th className="p-3 text-center font-semibold text-gray-700">Amount (RM)</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {orderDetail.is_progressive_payment ? (
+                                                                    [
+                                                                        {
+                                                                            desc: "Upon Confirmation and before Commencement of Phase 1",
+                                                                            percent: 50,
+                                                                        },
+                                                                        {
+                                                                            desc: "Upon Completion of Phase 1 and before Commencement of Phase 2",
+                                                                            percent: 50,
+                                                                        },
+                                                                    ].map((row, idx) => (
+                                                                        <tr
+                                                                            key={idx}
+                                                                            className="border-b border-gray-200 hover:bg-gray-50 transition duration-150"
+                                                                        >
+                                                                            <td className="p-3 text-gray-600 max-w-xs">{row.desc}</td>
+                                                                            <td className="p-3 text-center">{row.percent}%</td>
+                                                                            <td className="p-3 text-center">
+                                                                                {((totalExcludedAddonAmount - (bonus?.value || 0)) / 2).toLocaleString(
+                                                                                    undefined,
+                                                                                    {
+                                                                                        minimumFractionDigits: 2,
+                                                                                        maximumFractionDigits: 2,
+                                                                                    },
+                                                                                )}
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))
+                                                                ) : (
+                                                                    <tr className="border-b border-gray-200 hover:bg-gray-50 transition duration-150">
+                                                                        <td className="p-3 text-gray-600 max-w-xs">Upon Confirmation of Agreement</td>
+                                                                        <td className="p-3 text-center">100%</td>
                                                                         <td className="p-3 text-center">
-                                                                            {((totalExcludedAddonAmount - (bonus?.value || 0)) / 2).toLocaleString(
-                                                                                undefined,
-                                                                                {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                },
-                                                                            )}
+                                                                            {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
                                                                         </td>
                                                                     </tr>
-                                                                ))
-                                                            ) : (
-                                                                <tr className="border-b border-gray-200 hover:bg-gray-50 transition duration-150">
-                                                                    <td className="p-3 text-gray-600 max-w-xs">Upon Confirmation of Agreement</td>
+                                                                )}
+                                                                <tr className="font-bold bg-gray-50 border-t border-gray-200">
+                                                                    <td className="p-3 text-gray-700">Total</td>
                                                                     <td className="p-3 text-center">100%</td>
                                                                     <td className="p-3 text-center">
                                                                         {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
@@ -1775,21 +1791,11 @@ function OrderOverview() {
                                                                         })}
                                                                     </td>
                                                                 </tr>
-                                                            )}
-                                                            <tr className="font-bold bg-gray-50 border-t border-gray-200">
-                                                                <td className="p-3 text-gray-700">Total</td>
-                                                                <td className="p-3 text-center">100%</td>
-                                                                <td className="p-3 text-center">
-                                                                    {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
-                                                                        minimumFractionDigits: 2,
-                                                                        maximumFractionDigits: 2,
-                                                                    })}
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -1897,9 +1903,13 @@ function OrderOverview() {
                                                                             <span className="text-sm font-semibold text-gray-900">{prodPackage.name}</span>
                                                                         </div>
                                                                     )}
-                                                                    <span className="text-xs text-gray-500 mt-1 max-w-md">
-                                                                        {prodPackage.description}
-                                                                    </span>
+                                                                    <ul className="text-xs text-gray-500 mt-1 max-w-md">
+                                                                        {prodPackage?.description?.split("\n").map((item, index) => (
+                                                                            <li key={index} className="flex items-start">
+                                                                                {item}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center space-x-4">

@@ -349,13 +349,6 @@ function PackageDetail() {
                                 </span>
                             </div>
 
-                            <div className="flex justify-between items-start py-3 border-b border-gray-200/50">
-                                <span className="text-sm font-medium text-gray-600">Description</span>
-                                <span className="text-sm text-gray-900 text-right max-w-[200px]">
-                                    {packageDetail.description || '-'}
-                                </span>
-                            </div>
-
                             <div className="flex justify-between items-start py-3">
                                 <span className="text-sm font-medium text-gray-600">Internal Description</span>
                                 <span className="text-sm text-gray-900 text-right max-w-[200px]">
@@ -364,6 +357,20 @@ function PackageDetail() {
                             </div>
                         </div>
                     </div>
+
+                    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl p-6">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Package Description</h2>
+                        <ul className="text-sm text-gray-900">
+                            {packageDetail?.description
+                                ? packageDetail.description.split("\n").map((item, index) => (
+                                    <li key={index} className="flex items-start">
+                                        {item}
+                                    </li>
+                                ))
+                                : <li className="flex items-start">-</li>}
+                        </ul>
+                    </div>
+
 
                     {/* Cost Analysis */}
                     <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl p-6">

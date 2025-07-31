@@ -522,7 +522,7 @@ function OrderDetail() {
         orderDetail.is_be_powered &&
             pkg.payment_method === "one-off" &&
             (pkg.is_addon ? pkg.is_addon_included === true : true)
-            ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price)
+            ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price) * (pkg.quantity || 1)
             : 0)
         , 25000);
 
@@ -530,7 +530,7 @@ function OrderDetail() {
         orderDetail.is_be_powered &&
             pkg.payment_method !== 'one-off' &&
             (pkg.is_addon ? pkg.is_addon_included === true : true)
-            ? pkg.monthly_amount
+            ? pkg.monthly_amount * (pkg.quantity || 1)
             : 0)
         , 0);
 
@@ -852,10 +852,10 @@ function OrderDetail() {
                             </div>
                         </div>
 
-                        {/* BePowered 2.0 Program Card */}
+                        {/* Installment Plan Card */}
                         <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
                             <div className="px-6 py-4 border-b border-gray-200/50 flex justify-between items-center">
-                                <h3 className="text-lg font-semibold text-gray-900">BePowered 2.0 Program</h3>
+                                <h3 className="text-lg font-semibold text-gray-900">Installment Plan</h3>
                             </div>
                             <div className="p-6">
                                 <div className="space-y-4">
@@ -1263,11 +1263,11 @@ function OrderDetail() {
                             </div>
                         </div>
 
-                        {/* BePowered 2.0 Card */}
+                        {/* Installment Detail Card */}
                         {orderDetail.is_be_powered &&
                             <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
                                 <div className="px-6 py-4 border-b border-gray-200/50">
-                                    <h3 className="text-lg font-semibold text-gray-900">BePowered 2.0</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900">Installment Detail</h3>
                                 </div>
                                 <div className="p-6">
                                     <div className="space-y-4">
@@ -1306,14 +1306,14 @@ function OrderDetail() {
                                                     className="flex justify-between items-center text-gray-600 mt-1"
                                                 >
                                                     <div className="flex items-center">
-                                                        <span>{pkg.name}</span>
+                                                        <span>{pkg.name} x{pkg.quantity || 1}</span>
                                                         {pkg.is_addon && (
                                                             <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
                                                                 Add-On
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <span>RM {pkg.markup_amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                                                    <span>RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -1321,7 +1321,7 @@ function OrderDetail() {
                                         <div>
                                             <div className="flex justify-between items-center">
                                                 <span className="font-medium text-gray-900">Installment ({orderDetail.tenure} months)</span>
-                                                <span className="font-medium">RM {monthlySum.toLocaleString(undefined, {
+                                                <span className="font-medium">RM {(monthlySum).toLocaleString(undefined, {
                                                     minimumFractionDigits: 0,
                                                     maximumFractionDigits: 0
                                                 })}/mth</span>
@@ -1337,19 +1337,19 @@ function OrderDetail() {
                                                     className="flex justify-between items-center text-gray-600 mt-1"
                                                 >
                                                     <div className="flex items-center">
-                                                        <span>{pkg.name}</span>
+                                                        <span>{pkg.name} x{pkg.quantity || 1}</span>
                                                         {pkg.is_addon && (
                                                             <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
                                                                 Add-On
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <span>RM {pkg.monthly_amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
+                                                    <span>RM {(pkg.monthly_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
                                                 </div>
                                             ))}
                                         </div>
 
-                                        {/* BePowered 2.0 Total Pricing */}
+                                        {/* Installment Plan Total Pricing */}
                                         <div className="flex flex-col mt-2 pt-2 border-t border-gray-200">
                                             <div className="flex justify-between items-center text-xl font-bold text-gray-900">
                                                 <span>Total</span>
@@ -1469,7 +1469,13 @@ function OrderDetail() {
                                                             >
                                                                 <div className="flex flex-col items-start">
                                                                     <span className="text-base text-gray-900 font-medium text-start">{label}</span>
-                                                                    <span className="text-sm text-gray-600 text-start">{prodPackage.description}</span>
+                                                                    <ul className="text-sm text-gray-600 text-start">
+                                                                        {prodPackage?.description?.split("\n").map((item, index) => (
+                                                                            <li key={index} className="flex items-start">
+                                                                                {item}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
                                                                     <span className="text-base text-gray-700">
                                                                         RM{" "}
                                                                         {calculatePackageTotal(prodPackage).toLocaleString(undefined, {

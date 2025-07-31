@@ -356,7 +356,13 @@ function PackageMain() {
                                             )}
                                         </button>
                                     </div>
-                                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{pkg.description || '-'}</p>
+                                    <ul className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                                        {pkg?.description?.split("\n").map((item, index) => (
+                                            <li key={index} className="flex items-start">
+                                                {item}
+                                            </li>
+                                        ))}
+                                    </ul>
                                     <div className="text-sm text-gray-700 dark:text-gray-300 mb-4">
                                         <p>
                                             <strong>Price:</strong> RM{' '}
@@ -498,7 +504,13 @@ function PackageMain() {
                                             <td className="px-4 py-3">
                                                 <div className="flex flex-col">
                                                     <span className="font-medium">{pkg.name}</span>
-                                                    <span className="text-xs text-gray-500">{pkg.description || '-'}</span>
+                                                    <ul className="text-xs text-gray-500">
+                                                        {pkg?.description?.split("\n").map((item, index) => (
+                                                            <li key={index} className="flex items-start">
+                                                                {item}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">{pkg.description_internal || '-'}</td>
@@ -517,8 +529,8 @@ function PackageMain() {
                                             <td className="px-4 py-3 text-center">
                                                 <span
                                                     className={`inline-block h-3 w-3 rounded-full ${pkg.is_addon
-                                                            ? 'bg-green-500 dark:bg-green-400'
-                                                            : 'bg-gray-300 dark:bg-gray-600'
+                                                        ? 'bg-green-500 dark:bg-green-400'
+                                                        : 'bg-gray-300 dark:bg-gray-600'
                                                         }`}
                                                     title={pkg.is_addon ? 'Add-on Package' : 'Not an Add-on Package'}
                                                 ></span>

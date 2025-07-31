@@ -230,9 +230,6 @@ export default function PackagesStep({
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-semibold text-gray-900 mb-2">Packages & Products</h2>
-                        <button onClick={() => console.log(packageCategories)}>
-                            TEST
-                        </button>
                         <p className="text-gray-600">Add packages and customize products for this order</p>
                     </div>
                     <button
@@ -343,8 +340,8 @@ export default function PackagesStep({
 
                 {selectedPackages.length > 0 && (
                     <div className="p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-sm">
-                        <div className="flex gap-4">
-                            <h2 className="text-lg font-semibold text-gray-900">BePowered 2.0 Configuration</h2>
+                        <div className="flex gap-4 items-center">
+                            <h2 className="text-lg font-semibold text-gray-900">Installment Configuration</h2>
                             <button
                                 onClick={handleQuoBePoweredToggle}
                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${formData.isBePowered ? 'bg-purple-500' : 'bg-gray-200'}`}

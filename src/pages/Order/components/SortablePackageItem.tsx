@@ -351,7 +351,13 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
 
                             {/* Collapsed Summary Info */}
                             <div className="flex items-center gap-6 mb-2">
-                                <span className="text-md text-gray-500 mt-1">{pkg.description}</span>
+                                <ul className="text-md text-gray-500 mt-1">
+                                    {pkg?.description?.split("\n").map((item, index) => (
+                                        <li key={index} className="flex items-start">
+                                            {item}
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
 
                             {/* Addon Toggle Control */}
@@ -544,7 +550,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                 <div className="flex flex-col sm:flex-row justify-between gap-4 bg-white border rounded-xl p-4 mb-4 transition-all duration-300">
                                     <div className="flex flex-col min-w-0">
                                         <div className="flex items-center gap-2 mb-3">
-                                            <h2 className="text-lg font-semibold text-gray-800 mr-4">BePowered 2.0 Details</h2>
+                                            <h2 className="text-lg font-semibold text-gray-800 mr-4">Installment Details</h2>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
@@ -691,7 +697,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                         </div>
                                     </div>
 
-                                    {/* BePowered 2.0 Status Section */}
+                                    {/* Installment Status Section */}
                                     <div className="flex flex-col min-w-0">
                                         <h2 className="text-lg font-semibold text-gray-800 mb-3">Config</h2>
                                         <div className="flex flex-wrap gap-2">
