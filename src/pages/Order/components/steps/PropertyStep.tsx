@@ -18,6 +18,7 @@ interface FormData {
     isProgressivePayment: boolean;
     isDraftMode: boolean;
     isBePowered: boolean;
+    tenure: number;
     finalAmount: number;
     bonusDescription: string;
     bonusValue: number;

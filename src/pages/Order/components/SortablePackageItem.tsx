@@ -12,7 +12,11 @@ import {
     ChevronDown,
     ChevronRight,
     ToggleLeft,
-    ToggleRight
+    ToggleRight,
+    DollarSign,
+    TrendingUp,
+    Calendar,
+    Clock
 } from 'lucide-react';
 import { ProductTable } from './ProductTable';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,21 +24,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface SortablePackageItemProps {
     package: Package;
     index: number;
+    tenure?: number;
     onRemove: (id: number) => void;
     onQuantityChange: (id: number, quantity: number) => void;
     onProductsUpdate: (packageId: number, products: Product[]) => void;
     onAddProduct: (packageId: number) => void;
     onAddonToggle?: (packageId: number, isIncluded: boolean) => void;
+    onBePoweredToggle?: (packageId: number, isIncluded: boolean) => void;
+    onBePoweredIncludeToggle?: (packageId: number, isIncluded: boolean) => void;
+    onPaymentMethodChange?: (packageId: number, paymentMethod: string) => void;
 }
 
 export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
     package: pkg,
     index,
+    tenure,
     onRemove,
     onQuantityChange,
     onProductsUpdate,
     onAddProduct,
     onAddonToggle,
+    onBePoweredToggle,
+    onBePoweredIncludeToggle,
+    onPaymentMethodChange,
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -105,6 +117,30 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
         if (pkg.is_addon && onAddonToggle) {
             const newIncludedState = !pkg.is_addon_included;
             onAddonToggle(pkg.id!, newIncludedState);
+        }
+    };
+
+    const handleBePoweredToggleClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering the header click
+        if (onBePoweredToggle) {
+            const newIncludedState = !pkg.is_be_powered;
+            onBePoweredToggle(pkg.id!, newIncludedState);
+        }
+    };
+
+    const handleBePoweredIncludeToggleClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering the header click
+        if (onBePoweredIncludeToggle) {
+            const newIncludedState = !pkg.is_be_powered_included;
+            onBePoweredIncludeToggle(pkg.id!, newIncludedState);
+        }
+    };
+
+    const handlePaymentMethodChange = (paymentMethod: string) => {
+        console.log(paymentMethod);
+
+        if (onPaymentMethodChange) {
+            onPaymentMethodChange(pkg.id!, paymentMethod);
         }
     };
 
@@ -209,7 +245,18 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
 
     const productCount = pkg.products?.length || 0;
     const packageTotal = calculatePackageTotal();
-    const isAddonIncluded = pkg.is_addon_included !== false; // Default to true if undefined
+    const isAddonIncluded = pkg.is_addon_included ?? false; // Default to true if undefined
+    const isBePowered = pkg.is_be_powered ?? false; // Default to true if undefined
+    const isBePoweredIncluded = pkg.is_be_powered_included ?? false; // Default to true if undefined
+    const paymentMethod = pkg.payment_method ?? 'bepowered';
+
+    // Calculate financial fields (using package data if available, otherwise calculated values)
+    const packageRetailPrice = pkg.products.reduce((total, item) => total + ((item.provisioning.supply.retail_price + item.provisioning.install.retail_price) * item.pivot.quantity), 0);
+    const originalAmount = pkg.total_price || packageRetailPrice;
+    const markupAmount = pkg.markup_amount;
+    const markupPercentage = pkg.markup_percentage ? (pkg.markup_percentage * 100) : 0;
+    const monthlyAmount = pkg.monthly_amount;
+    const totalPackageAmount = originalAmount + markupAmount;
 
     return (
         <motion.div
@@ -271,19 +318,23 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                     <span className="text-sm text-gray-600">Add-On Quotation:</span>
                                     <button
                                         onClick={handleAddonToggleClick}
-                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${isAddonIncluded ? 'bg-purple-500' : 'bg-gray-200'
-                                            }`}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${isAddonIncluded ? 'bg-purple-500' : 'bg-gray-200'} ${isBePowered ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         aria-label={`${isAddonIncluded ? 'Exclude' : 'Include'} ${pkg.name} addon package`}
+                                        disabled={isBePowered}
                                     >
                                         <span
-                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${isAddonIncluded ? 'translate-x-6' : 'translate-x-1'
-                                                }`}
+                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${isAddonIncluded ? 'translate-x-6' : 'translate-x-1'}`}
                                         />
                                     </button>
                                     <span className={`text-sm font-medium ${isAddonIncluded ? 'text-purple-700' : 'text-gray-500'
                                         }`}>
                                         {isAddonIncluded ? 'Included' : 'Excluded'}
                                     </span>
+                                    {isBePowered &&
+                                        <span className="text-sm text-gray-600">
+                                            (BePowered 2.0 Activated, Add-on Included by default)
+                                        </span>
+                                    }
                                 </div>
                             )}
 
@@ -417,6 +468,145 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                     Add Products
                                 </button>
                             </div>
+
+                            {isBePowered && (
+                                <div className="flex flex-col sm:flex-row justify-between gap-4 bg-white border rounded-xl p-4 mb-4 transition-all duration-300">
+                                    {/* BePowered Details Section */}
+                                    <div className="flex flex-col min-w-0">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <h2 className="text-lg font-semibold text-gray-800 mr-4">BePowered 2.0 Details</h2>
+                                            <button
+                                                onClick={handleBePoweredToggleClick}
+                                                className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${isBePowered ? 'bg-purple-600' : 'bg-gray-300'} opacity-50 cursor-not-allowed`}
+                                                aria-label={`${isBePowered ? 'Active' : 'Inactive'} ${pkg.name} addon package`}
+                                                disabled={true}
+                                            >
+                                                <span
+                                                    className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${isBePowered ? 'translate-x-5' : 'translate-x-1'}`}
+                                                />
+                                            </button>
+                                            <span className={`text-xs font-medium ${isBePowered ? 'text-purple-600' : 'text-gray-500'}`}>
+                                                {isBePowered ? 'Active' : 'Inactive'}
+                                            </span>
+                                            <span className='text-xs font-medium text-gray-600'>
+                                                ({isBePowered ? 'This package is enabled for BePowered 2.0' : 'This package is not enabled for BePowered 2.0'})
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                <div className="flex items-center gap-1 mb-1">
+                                                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3-.672 3-1.5S13.657 8 12 8zm0 0c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0 0V6m0 12v2" />
+                                                    </svg>
+                                                    <span className="text-xs font-semibold text-gray-700">Original Amount</span>
+                                                </div>
+                                                <span className="text-sm font-bold text-blue-700">
+                                                    RM {(packageTotal / (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </span>
+                                            </div>
+                                            {markupAmount > 0 && (
+                                                <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                    <div className="flex items-center gap-1 mb-1">
+                                                        <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                        </svg>
+                                                        <span className="text-xs font-semibold text-gray-700">Markup Amount</span>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-orange-700">
+                                                        RM {((packageTotal / (pkg.quantity || 1) * (1 + (markupPercentage / 100)))).toLocaleString(undefined, { minimumFractionDigits: 0 })}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {markupPercentage > 0 && (
+                                                <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                    <div className="flex items-center gap-1 mb-1">
+                                                        <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                        </svg>
+                                                        <span className="text-xs font-semibold text-gray-700">Markup %</span>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-purple-700">
+                                                        {markupPercentage.toFixed(2)}%
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {tenure > 0 && (
+                                                <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                    <div className="flex items-center gap-1 mb-1">
+                                                        <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                        <span className="text-xs font-semibold text-gray-700">Tenure</span>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-indigo-700">
+                                                        {tenure} months
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {monthlyAmount > 0 && (
+                                                <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                    <div className="flex items-center gap-1 mb-1">
+                                                        <svg className="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        <span className="text-xs font-semibold text-gray-700">Monthly Amount</span>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-teal-700">
+                                                        RM {(markupAmount / tenure).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Owner Status Section */}
+                                    <div className="flex flex-col min-w-0">
+                                        <h2 className="text-lg font-semibold text-gray-800 mb-3">Owner Status</h2>
+                                        <div className="flex flex-wrap gap-2">
+                                            <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[200px] transition-all duration-200 hover:bg-gray-100">
+                                                <div className="flex items-center gap-1 mb-2">
+                                                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3-.672 3-1.5S13.657 8 12 8zm0 0c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0 0V6m0 12v2" />
+                                                    </svg>
+                                                    <span className="text-xs font-semibold text-gray-700">BePowered Activated</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={handleBePoweredIncludeToggleClick}
+                                                        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isBePoweredIncluded ? 'bg-blue-600' : 'bg-gray-300'} opacity-50 cursor-not-allowed`}
+                                                        aria-label={`${isBePoweredIncluded ? 'Active' : 'Inactive'} ${pkg.name} BePowered`}
+                                                        disabled={true}
+                                                    >
+                                                        <span
+                                                            className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${isBePoweredIncluded ? 'translate-x-5' : 'translate-x-1'}`}
+                                                        />
+                                                    </button>
+                                                    <span className={`text-xs font-medium ${isBePoweredIncluded ? 'text-blue-600' : 'text-gray-500'}`}>
+                                                        {isBePoweredIncluded ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[200px] transition-all duration-200 hover:bg-gray-100">
+                                                <div className="flex items-center gap-1 mb-1">
+                                                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3-.672 3-1.5S13.657 8 12 8zm0 0c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0 0V6m0 12v2" />
+                                                    </svg>
+                                                    <span className="text-xs font-semibold text-gray-700">Payment Method</span>
+                                                </div>
+                                                <select
+                                                    className={`w-full text-sm font-semibold text-blue-700 bg-white border border-gray-300 rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${!isBePowered ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    value={paymentMethod}
+                                                    onChange={(e) => handlePaymentMethodChange(e.target.value)}
+                                                    disabled={!isBePowered}
+                                                >
+                                                    <option value="one-off">One-off</option>
+                                                    <option value="bepowered">BePowered</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Products Table */}
                             {pkg.products && pkg.products.length > 0 ? (

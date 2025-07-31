@@ -14,6 +14,7 @@ interface FormData {
     isProgressivePayment: boolean;
     isDraftMode: boolean;
     isBePowered: boolean;
+    tenure: number
     finalAmount: number;
     bonusDescription: string;
     bonusValue: number;
@@ -27,10 +28,80 @@ interface PricingStepProps {
     netAmount: number;
     selectedPackages: Package[];
     addonPackages: Package[];
+    onToggleQuoBePowered: (isIncluded: boolean) => void;
     includedAddonPackages: Package[];
 }
 
-export default function PricingStep({ formData, setFormData, totalAmount, netAmount, selectedPackages, addonPackages, includedAddonPackages }: PricingStepProps) {
+export default function PricingStep({ formData, setFormData, totalAmount, netAmount, selectedPackages, addonPackages, onToggleQuoBePowered, includedAddonPackages }: PricingStepProps) {
+
+    const calculatePackageTotal = (pkg: Package) => {
+        // If it's an addon package that's not included, return 0
+        // if (pkg.is_addon && pkg.is_addon_included === false) {
+        //     return 0;
+        // }
+
+        // if (!pkg.products || pkg.products.length === 0) {
+        //     return (pkg.total_price || 0) * (pkg.quantity || 1);
+        // }
+
+        const packageTotal = pkg.products.reduce((prodSum, product) => {
+            let supplyPrice = 0;
+            let installPrice = 0;
+
+            // Calculate supply price
+            if (product.provisioning?.supply) {
+                if (product.pivot?.includeSupply) {
+                    supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1);
+                } else {
+                    supplyPrice = Math.max(0,
+                        (product.provisioning.supply.retail_price || 0) -
+                        (product.provisioning.supply.excluded_price || 0)
+                    ) * (product.pivot?.quantity || 1);
+                }
+            }
+
+            // Calculate install price
+            if (product.provisioning?.install) {
+                if (product.pivot?.includeInstall) {
+                    installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1);
+                } else {
+                    installPrice = Math.max(0,
+                        (product.provisioning.install.retail_price || 0) -
+                        (product.provisioning.install.excluded_price || 0)
+                    ) * (product.pivot?.quantity || 1);
+                }
+            }
+
+            return prodSum + supplyPrice + installPrice;
+        }, 0);
+
+        return packageTotal * (pkg.quantity || 1);
+    };
+
+    const upfrontAmount = selectedPackages.reduce((acc, pkg) => acc + (
+        pkg.is_be_powered === true &&
+            pkg.is_be_powered_included === true &&
+            pkg.payment_method === "one-off"
+            ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price)
+            : 0)
+        , 25000);
+
+    const monthlySum = selectedPackages.reduce((acc, pkg) => acc + (
+        pkg.is_be_powered === true &&
+            pkg.is_be_powered_included === true &&
+            pkg.payment_method === 'bepowered' &&
+            (pkg.is_addon ? pkg.is_addon_included === true : true)
+            ? (((calculatePackageTotal(pkg) / (pkg.quantity || 1) * (1 + pkg.markup_percentage))) / formData.tenure)
+            : 0)
+        , 0);
+
+    const handleQuoBePoweredChange = () => {
+        console.log('yes');
+        
+        onToggleQuoBePowered(!formData.isBePowered);
+    };
+
+
     return (
         <div className="space-y-8">
             <div className="p-8 backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl rounded-3xl">
@@ -98,7 +169,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                 <div className="flex items-center justify-between mb-2">
                                     <label className="text-sm font-medium text-gray-700">BePowered 2.0 Program</label>
                                     <button
-                                        onClick={() => setFormData({ ...formData, isBePowered: !formData.isBePowered })}
+                                        onClick={handleQuoBePoweredChange}
                                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isBePowered ? "bg-blue-500" : "bg-gray-200"}`}
                                     >
                                         <span
@@ -173,7 +244,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                             </span>
                         </div>
 
-                        <div className="flex justify-between items-center">
+                        {/* <div className="flex justify-between items-center">
                             <div>
                                 <span className="font-medium text-gray-900">Markup Price</span>
                             </div>
@@ -183,21 +254,21 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                     maximumFractionDigits: 2
                                 })}
                             </span>
-                        </div>
+                        </div> */}
 
 
                         <div>
                             <div className="flex justify-between items-center">
                                 <span className="font-medium text-gray-900">Upfront Payment</span>
-                                <span className="font-medium">RM {(25000).toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
+                                <span className="font-medium">RM {upfrontAmount.toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
                                 })}</span>
                             </div>
 
                             <div className="flex justify-between items-center text-green-600 mt-2">
                                 <span>EPP (36 months)</span>
-                                <span>RM {((25000 * 1.105) / 36).toLocaleString(undefined, {
+                                <span>RM {((upfrontAmount * 1.105) / 36).toLocaleString(undefined, {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 0
                                 })}/mth</span>
@@ -205,18 +276,47 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
 
                             <div className="flex justify-between items-center text-green-600 mt-2">
                                 <span>EPP (60 months)</span>
-                                <span>RM {((25000 * 1.14) / 60).toLocaleString(undefined, {
+                                <span>RM {((upfrontAmount * 1.14) / 60).toLocaleString(undefined, {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 0
                                 })}/mth</span>
                             </div>
                         </div>
+
+                        <div>
+                            <div className="flex justify-between items-center">
+                                <span className="font-medium text-gray-900">Installment ({formData.tenure} months)</span>
+                                <span className="font-medium">RM {monthlySum.toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })}/mth</span>
+                            </div>
+
+                            {selectedPackages.filter(pkg =>
+                                pkg.is_be_powered === true &&
+                                pkg.is_be_powered_included === true &&
+                                pkg.payment_method === 'bepowered' &&
+                                (pkg.is_addon ? pkg.is_addon_included === true : true)
+                            ).map((pkg, index) => (
+                                <div
+                                    key={index}
+                                    className="flex justify-between items-center text-gray-600 mt-2"
+                                >
+                                    <span>{pkg.name}</span>
+                                    <span>RM {(((calculatePackageTotal(pkg) / (pkg.quantity || 1) * (1 + pkg.markup_percentage))) / formData.tenure).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
+                                </div>
+                            ))}
+                        </div>
+
                         <div className="flex justify-between items-center text-xl font-bold text-gray-900 mt-4 pt-4 border-t border-gray-200">
-                            <span>Remaining Balance</span>
-                            <span>RM {((netAmount * 1.2) - 25000).toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            })}</span>
+                            <span>Total</span>
+                            <span>RM {upfrontAmount.toLocaleString(undefined, {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0
+                            })} + (RM {monthlySum.toLocaleString(undefined, {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0
+                            })} / month)</span>
                         </div>
                     </div>
                 </div>

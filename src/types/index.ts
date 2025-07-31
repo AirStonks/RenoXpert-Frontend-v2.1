@@ -182,12 +182,19 @@ export interface Package {
     name?: string;
     description?: string;
     total_price?: number;
+    monthly_amount?: number;
+    tenure?: number;
+    markup_percentage?: number;
+    markup_amount?: number;
     quantity?: number;
     products?: Product[];
     description_internal?: string;
     category?: string;
     is_addon?: boolean;
     is_addon_included?: boolean;
+    is_be_powered?: boolean;
+    is_be_powered_included?: boolean;
+    payment_method?: string;
     status?: string;
     created_by?: User;
     updated_by?: User;
@@ -296,6 +303,7 @@ export interface Order {
     description?: string,
     internal_remark?: string,
     completion_day?: number,
+    tenure?: number,
     bonus?: {
         description?: string,
         value?: number | string,

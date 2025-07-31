@@ -18,6 +18,8 @@ interface FormData {
     completionDays: number;
     isProgressivePayment: boolean;
     isDraftMode: boolean;
+    isBePowered: boolean;
+    tenure: number;
     finalAmount: number;
     bonusDescription: string;
     bonusValue: number;
@@ -26,6 +28,7 @@ interface FormData {
 
 interface PackagesStepProps {
     formData: FormData;
+    setFormData: (data: FormData) => void;
     selectedPackages: Package[];
     setSelectedPackages: React.Dispatch<React.SetStateAction<Package[]>>;
     onAddPackage: () => void;
@@ -34,10 +37,15 @@ interface PackagesStepProps {
     onPackageDragEnd: (event: DragEndEvent) => void;
     onProductsUpdate: (packageId: number, products: Product[]) => void;
     onAddonToggle: (packageId: number, isIncluded: boolean) => void;
+    onQuoBePoweredToggle: (isIncluded: boolean) => void;
+    onBePoweredToggle: (packageId: number, isIncluded: boolean) => void;
+    onBePoweredIncludeToggle: (packageId: number, isIncluded: boolean) => void;
+    onPaymentMethodChange: (packageId: number, paymentMethod: string) => void;
 }
 
 export default function PackagesStep({
     formData,
+    setFormData,
     selectedPackages,
     setSelectedPackages,
     onAddPackage,
@@ -45,7 +53,11 @@ export default function PackagesStep({
     totalAmount,
     onPackageDragEnd,
     onProductsUpdate,
-    onAddonToggle
+    onAddonToggle,
+    onQuoBePoweredToggle,
+    onBePoweredToggle,
+    onBePoweredIncludeToggle,
+    onPaymentMethodChange
 }: PackagesStepProps) {
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; cogs: number; quantity: number }[]>([])
 
@@ -160,6 +172,14 @@ export default function PackagesStep({
         )
     }
 
+    const handleQuoBePoweredToggle = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering the header click
+        if (onQuoBePoweredToggle) {
+            const newIncludedState = !formData.isBePowered;
+            onQuoBePoweredToggle(newIncludedState);
+        }
+    };
+
     // Calculate totals for summary
     const calculateSummaryTotals = () => {
         const totalCogs = packageCategories.reduce((sum, cat) => sum + cat.cogs, 0)
@@ -186,7 +206,7 @@ export default function PackagesStep({
 
     return (
         <div className="p-8 backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl rounded-3xl">
-            <div className="space-y-8">
+            <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-semibold text-gray-900 mb-2">Packages & Products</h2>
@@ -300,6 +320,41 @@ export default function PackagesStep({
                     </div>
                 )}
 
+                {selectedPackages.length > 0 && (
+                    <div className="p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-sm">
+                        <div className="flex gap-4">
+                            <h2 className="text-lg font-semibold text-gray-900">BePowered 2.0 Configuration</h2>
+                            <button
+                                onClick={handleQuoBePoweredToggle}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${formData.isBePowered ? 'bg-purple-500' : 'bg-gray-200'}`}
+                                aria-label={`${formData.isBePowered ? 'Active' : 'Inactive'} BePowered`}
+                            >
+                                <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isBePowered ? 'translate-x-6' : 'translate-x-1'}`}
+                                />
+                            </button>
+                            <span className={`text-sm font-medium ${formData.isBePowered ? 'text-purple-700' : 'text-gray-500'
+                                }`}>
+                                {formData.isBePowered ? 'Active' : 'Inactive'}
+                            </span>
+                        </div>
+                        {formData.isBePowered && (
+                            <div className="mt-4">
+                                <div className="flex items-center gap-2">
+                                    <span>Tenure (in month)</span>
+                                    <input
+                                        type="number"
+                                        value={formData.tenure}
+                                        onChange={(e) => setFormData({ ...formData, tenure: parseInt(e.target.value) })}
+                                        className="input w-20 px-2 py-1 border border-gray-300 rounded-md"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Selected Packages */}
                 {selectedPackages.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
@@ -330,11 +385,15 @@ export default function PackagesStep({
                                         key={`package-${pkg.id}`}
                                         package={pkg}
                                         index={index}
+                                        tenure={formData.tenure}
                                         onRemove={removePackage}
                                         onQuantityChange={updateQuantity}
                                         onProductsUpdate={onProductsUpdate}
                                         onAddProduct={() => onAddProduct(pkg.id)} // Pass package ID
                                         onAddonToggle={onAddonToggle}
+                                        onBePoweredToggle={onBePoweredToggle}
+                                        onBePoweredIncludeToggle={onBePoweredIncludeToggle}
+                                        onPaymentMethodChange={onPaymentMethodChange}
                                     />
                                 ))}
                             </SortableContext>

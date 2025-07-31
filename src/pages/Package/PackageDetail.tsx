@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useFetchPackage from "../../hook/useFetchPackage";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Loading from "../../components/Loading";
@@ -7,6 +7,7 @@ import { archivePackage, removePackage, restorePackage } from "../../services/ap
 import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
 import DeleteModal from "../../components/Modals/DeleteModal";
+import { ArrowLeft, Edit, Archive, MoreVertical, Copy, Trash2, RotateCcw, DollarSign, Calculator, Calendar, TrendingUp, PackageIcon, Clock } from 'lucide-react';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -23,7 +24,6 @@ const categoryOptions = [
     { value: "others", label: "Others" },
 ];
 
-
 function PackageDetail() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -32,6 +32,10 @@ function PackageDetail() {
     const { packageDetail, loading, error, refetch } = useFetchPackage(packageId);
 
     const [selectedPackage, setSelectedPackage] = useState<{ id: number | string, name: string } | null>(null);
+
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    const buttonRef = useRef(null);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -50,6 +54,11 @@ function PackageDetail() {
         document.title = "Package Detail | RenoXpert";
         setSelectedPackage({ id: packageId, name: packageDetail?.name || '' });
     }, [packageId, packageDetail?.name]);
+
+    // Toggle dropdown visibility
+    const toggleDropdown = () => {
+        setIsDropdownOpen((prev) => !prev);
+    };
 
     const handleBackClick = () => {
         if (state) {
@@ -113,15 +122,14 @@ function PackageDetail() {
         }
     }
 
-    if (!packageId) return null; // Early return for null packageId
-
+    if (!packageId) return null;
 
     if (loading) {
         return <Loading />;
     } else if (error) {
         return <div className="text-red-600">Something went wrong: {error}</div>;
     } else if (!packageDetail) {
-        return <div>Product Category not found</div>;
+        return <div>Package not found</div>;
     }
 
     // Calculate package retail price (sum of all items supply and install retail price)
@@ -135,349 +143,403 @@ function PackageDetail() {
     // Calculate package margin in percentage (handle division by zero)
     const packageMarginInPercentage = packageRetailPrice > 0 ? (packageMarginInAmount / packageRetailPrice) * 100 : 0;
 
-    return (
-        <>
-            <div className="flex justify-between items-center flex-wrap mb-6">
-                <div className="flex gap-4 items-center">
-                    <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
-                        <i className="ki-solid ki-arrow-left"></i>
-                    </button>
-                    <span className="text-2xl font-bold text-gray-900">
-                        Package Detail
-                    </span>
-                </div>
-                <div className="flex gap-4">
-                    <Link
-                        to={LOCAL_PATH_PREFIX + 'packages/edit/' + packageId}
-                        className="btn btn-info btn-sm"
-                    >
-                        <i className="ki-outline ki-notepad-edit"></i>
-                        Edit
-                    </Link>
-                    {packageDetail.status === 'archived' &&
-                        <button
-                            className="btn btn-success btn-sm btn-outline"
-                            data-modal-toggle="#restore_item_modal"
-                        >
-                            <div className="flex gap-2 items-center">
-                                <i className="ki-filled ki-archive"></i>
-                                <span>Restore Package</span>
-                            </div>
-                        </button>
-                    }
-                    <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
-                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
-                            <i className="ki-filled ki-dots-vertical"></i>
-                        </button>
+    // Calculate financial fields (using package data if available, otherwise calculated values)
+    const originalAmount = packageDetail.total_price || packageRetailPrice;
+    const markupAmount = packageDetail.markup_amount;
+    const markupPercentage = packageDetail.markup_percentage ? (packageDetail.markup_percentage * 100) : 0;
+    const tenure = packageDetail.tenure;
+    const monthlyAmount = packageDetail.monthly_amount;
+    const totalPackageAmount = originalAmount + markupAmount;
 
-                        <div className="dropdown-content menu menu-default w-full max-w-56 py-2" data-dropdown-dismiss="true">
-                            <div className="menu-item">
-                                <Link
-                                    to={LOCAL_PATH_PREFIX + `packages/create`}
-                                    state={{ dupPackId: packageId, fromUrl: LOCAL_PATH_PREFIX + `packages/${packageId}` }}
-                                    className="menu-link"
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+            {/* Header */}
+            <div className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
+                <div className="px-4 py-4 flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                        <button
+                            className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors duration-200"
+                            onClick={handleBackClick}
+                        >
+                            <ArrowLeft className="w-5 h-5 text-gray-700" />
+                        </button>
+                        <div>
+                            <h1 className="text-xl font-bold text-gray-900">Package Detail</h1>
+                            <p className="text-sm text-gray-600">{packageDetail.name}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Link
+                            to={LOCAL_PATH_PREFIX + 'packages/edit/' + packageId}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
+                        >
+                            <Edit className="w-4 h-4" />
+                            Edit
+                        </Link>
+                        {packageDetail.status === 'archived' && (
+                            <button
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200"
+                                data-modal-toggle="#restore_item_modal"
+                            >
+                                <RotateCcw className="w-4 h-4" />
+                                Restore
+                            </button>
+                        )}
+                        <div className="relative">
+                            <button
+                                ref={buttonRef}
+                                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors duration-200"
+                                onClick={toggleDropdown}
+                            >
+                                <MoreVertical className="w-5 h-5 text-gray-700" />
+                            </button>
+                            {isDropdownOpen && (
+                                <div
+                                    ref={dropdownRef}
+                                    className="absolute right-0 top-12 bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-2xl shadow-xl py-2 min-w-[200px] transition-all duration-200"
                                 >
-                                    <span className="menu-title">
-                                        <div className="flex gap-2 items-center">
-                                            <i className="ki-outline ki-note text-lg"></i>
-                                            <span>Duplicate Package</span>
-                                        </div>
-                                    </span>
-                                </Link>
-                            </div>
-                            {packageDetail.status !== 'archived' &&
-                                <div className="menu-item">
-                                    <button
-                                        className="menu-link"
-                                        data-modal-toggle="#archive_item_modal"
+                                    <Link
+                                        to={LOCAL_PATH_PREFIX + `packages/create`}
+                                        state={{ dupPackId: packageId, fromUrl: LOCAL_PATH_PREFIX + `packages/${packageId}` }}
+                                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200"
+                                        onClick={() => setIsDropdownOpen(false)}
                                     >
-                                        <span className="menu-title">
-                                            <div className="flex gap-2 items-center text-danger">
-                                                <i className="ki-filled ki-archive text-lg"></i>
-                                                <span>Archive Package</span>
-                                            </div>
-                                        </span>
-                                    </button>
+                                        <Copy className="w-4 h-4 text-gray-600" />
+                                        <span className="text-gray-700">Duplicate Package</span>
+                                    </Link>
+                                    {packageDetail.status !== 'archived' && (
+                                        <button
+                                            className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200 w-full text-left"
+                                            data-modal-toggle="#archive_item_modal"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                        >
+                                            <Archive className="w-4 h-4 text-red-500" />
+                                            <span className="text-red-500">Archive Package</span>
+                                        </button>
+                                    )}
+                                    {packageDetail.status === 'archived' && (
+                                        <button
+                                            className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200 w-full text-left"
+                                            data-modal-toggle="#delete_item_modal"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                        >
+                                            <Trash2 className="w-4 h-4 text-red-500" />
+                                            <span className="text-red-500">Remove Package</span>
+                                        </button>
+                                    )}
                                 </div>
-                            }
-                            {packageDetail.status === 'archived' &&
-                                <div className="menu-item">
-                                    <button
-                                        className="menu-link"
-                                        data-modal-toggle="#delete_item_modal"
-                                    >
-                                        <span className="menu-title">
-                                            <div className="flex gap-2 items-center text-danger">
-                                                <i className="ki-outline ki-trash text-lg"></i>
-                                                <span>Remove Package</span>
-                                            </div>
-                                        </span>
-                                    </button>
-                                </div>
-                            }
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
-            <div className="flex flex-wrap gap-8 mb-8">
-                <div className="left-column flex flex-col flex-[3] gap-8">
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                General Info
-                            </h3>
+
+            <div className="grid grid-cols-1 xl:grid-cols-9 gap-8 mb-8 py-6">
+                {/* Left Column - Package Details */}
+                <div className="xl:col-span-2 space-y-6">
+                    {/* Financial Overview */}
+                    <div className="bg-white/90 backdrop-blur-lg border border-gray-100 rounded-2xl shadow-lg p-6 max-w-2xl mx-auto">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                                <Calculator className="w-6 h-6 text-white" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-800">Financial Summary</h2>
                         </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Package Name:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {packageDetail.name}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Total Retail Price:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {`RM ${packageRetailPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Total COGS:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {`RM ${packageCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Total Margin (Amount):
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {`RM ${packageMarginInAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Total Margin (%):
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {`${packageMarginInPercentage.toFixed(2)}%`}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pe-4 lg:pe-8">
-                                            Status:
-                                        </td>
-                                        <td
-                                            className={`badge badge-sm badge-outline text-sm text-gray-900
-                                                    ${packageDetail.status === 'available' ? 'badge-success' : ''}
-                                                    ${packageDetail.status === 'archived' ? 'badge-danger' : ''}
-                                                `}
-                                        >
-                                            {packageDetail.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 py-3 pe-4 lg:pe-8">
-                                            Description:
-                                        </td>
-                                        <td className="text-sm text-gray-900 py-3">
-                                            {packageDetail.description}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Category:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {packageDetail.category ?
-                                                categoryOptions.find(option => option.value === packageDetail.category)?.label
-                                                :
-                                                '-'
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            Add-on Package:
-                                        </td>
-                                        <td className="text-sm text-gray-900 pb-3">
-                                            {packageDetail.is_addon ? 'Yes' : 'No'}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-gray-50/80 rounded-xl p-4">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <DollarSign className="w-5 h-5 text-blue-500" />
+                                    <span className="text-sm font-semibold text-gray-700">Original Amount</span>
+                                </div>
+                                <span className="text-lg font-bold text-blue-700">
+                                    RM {originalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </span>
+                            </div>
+
+                            {markupAmount > 0 && (
+                                <div className="bg-gray-50/80 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <TrendingUp className="w-5 h-5 text-orange-500" />
+                                        <span className="text-sm font-semibold text-gray-700">Markup Amount</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-orange-700">
+                                        RM {markupAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                            )}
+
+                            {markupPercentage > 0 && (
+                                <div className="bg-gray-50/80 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <TrendingUp className="w-5 h-5 text-purple-500" />
+                                        <span className="text-sm font-semibold text-gray-700">Markup %</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-purple-700">
+                                        {markupPercentage.toFixed(2)}%
+                                    </span>
+                                </div>
+                            )}
+
+                            {tenure > 0 && (
+                                <div className="bg-gray-50/80 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Calendar className="w-5 h-5 text-indigo-500" />
+                                        <span className="text-sm font-semibold text-gray-700">Tenure</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-indigo-700">
+                                        {tenure} months
+                                    </span>
+                                </div>
+                            )}
+
+                            {monthlyAmount > 0 && (
+                                <div className="bg-gray-50/80 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Clock className="w-5 h-5 text-teal-500" />
+                                        <span className="text-sm font-semibold text-gray-700">Monthly Amount</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-teal-700">
+                                        RM {monthlyAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Internal Description
-                            </h3>
+
+                    {/* Package Information */}
+                    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl p-6">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center">
+                                <PackageIcon className="w-5 h-5 text-white" />
+                            </div>
+                            <h2 className="text-xl font-semibold text-gray-900">Package Information</h2>
                         </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            {packageDetail.description_internal}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center py-3 border-b border-gray-200/50">
+                                <span className="text-sm font-medium text-gray-600">Package Name</span>
+                                <span className="text-sm font-semibold text-gray-900">{packageDetail.name}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-3 border-b border-gray-200/50">
+                                <span className="text-sm font-medium text-gray-600">Status</span>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${packageDetail.status === 'available'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                    }`}>
+                                    {packageDetail.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-3 border-b border-gray-200/50">
+                                <span className="text-sm font-medium text-gray-600">Category</span>
+                                <span className="text-sm font-semibold text-gray-900">
+                                    {packageDetail.category
+                                        ? categoryOptions.find(option => option.value === packageDetail.category)?.label
+                                        : '-'
+                                    }
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-3 border-b border-gray-200/50">
+                                <span className="text-sm font-medium text-gray-600">Add-on Package</span>
+                                <span className="text-sm font-semibold text-gray-900">
+                                    {packageDetail.is_addon ? 'Yes' : 'No'}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-start py-3 border-b border-gray-200/50">
+                                <span className="text-sm font-medium text-gray-600">Description</span>
+                                <span className="text-sm text-gray-900 text-right max-w-[200px]">
+                                    {packageDetail.description || '-'}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-start py-3">
+                                <span className="text-sm font-medium text-gray-600">Internal Description</span>
+                                <span className="text-sm text-gray-900 text-right max-w-[200px]">
+                                    {packageDetail.description_internal || '-'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Cost Analysis */}
+                    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl p-6">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Cost Analysis</h2>
+
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center py-3 border-b border-gray-200/50">
+                                <span className="text-sm font-medium text-gray-600">Total Retail Price</span>
+                                <span className="text-sm font-bold text-green-600">
+                                    RM {packageRetailPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-3 border-b border-gray-200/50">
+                                <span className="text-sm font-medium text-gray-600">Total COGS</span>
+                                <span className="text-sm font-bold text-red-600">
+                                    RM {packageCogs.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-3 border-b border-gray-200/50">
+                                <span className="text-sm font-medium text-gray-600">Margin Amount</span>
+                                <span className="text-sm font-bold text-blue-600">
+                                    RM {packageMarginInAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-3">
+                                <span className="text-sm font-medium text-gray-600">Margin Percentage</span>
+                                <span className="text-sm font-bold text-purple-600">
+                                    {packageMarginInPercentage.toFixed(2)}%
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className='flex flex-col right-column flex-[6] gap-8'>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">Products</h3>
-                        </div>
-                        <div className="card-table pb-3.5">
-                            <table className="table align-middle text-gray-700 font-medium text-sm">
-                                <thead>
-                                    <tr>
-                                        <th className="w-[10px]">#</th>
-                                        <th className="w-[250px]">Product</th>
-                                        <th className="w-[200px]">Supplier</th>
-                                        <th className="w-[50px] text-center">Quantity</th>
-                                        <th className="w-[100px] text-center">Visibility</th>
-                                        <th className="w-[100px] whitespace-nowrap">Supply RRP</th>
-                                        <th className="w-[100px] whitespace-nowrap">Install RRP</th>
-                                        <th className="w-[100px] whitespace-nowrap">Total RRP</th>
-                                        <th className="w-[100px] whitespace-nowrap">Supply COGS</th>
-                                        <th className="w-[100px] whitespace-nowrap">Install COGS</th>
-                                        <th className="w-[100px] whitespace-nowrap">Total COGS</th>
-                                        <th className="w-[100px] whitespace-nowrap">Margin %</th>
-                                        <th className="w-[100px] whitespace-nowrap">Margin Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {packageDetail.products.map((product, index) => (
-                                        <tr key={index} className="hover:bg-gray-50">
-                                            <td className="text-center">
-                                                {index + 1}
-                                            </td>
-                                            <td>
-                                                <div className="flex flex-col">
-                                                    <span>{product.name}</span>
-                                                    <div className="inline-block">
-                                                        <span className="text-xs text-slate-400 font-semibold badge badge-xs badge-pill">
+                {/* Right Column - Products */}
+                <div className="xl:col-span-7">
+                    <div className="bg-white/80 backdrop-blur-md border border-white/20 rounded-3xl shadow-xl p-6">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Products</h2>
+
+                        <div className="bg-white/50 backdrop-blur-sm border border-gray-200/50 rounded-2xl overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="table w-full text-sm">
+                                    <thead className="bg-gray-50/80 backdrop-blur-sm">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">#</th>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">Product</th>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">Supplier</th>
+                                            <th className="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap">Quantity</th>
+                                            <th className="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap">Visibility</th>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">Supply RRP</th>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">Install RRP</th>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">Total RRP</th>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">Supply COGS</th>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">Install COGS</th>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">Total COGS</th>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">Margin %</th>
+                                            <th className="px-4 py-3 text-left font-medium text-gray-700 whitespace-nowrap">Margin Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {packageDetail.products.map((product, index) => (
+                                            <tr key={index} className="hover:bg-gray-50/50 transition-colors duration-200">
+                                                <td className="px-4 py-3 text-center font-medium">
+                                                    {index + 1}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium text-gray-900">{product.name}</span>
+                                                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full inline-block w-fit mt-1">
                                                             SKU: {product.SKU || '-'}
                                                         </span>
+                                                        <span className="text-xs text-gray-600 mt-1">{product.description}</span>
                                                     </div>
-                                                    <span className="text-xs text-slate-400">{product.description}</span>
-                                                </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700">
+                                                    {product.supplier_name || '-'}
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <span className="px-3 py-1 rounded-full text-sm font-medium">
+                                                        {product.pivot.quantity}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <label className="switch flex justify-center">
+                                                        <input name="visibility"
+                                                            type="checkbox"
+                                                            checked={product.pivot.visibility}
+                                                            readOnly
+                                                        />
+                                                    </label>
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700 font-medium whitespace-nowrap">
+                                                    RM {product.provisioning.supply.retail_price.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700 font-medium whitespace-nowrap">
+                                                    RM {product.provisioning.install.retail_price.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </td>
+                                                <td className="px-4 py-3 text-green-600 font-bold whitespace-nowrap">
+                                                    RM {(
+                                                        (product.provisioning.supply.retail_price + product.provisioning.install.retail_price) *
+                                                        product.pivot.quantity
+                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700 font-medium whitespace-nowrap">
+                                                    RM {product.provisioning.supply.cogs.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700 font-medium whitespace-nowrap">
+                                                    RM {product.provisioning.install.cogs.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </td>
+                                                <td className="px-4 py-3 text-red-600 font-bold whitespace-nowrap">
+                                                    RM {(
+                                                        (product.provisioning.supply.cogs + product.provisioning.install.cogs) *
+                                                        product.pivot.quantity
+                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="px-4 py-3 font-bold whitespace-nowrap">
+                                                    {(() => {
+                                                        const totalRRP =
+                                                            (product.pivot.includeSupply
+                                                                ? product.provisioning.supply.retail_price * product.pivot.quantity
+                                                                : 0) +
+                                                            (product.pivot.includeInstall
+                                                                ? product.provisioning.install.retail_price * product.pivot.quantity
+                                                                : 0);
+                                                        const totalCOGS =
+                                                            (product.pivot.includeSupply
+                                                                ? product.provisioning.supply.cogs * product.pivot.quantity
+                                                                : 0) +
+                                                            (product.pivot.includeInstall
+                                                                ? product.provisioning.install.cogs * product.pivot.quantity
+                                                                : 0);
+                                                        return product.pivot.includeSupply || product.pivot.includeInstall
+                                                            ? totalRRP !== 0
+                                                                ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })}%`
+                                                                : totalCOGS > 0
+                                                                    ? "-100.00%"
+                                                                    : "0.00%"
+                                                            : "";
+                                                    })()}
+                                                </td>
+                                                <td className="px-4 py-3 font-bold whitespace-nowrap">
+                                                    RM {(
+                                                        ((product.provisioning.supply.retail_price + product.provisioning.install.retail_price) *
+                                                            product.pivot.quantity) -
+                                                        ((product.provisioning.supply.cogs + product.provisioning.install.cogs) *
+                                                            product.pivot.quantity)
+                                                    ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                    <tfoot className="bg-gray-100/80 backdrop-blur-sm">
+                                        <tr>
+                                            <td colSpan={4} className="px-4 py-3"></td>
+                                            <td className="px-4 py-3 text-center font-bold text-gray-900">
+                                                <span className="font-bold text-lg">Total</span>
                                             </td>
-                                            <td>
-                                                <span>{product.supplier_name ? product.supplier_name : '-'}</span>
-                                            </td>
-                                            <td className="text-center text-lg">
-                                                <span className="mx-2 text-base">{product.pivot.quantity}</span>
-                                            </td>
-                                            <td>
-                                                <label className="switch flex justify-center">
-                                                    <input
-                                                        name="visibility"
-                                                        type="checkbox"
-                                                        checked={product.pivot.visibility}
-                                                        readOnly
-                                                    />
-                                                </label>
-                                            </td>
-                                            <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
-                                                RM {product.provisioning.supply.retail_price.toLocaleString(undefined, {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2,
-                                                })}
-                                            </td>
-                                            <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
-                                                RM {product.provisioning.install.retail_price.toLocaleString(undefined, {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2,
-                                                })}
-                                            </td>
-                                            <td className="whitespace-nowrap font-semibold text-success">
-                                                RM {(
-                                                    (product.provisioning.supply.retail_price + product.provisioning.install.retail_price) *
-                                                    product.pivot.quantity
-                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
-                                                RM {product.provisioning.supply.cogs.toLocaleString(undefined, {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2,
-                                                })}
-                                            </td>
-                                            <td className="whitespace-nowrap text-gray-500 font-medium text-xs">
-                                                RM {product.provisioning.install.cogs.toLocaleString(undefined, {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2,
-                                                })}
-                                            </td>
-                                            <td className="whitespace-nowrap font-semibold text-danger">
-                                                RM {(
-                                                    (product.provisioning.supply.cogs + product.provisioning.install.cogs) *
-                                                    product.pivot.quantity
-                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="whitespace-nowrap font-semibold">
-                                                {(() => {
-                                                    const totalRRP =
-                                                        (product.pivot.includeSupply
-                                                            ? product.provisioning.supply.retail_price * product.pivot.quantity
-                                                            : 0) +
-                                                        (product.pivot.includeInstall
-                                                            ? product.provisioning.install.retail_price * product.pivot.quantity
-                                                            : 0);
-                                                    const totalCOGS =
-                                                        (product.pivot.includeSupply
-                                                            ? product.provisioning.supply.cogs * product.pivot.quantity
-                                                            : 0) +
-                                                        (product.pivot.includeInstall
-                                                            ? product.provisioning.install.cogs * product.pivot.quantity
-                                                            : 0);
-                                                    return product.pivot.includeSupply || product.pivot.includeInstall
-                                                        ? totalRRP !== 0
-                                                            ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })}%`
-                                                            : totalCOGS > 0
-                                                                ? "-100.00%"
-                                                                : "0.00%"
-                                                        : "";
-                                                })()}
-                                            </td>
-                                            <td className="whitespace-nowrap font-semibold">
-                                                RM {(
-                                                    ((product.provisioning.supply.retail_price + product.provisioning.install.retail_price) *
-                                                        product.pivot.quantity) -
-                                                    ((product.provisioning.supply.cogs + product.provisioning.install.cogs) *
-                                                        product.pivot.quantity)
-                                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                                <tfoot>
-                                    <tr className="bg-gray-200">
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td className="text-center py-3">
-                                            <span className="text-lg font-bold">Total</span>
-                                        </td>
-                                        <td className="whitespace-nowrap text-gray-600">
-                                            <span className="text-sm">
+                                            <td className="px-4 py-3 text-gray-700 font-medium whitespace-nowrap">
                                                 {(() => {
                                                     const totalSupplyRRP = packageDetail.products.reduce(
                                                         (acc, product) =>
@@ -491,10 +553,8 @@ function PackageDetail() {
                                                         })}`
                                                         : '';
                                                 })()}
-                                            </span>
-                                        </td>
-                                        <td className="whitespace-nowrap text-gray-600">
-                                            <span className="text-sm">
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-700 font-medium whitespace-nowrap">
                                                 {(() => {
                                                     const totalInstallRRP = packageDetail.products.reduce(
                                                         (acc, product) =>
@@ -508,30 +568,29 @@ function PackageDetail() {
                                                         })}`
                                                         : '';
                                                 })()}
-                                            </span>
-                                        </td>
-                                        <td className="whitespace-nowrap text-success font-extrabold highlight-total">
-                                            <span className="text-sm font-bold text-success">
-                                                {(() => {
-                                                    const totalRRP = packageDetail.products.reduce(
-                                                        (acc, product) =>
-                                                            acc +
-                                                            (product.provisioning.supply.retail_price +
-                                                                product.provisioning.install.retail_price) *
-                                                            product.pivot.quantity,
-                                                        0
-                                                    );
-                                                    return totalRRP > 0
-                                                        ? `RM ${totalRRP.toLocaleString(undefined, {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2,
-                                                        })}`
-                                                        : '';
-                                                })()}
-                                            </span>
-                                        </td>
-                                        <td className="whitespace-nowrap text-gray-600">
-                                            <span className="text-sm">
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <span className="text-md text-green-600 font-bold">
+                                                    {(() => {
+                                                        const totalRRP = packageDetail.products.reduce(
+                                                            (acc, product) =>
+                                                                acc +
+                                                                (product.provisioning.supply.retail_price +
+                                                                    product.provisioning.install.retail_price) *
+                                                                product.pivot.quantity,
+                                                            0
+                                                        );
+                                                        return totalRRP > 0
+                                                            ? `RM ${totalRRP.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}`
+                                                            : '';
+                                                    })()}
+                                                </span>
+
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-700 font-medium whitespace-nowrap">
                                                 {(() => {
                                                     const totalSupplyCOGS = packageDetail.products.reduce(
                                                         (acc, product) =>
@@ -545,10 +604,8 @@ function PackageDetail() {
                                                         })}`
                                                         : '';
                                                 })()}
-                                            </span>
-                                        </td>
-                                        <td className="whitespace-nowrap text-gray-600">
-                                            <span className="text-sm">
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-700 font-medium whitespace-nowrap">
                                                 {(() => {
                                                     const totalInstallCOGS = packageDetail.products.reduce(
                                                         (acc, product) =>
@@ -562,29 +619,27 @@ function PackageDetail() {
                                                         })}`
                                                         : '';
                                                 })()}
-                                            </span>
-                                        </td>
-                                        <td className="whitespace-nowrap text-danger font-extrabold highlight-total-cogs">
-                                            <span className="text-sm font-bold text-danger">
-                                                {(() => {
-                                                    const totalCOGS = packageDetail.products.reduce(
-                                                        (acc, product) =>
-                                                            acc +
-                                                            (product.provisioning.supply.cogs + product.provisioning.install.cogs) *
-                                                            product.pivot.quantity,
-                                                        0
-                                                    );
-                                                    return totalCOGS > 0
-                                                        ? `RM ${totalCOGS.toLocaleString(undefined, {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2,
-                                                        })}`
-                                                        : '';
-                                                })()}
-                                            </span>
-                                        </td>
-                                        <td className="whitespace-nowrap text-gray-600">
-                                            <span className="text-sm font-bold">
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <span className="text-md text-red-600 font-bold">
+                                                    {(() => {
+                                                        const totalCOGS = packageDetail.products.reduce(
+                                                            (acc, product) =>
+                                                                acc +
+                                                                (product.provisioning.supply.cogs + product.provisioning.install.cogs) *
+                                                                product.pivot.quantity,
+                                                            0
+                                                        );
+                                                        return totalCOGS > 0
+                                                            ? `RM ${totalCOGS.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })}`
+                                                            : '';
+                                                    })()}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-700 font-bold whitespace-nowrap">
                                                 {(() => {
                                                     const totalRRP = packageDetail.products.reduce(
                                                         (acc, product) =>
@@ -610,10 +665,8 @@ function PackageDetail() {
                                                             ? "-100.00%"
                                                             : "0.00%";
                                                 })()}
-                                            </span>
-                                        </td>
-                                        <td className="whitespace-nowrap text-gray-600">
-                                            <span className="text-sm font-bold">
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-700 font-bold whitespace-nowrap">
                                                 {(() => {
                                                     const totalRRP = packageDetail.products.reduce(
                                                         (acc, product) =>
@@ -636,27 +689,22 @@ function PackageDetail() {
                                                         maximumFractionDigits: 2,
                                                     })}`;
                                                 })()}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            {/* Archive Modal */}
             <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="archive_item_modal">
                 <div className="modal-content modal-center-y max-w-[500px]">
                     <div className="modal-body overflow-y-auto scrollable-y flex flex-col gap-6 justify-center items-center my-4">
-                        <div className="modal-title text-lg">
-                            Archive Package
-                        </div>
-
-                        <div className="text-gray-800">
-                            Are you sure you want to archive this package?
-                        </div>
-
+                        <div className="modal-title text-lg">Archive Package</div>
+                        <div className="text-gray-800">Are you sure you want to archive this package?</div>
                         <blockquote className="p-4 border-s-4 border-warning bg-warning-clarity rounded-md">
                             <div className="flex gap-4">
                                 <div className="flex">
@@ -664,17 +712,13 @@ function PackageDetail() {
                                 </div>
                                 <div className="flex flex-col gap-6">
                                     <div className="flex flex-col gap-2">
-                                        <span className="text-warning-active font-semibold">
-                                            Restore Package
-                                        </span>
+                                        <span className="text-warning-active font-semibold">Restore Package</span>
                                         <span className="text-sm text-gray-800">
                                             You can unarchive and restore packages from the package <strong>Archive Zone</strong>.
                                         </span>
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <span className="text-warning-active font-semibold">
-                                            Manual Removal from Associated Entities
-                                        </span>
+                                        <span className="text-warning-active font-semibold">Manual Removal from Associated Entities</span>
                                         <span className="text-sm text-gray-800">
                                             At this stage of system development, we are unable to automatically remove the item you are about to archive from the <strong>Package, Quotation Template and Quotation Orders</strong>. You will need to manually remove it from these sections.
                                         </span>
@@ -682,65 +726,23 @@ function PackageDetail() {
                                 </div>
                             </div>
                         </blockquote>
-
                         <div className="flex gap-4">
-                            <button
-                                className="btn btn-secondary btn-sm"
-                                data-modal-dismiss="true"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="btn btn-success btn-sm"
-                                onClick={handleArchiveItem}
-                            >
-                                Archive
-                            </button>
+                            <button className="btn btn-secondary btn-sm" data-modal-dismiss="true">Cancel</button>
+                            <button className="btn btn-success btn-sm" onClick={handleArchiveItem}>Archive</button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            {/* Restore Modal */}
             <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="restore_item_modal">
                 <div className="modal-content modal-center-y max-w-[500px]">
                     <div className="modal-body overflow-y-auto scrollable-y flex flex-col gap-6 justify-center items-center my-4">
-                        <div className="modal-title text-lg">
-                            Restore Package
-                        </div>
-
-                        <div className="text-gray-800">
-                            Are you sure you want to restore this package?
-                        </div>
-
-                        {/* <blockquote className="p-4 border-s-4 border-warning bg-warning-clarity rounded-md">
-                            <div className="flex gap-4">
-                                <div className="flex">
-                                    <i className="ki-filled ki-information-4 text-xl text-warning"></i>
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <span className="text-warning-active font-semibold">
-                                        Information
-                                    </span>
-                                    <span className="text-sm text-gray-800">
-                                        You can retrieve this product from the product archive zone and unarchive it.
-                                    </span>
-                                </div>
-                            </div>
-                        </blockquote> */}
-
+                        <div className="modal-title text-lg">Restore Package</div>
+                        <div className="text-gray-800">Are you sure you want to restore this package?</div>
                         <div className="flex gap-4">
-                            <button
-                                className="btn btn-secondary btn-sm"
-                                data-modal-dismiss="true"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="btn btn-success btn-sm"
-                                onClick={handleRestoreItem}
-                            >
-                                Restore
-                            </button>
+                            <button className="btn btn-secondary btn-sm" data-modal-dismiss="true">Cancel</button>
+                            <button className="btn btn-success btn-sm" onClick={handleRestoreItem}>Restore</button>
                         </div>
                     </div>
                 </div>
@@ -755,7 +757,7 @@ function PackageDetail() {
                 navigateUrl='/packages'
                 deleteFunction={handleRemovePackage}
             />
-        </>
+        </div>
     );
 }
 

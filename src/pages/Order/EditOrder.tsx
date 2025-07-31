@@ -34,6 +34,7 @@ interface FormData {
     isProgressivePayment: boolean;
     isDraftMode: boolean;
     isBePowered: boolean;
+    tenure: number;
     finalAmount: number;
     bonusDescription: string;
     bonusValue: number;
@@ -81,6 +82,7 @@ export default function EditOrder() {
         isDraftMode: false,
         isBePowered: false,
         finalAmount: 0,
+        tenure: 12,
         bonusDescription: "",
         bonusValue: 0,
         internalRemark: "",
@@ -120,6 +122,7 @@ export default function EditOrder() {
                     includePartition: !!orderDetail.include_partition,
                     isProgressivePayment: !!orderDetail.is_progressive_payment,
                     isBePowered: !!orderDetail.is_be_powered,
+                    tenure: orderDetail.tenure || 0,
                     bonusDescription: orderDetail.latest_quotation.bonus?.description || "",
                     bonusValue: Number(orderDetail.latest_quotation.bonus?.value) || 0,
                 });
@@ -168,6 +171,59 @@ export default function EditOrder() {
                         is_addon_included: isIncluded
                     };
 
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
+    };
+
+    const handleQuoBePoweredToggle = (isIncluded: boolean): void => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            isBePowered: isIncluded
+        }));
+    }
+
+    const handleBePoweredPackageToggle = (packageId: number, isIncluded: boolean): void => {
+        console.log(isIncluded);
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        is_be_powered: isIncluded
+                    };
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
+    };
+
+    const handleBePoweredPackageIncludeToggle = (packageId: number, isIncluded: boolean): void => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        is_be_powered_included: isIncluded
+                    };
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
+    };
+
+    const handlePaymentMethodChange = (packageId: number, paymentMethod: string) => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        payment_method: paymentMethod
+                    };
                     return updatedPackage;
                 }
                 return pkg;
@@ -457,6 +513,7 @@ export default function EditOrder() {
             description: "",
             internal_remark: formData.internalRemark,
             completion_day: formData.completionDays,
+            tenure: formData.tenure,
             bonus: {
                 description: formData.bonusDescription,
                 value: formData.bonusValue,
@@ -623,6 +680,7 @@ export default function EditOrder() {
                                 {currentStep === 2 && (
                                     <PackagesStep
                                         formData={formData}
+                                        setFormData={setFormData}
                                         selectedPackages={selectedPackages}
                                         setSelectedPackages={setSelectedPackages}
                                         onAddPackage={() => setShowPackageSelector(true)}
@@ -631,6 +689,10 @@ export default function EditOrder() {
                                         onPackageDragEnd={handlePackageDragEnd}
                                         onProductsUpdate={handleProductsUpdate}
                                         onAddonToggle={handleAddonPackageToggle}
+                                        onQuoBePoweredToggle={handleQuoBePoweredToggle}
+                                        onBePoweredToggle={handleBePoweredPackageToggle}
+                                        onBePoweredIncludeToggle={handleBePoweredPackageIncludeToggle}
+                                        onPaymentMethodChange={handlePaymentMethodChange}
                                     />
                                 )}
 
@@ -690,7 +752,10 @@ export default function EditOrder() {
                     setSelectedPackages((prev) => [...prev, {
                         ...pkg,
                         quantity: 1,
-                        is_addon_included: pkg.is_addon ? false : undefined
+                        is_addon_included: pkg.is_addon ? false : undefined,
+                        is_be_powered: false,
+                        is_be_powered_included: false,
+                        payment_method: 'bepowered',
                     }])
                 }}
                 onRemovePackage={(pkgId) => {

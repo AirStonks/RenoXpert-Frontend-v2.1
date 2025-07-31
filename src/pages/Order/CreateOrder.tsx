@@ -33,6 +33,7 @@ interface FormData {
     isDraftMode: boolean;
     isBePowered: boolean;
     finalAmount: number;
+    tenure: number;
     bonusDescription: string;
     bonusValue: number;
     internalRemark: string;
@@ -61,6 +62,27 @@ export default function CreateOrder() {
     const [showProductModal, setShowProductModal] = useState(false)
     const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({})
     const [activePackageId, setActivePackageId] = useState<number | null>(null);
+
+    const [formData, setFormData] = useState({
+        unitType: "",
+        block: "",
+        floor: "",
+        unitNo: "",
+        queenBedrooms: 1,
+        singleBedrooms: 1,
+        studios: 0,
+        bathrooms: 1,
+        includePartition: false,
+        completionDays: 30,
+        isProgressivePayment: true,
+        isDraftMode: false,
+        isBePowered: false,
+        tenure: 12,
+        finalAmount: 0,
+        bonusDescription: "",
+        bonusValue: 0,
+        internalRemark: "",
+    } as FormData)
 
     const notify = (type: "success" | "error", message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -114,25 +136,34 @@ export default function CreateOrder() {
 
     }, [duplicateOrderId]);
 
-    const [formData, setFormData] = useState({
-        unitType: "",
-        block: "",
-        floor: "",
-        unitNo: "",
-        queenBedrooms: 1,
-        singleBedrooms: 1,
-        studios: 0,
-        bathrooms: 1,
-        includePartition: false,
-        completionDays: 30,
-        isProgressivePayment: true,
-        isDraftMode: false,
-        finalAmount: 0,
-        bonusDescription: "",
-        bonusValue: 0,
-        internalRemark: "",
-    } as FormData)
+    const handleQuoBePoweredToggle = () => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            isBePowered: !prevFormData.isBePowered
+        }));
 
+        if (!formData.isBePowered) {
+            selectedPackages.forEach(pkg => {
+                const updatedPackage: Package = {
+                    ...pkg,
+                    is_addon_included: true,
+                    is_be_powered: true,
+                    is_be_powered_included: true,
+                    payment_method: "bepowered"
+                };
+                setSelectedPackages(prevPackages => prevPackages.map(p => p.id === pkg.id ? updatedPackage : p));
+            })
+        } else {
+            selectedPackages.forEach(pkg => {
+                const updatedPackage: Package = {
+                    ...pkg,
+                    is_be_powered: false,
+                    is_be_powered_included: false
+                };
+                setSelectedPackages(prevPackages => prevPackages.map(p => p.id === pkg.id ? updatedPackage : p));
+            })
+        }
+    }
     const handleAddonPackageToggle = (packageId: number, isIncluded: boolean): void => {
         setSelectedPackages(prevPackages =>
             prevPackages.map(pkg => {
@@ -140,6 +171,54 @@ export default function CreateOrder() {
                     const updatedPackage: Package = {
                         ...pkg,
                         is_addon_included: isIncluded
+                    };
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
+    };
+
+    const handleBePoweredPackageToggle = (packageId: number, isIncluded: boolean): void => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                console.log(packageId, pkg.id);
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        is_addon_included: isIncluded ? true : pkg.is_addon_included,
+                        is_be_powered: isIncluded,
+                        is_be_powered_included: true
+                    };
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
+    };
+
+    const handleBePoweredPackageIncludeToggle = (packageId: number, isIncluded: boolean): void => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        is_be_powered_included: isIncluded
+                    };
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
+    };
+
+    const handlePaymentMethodChange = (packageId: number, paymentMethod: string) => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        payment_method: paymentMethod
                     };
                     return updatedPackage;
                 }
@@ -398,6 +477,7 @@ export default function CreateOrder() {
             description: "",
             internal_remark: formData.internalRemark,
             completion_day: formData.completionDays,
+            tenure: formData.tenure,
             bonus: {
                 description: formData.bonusDescription,
                 value: formData.bonusValue,
@@ -436,7 +516,7 @@ export default function CreateOrder() {
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-4">
                             <Link
-                                to={LOCAL_PATH_PREFIX + 'orders' }
+                                to={LOCAL_PATH_PREFIX + 'orders'}
                                 className="p-2 rounded-full hover:bg-gray-100/80 transition-colors duration-200"
                             >
                                 <ArrowLeft className="h-5 w-5 text-gray-700" />
@@ -544,6 +624,7 @@ export default function CreateOrder() {
                                 {currentStep === 2 && (
                                     <PackagesStep
                                         formData={formData}
+                                        setFormData={setFormData}
                                         selectedPackages={selectedPackages}
                                         setSelectedPackages={setSelectedPackages}
                                         onAddPackage={() => setShowPackageSelector(true)}
@@ -552,6 +633,10 @@ export default function CreateOrder() {
                                         onPackageDragEnd={handlePackageDragEnd}
                                         onProductsUpdate={handleProductsUpdate}
                                         onAddonToggle={handleAddonPackageToggle}
+                                        onQuoBePoweredToggle={handleQuoBePoweredToggle}
+                                        onBePoweredToggle={handleBePoweredPackageToggle}
+                                        onBePoweredIncludeToggle={handleBePoweredPackageIncludeToggle}
+                                        onPaymentMethodChange={handlePaymentMethodChange}
                                     />
                                 )}
 
@@ -563,6 +648,7 @@ export default function CreateOrder() {
                                         netAmount={netAmount}
                                         selectedPackages={selectedPackages}
                                         addonPackages={getAddonPackages()}
+                                        onToggleQuoBePowered={handleQuoBePoweredToggle}
                                         includedAddonPackages={getIncludedAddonPackages()}
                                     />
                                 )}
@@ -609,7 +695,10 @@ export default function CreateOrder() {
                     setSelectedPackages((prev) => [...prev, {
                         ...pkg,
                         quantity: 1,
-                        is_addon_included: pkg.is_addon ? false : undefined
+                        is_addon_included: pkg.is_addon ? false : false,
+                        is_be_powered: false,
+                        is_be_powered_included: false,
+                        payment_method: 'bepowered',
                     }])
                 }}
                 onRemovePackage={(pkgId) => {
