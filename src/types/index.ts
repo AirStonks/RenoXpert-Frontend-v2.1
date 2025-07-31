@@ -193,7 +193,6 @@ export interface Package {
     is_addon?: boolean;
     is_addon_included?: boolean;
     is_be_powered?: boolean;
-    is_be_powered_included?: boolean;
     payment_method?: string;
     status?: string;
     created_by?: User;

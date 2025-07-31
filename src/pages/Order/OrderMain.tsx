@@ -56,6 +56,15 @@ const getStatusLabel = (status: string) => {
     }
 }
 
+const getProgramLabel = (program: string) => {
+    switch (program) {
+        case 'be-powered':
+            return 'BePowered 2.0';
+        default:
+            return program.charAt(0).toUpperCase() + program.slice(1);
+    }
+}
+
 function OrderMain() {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -306,6 +315,15 @@ function OrderMain() {
         }
     };
 
+    const getProgramBadge = (program: string) => {
+        switch (program) {
+            case 'be-powered':
+                return `bg-blue-100 text-blue-800`;
+            default:
+                return `bg-gray-100 text-gray-800`;
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gray-100 p-4">
             {/* Sticky Header */}
@@ -455,6 +473,7 @@ function OrderMain() {
                             <th className="px-4 py-3 w-32 text-center">Property</th>
                             <th className="px-4 py-3 w-24 text-center">Unit</th>
                             <th className="px-4 py-3 w-24 text-center">Partition</th>
+                            <th className="px-4 py-3 w-32 text-center">Program</th>
                             <th className="px-4 py-3 w-32 text-center">Price</th>
                             <th
                                 className="px-4 py-3 w-32 text-center cursor-pointer hover:bg-gray-100"
@@ -503,6 +522,9 @@ function OrderMain() {
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <div className="h-4 bg-gray-200 rounded w-8 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
@@ -567,6 +589,11 @@ function OrderMain() {
                                     <td className="px-4 py-3 text-center">
                                         <span className={order.include_partition ? 'text-green-600' : 'text-gray-400'}>
                                             {order.include_partition ? 'Yes' : 'No'}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getProgramBadge(order.is_be_powered ? 'be-powered' : '-')}`}>
+                                            {order.is_be_powered ? getProgramLabel('be-powered') : getProgramLabel('-')}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 text-center">

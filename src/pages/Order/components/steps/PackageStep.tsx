@@ -28,38 +28,34 @@ interface FormData {
 
 interface PackagesStepProps {
     formData: FormData;
-    setFormData: (data: FormData) => void;
     selectedPackages: Package[];
     setSelectedPackages: React.Dispatch<React.SetStateAction<Package[]>>;
     onAddPackage: () => void;
-    onAddProduct: (packageId: number) => void; // Modified to accept packageId
-    totalAmount: number;
+    onAddProduct: (packageId: number) => void;
     onPackageDragEnd: (event: DragEndEvent) => void;
     onProductsUpdate: (packageId: number, products: Product[]) => void;
     onAddonToggle: (packageId: number, isIncluded: boolean) => void;
     onQuoBePoweredToggle: (isIncluded: boolean) => void;
-    onBePoweredToggle: (packageId: number, isIncluded: boolean) => void;
-    onBePoweredIncludeToggle: (packageId: number, isIncluded: boolean) => void;
-    onPaymentMethodChange: (packageId: number, paymentMethod: string) => void;
+    onPaymentMethodChange: (packageId: number, paymentMethod: string, customMonthlyAmount?: number) => void;
+    onCustomMonthlyAmountChange: (packageId: number, customMonthlyAmount: number) => void;
+    onTenureChange: (newTenuew: number) => void;
 }
 
 export default function PackagesStep({
     formData,
-    setFormData,
     selectedPackages,
     setSelectedPackages,
     onAddPackage,
     onAddProduct,
-    totalAmount,
     onPackageDragEnd,
     onProductsUpdate,
     onAddonToggle,
     onQuoBePoweredToggle,
-    onBePoweredToggle,
-    onBePoweredIncludeToggle,
-    onPaymentMethodChange
+    onPaymentMethodChange,
+    onCustomMonthlyAmountChange,
+    onTenureChange,
 }: PackagesStepProps) {
-    const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; cogs: number; quantity: number }[]>([])
+    const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; cogs: number; quantity: number }[]>([]);
 
     const categoryOptions = [
         { value: "renovation", label: "Renovation" },
@@ -69,81 +65,79 @@ export default function PackagesStep({
         { value: "electrical_appliances", label: "Electrical Appliances" },
         { value: "air_conditioning", label: "Air Conditioning" },
         { value: "others", label: "Others" },
-    ]
+    ];
 
     useEffect(() => {
         if (!selectedPackages || selectedPackages.length === 0) {
-            setPackageCategories([])
-            return
+            setPackageCategories([]);
+            return;
         }
 
-        let addonCounter = 0
+        let addonCounter = 0;
         const categoryTotals = selectedPackages.reduce((acc, pkg) => {
-            // Skip excluded add-ons
             if (pkg.is_addon === true && pkg.is_addon_included === false) {
-                return acc
+                return acc;
             }
 
-            let category
+            let category;
             if (pkg.is_addon === true) {
-                addonCounter += 1
-                category = `Add-on Option ${addonCounter} (${pkg.name})`
+                addonCounter += 1;
+                category = `Add-on Option ${addonCounter} (${pkg.name})`;
             } else {
-                category = pkg.category || 'others'
+                category = pkg.category || 'others';
             }
 
             const categoryData = pkg.products?.reduce(
                 (data, product) => {
-                    let supplyPrice = 0
-                    let installPrice = 0
-                    let supplyCogs = 0
-                    let installCogs = 0
+                    let supplyPrice = 0;
+                    let installPrice = 0;
+                    let supplyCogs = 0;
+                    let installCogs = 0;
 
-                    // Calculate retail prices
                     if (product.provisioning?.supply) {
                         if (product.pivot?.includeSupply) {
-                            supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1)
-                            supplyCogs = (product.provisioning.supply.cogs || 0) * (product.pivot.quantity || 1)
+                            supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1);
+                            supplyCogs = (product.provisioning.supply.cogs || 0) * (product.pivot.quantity || 1);
                         } else {
                             supplyPrice = Math.max(0,
                                 (product.provisioning.supply.retail_price || 0) -
                                 (product.provisioning.supply.excluded_price || 0)
-                            ) * (product.pivot?.quantity || 1)
+                            ) * (product.pivot?.quantity || 1);
                         }
                     }
 
                     if (product.provisioning?.install) {
                         if (product.pivot?.includeInstall) {
-                            installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1)
-                            installCogs = (product.provisioning.install.cogs || 0) * (product.pivot?.quantity || 1)
+                            installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1);
+                            installCogs = (product.provisioning.install.cogs || 0) * (product.pivot?.quantity || 1);
                         } else {
                             installPrice = Math.max(0,
                                 (product.provisioning.install.retail_price || 0) -
                                 (product.provisioning.install.excluded_price || 0)
-                            ) * (product.pivot?.quantity || 1)
+                            ) * (product.pivot?.quantity || 1);
                         }
                     }
 
                     return {
                         total_price: data.total_price + supplyPrice + installPrice,
                         cogs: data.cogs + supplyCogs + installCogs,
-                    }
+                    };
                 },
                 { total_price: 0, cogs: 0 }
-            ) || { total_price: pkg.total_price || 0, cogs: 0 }
+            ) || { total_price: pkg.total_price || 0, cogs: 0 };
 
-            const categoryTotalPrice = categoryData.total_price * (pkg.quantity || 1)
-            const categoryCogs = categoryData.cogs * (pkg.quantity || 1)
+            const categoryTotalPrice = formData.isBePowered ? (pkg.markup_amount * (pkg.quantity || 1)) : (categoryData.total_price * (pkg.quantity || 1));
+            const categoryCogs = categoryData.cogs * (pkg.quantity || 1);
 
             if (!acc[category]) {
-                acc[category] = { total_price: 0, cogs: 0, quantity: 0 }
+                acc[category] = { total_price: 0, cogs: 0, quantity: 0 };
             }
-            acc[category].total_price += categoryTotalPrice
-            acc[category].cogs += categoryCogs
-            acc[category].quantity += pkg.quantity || 1
+            acc[category].total_price += categoryTotalPrice;
+            acc[category].cogs += categoryCogs;
+            acc[category].quantity += pkg.quantity || 1;
 
-            return acc
-        }, {} as Record<string, { total_price: number; cogs: number; quantity: number }>)
+            return acc;
+        }, {} as Record<string, { total_price: number; cogs: number; quantity: number }>);
 
         const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, cogs, quantity }]) => ({
             category: category.startsWith('Add-on Option')
@@ -152,44 +146,69 @@ export default function PackagesStep({
             total_price,
             cogs,
             quantity,
-        }))
+        }));
 
         const sortedCategories = [
             ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')),
             ...categoriesArray.filter(item => item.category.startsWith('Add-on Option')),
-        ]
+        ];
 
-        setPackageCategories(sortedCategories)
-    }, [selectedPackages])
+        setPackageCategories(sortedCategories);
+    }, [selectedPackages, formData.isBePowered]);
 
     const removePackage = (id: number) => {
-        setSelectedPackages((prev: Package[]) => prev.filter((pkg) => pkg.id !== id))
-    }
+        setSelectedPackages((prev: Package[]) => prev.filter((pkg) => pkg.id !== id));
+    };
 
     const updateQuantity = (id: number, quantity: number) => {
         setSelectedPackages((prev: Package[]) =>
-            prev.map((pkg) => (pkg.id === id ? { ...pkg, quantity: Math.max(1, quantity) } : pkg)),
-        )
-    }
+            prev.map((pkg) => (pkg.id === id ? { ...pkg, quantity: Math.max(1, quantity) } : pkg))
+        );
+    };
 
     const handleQuoBePoweredToggle = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent triggering the header click
+        e.stopPropagation();
         if (onQuoBePoweredToggle) {
             const newIncludedState = !formData.isBePowered;
             onQuoBePoweredToggle(newIncludedState);
         }
     };
 
-    // Calculate totals for summary
-    const calculateSummaryTotals = () => {
-        const totalCogs = packageCategories.reduce((sum, cat) => sum + cat.cogs, 0)
-        const marginInAmount = totalAmount - totalCogs
-        const marginInPercentage = totalAmount > 0 ? (marginInAmount / totalAmount) * 100 : 0
+    const handleMarkupUpdate = (packageId: number, markupAmount: number, markupPercentage: number) => {
+        setSelectedPackages((prev: Package[]) =>
+            prev.map((pkg) =>
+                pkg.id === packageId
+                    ? {
+                        ...pkg,
+                        markup_amount: markupAmount,
+                        markup_percentage: markupPercentage / 100,
+                        monthly_amount: pkg.payment_method === 'dynamic-installation' ? markupAmount / formData.tenure : pkg.monthly_amount,
+                    }
+                    : pkg
+            )
+        );
+    };
 
-        const discount = Number(formData.bonusValue) || 0
-        const nettAmount = totalAmount - discount
-        const nettMargin = nettAmount - totalCogs
-        const nettMarginPercentage = nettAmount > 0 ? (nettMargin / nettAmount) * 100 : 0
+    const handleTenureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        onTenureChange(Number(e.target.value));
+        setSelectedPackages((prev: Package[]) =>
+            prev.map((pkg) => ({
+                ...pkg,
+                tenure: Number(e.target.value),
+                monthly_amount: pkg.payment_method === 'dynamic-installation' ? pkg.markup_amount / Number(e.target.value) : pkg.monthly_amount,
+            }))
+        );
+    };
+
+    const calculateSummaryTotals = (totalAmount: number) => {
+        const totalCogs = packageCategories.reduce((sum, cat) => sum + cat.cogs, 0);
+        const marginInAmount = totalAmount - totalCogs;
+        const marginInPercentage = totalAmount > 0 ? (marginInAmount / totalAmount) * 100 : 0;
+
+        const discount = Number(formData.bonusValue) || 0;
+        const nettAmount = totalAmount - discount;
+        const nettMargin = nettAmount - totalCogs;
+        const nettMarginPercentage = nettAmount > 0 ? (nettMargin / nettAmount) * 100 : 0;
 
         return {
             totalCogs,
@@ -198,11 +217,12 @@ export default function PackagesStep({
             discount,
             nettAmount,
             nettMargin,
-            nettMarginPercentage
-        }
-    }
+            nettMarginPercentage,
+        };
+    };
 
-    const summaryTotals = calculateSummaryTotals()
+    const calculatedTotalAmount = packageCategories.reduce((sum, cat) => sum + cat.total_price, 0);
+    const summaryTotals = calculateSummaryTotals(calculatedTotalAmount);
 
     return (
         <div className="p-8 backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl rounded-3xl">
@@ -210,6 +230,9 @@ export default function PackagesStep({
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-semibold text-gray-900 mb-2">Packages & Products</h2>
+                        <button onClick={() => console.log(packageCategories)}>
+                            TEST
+                        </button>
                         <p className="text-gray-600">Add packages and customize products for this order</p>
                     </div>
                     <button
@@ -221,7 +244,6 @@ export default function PackagesStep({
                     </button>
                 </div>
 
-                {/* Summary Pricing Table */}
                 {selectedPackages.length > 0 && (
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-sm">
                         <div className="p-6">
@@ -239,10 +261,10 @@ export default function PackagesStep({
                                     </thead>
                                     <tbody>
                                         {packageCategories.map((category, index) => {
-                                            const categoryMargin = category.total_price - category.cogs
+                                            const categoryMargin = category.total_price - category.cogs;
                                             const categoryMarginPercentage = category.total_price > 0
                                                 ? (categoryMargin / category.total_price) * 100
-                                                : 0
+                                                : 0;
 
                                             return (
                                                 <tr key={index}>
@@ -260,14 +282,15 @@ export default function PackagesStep({
                                                         {categoryMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                                     </td>
                                                 </tr>
-                                            )
+                                            );
                                         })}
 
-                                        {/* Totals Row */}
                                         <tr className="border-t border-gray-200">
-                                            <td className="text-sm text-gray-600 font-bold pt-3 pe-4">Total</td>
+                                            <td className="text-sm text-gray-600 font-bold pt-3 pe-4">
+                                                {formData.isBePowered ? 'Markup Amount' : 'Total'}
+                                            </td>
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                RM {calculatedTotalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 RM {summaryTotals.totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -280,7 +303,6 @@ export default function PackagesStep({
                                             </td>
                                         </tr>
 
-                                        {/* Bonus/Discount Row */}
                                         {summaryTotals.discount > 0 && (
                                             <tr>
                                                 <td className="text-sm text-gray-600 pt-3">Bonus/Discount</td>
@@ -297,7 +319,6 @@ export default function PackagesStep({
                                             </tr>
                                         )}
 
-                                        {/* Nett Amount Row */}
                                         <tr>
                                             <td className="text-sm text-gray-600 font-bold pt-3 pe-4">Nett Amount</td>
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
@@ -333,8 +354,7 @@ export default function PackagesStep({
                                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isBePowered ? 'translate-x-6' : 'translate-x-1'}`}
                                 />
                             </button>
-                            <span className={`text-sm font-medium ${formData.isBePowered ? 'text-purple-700' : 'text-gray-500'
-                                }`}>
+                            <span className={`text-sm font-medium ${formData.isBePowered ? 'text-purple-700' : 'text-gray-500'}`}>
                                 {formData.isBePowered ? 'Active' : 'Inactive'}
                             </span>
                         </div>
@@ -345,7 +365,7 @@ export default function PackagesStep({
                                     <input
                                         type="number"
                                         value={formData.tenure}
-                                        onChange={(e) => setFormData({ ...formData, tenure: parseInt(e.target.value) })}
+                                        onChange={handleTenureChange}
                                         className="input w-20 px-2 py-1 border border-gray-300 rounded-md"
                                     />
                                 </div>
@@ -354,7 +374,6 @@ export default function PackagesStep({
                     </div>
                 )}
 
-                {/* Selected Packages */}
                 {selectedPackages.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
@@ -386,14 +405,15 @@ export default function PackagesStep({
                                         package={pkg}
                                         index={index}
                                         tenure={formData.tenure}
+                                        quoBePowered={formData.isBePowered}
                                         onRemove={removePackage}
                                         onQuantityChange={updateQuantity}
                                         onProductsUpdate={onProductsUpdate}
-                                        onAddProduct={() => onAddProduct(pkg.id)} // Pass package ID
+                                        onAddProduct={() => onAddProduct(pkg.id)}
                                         onAddonToggle={onAddonToggle}
-                                        onBePoweredToggle={onBePoweredToggle}
-                                        onBePoweredIncludeToggle={onBePoweredIncludeToggle}
                                         onPaymentMethodChange={onPaymentMethodChange}
+                                        onCustomMonthlyAmountChange={onCustomMonthlyAmountChange}
+                                        onMarkupUpdate={handleMarkupUpdate}
                                     />
                                 ))}
                             </SortableContext>
@@ -401,6 +421,6 @@ export default function PackagesStep({
                     </div>
                 )}
             </div>
-        </div>
-    )
+        </div >
+    );
 }

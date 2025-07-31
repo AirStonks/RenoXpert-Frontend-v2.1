@@ -77,7 +77,7 @@ export default function CreateOrder() {
         isProgressivePayment: true,
         isDraftMode: false,
         isBePowered: false,
-        tenure: 12,
+        tenure: 60,
         finalAmount: 0,
         bonusDescription: "",
         bonusValue: 0,
@@ -146,10 +146,8 @@ export default function CreateOrder() {
             selectedPackages.forEach(pkg => {
                 const updatedPackage: Package = {
                     ...pkg,
-                    is_addon_included: true,
                     is_be_powered: true,
-                    is_be_powered_included: true,
-                    payment_method: "bepowered"
+                    payment_method: "one-off"
                 };
                 setSelectedPackages(prevPackages => prevPackages.map(p => p.id === pkg.id ? updatedPackage : p));
             })
@@ -158,12 +156,12 @@ export default function CreateOrder() {
                 const updatedPackage: Package = {
                     ...pkg,
                     is_be_powered: false,
-                    is_be_powered_included: false
                 };
                 setSelectedPackages(prevPackages => prevPackages.map(p => p.id === pkg.id ? updatedPackage : p));
             })
         }
-    }
+    };
+
     const handleAddonPackageToggle = (packageId: number, isIncluded: boolean): void => {
         setSelectedPackages(prevPackages =>
             prevPackages.map(pkg => {
@@ -179,16 +177,18 @@ export default function CreateOrder() {
         );
     };
 
-    const handleBePoweredPackageToggle = (packageId: number, isIncluded: boolean): void => {
+    const handlePaymentMethodChange = (packageId: number, paymentMethod: string, customMonthlyAmount?: number) => {
         setSelectedPackages(prevPackages =>
             prevPackages.map(pkg => {
-                console.log(packageId, pkg.id);
                 if (pkg.id === packageId) {
                     const updatedPackage: Package = {
                         ...pkg,
-                        is_addon_included: isIncluded ? true : pkg.is_addon_included,
-                        is_be_powered: isIncluded,
-                        is_be_powered_included: true
+                        payment_method: paymentMethod,
+                        monthly_amount: (paymentMethod === 'fix-installation'
+                            ? customMonthlyAmount ? Math.ceil(customMonthlyAmount) : customMonthlyAmount
+                            : paymentMethod === 'dynamic-installation'
+                                ? Math.ceil(pkg.markup_amount / formData.tenure)
+                                : 0)
                     };
                     return updatedPackage;
                 }
@@ -197,40 +197,32 @@ export default function CreateOrder() {
         );
     };
 
-    const handleBePoweredPackageIncludeToggle = (packageId: number, isIncluded: boolean): void => {
+    const handleCustomMonthlyAmountChange = (packageId: number, customMonthlyAmount: number) => {
         setSelectedPackages(prevPackages =>
             prevPackages.map(pkg => {
                 if (pkg.id === packageId) {
                     const updatedPackage: Package = {
                         ...pkg,
-                        is_be_powered_included: isIncluded
+                        monthly_amount: customMonthlyAmount
                     };
                     return updatedPackage;
                 }
                 return pkg;
             })
         );
-    };
+    }
 
-    const handlePaymentMethodChange = (packageId: number, paymentMethod: string) => {
-        setSelectedPackages(prevPackages =>
-            prevPackages.map(pkg => {
-                if (pkg.id === packageId) {
-                    const updatedPackage: Package = {
-                        ...pkg,
-                        payment_method: paymentMethod
-                    };
-                    return updatedPackage;
-                }
-                return pkg;
-            })
-        );
-    };
+    const handleTenureChange = (newTenure: number) => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            tenure: newTenure
+        }))
+    }
 
-    const validateAddonPackage = (pkg: Package): boolean => {
-        if (!pkg.is_addon) return true;
-        return pkg.is_addon_included !== undefined;
-    };
+    // const validateAddonPackage = (pkg: Package): boolean => {
+    //     if (!pkg.is_addon) return true;
+    //     return pkg.is_addon_included !== undefined;
+    // };
 
     const selectedProducts = useMemo(() => {
         if (!activePackageId) return [];
@@ -624,19 +616,17 @@ export default function CreateOrder() {
                                 {currentStep === 2 && (
                                     <PackagesStep
                                         formData={formData}
-                                        setFormData={setFormData}
                                         selectedPackages={selectedPackages}
                                         setSelectedPackages={setSelectedPackages}
                                         onAddPackage={() => setShowPackageSelector(true)}
                                         onAddProduct={handleAddProduct}
-                                        totalAmount={totalAmount}
                                         onPackageDragEnd={handlePackageDragEnd}
                                         onProductsUpdate={handleProductsUpdate}
                                         onAddonToggle={handleAddonPackageToggle}
                                         onQuoBePoweredToggle={handleQuoBePoweredToggle}
-                                        onBePoweredToggle={handleBePoweredPackageToggle}
-                                        onBePoweredIncludeToggle={handleBePoweredPackageIncludeToggle}
                                         onPaymentMethodChange={handlePaymentMethodChange}
+                                        onCustomMonthlyAmountChange={handleCustomMonthlyAmountChange}
+                                        onTenureChange={handleTenureChange}
                                     />
                                 )}
 
@@ -695,10 +685,12 @@ export default function CreateOrder() {
                     setSelectedPackages((prev) => [...prev, {
                         ...pkg,
                         quantity: 1,
-                        is_addon_included: pkg.is_addon ? false : false,
+                        is_addon_included: false,
                         is_be_powered: false,
                         is_be_powered_included: false,
-                        payment_method: 'bepowered',
+                        payment_method: 'one-off',
+                        markup_amount: (pkg.markup_amount ? Math.ceil(pkg.markup_amount) : pkg.markup_amount) | (pkg.total_price ? Math.ceil(pkg.total_price) : pkg.total_price),
+                        markup_percentage: pkg.markup_percentage,
                     }])
                 }}
                 onRemovePackage={(pkgId) => {

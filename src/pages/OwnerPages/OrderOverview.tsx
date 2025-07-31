@@ -18,6 +18,7 @@ import { CalendarDateRangeIcon } from "@heroicons/react/24/solid"
 import { ROIProgramModal } from "./components/Modals/ROIProjectModal"
 import { AnimatePresence, motion } from "framer-motion"
 import { getWithExpiry, setWithExpiry } from "../../utils/storage"
+import { AwardIcon } from "lucide-react"
 
 const LOCAL_PATH_PREFIX = import.meta.env.VITE_APP_ENV === "local" ? "/owner/" : "/"
 
@@ -513,6 +514,25 @@ function OrderOverview() {
     ].filter((part) => part !== null && part !== "")
 
     const bonus = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.bonus)))
+    const packages: Package[] = JSON.parse(
+        JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)),
+    )
+
+    const upfrontAmount = packages.reduce((acc, pkg) => acc + (
+        orderDetail.is_be_powered &&
+            pkg.payment_method === "one-off" &&
+            (pkg.is_addon ? pkg.is_addon_included === true : true)
+            ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price) * (pkg.quantity || 1)
+            : 0)
+        , 25000);
+
+    const monthlySum = packages.reduce((acc, pkg) => acc + (
+        orderDetail.is_be_powered &&
+            pkg.payment_method !== 'one-off' &&
+            (pkg.is_addon ? pkg.is_addon_included === true : true)
+            ? pkg.monthly_amount * (pkg.quantity || 1)
+            : 0)
+        , 0);
 
     const renoAgreement = (
         <div className="flex flex-col w-full text-sm text-justify">
@@ -524,7 +544,7 @@ function OrderOverview() {
                 <span>BETWEEN</span>
                 <span>
                     <strong>RENOXPERT SDN. BHD. [Registration No.202401032588 (1578437-W)]</strong> of{" "}
-                    <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 46500 Subang Jaya, Selangor</strong> ("the Contractor") of
+                    <strong>42-46, Ground Floor, Jalan SS 19/1d, SS 19, 46500 Subang Jaya, Selangor</strong> (“the Contractor”) of
                     the one part;
                 </span>
                 <span>AND</span>
@@ -540,12 +560,12 @@ function OrderOverview() {
                 <span className="font-bold">WHEREAS:</span>
                 <span>
                     The Contractor desires to provide renovation services to the Owner and the Owner desires to utilize the
-                    services of the Contractor for the renovation of the Owner's property described as{" "}
+                    services of the Contractor for the renovation of the Owner’s property described as{" "}
                     <strong>
                         A (1) unit of Service Residence known as {orderDetail.block}-{orderDetail.floor}-{orderDetail.unit_no},{" "}
                         {orderDetail.property.name}, {propertyAddress}
                     </strong>{" "}
-                    (the "Property") subject to the terms and conditions hereinafter appearing.
+                    (the “Property”) subject to the terms and conditions hereinafter appearing.
                 </span>
                 <span>
                     <strong>NOW THIS AGREEMENT WITNESSETH</strong> as follows:-
@@ -558,9 +578,9 @@ function OrderOverview() {
                         1.1 The Owner hereby appoints the Contractor and the Contractor agrees to accept such appointment of making
                         improvements to the Property, to carry out, execute and complete the upgrading and alteration works to the
                         Property which are more particularly described and set out in the <strong>Quotation</strong> hereto
-                        ("Works") at an agreed lump sum of <strong>Ringgit Malaysia (RM) ONLY</strong> (the "said Contract Sum")
+                        (“Works”) at an agreed lump sum of <strong>Ringgit Malaysia (RM) ONLY</strong> (the “said Contract Sum”)
                         payable by instalments/progressive payment in accordance with the <strong>First Schedule</strong> hereof,
-                        subject to the Owner's right of inspection as set forth below.
+                        subject to the Owner’s right of inspection as set forth below.
                     </span>
                     <span>
                         1.2 Any change in the Contract Sum, change in the Works or change in the contract time that to be defined
@@ -581,8 +601,8 @@ function OrderOverview() {
                             as deposit;
                         </span>
                         <span>
-                            (b) defects of the Property shall be duly rectified, repaired and fixed by the Developer's defects' teams
-                            and workers with the Owner or the Contractor's approval;
+                            (b) defects of the Property shall be duly rectified, repaired and fixed by the Developer’s defects’ teams
+                            and workers with the Owner or the Contractor’s approval;
                         </span>
                         <span>
                             (c) the Owner or the Contractor has obtained the working permit granted by the relevant authorities; and
@@ -621,7 +641,7 @@ function OrderOverview() {
                         <strong>
                             {convertToWords(orderDetail.completion_day).toUpperCase()} {orderDetail.completion_day} working days
                         </strong>{" "}
-                        or any approved extension period by all parties ("the said Contract Time"). Time wherever mentioned shall be
+                        or any approved extension period by all parties (“the said Contract Time”). Time wherever mentioned shall be
                         of the essence of this Agreement.
                     </span>
                     <span>
@@ -629,6 +649,284 @@ function OrderOverview() {
                         devices while renovation Phase 2 includes the supply and installation of furniture and loose items.
                     </span>
                 </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>3. FORCE MAJEURE</strong>
+                    </span>
+                    <span>
+                        3.1 Notwithstanding <strong>Clause 4</strong>, no party shall be held liable in the performance of any
+                        obligations under this Agreement resulting from “Force Majeure” which shall include Movement Control Order
+                        (“MCO”), Full Movement Control Order (“FMCO”), Extended Movement Control Order (“EMCO”), acts of God, fire,
+                        or other catastrophe, storms, curfew, blockade, government restrictions and/or change in government
+                        policies, war, strikes or other labour disturbances, acute shortage of building materials, acts of civil or
+                        military authorities or any other causes beyond the control of the party thereby affected whether similar or
+                        dissimilar from the foregoing <strong>PROVIDED ALWAYS THAT</strong> the party claiming to be affected by any
+                        event of force majeure shall as soon as practicable give written notice of such claim to the other party
+                        with full particulars thereof.
+                    </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>4. CONTRACTOR’S DUTIES, OBLIGATIONS, RIGHTS AND INTERESTS</strong>
+                    </span>
+                    <span>
+                        4.1 The Contractor shall be responsible for the purchase and delivery of materials, except in the event that
+                        the Owner volunteers for economic considerations. All materials at the Property shall be at the risk of the
+                        Contractor during the said Contract Time and if the Owner volunteered for the purchase and delivery of
+                        materials, such risk shall be passed to the Owner.
+                    </span>
+                    <span>
+                        4.2 The Works shall be constructed in a good and workmanlike manner in accordance with the description and
+                        specification as set out in the Quotation hereto, which description and specification have been duly
+                        accepted and approved by the Owner, as the Owner hereby acknowledges via the instant messaging services such
+                        as email and/or WhatsApp.
+                    </span>
+                    <span>
+                        4.3 The Contractor will furnish and be fully responsible for all equipment, labour, transportation,
+                        construction equipment and machinery, tools, appliances, fuel, power, light, heat and all other facilities
+                        and incidentals necessary for the furnishing, performance, testing, start-up, and completion of the Work.
+                    </span>
+                    <span>
+                        4.4 The Contractor will provide competent, suitable personnel to perform services as required and will at
+                        all times maintain good discipline and order at the Property.
+                    </span>
+                    <span>
+                        4.5 The Contractor may sub-contract the Works or any part thereof to any subcontractor(s) or party(ies) as
+                        is customary in the construction industry provided that the Contractor shall be solely liable to the Owner
+                        for any act or default by its subcontractor(s).
+                    </span>
+                    <span>
+                        4.6 The Contractor may update the Owner from time to time on the progress of works by attach the photos of
+                        the works done by the Contractor and/or subcontractor(s), the photos and description of works shall form
+                        part of this Agreement by way of video or photos to be sent to the Owner by way of WhatsApp or any way the
+                        Contractor deems appropriate.
+                    </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>5. NOTICES</strong>
+                    </span>
+                    <span>
+                        5.1 Any notice required to be given under this Agreement shall be deemed to be sufficiently served if sent
+                        by registered post or ordinary post to the party to whom such notice is being served at its address given
+                        herein and such notice shall be deemed to be received in the ordinary course of post{" "}
+                        <strong>three (3) working days</strong> after posting.
+                    </span>
+                    <span>
+                        5.2 Notwithstanding <strong>Clause 5.1</strong> above, any notice required to be given under this Agreement
+                        shall be deemed to be sufficiently served by way of instant messaging services such as email and/or WhatsApp
+                        to the party to whom such notice is being served at its email address and/or WhatsApp number/account given
+                        herein and such notice shall be deemed to be received instantly within{" "}
+                        <strong>twenty four (24) hours</strong> after sent out.
+                    </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>6. COSTS</strong>
+                    </span>
+                    <span>
+                        6.1 Unless otherwise agreed, all the legal costs, stamp duty of and incidental to this Agreement shall be
+                        borne and paid by the Contractor solely.
+                    </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>7. SPECIAL CONDITIONS, SCHEDULES AND APPENDIX</strong>
+                    </span>
+                    <span>
+                        7.1 The Special Conditions, Schedules and Appendix hereinafter stipulated shall for an integral part of this
+                        Agreement and in the event of any inconsistency or repugnant terms in the aforementioned Agreement, the
+                        provisions contained in the Special Conditions shall prevail.
+                    </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>8. GOVERNING LAW</strong>
+                    </span>
+                    <span>
+                        8.1 This Agreement shall in all respect, include all matters of construction, validity and performance be
+                        governed by, construed and enforced exclusively in accordance with the laws of Malaysia. The parties shall
+                        submit to the exclusive jurisdiction of the Malaysian courts.
+                    </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>9. WARRANTY AND DEFECT PERIOD</strong>
+                    </span>
+                    <span>
+                        9.1 The Contractor warrants that each Product sold, installed and provided by the Contractor under this
+                        Agreement will conform to its Specifications for the Warranty and Defect period (the “said Product
+                        Warranty”). In the event if the Products are not conformed to its Specifications due to the Contractor’s
+                        fault, the Contractor shall grant Product Warranty and Defect claims to the Owner. The Product Warranty and
+                        Defect claims must be in written and serve to The Contractor in pursuant to the Clause 5 of this Agreement.
+                    </span>
+                    <span>
+                        9.2 The Warranty and Defect period varies from <strong>Six (6) to Twelve (12) months</strong>, depending on
+                        the type of the Products. The Warranty period for each of the Products models are described clearly in the
+                        Second Schedule of this Agreement.
+                    </span>
+                    <span>
+                        9.3 The Warranty and Defect period shall start from the date the Contractor installed the products and
+                        ceases upon the expiration of the period. The Owner shall furnish to us this agreement together with the
+                        sales receipt or original purchase invoice to the Contractor.
+                    </span>
+                    <span>In addition, this Warranty shall not applies in the following circumstances:-</span>
+                    <div className="flex flex-col gap-3 pl-5">
+                        <span>
+                            (a) if any damages, abuse, negligent act or use, misuse, tampering, or wrongful usage including failure or
+                            neglect to maintain the correct, proper and normal usage by the Owner, any end-users or third parties;
+                        </span>
+                        <span>
+                            (b) if any damages, defects, malfunctions or non-functioning to or in the Product howsoever arising from,
+                            caused by or incidental to any external cause (including accidents, fire, lightning, Act of God, exposure
+                            to water or moisture, or caused by or during any or any attempted burglary, theft and/or riot), and any
+                            corrosion, rust, staining or any other such like matters; and
+                        </span>
+                        <span>(c) any damages and defect caused by the Owner, any end-users or third parties.</span>
+                    </div>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>10. NON-COMPLETION/ FAILURE TO HAND OVER</strong>
+                    </span>
+                    <span>
+                        10.1 In the event where the Contractor fails and/or delay in handing over the Property in good, adequate and
+                        final conditions as per the terms and conditions mentioned in this Agreement.
+                    </span>
+                    <span>
+                        10.2 In default by the Contractor to hand over the Property in good, adequate and final conditions within
+                        the said Contract Time, the Contractor shall be liable to pay penalty at the rate of{" "}
+                        <strong>eight per centum (8%) per annum</strong> on daily basis on the undelivered items stated in the
+                        Quotation, with the maximum claim sum not more than the said Contract Sum (the “said Liquidated Damages”).
+                    </span>
+                    <span>
+                        10.3 The Contractor shall not be liable to pay the said Liquidated Damages in pursuant to{" "}
+                        <strong>Clause 10.2</strong> in the event where the <strong>Clause 2.1 & 2.2</strong> above is not complied
+                        with.
+                    </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>11. NO VARIATION</strong>
+                    </span>
+                    <span>
+                        11.1 No variation of this Agreement of whatever nature shall be made or purported to be made by any party or
+                        parties nor shall any variation or purported variation be valid or enforceable unless the same is in writing
+                        and duly agreed to and executed by the parties concerned.
+                    </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>12. SEVERABILITY</strong>
+                    </span>
+                    <span>
+                        12.1 If any provision of this Agreement for any reason shall be declared invalid, void, illegal or otherwise
+                        unenforceable, the remaining provisions of this Agreement shall remain in full force and effect. The parties
+                        shall amend that provision in such reasonable manner so as to achieve the intention of the parties without
+                        illegality or where it is not practicable to do so, that provision shall be severed from this Agreement.
+                    </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <span>
+                        <strong>13. BINDING EFFECTS</strong>
+                    </span>
+                    <span>
+                        13.1 This Agreement shall be binding on the respective heirs, personal representatives, successors in title
+                        and assigns of the parties hereto.
+                    </span>
+                </div>
+            </div>
+            <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
+                <div className="flex flex-col">
+                    <span className="font-bold underline">FIRST SCHEDULE</span>
+                    <span>(to be taken read and construed as an essential part of this Agreement)</span>
+                </div>
+                <span className="font-bold">-</span>
+                <span className="font-bold">PROGRESSIVE PAYMENT OF THE CONTRACT SUM</span>
+                {orderDetail && orderDetail.is_progressive_payment ? (
+                    <table className="table align-middle text-gray-700 font-medium text-sm max-w-lg">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th className="text-center">%</th>
+                                <th className="text-center">Amount (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Upon Confirmation and before Commencement of Phase 1</td>
+                                <td className="text-center">50</td>
+                                <td className="text-center">
+                                    {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Upon Completion of Phase 1 and before Commencement of Phase 2</td>
+                                <td className="text-center">50</td>
+                                <td className="text-center">
+                                    {((totalExcludedAddonAmount - Number(bonus?.value || 0)) / 2).toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
+                                </td>
+                            </tr>
+                            <tr className="font-bold">
+                                <td>Total:</td>
+                                <td className="text-center">100</td>
+                                <td className="text-center">
+                                    {(totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                ) : (
+                    <table className="table align-middle text-gray-700 font-medium text-sm max-w-lg">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th className="text-center">%</th>
+                                <th className="text-center">Amount (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Upon Confirmation of Agreement</td>
+                                <td className="text-center">100</td>
+                                <td className="text-center">
+                                    {orderDetail
+                                        ? (totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })
+                                        : "0.00"}
+                                </td>
+                            </tr>
+                            <tr className="font-bold">
+                                <td>Total:</td>
+                                <td className="text-center">100</td>
+                                <td className="text-center">
+                                    {orderDetail
+                                        ? (totalExcludedAddonAmount - Number(bonus?.value || 0)).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })
+                                        : "0.00"}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                )}
+                <span>
+                    In the event of a default by the Owner of the payment hereunder when due, the Owner shall be liable to pay
+                    interest at the rate of eight per centum (8%) per annum on the outstanding sum from the date due for payment
+                    until the date of actual payment.
+                </span>
             </div>
         </div>
     )
@@ -725,8 +1023,8 @@ function OrderOverview() {
                                     {/* ROI Button with animations */}
                                     <motion.button
                                         className={`py-2 px-4 text-xs rounded-md relative overflow-hidden font-semibold transition-all ${activeTab === "tab_1_5"
-                                                ? "active bg-gradient-to-r from-green-600 to-green-600 text-white shadow-lg"
-                                                : "bg-gradient-to-r from-green-500 to-green-500 text-white hover:from-redgreen-600 hover:to-green-600"
+                                            ? "active bg-gradient-to-r from-green-600 to-green-600 text-white shadow-lg"
+                                            : "bg-gradient-to-r from-green-500 to-green-500 text-white hover:from-redgreen-600 hover:to-green-600"
                                             }`}
                                         data-modal-toggle="#roi-program-modal"
                                         // onClick={() => setActiveTab("tab_1_5")}
@@ -846,10 +1144,10 @@ function OrderOverview() {
                                                     {/* Quotation Status */}
                                                     <span
                                                         className={`badge badge-xs p-2 capitalize badge-outline ${orderDetail.status === "confirmed"
-                                                                ? "badge-success"
-                                                                : orderDetail.status === "voided"
-                                                                    ? "badge-danger"
-                                                                    : ""
+                                                            ? "badge-success"
+                                                            : orderDetail.status === "voided"
+                                                                ? "badge-danger"
+                                                                : ""
                                                             }`}
                                                     >
                                                         {orderDetail.status === "confirmed" ? "Sale" : orderDetail.status}
@@ -1047,8 +1345,8 @@ function OrderOverview() {
                                                     {/* Accordion content with conditional border-top */}
                                                     <div
                                                         className={`overflow-hidden transition-all duration-300 ease-in-out mt-1 ${openAccordions["amount_breakdown"]
-                                                                ? "max-h-screen border-t border-gray-200 pt-3"
-                                                                : "max-h-0 md:max-h-screen md:border-t md:border-gray-200 md:pt-3"
+                                                            ? "max-h-screen border-t border-gray-200 pt-3"
+                                                            : "max-h-0 md:max-h-screen md:border-t md:border-gray-200 md:pt-3"
                                                             }`}
                                                     >
                                                         {selectedProgram === "bePowered" ? (
@@ -1182,10 +1480,10 @@ function OrderOverview() {
                                                                     <h3 className="text-xs text-gray-900 font-medium">{invoice.invoice_no}</h3>
                                                                     <span
                                                                         className={`badge badge-outline ${invoice.status === "paid"
-                                                                                ? "badge-success"
-                                                                                : invoice.status === "overdue"
-                                                                                    ? "badge-danger"
-                                                                                    : ""
+                                                                            ? "badge-success"
+                                                                            : invoice.status === "overdue"
+                                                                                ? "badge-danger"
+                                                                                : ""
                                                                             }`}
                                                                     >
                                                                         {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
@@ -1263,7 +1561,7 @@ function OrderOverview() {
 
                                                         return (
                                                             <div
-                                                                className={`accordion-item border rounded-xl w-full shadow-sm ${isAddon ? "bg-blue-50 border-blue-300" : ""}`}
+                                                                className={`accordion-item border rounded-xl w-full shadow-sm bg-white ${prodPackage.is_addon_included ? " border-blue-600" : ""}`}
                                                                 key={index}
                                                             >
                                                                 <button
@@ -1275,7 +1573,7 @@ function OrderOverview() {
                                                                             {isAddon ? (
                                                                                 <>
                                                                                     <div className="flex justify-between">
-                                                                                        <span className="font-medium text-gray-700 text-2xs">
+                                                                                        <span className="font-bold text-gray-800 text-2xs">
                                                                                             Add-on Option {counter + 1}:
                                                                                         </span>
                                                                                     </div>
@@ -1320,27 +1618,8 @@ function OrderOverview() {
                                                                             </div>
                                                                         ) : (
                                                                             <div className="flex flex-col gap-2">
-                                                                                {/* Show BePowered toggle for packages that are BePowered enabled */}
-                                                                                {prodPackage.is_be_powered && (
-                                                                                    <div className="flex items-center gap-2">
-                                                                                        <span className="text-xs text-gray-600">BePowered:</span>
-                                                                                        <label className="switch switch-sm">
-                                                                                            <input
-                                                                                                className="checkbox"
-                                                                                                type="checkbox"
-                                                                                                checked={!!prodPackage.is_be_powered_included}
-                                                                                                onChange={() => {
-                                                                                                    // Handle BePowered toggle
-                                                                                                    // This would need to be implemented similar to addon toggle
-                                                                                                }}
-                                                                                                onClick={(e) => e.stopPropagation()}
-                                                                                                disabled={!prodPackage.is_be_powered}
-                                                                                            />
-                                                                                        </label>
-                                                                                    </div>
-                                                                                )}
                                                                                 <div className="inline-block">
-                                                                                    <span className="badge bg-white border-blue-300">
+                                                                                    <span className="badge bg-white border-gray-300">
                                                                                         x{prodPackage.quantity}
                                                                                     </span>
                                                                                 </div>
@@ -1359,7 +1638,7 @@ function OrderOverview() {
                                                                         <table className="w-full text-xs text-left border-collapse">
                                                                             <thead>
                                                                                 <tr
-                                                                                    className={`border-b ${isAddon ? "bg-white border-blue-300" : "bg-gray-100"}`}
+                                                                                    className={`border-b ${isAddon ? "bg-white border-gray-300" : "bg-gray-100"}`}
                                                                                 >
                                                                                     <th className="p-3 font-medium text-gray-700">S.o.W</th>
                                                                                     <th className="p-3 font-medium text-gray-700">Product</th>
@@ -1376,7 +1655,7 @@ function OrderOverview() {
                                                                                             return (
                                                                                                 <tr
                                                                                                     key={idx}
-                                                                                                    className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? " border-blue-300" : ""}`}
+                                                                                                    className={`border-b hover:bg-gray-100 transition duration-150 ${isAddon ? " border-gray-300" : ""}`}
                                                                                                 >
                                                                                                     <td className="py-3 px-2 text-gray-700 text-left">
                                                                                                         {product.pivot.includeSupply && product.pivot.includeInstall
@@ -1419,15 +1698,15 @@ function OrderOverview() {
                                                                 renderPackage(prodPackage, index, false),
                                                             )}
                                                             {addonPackages.length > 0 && (
-                                                                <div className="mt-2 ml-1 flex items-center gap-1">
-                                                                    <InformationCircleIcon className="h-5 w-5 text-yellow-600" />
-                                                                    <p className="text-sm text-gray-600 italic">
-                                                                        Feel free to toggle on/ off of the add-on optional package to explore more!
-                                                                    </p>
+                                                                <div className="mt-2 ml-1 space-y-4 p-2 py-4 rounded-xl border bg-blue-50 border-blue-600">
+                                                                    <div className="font-bold flex items-center gap-1">
+                                                                        <AwardIcon className="w-8 h-8 text-orange-500" aria-label="Payment Icon" />
+                                                                        <h3>OPTIONAL ADD-ON PACKAGES: </h3>
+                                                                    </div>
+                                                                    {addonPackages.map((prodPackage: Package, index: number) =>
+                                                                        renderPackage(prodPackage, regularPackages.length + index, true),
+                                                                    )}
                                                                 </div>
-                                                            )}
-                                                            {addonPackages.map((prodPackage: Package, index: number) =>
-                                                                renderPackage(prodPackage, regularPackages.length + index, true),
                                                             )}
                                                         </>
                                                     )
@@ -1788,66 +2067,15 @@ function OrderOverview() {
                             </div>
                         </div>
 
-                        {/* Checkboxes */}
-                        {orderDetail.status !== "confirmed" && (
-                            <div className="flex flex-col gap-4 mt-6">
-                                {[
-                                    {
-                                        name: "agree_tnc",
-                                        label: "Terms and Conditions",
-                                        checked: agreeTnc,
-                                        onChange: handleAgreeTncChange,
-                                        tab: "tab_1_2",
-                                    },
-                                    {
-                                        name: "agree_reno_agreement",
-                                        label: "Reno Agreement",
-                                        checked: agreeRenoAgreement,
-                                        onChange: handleAgreeRenoAgreementChange,
-                                        tab: "tab_1_3",
-                                    },
-                                ].map(({ name, label, checked, onChange, tab }) => (
-                                    <label key={name} className="flex items-center gap-2">
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            name={name}
-                                            checked={checked || orderDetail.status === "confirmed"}
-                                            onChange={onChange}
-                                            disabled={orderDetail.status === "confirmed"}
-                                        />
-                                        <span className="text-xs">
-                                            I have read and accept the{" "}
-                                            <a href="#" className="text-blue-500 hover:underline" onClick={() => setActiveTab(tab)}>
-                                                {label}
-                                            </a>
-                                        </span>
-                                    </label>
-                                ))}
-                                <label className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        className="checkbox"
-                                        name="agree_partition_risk"
-                                        checked={agreePartitionRisk || orderDetail.status === "confirmed"}
-                                        onClick={handleAgreePartitionRisk}
-                                        disabled={orderDetail.status === "confirmed"}
-                                    />
-                                    <span className="text-xs">I understand and acknowledge the risk of Partioning</span>
-                                </label>
-                                {orderDetail.status === "released" && (
-                                    <div className="flex justify-center mt-2">
-                                        <button
-                                            className="btn btn-md btn-primary rounded-3xl shadow-lg text-xs text-center"
-                                            onClick={handleAgreeOrder}
-                                            disabled={isButtonDisabled}
-                                        >
-                                            Agree Quotation Order
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        {/* T&C Tab */}
+                        <div className={activeTab === "tab_1_2" ? "block" : "hidden"} id="tab_1_2">
+                            <div className="prose max-w-none p-4 text-xs">{tnc}</div>
+                        </div>
+
+                        {/* Reno Agreement Tab */}
+                        <div className={activeTab === "tab_1_3" ? "block" : "hidden"} id="tab_1_3">
+                            <div className="prose max-w-none py-4 px-1 text-xs">{renoAgreement}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1857,11 +2085,85 @@ function OrderOverview() {
                 <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white p-3 px-5 z-50 transition-all duration-300 rounded-t-xl shadow-[0_-6px_12px_rgba(0,0,0,0.25)]">
                     {/* Accordion content with conditional border-top */}
                     <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${openAccordions["amount_breakdown"] ? "max-h-screen" : "max-h-0 md:max-h-screen"
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${openAccordions["amount_breakdown"] ? "max-h-[200px] overflow-y-auto scrollable" : "max-h-0 md:max-h-screen"
                             }`}
                     >
                         {selectedProgram === "bePowered" ? (
-                            ""
+                            <div className="mt-2 space-y-4">
+                                <div className="flex flex-col">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-semibold text-gray-800">Original Nett Amount: </span>
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(
+                                            (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
+                                            (bonus?.value || 0)
+                                        ).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })}</span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-semibold text-gray-800">Upfront Payment: </span>
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {upfrontAmount.toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
+                                        })}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-1">
+                                        <span className="text-xs text-gray-600">Base Pricing: </span>
+                                        <span className="text-xs text-gray-600 whitespace-nowrap">RM 25,000</span>
+                                    </div>
+                                    {packages.filter(pkg =>
+                                        orderDetail.is_be_powered &&
+                                        pkg.payment_method === 'one-off' &&
+                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
+                                    ).map((pkg, index) => (
+                                        <div key={index} className="flex justify-between items-center mt-1">
+                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
+                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0,
+                                            })}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex flex-col">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-semibold text-gray-800">Installment ({orderDetail.tenure} months): </span>
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {monthlySum.toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
+                                        })}/mth</span>
+                                    </div>
+                                    {packages.filter(pkg =>
+                                        orderDetail.is_be_powered &&
+                                        pkg.payment_method !== 'one-off' &&
+                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
+                                    ).map((pkg, index) => (
+                                        <div key={index} className="flex justify-between items-center mt-1">
+                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
+                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.monthly_amount * pkg.quantity).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0,
+                                            })}/mth</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="">
+                                    <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
+                                    <p className="text-sm text-gray-900 font-semibold">
+                                        RM{" "}
+                                        {upfrontAmount.toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        })} + (RM {monthlySum.toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        })} / month)
+                                    </p>
+                                </div>
+                            </div>
                         ) : (
                             <div className="mt-2 space-y-4">
                                 <div className="flex flex-col">
@@ -1932,9 +2234,6 @@ function OrderOverview() {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1">
                                 <CreditCardIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
-                                <span className="text-xs font-semibold text-gray-700">Easy Payment Plan</span>
-                            </div>
-                            {hasBePoweredPackages() && (
                                 <select
                                     className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
                                     id="program"
@@ -1943,9 +2242,24 @@ function OrderOverview() {
                                     name="program"
                                 >
                                     <option value="normal">Normal</option>
-                                    <option value="bePowered">BePowered 2.0</option>
+                                    {hasBePoweredPackages() && (
+                                        <option value="bePowered">BePowered 2.0</option>
+                                    )}
                                 </select>
-                            )}
+                            </div>
+
+                            <select
+                                className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
+                                id="payment_plan"
+                                value={selectedPlan}
+                                onChange={handlePlanChange}
+                                name="payment_plan"
+                            >
+                                {selectedProgram !== "bePowered" && (
+                                    <option value="36">36 months</option>
+                                )}
+                                <option value="60">60 months</option>
+                            </select>
                         </div>
                         <div className="flex justify-between">
                             {selectedProgram !== "bePowered" ? (
@@ -1953,22 +2267,14 @@ function OrderOverview() {
                                     <div className="flex flex-col items-start w-full">
                                         <p className="text-lg text-[#d71e42] font-bold">
                                             RM{" "}
-                                            {selectedProgram === "bePowered"
-                                                ? ((25000 * (selectedPlan === "60" ? 1.14 : 1.105)) / Number(selectedPlan)).toLocaleString(
-                                                    undefined,
-                                                    {
-                                                        minimumFractionDigits: 0,
-                                                        maximumFractionDigits: 0,
-                                                    },
-                                                )
-                                                : (
-                                                    ((totalExcludedAddonAmount - (bonus?.value || 0)) *
-                                                        (selectedPlan === "60" ? 1.14 : 1.105)) /
-                                                    Number(selectedPlan)
-                                                ).toLocaleString(undefined, {
-                                                    minimumFractionDigits: 0,
-                                                    maximumFractionDigits: 0,
-                                                })}
+                                            {(
+                                                ((totalExcludedAddonAmount - (bonus?.value || 0)) *
+                                                    (selectedPlan === "60" ? 1.14 : 1.105)) /
+                                                Number(selectedPlan)
+                                            ).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0,
+                                            })}
                                             <span className="text-sm text-gray-600">/month </span>
                                             <span className="text-xs text-gray-600">for {selectedPlan === "60" ? "60" : "36"} months</span>
                                         </p>
@@ -1981,29 +2287,21 @@ function OrderOverview() {
                                             </p>
                                         </div>
                                     </div>
-
-                                    <select
-                                        className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
-                                        id="payment_plan"
-                                        value={selectedPlan}
-                                        onChange={handlePlanChange}
-                                        name="payment_plan"
-                                    >
-                                        <option value="36">36 months</option>
-                                        <option value="60">60 months</option>
-                                    </select>
                                 </>
                             ) : (
                                 <div className="flex flex-col items-start w-full">
                                     <p className="text-lg text-[#d71e42] font-bold">
                                         <span className="text-sm text-gray-600">Total </span>
-                                        RM 25,000
+                                        RM {upfrontAmount.toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0,
+                                        })}
                                         <span className="text-sm text-gray-600"> Upfront</span>
                                     </p>
                                     <p className="text-sm text-[#d71e42] font-bold">
                                         RM{" "}
                                         {hasBePoweredPackages()
-                                            ? ((25000 * (selectedPlan === "60" ? 1.14 : 1.105)) / Number(selectedPlan)).toLocaleString(
+                                            ? monthlySum.toLocaleString(
                                                 undefined,
                                                 {
                                                     minimumFractionDigits: 0,

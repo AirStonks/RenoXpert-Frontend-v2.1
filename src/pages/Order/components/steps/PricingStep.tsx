@@ -34,70 +34,73 @@ interface PricingStepProps {
 
 export default function PricingStep({ formData, setFormData, totalAmount, netAmount, selectedPackages, addonPackages, onToggleQuoBePowered, includedAddonPackages }: PricingStepProps) {
 
+    // PricingStep.tsx
     const calculatePackageTotal = (pkg: Package) => {
-        // If it's an addon package that's not included, return 0
-        // if (pkg.is_addon && pkg.is_addon_included === false) {
-        //     return 0;
-        // }
+        if (pkg.is_addon && pkg.is_addon_included === false) {
+            return 0;
+        }
 
-        // if (!pkg.products || pkg.products.length === 0) {
-        //     return (pkg.total_price || 0) * (pkg.quantity || 1);
-        // }
+        let packageTotal = 0;
 
-        const packageTotal = pkg.products.reduce((prodSum, product) => {
-            let supplyPrice = 0;
-            let installPrice = 0;
+        if (pkg.products && pkg.products.length > 0) {
+            packageTotal = pkg.products.reduce((prodSum, product) => {
+                let supplyPrice = 0;
+                let installPrice = 0;
 
-            // Calculate supply price
-            if (product.provisioning?.supply) {
-                if (product.pivot?.includeSupply) {
-                    supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1);
-                } else {
-                    supplyPrice = Math.max(0,
-                        (product.provisioning.supply.retail_price || 0) -
-                        (product.provisioning.supply.excluded_price || 0)
-                    ) * (product.pivot?.quantity || 1);
+                if (product.provisioning?.supply) {
+                    if (product.pivot?.includeSupply) {
+                        supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1);
+                    } else {
+                        supplyPrice = Math.max(
+                            0,
+                            (product.provisioning.supply.retail_price || 0) -
+                            (product.provisioning.supply.excluded_price || 0)
+                        ) * (product.pivot?.quantity || 1);
+                    }
                 }
-            }
 
-            // Calculate install price
-            if (product.provisioning?.install) {
-                if (product.pivot?.includeInstall) {
-                    installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1);
-                } else {
-                    installPrice = Math.max(0,
-                        (product.provisioning.install.retail_price || 0) -
-                        (product.provisioning.install.excluded_price || 0)
-                    ) * (product.pivot?.quantity || 1);
+                if (product.provisioning?.install) {
+                    if (product.pivot?.includeInstall) {
+                        installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot.quantity || 1);
+                    } else {
+                        installPrice = Math.max(
+                            0,
+                            (product.provisioning.install.retail_price || 0) -
+                            (product.provisioning.install.excluded_price || 0)
+                        ) * (product.pivot?.quantity || 1);
+                    }
                 }
-            }
 
-            return prodSum + supplyPrice + installPrice;
-        }, 0);
+                return prodSum + supplyPrice + installPrice;
+            }, 0);
+        } else {
+            packageTotal = pkg.total_price || 0;
+        }
 
-        return packageTotal * (pkg.quantity || 1);
+        // Apply markup
+        const markupAmount = pkg.markup_amount || 0;
+        const markupPercentage = pkg.markup_percentage || 0;
+        const baseTotal = packageTotal * (pkg.quantity || 1);
+        return markupAmount > 0 ? markupAmount : baseTotal * (1 + markupPercentage);
     };
 
     const upfrontAmount = selectedPackages.reduce((acc, pkg) => acc + (
-        pkg.is_be_powered === true &&
-            pkg.is_be_powered_included === true &&
-            pkg.payment_method === "one-off"
-            ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price)
+        formData.isBePowered &&
+            pkg.payment_method === "one-off" &&
+            (pkg.is_addon ? pkg.is_addon_included === true : true)
+            ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price) * (pkg.quantity || 1)
             : 0)
         , 25000);
 
     const monthlySum = selectedPackages.reduce((acc, pkg) => acc + (
-        pkg.is_be_powered === true &&
-            pkg.is_be_powered_included === true &&
-            pkg.payment_method === 'bepowered' &&
+        formData.isBePowered &&
+            pkg.payment_method !== 'one-off' &&
             (pkg.is_addon ? pkg.is_addon_included === true : true)
-            ? (((calculatePackageTotal(pkg) / (pkg.quantity || 1) * (1 + pkg.markup_percentage))) / formData.tenure)
+            ? pkg.monthly_amount * (pkg.quantity || 1)
             : 0)
         , 0);
 
     const handleQuoBePoweredChange = () => {
-        console.log('yes');
-        
         onToggleQuoBePowered(!formData.isBePowered);
     };
 
@@ -167,7 +170,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
 
                             <div>
                                 <div className="flex items-center justify-between mb-2">
-                                    <label className="text-sm font-medium text-gray-700">BePowered 2.0 Program</label>
+                                    <label className="text-sm font-medium text-gray-700">BePowered 2.0</label>
                                     <button
                                         onClick={handleQuoBePoweredChange}
                                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isBePowered ? "bg-blue-500" : "bg-gray-200"}`}
@@ -230,7 +233,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                 <div className="p-8 backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl rounded-3xl">
                     <div className="space-y-8">
                         <div>
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-2">BePowered 2.0 Program Pricing</h2>
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-2">BePowered 2.0 Pricing</h2>
                             {/* <p className="text-gray-600"></p> */}
                         </div>
                         <div className="flex justify-between items-center">
@@ -244,19 +247,6 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                             </span>
                         </div>
 
-                        {/* <div className="flex justify-between items-center">
-                            <div>
-                                <span className="font-medium text-gray-900">Markup Price</span>
-                            </div>
-                            <span className="font-medium">
-                                RM {(Math.ceil((netAmount * 1.2) / 50) * 50).toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                })}
-                            </span>
-                        </div> */}
-
-
                         <div>
                             <div className="flex justify-between items-center">
                                 <span className="font-medium text-gray-900">Upfront Payment</span>
@@ -264,6 +254,77 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 0
                                 })}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center text-gray-600 mt-2">
+                                <span>Base Price</span>
+                                <span>RM 25,000</span>
+                            </div>
+
+                            {selectedPackages.filter(pkg =>
+                                formData.isBePowered &&
+                                pkg.payment_method === 'one-off' &&
+                                (pkg.is_addon ? pkg.is_addon_included === true : true)
+                            ).map((pkg, index) => (
+                                <div
+                                    key={index}
+                                    className="flex justify-between items-center text-gray-600 mt-2"
+                                >
+                                    <div className="flex items-center">
+                                        <span>{pkg.name} x{(pkg.quantity || 1)}</span>
+                                        {pkg.is_addon && (
+                                            <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                                Add-On
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span>RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div>
+                            <div className="flex justify-between items-center">
+                                <span className="font-medium text-gray-900">Installment ({formData.tenure} months)</span>
+                                <span className="font-medium">RM {monthlySum.toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })}/mth</span>
+                            </div>
+
+                            {selectedPackages.filter(pkg =>
+                                formData.isBePowered &&
+                                pkg.payment_method !== 'one-off' &&
+                                (pkg.is_addon ? pkg.is_addon_included === true : true)
+                            ).map((pkg, index) => (
+                                <div
+                                    key={index}
+                                    className="flex justify-between items-center text-gray-600 mt-2"
+                                >
+                                    <div className="flex items-center">
+                                        <span>{pkg.name} x{(pkg.quantity || 1)}</span>
+                                        {pkg.is_addon && (
+                                            <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                                Add-On
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span>RM {(pkg.monthly_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* BePowered 2.0 Total Pricing */}
+                        <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
+                            <div className="flex justify-between items-center text-xl font-bold text-gray-900">
+                                <span>Total</span>
+                                <span>RM {upfrontAmount.toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })} + (RM {monthlySum.toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })} / month)</span>
                             </div>
 
                             <div className="flex justify-between items-center text-green-600 mt-2">
@@ -282,104 +343,70 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                 })}/mth</span>
                             </div>
                         </div>
-
-                        <div>
-                            <div className="flex justify-between items-center">
-                                <span className="font-medium text-gray-900">Installment ({formData.tenure} months)</span>
-                                <span className="font-medium">RM {monthlySum.toLocaleString(undefined, {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                })}/mth</span>
-                            </div>
-
-                            {selectedPackages.filter(pkg =>
-                                pkg.is_be_powered === true &&
-                                pkg.is_be_powered_included === true &&
-                                pkg.payment_method === 'bepowered' &&
-                                (pkg.is_addon ? pkg.is_addon_included === true : true)
-                            ).map((pkg, index) => (
-                                <div
-                                    key={index}
-                                    className="flex justify-between items-center text-gray-600 mt-2"
-                                >
-                                    <span>{pkg.name}</span>
-                                    <span>RM {(((calculatePackageTotal(pkg) / (pkg.quantity || 1) * (1 + pkg.markup_percentage))) / formData.tenure).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="flex justify-between items-center text-xl font-bold text-gray-900 mt-4 pt-4 border-t border-gray-200">
-                            <span>Total</span>
-                            <span>RM {upfrontAmount.toLocaleString(undefined, {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0
-                            })} + (RM {monthlySum.toLocaleString(undefined, {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0
-                            })} / month)</span>
-                        </div>
                     </div>
                 </div>
             }
 
-            <div className="p-8 backdrop-blur-xl bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border border-white/20 shadow-xl rounded-3xl">
-                <h3 className="text-xl font-semibold text-gray-900 mb-6">Pricing Summary</h3>
+            {!formData.isBePowered &&
+                <div className="p-8 backdrop-blur-xl bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border border-white/20 shadow-xl rounded-3xl">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-6">Pricing Summary</h3>
 
-                <div className="space-y-4">
-                    {selectedPackages.map((pkg: Package) => {
-                        if (pkg.is_addon === true && pkg.is_addon_included === false) {
-                            return null;
-                        }
+                    <div className="space-y-4">
+                        {selectedPackages.map((pkg: Package) => {
+                            if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                                return null;
+                            }
 
-                        return (
-                            <div key={pkg.id} className="flex justify-between items-center py-2">
-                                <div>
-                                    <span className="font-medium text-gray-900">{pkg.name}</span>
-                                    <span className="text-gray-500 ml-2">× {pkg.quantity || 1}</span>
-                                    {pkg.is_addon && (
-                                        <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
-                                            Add-On
-                                        </span>
-                                    )}
+                            return (
+                                <div key={pkg.id} className="flex justify-between items-center py-2">
+                                    <div>
+                                        <span className="font-medium text-gray-900">{pkg.name}</span>
+                                        <span className="text-gray-500 ml-2">× {pkg.quantity || 1}</span>
+                                        {pkg.is_addon && (
+                                            <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                                Add-On
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="font-medium">RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    })}
+                                    </span>
                                 </div>
-                                <span className="font-medium">RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                })}
-                                </span>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
 
-                    <div className="border-t border-gray-200 pt-4">
-                        <div className="flex justify-between items-center text-lg">
-                            <span className="font-semibold text-gray-900">Subtotal</span>
-                            <span className="font-semibold">RM {totalAmount.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            })}</span>
-                        </div>
-
-                        {formData.bonusValue > 0 && (
-                            <div className="flex justify-between items-center text-green-600 mt-2">
-                                <span>Bonus/Discount</span>
-                                <span>- RM {formData.bonusValue.toLocaleString(undefined, {
+                        <div className="border-t border-gray-200 pt-4">
+                            <div className="flex justify-between items-center text-lg">
+                                <span className="font-semibold text-gray-900">Subtotal</span>
+                                <span className="font-semibold">RM {totalAmount.toLocaleString(undefined, {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                 })}</span>
                             </div>
-                        )}
 
-                        <div className="flex justify-between items-center text-xl font-bold text-gray-900 mt-4 pt-4 border-t border-gray-200">
-                            <span>Total Amount</span>
-                            <span>RM {netAmount.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            })}</span>
+                            {formData.bonusValue > 0 && (
+                                <div className="flex justify-between items-center text-green-600 mt-2">
+                                    <span>Bonus/Discount</span>
+                                    <span>- RM {formData.bonusValue.toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    })}</span>
+                                </div>
+                            )}
+
+                            <div className="flex justify-between items-center text-xl font-bold text-gray-900 mt-4 pt-4 border-t border-gray-200">
+                                <span>Total Amount</span>
+                                <span>RM {netAmount.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            }
         </div>
     )
 }

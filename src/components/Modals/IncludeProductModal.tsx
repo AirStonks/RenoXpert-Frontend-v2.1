@@ -219,6 +219,12 @@ export default function IncludeProductModal({
                                                     <div className="flex-1">
                                                         <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
                                                         <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
+                                                        {product.internal_desc && (
+                                                            <div className="flex gap-2 items-center mb-2">
+                                                                <i className="ki-filled ki-information-2 text-warning text-xl"></i>
+                                                                <span className="text-sm text-gray-700">{product.internal_desc}</span>
+                                                            </div>
+                                                        )}
                                                         <div className="mt-1 text-xs text-gray-500 space-y-1">
                                                             <div><span className="font-medium">Supplier:</span> {product.supplier_name || '-'}</div>
                                                             <div><span className="font-medium">Category:</span> {product.pm_category || '-'}</div>
