@@ -361,12 +361,12 @@ const EditPackageModal: React.FC<EditPackageModalProps> = ({ packageDetail }) =>
                 </div>
             </div>
 
-            <IncludeProductModal
+            {/* <IncludeProductModal
                 selectedProducts={selectedProducts}
                 updateSelectedProducts={updateSelectedProducts}
                 updateTotalPrice={updateTotalPrice}
                 previousModalId="edit_package_modal"
-            />
+            /> */}
         </>
 
     );

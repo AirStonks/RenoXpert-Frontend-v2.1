@@ -101,84 +101,84 @@ function OrderDetail() {
 
         const packages: Package[] = orderDetail.latest_quotation.packages
 
-        const categoryTotals = packages.reduce(
-            (acc, quotationPackage) => {
-                let category
-                if (quotationPackage.is_addon === true) {
-                    addonCounter += 1
-                    category = `Add-on Option ${addonCounter} (${quotationPackage.name})`
-                } else {
-                    category = quotationPackage.category
-                }
+        const categoryTotals = packages.reduce((acc, pkg) => {
+            if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                return acc;
+            }
 
-                const categoryData = quotationPackage.products.reduce(
-                    (data, product) => {
-                        let supplyPrice = 0
-                        if (product.pivot.includeSupply) {
-                            supplyPrice = product.provisioning.supply.retail_price * product.pivot.quantity || 0
+            let category;
+            if (pkg.is_addon === true) {
+                addonCounter += 1;
+                category = `Add-on Option ${addonCounter} (${pkg.name})`;
+            } else {
+                category = pkg.category || 'others';
+            }
+
+            const categoryData = pkg.products?.reduce(
+                (data, product) => {
+                    let supplyPrice = 0;
+                    let installPrice = 0;
+                    let supplyCogs = 0;
+                    let installCogs = 0;
+
+                    if (product.provisioning?.supply) {
+                        if (product.pivot?.includeSupply) {
+                            supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1);
+                            supplyCogs = (product.provisioning.supply.cogs || 0) * (product.pivot.quantity || 1);
                         } else {
-                            supplyPrice = product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price || 0
+                            supplyPrice = Math.max(0,
+                                (product.provisioning.supply.retail_price || 0) -
+                                (product.provisioning.supply.excluded_price || 0)
+                            ) * (product.pivot?.quantity || 1);
                         }
-
-                        let installPrice = 0
-                        if (product.pivot.includeInstall) {
-                            installPrice = product.provisioning.install.retail_price * product.pivot.quantity || 0
-                        } else {
-                            installPrice =
-                                product.provisioning.install.retail_price - product.provisioning.install.excluded_price || 0
-                        }
-
-                        let supplyCogs = 0
-                        if (product.pivot.includeSupply) {
-                            supplyCogs = product.provisioning.supply.cogs * product.pivot.quantity || 0
-                        }
-
-                        let installCogs = 0
-                        if (product.pivot.includeInstall) {
-                            installCogs = product.provisioning.install.cogs * product.pivot.quantity || 0
-                        }
-
-                        return {
-                            total_price: data.total_price + supplyPrice + installPrice,
-                            cogs: data.cogs + supplyCogs + installCogs,
-                        }
-                    },
-                    { total_price: 0, cogs: 0 },
-                )
-
-                const categoryTotalPrice = categoryData.total_price * (quotationPackage.quantity || 1)
-                const categoryCogs = categoryData.cogs * (quotationPackage.quantity || 1)
-
-                if (!(quotationPackage.is_addon === true && quotationPackage.is_addon_included === false)) {
-                    if (!acc[category]) {
-                        acc[category] = { total_price: 0, cogs: 0, quantity: 0 }
                     }
-                    acc[category].total_price += categoryTotalPrice
-                    acc[category].cogs += categoryCogs
-                    acc[category].quantity += quotationPackage.quantity
-                }
 
-                return acc
-            },
-            {} as Record<string, { total_price: number; cogs: number; quantity: number }>,
-        )
+                    if (product.provisioning?.install) {
+                        if (product.pivot?.includeInstall) {
+                            installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1);
+                            installCogs = (product.provisioning.install.cogs || 0) * (product.pivot?.quantity || 1);
+                        } else {
+                            installPrice = Math.max(0,
+                                (product.provisioning.install.retail_price || 0) -
+                                (product.provisioning.install.excluded_price || 0)
+                            ) * (product.pivot?.quantity || 1);
+                        }
+                    }
 
-        const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0)
-        const filteredTotalCogs = Object.values(categoryTotals).reduce((sum, { cogs }) => sum + cogs, 0)
+                    return {
+                        total_price: data.total_price + supplyPrice + installPrice,
+                        cogs: data.cogs + supplyCogs + installCogs,
+                    };
+                },
+                { total_price: 0, cogs: 0 }
+            ) || { total_price: pkg.total_price || 0, cogs: 0 };
+
+            const categoryTotalPrice = orderDetail.is_be_powered ? (pkg.markup_amount * (pkg.quantity || 1)) : (categoryData.total_price * (pkg.quantity || 1));
+            const categoryCogs = categoryData.cogs * (pkg.quantity || 1);
+
+            if (!acc[category]) {
+                acc[category] = { total_price: 0, cogs: 0, quantity: 0 };
+            }
+            acc[category].total_price += categoryTotalPrice;
+            acc[category].cogs += categoryCogs;
+            acc[category].quantity += pkg.quantity || 1;
+
+            return acc;
+        }, {} as Record<string, { total_price: number; cogs: number; quantity: number }>);
 
         const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, cogs, quantity }]) => ({
-            category: category.startsWith("Add-on Option")
+            category: category.startsWith('Add-on Option')
                 ? category
-                : categoryOptions.find((option) => option.value === category)?.label || category,
+                : categoryOptions.find(option => option.value === category)?.label || category,
             total_price,
             cogs,
             quantity,
-        }))
+        }));
 
         const sortedCategories = [
-            ...categoriesArray.filter((item) => !item.category.startsWith("Add-on Option")),
-            ...categoriesArray.filter((item) => item.category.startsWith("Add-on Option")),
-        ]
+            ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')),
+            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option')),
+        ];
 
         setPackageCategories(sortedCategories)
 
@@ -490,12 +490,53 @@ function OrderDetail() {
         return packageTotal * (pkg.quantity || 1)
     }
 
+    const calculateSummaryTotals = (totalAmount: number) => {
+        const totalCogs = packageCategories.reduce((sum, cat) => sum + cat.cogs, 0);
+        const marginInAmount = totalAmount - totalCogs;
+        const marginInPercentage = totalAmount > 0 ? (marginInAmount / totalAmount) * 100 : 0;
+
+        const discount = selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0
+        const nettAmount = totalAmount - discount;
+        const nettMargin = nettAmount - totalCogs;
+        const nettMarginPercentage = nettAmount > 0 ? (nettMargin / nettAmount) * 100 : 0;
+
+        return {
+            totalCogs,
+            marginInAmount,
+            marginInPercentage,
+            discount,
+            nettAmount,
+            nettMargin,
+            nettMarginPercentage,
+        };
+    };
+
     const { totalCogs, marginInAmount, marginInPercentage } = calculateQuotationMargin()
 
     const discount = selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0
     const nettAmount = totalExcludedAddonAmount - discount
     const nettMargin = nettAmount - totalCogs
     const nettMarginPercentage = nettAmount > 0 ? (nettMargin / nettAmount) * 100 : 0
+
+    const upfrontAmount = selectedPackages.reduce((acc, pkg) => acc + (
+        orderDetail.is_be_powered &&
+            pkg.payment_method === "one-off" &&
+            (pkg.is_addon ? pkg.is_addon_included === true : true)
+            ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price) * (pkg.quantity || 1)
+            : 0)
+        , orderDetail.be_powered_base_price || 0);
+
+    const monthlySum = selectedPackages.reduce((acc, pkg) => acc + (
+        orderDetail.is_be_powered &&
+            pkg.payment_method !== 'one-off' &&
+            (pkg.is_addon ? pkg.is_addon_included === true : true)
+            ? pkg.monthly_amount * (pkg.quantity || 1)
+            : 0)
+        , 0);
+
+
+    const calculatedTotalAmount = packageCategories.reduce((sum, cat) => sum + cat.total_price, 0);
+    const summaryTotals = calculateSummaryTotals(calculatedTotalAmount);
 
     return (
         <>
@@ -755,7 +796,7 @@ function OrderDetail() {
                                     <div className="flex justify-between">
                                         <span className="text-sm text-gray-600">Nett Amount:</span>
                                         <span className="text-sm font-semibold text-gray-900">
-                                            RM {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            RM {summaryTotals.nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
@@ -811,26 +852,10 @@ function OrderDetail() {
                             </div>
                         </div>
 
-                        {/* BePowered 2.0 Program Card */}
+                        {/* Installment Plan Card */}
                         <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
                             <div className="px-6 py-4 border-b border-gray-200/50 flex justify-between items-center">
-                                <h3 className="text-lg font-semibold text-gray-900">BePowered 2.0 Program</h3>
-                                {!isEditingBePowered ? (
-                                    <button
-                                        className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition-all duration-200 active:scale-95"
-                                        onClick={handleEditBePowered}
-                                    >
-                                        Edit
-                                    </button>
-                                )
-                                    :
-                                    <button
-                                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-all duration-200 active:scale-95"
-                                        onClick={() => setIsEditingBePowered(false)}
-                                    >
-                                        Cancel
-                                    </button>
-                                }
+                                <h3 className="text-lg font-semibold text-gray-900">Installment Plan</h3>
                             </div>
                             <div className="p-6">
                                 <div className="space-y-4">
@@ -856,36 +881,14 @@ function OrderDetail() {
                                             </span>
                                         )}
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-600">Original Nett Amount:</span>
-                                        <span className="text-sm font-medium text-gray-900">
-                                            RM {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-600">Markup Price:</span>
-                                        <span className="text-sm font-medium text-gray-900">
-                                            RM{" "}
-                                            {(Math.ceil((nettAmount * 1.2) / 50) * 50).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-600">Upfront Amount:</span>
-                                        <span className="text-sm font-medium text-gray-900">RM 25,000.00</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-sm text-gray-600">Remaining Balance:</span>
-                                        <span className="text-sm font-medium text-gray-900">
-                                            RM{" "}
-                                            {(nettAmount - 25000).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                        </span>
-                                    </div>
+                                    {orderDetail.is_be_powered &&
+                                        <div className="flex justify-between">
+                                            <span className="text-sm text-gray-600">Tenure:</span>
+                                            <span className="text-sm font-medium text-gray-900">
+                                                {orderDetail.tenure} months
+                                            </span>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -1176,24 +1179,24 @@ function OrderDetail() {
                                                 <td className="p-3 text-sm font-semibold text-gray-900">Total</td>
                                                 <td className="p-3 text-sm font-semibold text-gray-900 text-right">
                                                     RM{" "}
-                                                    {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                    {calculatedTotalAmount.toLocaleString(undefined, {
                                                         minimumFractionDigits: 2,
                                                         maximumFractionDigits: 2,
                                                     })}
                                                 </td>
                                                 <td className="p-3 text-sm font-semibold text-gray-900 text-right">
                                                     RM{" "}
-                                                    {totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    {summaryTotals.totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                                 <td className="p-3 text-sm font-semibold text-gray-900 text-right">
                                                     RM{" "}
-                                                    {marginInAmount.toLocaleString(undefined, {
+                                                    {summaryTotals.marginInAmount.toLocaleString(undefined, {
                                                         minimumFractionDigits: 2,
                                                         maximumFractionDigits: 2,
                                                     })}
                                                 </td>
                                                 <td className="p-3 text-sm font-semibold text-gray-900 text-right">
-                                                    {marginInPercentage.toLocaleString(undefined, {
+                                                    {summaryTotals.marginInPercentage.toLocaleString(undefined, {
                                                         minimumFractionDigits: 2,
                                                         maximumFractionDigits: 2,
                                                     })}
@@ -1236,18 +1239,18 @@ function OrderDetail() {
                                                 <td className="p-3 text-sm font-bold text-blue-900">Nett Amount</td>
                                                 <td className="p-3 text-sm font-bold text-blue-900 text-right">
                                                     RM{" "}
-                                                    {nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    {summaryTotals.nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                                 <td className="p-3 text-sm font-bold text-blue-900 text-right">
                                                     RM{" "}
-                                                    {totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    {summaryTotals.totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                                 <td className="p-3 text-sm font-bold text-blue-900 text-right">
                                                     RM{" "}
-                                                    {nettMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    {summaryTotals.nettMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
                                                 <td className="p-3 text-sm font-bold text-blue-900 text-right">
-                                                    {nettMarginPercentage.toLocaleString(undefined, {
+                                                    {summaryTotals.nettMarginPercentage.toLocaleString(undefined, {
                                                         minimumFractionDigits: 2,
                                                         maximumFractionDigits: 2,
                                                     })}
@@ -1259,6 +1262,134 @@ function OrderDetail() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Installment Detail Card */}
+                        {orderDetail.is_be_powered &&
+                            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                                <div className="px-6 py-4 border-b border-gray-200/50">
+                                    <h3 className="text-lg font-semibold text-gray-900">Installment Detail</h3>
+                                </div>
+                                <div className="p-6">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <span className="font-medium text-gray-900">Original Nett Amount</span>
+                                            </div>
+                                            <span className="font-medium">RM {nettAmount.toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                            </span>
+                                        </div>
+
+                                        <div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-medium text-gray-900">Upfront Payment</span>
+                                                <span className="font-medium">RM {upfrontAmount.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0
+                                                })}</span>
+                                            </div>
+
+                                            <div className="flex justify-between items-center text-gray-600 mt-1">
+                                                <span>Base Price</span>
+                                                <span>RM {orderDetail.be_powered_base_price.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                                            </div>
+
+                                            {selectedPackages.filter(pkg =>
+                                                orderDetail.is_be_powered &&
+                                                pkg.payment_method === 'one-off' &&
+                                                (pkg.is_addon ? pkg.is_addon_included === true : true)
+                                            ).map((pkg, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex justify-between items-center text-gray-600 mt-1"
+                                                >
+                                                    <div className="flex items-center">
+                                                        <span>{pkg.name} x{pkg.quantity || 1}</span>
+                                                        {pkg.is_addon && (
+                                                            <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                                                Add-On
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span>RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-medium text-gray-900">Installment ({orderDetail.tenure} months)</span>
+                                                <span className="font-medium">RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0
+                                                })}/mth</span>
+                                            </div>
+
+                                            {orderDetail.installment_method === 'fixed'
+                                                ? (
+                                                    <div className="flex justify-between items-center text-gray-600 mt-1">
+                                                        <div className="flex items-center">
+                                                            <span>Installment method fixed</span>
+                                                        </div>
+                                                        <span>Fixed</span>
+                                                    </div>
+                                                ) : selectedPackages.filter(pkg =>
+                                                    orderDetail.is_be_powered &&
+                                                    pkg.payment_method !== 'one-off' &&
+                                                    (pkg.is_addon ? pkg.is_addon_included === true : true)
+                                                ).map((pkg, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex justify-between items-center text-gray-600 mt-1"
+                                                    >
+                                                        <div className="flex items-center">
+                                                            <span>{pkg.name} x{pkg.quantity || 1}</span>
+                                                            {pkg.is_addon && (
+                                                                <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                                                    Add-On
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span>RM {(pkg.monthly_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
+                                                    </div>
+                                                ))}
+                                        </div>
+
+                                        {/* Installment Plan Total Pricing */}
+                                        <div className="flex flex-col mt-2 pt-2 border-t border-gray-200">
+                                            <div className="flex justify-between items-center text-xl font-bold text-gray-900">
+                                                <span>Total</span>
+                                                <span>RM {upfrontAmount.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0
+                                                })} + (RM {orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0
+                                                })} / month)</span>
+                                            </div>
+
+                                            <div className="flex justify-between items-center text-green-600 mt-1">
+                                                <span>EPP (36 months)</span>
+                                                <span>RM {((upfrontAmount * 1.105) / 36).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0
+                                                })}/mth</span>
+                                            </div>
+
+                                            <div className="flex justify-between items-center text-green-600 mt-1">
+                                                <span>EPP (60 months)</span>
+                                                <span>RM {((upfrontAmount * 1.14) / 60).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0
+                                                })}/mth</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
 
                         {/* Packages Section - Maintaining exact structure as requested */}
                         {selectedQuotation && (
@@ -1346,7 +1477,13 @@ function OrderDetail() {
                                                             >
                                                                 <div className="flex flex-col items-start">
                                                                     <span className="text-base text-gray-900 font-medium text-start">{label}</span>
-                                                                    <span className="text-sm text-gray-600 text-start">{prodPackage.description}</span>
+                                                                    <ul className="text-sm text-gray-600 text-start">
+                                                                        {prodPackage?.description?.split("\n").map((item, index) => (
+                                                                            <li key={index} className="flex items-start">
+                                                                                {item}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
                                                                     <span className="text-base text-gray-700">
                                                                         RM{" "}
                                                                         {calculatePackageTotal(prodPackage).toLocaleString(undefined, {
@@ -1381,25 +1518,54 @@ function OrderDetail() {
                                                                             </span>
                                                                         </div>
                                                                         <div className="flex items-center justify-end gap-2 text-sm text-gray-600">
-                                                                            <span>
-                                                                                RM{" "}
-                                                                                {totals.totalRRP.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}{" "}
-                                                                                (Unit Price)
-                                                                            </span>
+                                                                            {orderDetail.is_be_powered ? (
+                                                                                <span>
+                                                                                    RM{" "}
+                                                                                    {prodPackage.markup_amount.toLocaleString(undefined, {
+                                                                                        minimumFractionDigits: 0,
+                                                                                        maximumFractionDigits: 0,
+                                                                                    })}{" "}
+                                                                                    (Markup Price)
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span>
+                                                                                    RM{" "}
+                                                                                    {totals.totalRRP.toLocaleString(undefined, {
+                                                                                        minimumFractionDigits: 2,
+                                                                                        maximumFractionDigits: 2,
+                                                                                    })}{" "}
+                                                                                    (Unit Price)
+                                                                                </span>
+                                                                            )}
                                                                             <span>x</span>
                                                                             <span>{prodPackage.quantity || 1} (Qty)</span>
                                                                             <span>=</span>
-                                                                            <span className="font-semibold text-lg text-gray-800">
-                                                                                RM{" "}
-                                                                                {(totals.totalRRP * (prodPackage.quantity || 1)).toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </span>
+                                                                            {orderDetail.is_be_powered ? (
+                                                                                <span className="font-semibold text-lg text-gray-800">
+                                                                                    RM{" "}
+                                                                                    {(prodPackage.markup_amount * (prodPackage.quantity || 1)).toLocaleString(undefined, {
+                                                                                        minimumFractionDigits: 0,
+                                                                                        maximumFractionDigits: 0,
+                                                                                    })}
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="font-semibold text-lg text-gray-800">
+                                                                                    RM{" "}
+                                                                                    {(totals.totalRRP * (prodPackage.quantity || 1)).toLocaleString(undefined, {
+                                                                                        minimumFractionDigits: 2,
+                                                                                        maximumFractionDigits: 2,
+                                                                                    })}
+                                                                                </span>
+                                                                            )}
                                                                         </div>
+                                                                        {orderDetail.is_be_powered && prodPackage.payment_method !== 'one-off' && (prodPackage.is_addon ? prodPackage.is_addon_included === true : true) &&
+                                                                            <div className="flex items-center justify-end">
+                                                                                <span className="text-sm text-gray-600 mr-2">
+                                                                                    Installment ({prodPackage.payment_method === 'fixed-installation' ? "Fixed" : "Dynamic"}) :
+                                                                                </span>
+                                                                                <span className="text-orange-700 font-semibold text-gray-800">RM {prodPackage.monthly_amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
+                                                                            </div>
+                                                                        }
                                                                     </div>
                                                                     <div className="flex">
                                                                         <i className="ki-outline ki-right text-gray-600 text-2sm accordion-active:hidden block"></i>

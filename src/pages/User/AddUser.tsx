@@ -42,7 +42,7 @@ interface ValidationErrors {
     address_2?: string[]
     city?: string[]
     state?: string[]
-    postcode?: string[]
+    "address.postcode"?: string[]
     "address.city"?: string[]
     "address.state"?: string[]
     [key: string]: string[] | undefined
@@ -122,7 +122,7 @@ function AddUser() {
     const [success, setSuccess] = useState(false)
 
     const notify = (type: "success" | "error", message: string) => {
-        ; (toast[type] as (message: string, options?: object) => void)(message, {
+        (toast[type] as (message: string, options?: object) => void)(message, {
             position: "top-center",
             autoClose: 3000,
             hideProgressBar: true,
@@ -292,17 +292,22 @@ function AddUser() {
                         email: response.data[0].email,
                     })
 
+                    notify("success", "User Created Successfully!")
                     setSuccess(true)
                 }
             } else {
-                console.log(response.data)
-                setValidationErrors(response.data)
+                notify("error", response.data.message)
+                setValidationErrors(response?.data?.data)
             }
         } catch (error: any) {
+            console.log(error.response?.data?.data);
             setValidationErrors(error.response?.data?.data)
-        }
+            notify("error", error.response?.data?.message)
+        } finally {
+            setIsLoading(false)
+            console.log(validationErrors);
 
-        setIsLoading(false)
+        }
     }
 
     const renderSuccessView = () => (
@@ -371,7 +376,9 @@ function AddUser() {
                                     className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 />
                                 {validationErrors.name_first && (
-                                    <span className="text-red-500 text-sm mt-1 block">{validationErrors.name_first.join(", ")}</span>
+                                    validationErrors.name_first.map((error, index) => (
+                                        <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                    ))
                                 )}
                             </div>
                             <div>
@@ -385,7 +392,9 @@ function AddUser() {
                                     className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 />
                                 {validationErrors.name_last && (
-                                    <span className="text-red-500 text-sm mt-1 block">{validationErrors.name_last.join(", ")}</span>
+                                    validationErrors.name_last.map((error, index) => (
+                                        <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                    ))
                                 )}
                             </div>
                         </div>
@@ -410,7 +419,9 @@ function AddUser() {
                                             ))}
                                         </select>
                                         {validationErrors.salutations && (
-                                            <span className="text-red-500 text-sm mt-1 block">{validationErrors.salutations.join(", ")}</span>
+                                            validationErrors.salutations.map((error, index) => (
+                                                <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                            ))
                                         )}
                                     </div>
                                     <div>
@@ -423,9 +434,9 @@ function AddUser() {
                                             className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                         />
                                         {validationErrors.name_preferred && (
-                                            <span className="text-red-500 text-sm mt-1 block">
-                                                {validationErrors.name_preferred.join(", ")}
-                                            </span>
+                                            validationErrors.name_preferred.map((error, index) => (
+                                                <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                            ))
                                         )}
                                     </div>
                                 </div>
@@ -447,7 +458,9 @@ function AddUser() {
                                 />
                             </div>
                             {validationErrors.email && (
-                                <span className="text-red-500 text-sm mt-1 block">{validationErrors.email.join(", ")}</span>
+                                validationErrors.email.map((error, index) => (
+                                    <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                ))
                             )}
                         </div>
 
@@ -481,7 +494,9 @@ function AddUser() {
                                 </div>
                             </div>
                             {validationErrors.phone && (
-                                <span className="text-red-500 text-sm mt-1 block">{validationErrors.phone.join(", ")}</span>
+                                validationErrors.phone.map((error, index) => (
+                                    <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                ))
                             )}
                         </div>
 
@@ -501,7 +516,9 @@ function AddUser() {
                                     />
                                 </div>
                                 {validationErrors.ic && (
-                                    <span className="text-red-500 text-sm mt-1 block">{validationErrors.ic.join(", ")}</span>
+                                    validationErrors.ic.map((error, index) => (
+                                        <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                    ))
                                 )}
                             </div>
                         )}
@@ -526,8 +543,10 @@ function AddUser() {
                                         className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                     />
                                     <span className="text-xs text-gray-500 mt-1 block">Address Line 1</span>
-                                    {validationErrors.address_1 && (
-                                        <span className="text-red-500 text-xs mt-1 block">{validationErrors.address_1}</span>
+                                    {validationErrors['address.address_1'] && (
+                                        validationErrors['address.address_1'].map((error, index) => (
+                                            <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                        ))
                                     )}
                                 </div>
 
@@ -554,8 +573,10 @@ function AddUser() {
                                             className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                         />
                                         <span className="text-xs text-gray-500 mt-1 block">City</span>
-                                        {validationErrors["address.city"] && (
-                                            <span className="text-red-500 text-xs mt-1 block">{validationErrors["address.city"]}</span>
+                                        {validationErrors['address.city'] && (
+                                            validationErrors['address.city'].map((error, index) => (
+                                                <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                            ))
                                         )}
                                     </div>
                                     <div>
@@ -568,8 +589,10 @@ function AddUser() {
                                             className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                         />
                                         <span className="text-xs text-gray-500 mt-1 block">State / Province</span>
-                                        {validationErrors["address.state"] && (
-                                            <span className="text-red-500 text-xs mt-1 block">{validationErrors["address.state"]}</span>
+                                        {validationErrors['address.state'] && (
+                                            validationErrors['address.state'].map((error, index) => (
+                                                <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                            ))
                                         )}
                                     </div>
                                 </div>
@@ -584,8 +607,10 @@ function AddUser() {
                                         className="w-full px-4 py-3 bg-white/70 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                     />
                                     <span className="text-xs text-gray-500 mt-1 block">Postal / Zip Code</span>
-                                    {validationErrors.postcode && (
-                                        <span className="text-red-500 text-xs mt-1 block">{validationErrors.postcode}</span>
+                                    {validationErrors['address.postcode'] && (
+                                        validationErrors['address.postcode'].map((error, index) => (
+                                            <span key={index} className="text-red-500 text-xs mt-1 block">{error}</span>
+                                        ))
                                     )}
                                 </div>
                             </div>
@@ -602,8 +627,8 @@ function AddUser() {
                                     <label
                                         key={role.value}
                                         className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${formData.type === role.value
-                                                ? `${role.border} ${role.bg}`
-                                                : "border-gray-200 hover:border-gray-300"
+                                            ? `${role.border} ${role.bg}`
+                                            : "border-gray-200 hover:border-gray-300"
                                             }`}
                                     >
                                         <input

@@ -35,9 +35,13 @@ interface FormData {
     isDraftMode: boolean;
     isBePowered: boolean;
     finalAmount: number;
+    tenure: number;
     bonusDescription: string;
     bonusValue: number;
     internalRemark: string;
+    installment_method?: 'fixed' | 'dynamic' | string;
+    installment_amount?: number;
+    be_powered_base_price?: number;
 }
 
 const steps = [
@@ -56,7 +60,7 @@ export default function EditOrder() {
 
     const [currentStep, setCurrentStep] = useState(0)
     const [isDraftMode, setIsDraftMode] = useState(false)
-    const [isCreatingOrder, setIsCreatingOrder] = useState(false)
+    const [isAmendingOrder, setIsCreatingOrder] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null)
     const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
@@ -81,9 +85,12 @@ export default function EditOrder() {
         isDraftMode: false,
         isBePowered: false,
         finalAmount: 0,
+        tenure: 12,
         bonusDescription: "",
         bonusValue: 0,
         internalRemark: "",
+        installment_method: 'dynamic',
+        installment_amount: 0
     } as FormData)
 
     const notify = (type: "success" | "error", message: string) => {
@@ -120,6 +127,9 @@ export default function EditOrder() {
                     includePartition: !!orderDetail.include_partition,
                     isProgressivePayment: !!orderDetail.is_progressive_payment,
                     isBePowered: !!orderDetail.is_be_powered,
+                    tenure: orderDetail.tenure || 0,
+                    installment_method: orderDetail.installment_method || 'dynamic',
+                    installment_amount: orderDetail.installment_amount || 0,
                     bonusDescription: orderDetail.latest_quotation.bonus?.description || "",
                     bonusValue: Number(orderDetail.latest_quotation.bonus?.value) || 0,
                 });
@@ -154,11 +164,32 @@ export default function EditOrder() {
         }
     };
 
-    /**
-     * Handles the toggle functionality for addon packages
-     * @param packageId - The ID of the package to toggle
-     * @param isIncluded - Boolean flag to set the addon inclusion state
-     */
+    const handleQuoBePoweredToggle = () => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            isBePowered: !prevFormData.isBePowered
+        }));
+
+        if (!formData.isBePowered) {
+            selectedPackages.forEach(pkg => {
+                const updatedPackage: Package = {
+                    ...pkg,
+                    is_be_powered: true,
+                    payment_method: "one-off"
+                };
+                setSelectedPackages(prevPackages => prevPackages.map(p => p.id === pkg.id ? updatedPackage : p));
+            })
+        } else {
+            selectedPackages.forEach(pkg => {
+                const updatedPackage: Package = {
+                    ...pkg,
+                    is_be_powered: false,
+                };
+                setSelectedPackages(prevPackages => prevPackages.map(p => p.id === pkg.id ? updatedPackage : p));
+            })
+        }
+    };
+
     const handleAddonPackageToggle = (packageId: number, isIncluded: boolean): void => {
         setSelectedPackages(prevPackages =>
             prevPackages.map(pkg => {
@@ -167,6 +198,27 @@ export default function EditOrder() {
                         ...pkg,
                         is_addon_included: isIncluded
                     };
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
+    };
+
+    const handlePaymentMethodChange = (packageId: number, paymentMethod: string, customMonthlyAmount?: number) => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        payment_method: paymentMethod,
+                        monthly_amount: (paymentMethod === 'fix-installation'
+                            ? customMonthlyAmount ? Math.ceil(customMonthlyAmount) : customMonthlyAmount
+                            : paymentMethod === 'dynamic-installation'
+                                ? Math.ceil(pkg.markup_amount / formData.tenure)
+                                : 0)
+                    };
+                    console.log(pkg.markup_amount);
 
                     return updatedPackage;
                 }
@@ -175,17 +227,32 @@ export default function EditOrder() {
         );
     };
 
-    /**
-     * Validates if an addon package is properly configured
-     * @param pkg - The package to validate
-     * @returns boolean indicating if the addon is valid
-     */
-    const validateAddonPackage = (pkg: Package): boolean => {
-        if (!pkg.is_addon) return true;
+    const handleCustomMonthlyAmountChange = (packageId: number, customMonthlyAmount: number) => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        monthly_amount: customMonthlyAmount
+                    };
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
+    }
 
-        // Addon packages must have a defined inclusion state
-        return pkg.is_addon_included !== undefined;
-    };
+    const handleTenureChange = (newTenure: number) => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            tenure: newTenure
+        }))
+    }
+
+    // const validateAddonPackage = (pkg: Package): boolean => {
+    //     if (!pkg.is_addon) return true;
+    //     return pkg.is_addon_included !== undefined;
+    // };
 
     const selectedProducts = useMemo(() => {
         if (!activePackageId) return [];
@@ -195,7 +262,6 @@ export default function EditOrder() {
 
     const onSelectProduct = (product: Product) => {
         if (!activePackageId) return;
-        console.log('test');
 
         setSelectedPackages(prevPackages => {
             return prevPackages.map(pkg => {
@@ -260,31 +326,18 @@ export default function EditOrder() {
         );
     };
 
-    /**
-     * Gets all addon packages from the selected packages
-     * @returns Array of addon packages
-     */
     const getAddonPackages = (): Package[] => {
         return selectedPackages.filter(pkg => pkg.is_addon === true);
     };
 
-    /**
-     * Gets all included addon packages
-     * @returns Array of included addon packages
-     */
     const getIncludedAddonPackages = (): Package[] => {
         return selectedPackages.filter(pkg =>
             pkg.is_addon === true && pkg.is_addon_included === true
         );
     };
 
-    /**
-     * Calculates the total amount including only included addon packages
-     * @returns Total amount for pricing calculations
-     */
     const calculateTotalAmount = (): number => {
         return selectedPackages.reduce((sum, pkg) => {
-            // Skip excluded addon packages from pricing calculations
             if (pkg.is_addon === true && pkg.is_addon_included === false) {
                 return sum;
             }
@@ -297,7 +350,6 @@ export default function EditOrder() {
                 let supplyPrice = 0
                 let installPrice = 0
 
-                // Calculate supply price
                 if (product.provisioning?.supply) {
                     if (product.pivot?.includeSupply) {
                         supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1)
@@ -309,7 +361,6 @@ export default function EditOrder() {
                     }
                 }
 
-                // Calculate install price
                 if (product.provisioning?.install) {
                     if (product.pivot?.includeInstall) {
                         installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1)
@@ -350,7 +401,6 @@ export default function EditOrder() {
         setSelectedCustomer(null)
     }
 
-    // Handle package drag and drop
     const handlePackageDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
@@ -367,7 +417,6 @@ export default function EditOrder() {
         }
     };
 
-    // Handle product updates within packages
     const handleProductsUpdate = (packageId: number, products: Product[]) => {
         setSelectedPackages(prev =>
             prev.map(pkg =>
@@ -378,7 +427,7 @@ export default function EditOrder() {
         );
     };
 
-    const handleCreateOrder = async () => {
+    const handleAmendOrder = async () => {
         setIsCreatingOrder(true);
         const errors: { [key: string]: string } = {};
 
@@ -440,7 +489,7 @@ export default function EditOrder() {
             id: orderDetail.id,
             user_id: selectedCustomer?.id || null,
             property_id: selectedProperty?.id || null,
-            quotation_id: null,
+            quotation_id: '0',
             total_amount: netAmount,
             final_amount: null,
             unit_type: formData.unitType,
@@ -457,6 +506,10 @@ export default function EditOrder() {
             description: "",
             internal_remark: formData.internalRemark,
             completion_day: formData.completionDays,
+            tenure: formData.tenure,
+            installment_method: formData.installment_method,
+            installment_amount: formData.installment_amount,
+            be_powered_base_price: formData.be_powered_base_price,
             bonus: {
                 description: formData.bonusDescription,
                 value: formData.bonusValue,
@@ -527,21 +580,7 @@ export default function EditOrder() {
             <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
                     <div className="lg:col-span-1">
-                        <div className="sticky top-24 space-y-4">
-                            {/* Order Number */}
-                            <div className="p-6 backdrop-blur-xl bg-gradient-to-br from-white/80 to-white/50 border border-blue-200 shadow-2xl rounded-3xl text-center">
-                                <div className="flex flex-col items-center space-y-2">
-                                    <div className="bg-blue-100 text-blue-600 rounded-full p-2">
-                                        <ReceiptText className="h-5 w-5" /> {/* Icon from Lucide or similar */}
-                                    </div>
-                                    <div className="text-sm text-gray-500 tracking-wide">Order Number</div>
-                                    <div className="text-xl font-bold text-blue-700 tracking-widest">
-                                        {orderDetail?.order_no || '—'}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Progress Steps */}
+                        <div className="sticky top-24">
                             <div className="p-6 backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl rounded-3xl">
                                 <div className="space-y-4">
                                     {steps.map((step, index) => {
@@ -590,7 +629,6 @@ export default function EditOrder() {
                         </div>
                     </div>
 
-                    {/* Main Content */}
                     <div className="lg:col-span-5">
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -627,10 +665,13 @@ export default function EditOrder() {
                                         setSelectedPackages={setSelectedPackages}
                                         onAddPackage={() => setShowPackageSelector(true)}
                                         onAddProduct={handleAddProduct}
-                                        totalAmount={totalAmount}
                                         onPackageDragEnd={handlePackageDragEnd}
                                         onProductsUpdate={handleProductsUpdate}
                                         onAddonToggle={handleAddonPackageToggle}
+                                        onQuoBePoweredToggle={handleQuoBePoweredToggle}
+                                        onPaymentMethodChange={handlePaymentMethodChange}
+                                        onCustomMonthlyAmountChange={handleCustomMonthlyAmountChange}
+                                        onTenureChange={handleTenureChange}
                                     />
                                 )}
 
@@ -642,13 +683,13 @@ export default function EditOrder() {
                                         netAmount={netAmount}
                                         selectedPackages={selectedPackages}
                                         addonPackages={getAddonPackages()}
+                                        onToggleQuoBePowered={handleQuoBePoweredToggle}
                                         includedAddonPackages={getIncludedAddonPackages()}
                                     />
                                 )}
                             </motion.div>
                         </AnimatePresence>
 
-                        {/* Navigation */}
                         <div className="flex justify-between mt-8">
                             <button
                                 onClick={prevStep}
@@ -663,10 +704,10 @@ export default function EditOrder() {
 
                             {currentStep === steps.length - 1 ? (
                                 <button
-                                    onClick={handleCreateOrder}
-                                    className="px-8 py-3 rounded-xl font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/25"
+                                    onClick={handleAmendOrder}
+                                    className="flex px-8 py-3 rounded-xl font-medium transition-all duration-200 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/25"
                                 >
-                                    Amend Quotation
+                                    Amend Order
                                 </button>
                             ) : (
                                 <button
@@ -681,7 +722,6 @@ export default function EditOrder() {
                 </div>
             </div>
 
-            {/* Modals */}
             <PackageSelector
                 isOpen={showPackageSelector}
                 onClose={() => setShowPackageSelector(false)}
@@ -690,7 +730,12 @@ export default function EditOrder() {
                     setSelectedPackages((prev) => [...prev, {
                         ...pkg,
                         quantity: 1,
-                        is_addon_included: pkg.is_addon ? false : undefined
+                        is_addon_included: false,
+                        is_be_powered: false,
+                        is_be_powered_included: false,
+                        payment_method: 'one-off',
+                        markup_amount: (pkg.markup_amount ? Math.ceil(pkg.markup_amount) : pkg.markup_amount) | (pkg.total_price ? Math.ceil(pkg.total_price) : pkg.total_price),
+                        markup_percentage: pkg.markup_percentage,
                     }])
                 }}
                 onRemovePackage={(pkgId) => {
@@ -709,7 +754,8 @@ export default function EditOrder() {
                 onRemoveProduct={onRemoveProduct}
             />
 
-            {isCreatingOrder && (
+
+            {isAmendingOrder && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -742,7 +788,7 @@ export default function EditOrder() {
                                 d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0v4a8 8 0 018 8h-4l3.5 3.5L24 12h-4a8 8 0 01-8 8v-4l-3.5 3.5L12 24v-4a8 8 0 01-8-8z"
                             />
                         </svg>
-                        <p className="text-gray-700 font-medium text-sm">Creating Order...</p>
+                        <p className="text-gray-700 font-medium text-sm">Amending Order...</p>
                     </motion.div>
                 </motion.div>
             )}

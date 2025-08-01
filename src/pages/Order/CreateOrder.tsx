@@ -33,9 +33,13 @@ interface FormData {
     isDraftMode: boolean;
     isBePowered: boolean;
     finalAmount: number;
+    tenure: number;
     bonusDescription: string;
     bonusValue: number;
     internalRemark: string;
+    installment_method?: 'fixed' | 'dynamic';
+    installment_amount?: number;
+    be_powered_base_price?: number;
 }
 
 const steps = [
@@ -61,6 +65,27 @@ export default function CreateOrder() {
     const [showProductModal, setShowProductModal] = useState(false)
     const [stepErrors, setStepErrors] = useState<{ [key: string]: string }>({})
     const [activePackageId, setActivePackageId] = useState<number | null>(null);
+
+    const [formData, setFormData] = useState({
+        unitType: "",
+        block: "",
+        floor: "",
+        unitNo: "",
+        queenBedrooms: 1,
+        singleBedrooms: 1,
+        studios: 0,
+        bathrooms: 1,
+        includePartition: false,
+        completionDays: 30,
+        isProgressivePayment: true,
+        isDraftMode: false,
+        isBePowered: false,
+        tenure: 60,
+        finalAmount: 0,
+        bonusDescription: "",
+        bonusValue: 0,
+        internalRemark: "",
+    } as FormData)
 
     const notify = (type: "success" | "error", message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -114,24 +139,31 @@ export default function CreateOrder() {
 
     }, [duplicateOrderId]);
 
-    const [formData, setFormData] = useState({
-        unitType: "",
-        block: "",
-        floor: "",
-        unitNo: "",
-        queenBedrooms: 1,
-        singleBedrooms: 1,
-        studios: 0,
-        bathrooms: 1,
-        includePartition: false,
-        completionDays: 30,
-        isProgressivePayment: true,
-        isDraftMode: false,
-        finalAmount: 0,
-        bonusDescription: "",
-        bonusValue: 0,
-        internalRemark: "",
-    } as FormData)
+    const handleQuoBePoweredToggle = () => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            isBePowered: !prevFormData.isBePowered
+        }));
+
+        if (!formData.isBePowered) {
+            selectedPackages.forEach(pkg => {
+                const updatedPackage: Package = {
+                    ...pkg,
+                    is_be_powered: true,
+                    payment_method: "one-off"
+                };
+                setSelectedPackages(prevPackages => prevPackages.map(p => p.id === pkg.id ? updatedPackage : p));
+            })
+        } else {
+            selectedPackages.forEach(pkg => {
+                const updatedPackage: Package = {
+                    ...pkg,
+                    is_be_powered: false,
+                };
+                setSelectedPackages(prevPackages => prevPackages.map(p => p.id === pkg.id ? updatedPackage : p));
+            })
+        }
+    };
 
     const handleAddonPackageToggle = (packageId: number, isIncluded: boolean): void => {
         setSelectedPackages(prevPackages =>
@@ -148,10 +180,52 @@ export default function CreateOrder() {
         );
     };
 
-    const validateAddonPackage = (pkg: Package): boolean => {
-        if (!pkg.is_addon) return true;
-        return pkg.is_addon_included !== undefined;
+    const handlePaymentMethodChange = (packageId: number, paymentMethod: string, customMonthlyAmount?: number) => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        payment_method: paymentMethod,
+                        monthly_amount: (paymentMethod === 'fix-installation'
+                            ? customMonthlyAmount ? Math.ceil(customMonthlyAmount) : customMonthlyAmount
+                            : paymentMethod === 'dynamic-installation'
+                                ? Math.ceil(pkg.markup_amount / formData.tenure)
+                                : 0)
+                    };
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
     };
+
+    const handleCustomMonthlyAmountChange = (packageId: number, customMonthlyAmount: number) => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        monthly_amount: customMonthlyAmount
+                    };
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
+    }
+
+    const handleTenureChange = (newTenure: number) => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            tenure: newTenure
+        }))
+    }
+
+    // const validateAddonPackage = (pkg: Package): boolean => {
+    //     if (!pkg.is_addon) return true;
+    //     return pkg.is_addon_included !== undefined;
+    // };
 
     const selectedProducts = useMemo(() => {
         if (!activePackageId) return [];
@@ -398,10 +472,14 @@ export default function CreateOrder() {
             description: "",
             internal_remark: formData.internalRemark,
             completion_day: formData.completionDays,
+            tenure: formData.tenure,
             bonus: {
                 description: formData.bonusDescription,
                 value: formData.bonusValue,
             },
+            installment_method: formData.installment_method,
+            installment_amount: formData.installment_amount,
+            be_powered_base_price: formData.be_powered_base_price,
             metadata: selectedPackages ? JSON.stringify(selectedPackages) : undefined,
         };
 
@@ -436,7 +514,7 @@ export default function CreateOrder() {
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-4">
                             <Link
-                                to={LOCAL_PATH_PREFIX + 'orders' }
+                                to={LOCAL_PATH_PREFIX + 'orders'}
                                 className="p-2 rounded-full hover:bg-gray-100/80 transition-colors duration-200"
                             >
                                 <ArrowLeft className="h-5 w-5 text-gray-700" />
@@ -548,10 +626,13 @@ export default function CreateOrder() {
                                         setSelectedPackages={setSelectedPackages}
                                         onAddPackage={() => setShowPackageSelector(true)}
                                         onAddProduct={handleAddProduct}
-                                        totalAmount={totalAmount}
                                         onPackageDragEnd={handlePackageDragEnd}
                                         onProductsUpdate={handleProductsUpdate}
                                         onAddonToggle={handleAddonPackageToggle}
+                                        onQuoBePoweredToggle={handleQuoBePoweredToggle}
+                                        onPaymentMethodChange={handlePaymentMethodChange}
+                                        onCustomMonthlyAmountChange={handleCustomMonthlyAmountChange}
+                                        onTenureChange={handleTenureChange}
                                     />
                                 )}
 
@@ -563,6 +644,7 @@ export default function CreateOrder() {
                                         netAmount={netAmount}
                                         selectedPackages={selectedPackages}
                                         addonPackages={getAddonPackages()}
+                                        onToggleQuoBePowered={handleQuoBePoweredToggle}
                                         includedAddonPackages={getIncludedAddonPackages()}
                                     />
                                 )}
@@ -609,7 +691,12 @@ export default function CreateOrder() {
                     setSelectedPackages((prev) => [...prev, {
                         ...pkg,
                         quantity: 1,
-                        is_addon_included: pkg.is_addon ? false : undefined
+                        is_addon_included: false,
+                        is_be_powered: false,
+                        is_be_powered_included: false,
+                        payment_method: 'one-off',
+                        markup_amount: (pkg.markup_amount ? Math.ceil(pkg.markup_amount) : pkg.markup_amount) | (pkg.total_price ? Math.ceil(pkg.total_price) : pkg.total_price),
+                        markup_percentage: pkg.markup_percentage,
                     }])
                 }}
                 onRemovePackage={(pkgId) => {

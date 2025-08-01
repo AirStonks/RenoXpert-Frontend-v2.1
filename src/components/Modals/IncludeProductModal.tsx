@@ -1,41 +1,57 @@
-// src\components\Modals\IncludeProductModal.tsx
+import { useEffect, useRef, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Search, X, Plus } from "lucide-react"
+import type { Product } from "../../types"
+import { productIndex } from "../../services/api"
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { KTDataTable } from "../../metronic/core";
-import { Product } from "../../types";
-import { productIndex } from "../../services/api";
-import Loading from "../Loading";
+const AWS_S3_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_AWS_S3_URL
+        : import.meta.env.VITE_APP_ENV === "staging" || import.meta.env.VITE_APP_ENV === "local"
+            ? import.meta.env.VITE_STAGING_AWS_S3_URL
+            : null
+
+const LOCAL_PATH_PREFIX = window.location.hostname === "localhost" ? "/staff/" : "/"
 
 interface IncludeProductModalProps {
-    selectedProducts: Product[];
-    updateSelectedProducts: (products: Product[]) => void;
-    updateTotalPrice: (price: number, operator: string) => void;
-    previousModalId?: string;
+    isOpen: boolean
+    onClose: () => void
+    selectedProducts: Product[]
+    onSelectProduct: (products: Product[]) => void
+    onRemoveProduct: (productId: number) => void
 }
 
-type SortOrder = 'asc' | 'desc' | null;
-
-function IncludeProductModal({
+export default function IncludeProductModal({
+    isOpen,
+    onClose,
     selectedProducts,
-    updateSelectedProducts,
-    updateTotalPrice,
-    previousModalId
+    onSelectProduct,
+    onRemoveProduct,
 }: IncludeProductModalProps) {
-    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+    const [searchTerm, setSearchTerm] = useState("")
+    const [products, setProducts] = useState<Product[]>([])
+    const [page, setPage] = useState(1)
+    const [size, setSize] = useState(10)
+    const [totalItems, setTotalItems] = useState(0)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
+    const abortControllerRef = useRef<AbortController | null>(null)
 
-    const [products, setProducts] = useState<Product[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState<number>(1);
-    const [size, setSize] = useState<number>(10);
-    const [totalItems, setTotalItems] = useState<number>(0);
-    const [searchTerm, setSearchTerm] = useState<string>('');
-    const [sortField, setSortField] = useState<string>('');
-    const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+    const isSelected = (id: number) => selectedProducts.some(p => p.id === id)
 
     useEffect(() => {
-        initProductTable(1, 10, '', null, '');
-    }, []);
+        if (!isOpen) return
+
+        abortControllerRef.current = new AbortController()
+        initProductTable(page, size, '', null, '')
+
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort()
+                abortControllerRef.current = null
+            }
+        }
+    }, [isOpen, page, size])
 
     const initProductTable = async (
         page: number,
@@ -45,319 +61,264 @@ function IncludeProductModal({
         field?: string
     ) => {
         try {
-            setIsLoading(true);
-            const response = await productIndex(size, page, searchTerm, order, field);
-            const data = response?.data || [];
-            setProducts(data);
-            setTotalItems(response?.totalCount || 0);
+            setIsLoading(true)
+            const response = await productIndex(
+                size,
+                page,
+                searchTerm,
+                order,
+                field,
+                abortControllerRef.current?.signal
+            )
+            const data = response?.data || []
+            setProducts(data)
+            setTotalItems(response?.totalCount || 0)
         } catch (error) {
-            console.error('Error fetching products:', error);
-            setError('Failed to load products');
+            console.error('Error fetching products:', error)
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
-    };
+    }
 
-    const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value;
-        setSearchTerm(value);
+    const handleSearch = async (term: string) => {
+        setPage(1)
+        setSearchTerm(term)
 
         if (debounceTimeout.current) {
-            clearTimeout(debounceTimeout.current);
+            clearTimeout(debounceTimeout.current)
         }
-
         debounceTimeout.current = setTimeout(async () => {
-            setPage(1);
-            try {
-                setIsLoading(true);
-                const response = await productIndex(size, 1, value, sortOrder, sortField);
-                const data = response?.data || [];
-                setProducts(data);
-                setTotalItems(response?.totalCount || 0);
-            } catch (error) {
-                console.error('Error searching products:', error);
-                setError('Failed to search products');
-            } finally {
-                setIsLoading(false);
-            }
-        }, 500);
-    };
+            await initProductTable(1, size, term, null, '')
+        }, 500)
+    }
 
-    const handlePageChange = (newPage: number) => {
-        if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
-        setPage(newPage);
-        initProductTable(newPage, size, searchTerm, sortOrder, sortField);
-    };
+    const handleCloseModal = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort()
+            abortControllerRef.current = null
+        }
+        onClose()
+        setSearchTerm('')
+    }
 
-    const handleSizeChange = (newSize: number) => {
-        setSize(newSize);
-        setPage(1);
-    };
+    const handleSelectProduct = (product: Product) => {
+        const isCurrentlySelected = selectedProducts.some(p => p.id === product.id)
+        let updatedProducts: Product[]
 
-    const handleSort = (field: string) => {
-        if (sortField === field) {
-            if (sortOrder === null) {
-                setSortOrder('asc');
-                initProductTable(page, size, searchTerm, 'asc', field);
-            } else if (sortOrder === 'asc') {
-                setSortOrder('desc');
-                initProductTable(page, size, searchTerm, 'desc', field);
-            } else {
-                setSortOrder(null);
-                setSortField('');
-                initProductTable(page, size, searchTerm, null, '');
-            }
+        if (isCurrentlySelected) {
+            updatedProducts = selectedProducts.filter(p => p.id !== product.id)
+            onRemoveProduct(product.id)
         } else {
-            setSortField(field);
-            setSortOrder('asc');
-            initProductTable(page, size, searchTerm, 'asc', field);
-        }
-    };
-
-    const getSortIcon = (field: string) => {
-        if (sortField !== field) {
-            return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
-        }
-        switch (sortOrder) {
-            case 'asc':
-                return <i className="ki-outline ki-arrow-up text-primary" />;
-            case 'desc':
-                return <i className="ki-outline ki-arrow-down text-primary" />;
-            default:
-                return <i className="ki-outline ki-arrow-up-down text-gray-400" />;
-        }
-    };
-
-    const handleSelectProduct = (button: EventTarget & HTMLButtonElement) => {
-        const selectBtn = button.closest('[data-action="select"], [data-action="remove"]') as HTMLElement;
-        if (!selectBtn) return;
-
-        const id = Number(selectBtn.dataset.id);
-        const productPrice = parseFloat(selectBtn.dataset.price || '0');
-
-        const productIndex = selectedProducts.findIndex(product => product.id === id);
-
-        // get selected product
-        const product = products.find(product => product.id === id);
-
-        let updatedProducts = [...selectedProducts];
-
-        if (productIndex > -1) {
-            // Remove product
-            const productQuantity = updatedProducts[productIndex].pivot.quantity;
-            updatedProducts = updatedProducts.filter(product => product.id !== id);
-            selectBtn.dataset.action = 'select';
-            selectBtn.className = 'btn btn-primary btn-sm';
-            selectBtn.innerText = 'Select';
-            updateTotalPrice((product.provisioning.supply.retail_price + product.provisioning.install.retail_price) * productQuantity, '-');
-        } else {
-            // Add product
-            updatedProducts.push({
+            const newProduct = {
                 ...product,
+                quantity: 1,
                 pivot: {
-                    ...product?.pivot,
-                    visibility: true,
+                    package_id: 0, // Will be set when added to package
+                    product_id: product.id,
                     quantity: 1,
+                    included: true,
+                    visibility: true,
                     includeSupply: true,
                     includeInstall: true,
-                }
-            });
-            selectBtn.dataset.action = 'remove';
-            selectBtn.className = 'btn btn-danger btn-sm';
-            selectBtn.innerText = 'Remove';
-            updateTotalPrice(productPrice, '+');
+                    isOriginal: false,
+                },
+            }
+            updatedProducts = [...selectedProducts, newProduct]
         }
 
-        console.log(updatedProducts);
-        
-
-        updateSelectedProducts(updatedProducts);
-    };
-
-    const totalPages = Math.ceil(totalItems / size);
+        onSelectProduct(updatedProducts)
+    }
 
     return (
-        <>
-            {isLoading && <Loading />}
-            <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="include_product_modal">
-                <div className="modal-content modal-center-y max-w-[900px]">
-                    <div className="modal-header py-4 px-5">
-                        <span className="text-lg text-gray-900 font-bold">Add Product into Package</span>
-                        <button
-                            className="btn btn-sm btn-icon btn-light btn-clear shrink-0"
-                            {...(previousModalId
-                                ? { 'data-modal-toggle': `#${previousModalId}` }
-                                : { 'data-modal-dismiss': 'true' }
-                            )}
-                        >
-                            <i className="ki-filled ki-cross"></i>
-                        </button>
-                    </div>
-                    <div className="modal-body p-0 pb-5">
-                        <div className="flex mb-2">
-                            <label className="input input-lg">
-                                <i className="ki-filled ki-magnifier"></i>
-                                <input
-                                    placeholder="Search products"
-                                    type="text"
-                                    value={searchTerm}
-                                    onChange={handleSearch}
-                                />
-                            </label>
-                        </div>
-                    </div>
-                    <div className="modal-table overflow-y-auto scrollable-y max-h-[400px]">
-                        <table className="table align-middle text-gray-700 font-medium text-sm">
-                            <thead>
-                                <tr>
-                                    <th className='text-center cursor-pointer hover:bg-gray-50' onClick={() => handleSort('name')}>
-                                        <div className="flex items-center justify-center gap-2">
-                                            Name {getSortIcon('name')}
-                                        </div>
-                                    </th>
-                                    <th className='min-w-[150px] text-center cursor-pointer hover:bg-gray-50' onClick={() => handleSort('pm_category_id')}>
-                                        <div className="flex items-center justify-center gap-2">
-                                            Category {getSortIcon('pm_category_id')}
-                                        </div>
-                                    </th>
-                                    <th className='min-w-[150px] text-center cursor-pointer hover:bg-gray-50' onClick={() => handleSort('type')}>
-                                        <div className="flex items-center justify-center gap-2">
-                                            Product Type {getSortIcon('type')}
-                                        </div>
-                                    </th>
-                                    <th className='min-w-[120px] text-center cursor-pointer hover:bg-gray-50' onClick={() => handleSort('price')}>
-                                        <div className="flex items-center justify-center gap-2">
-                                            Selling Price {getSortIcon('price')}
-                                        </div>
-                                    </th>
-                                    <th className='min-w-[120px] text-center'>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {products.length > 0 ? (
-                                    products.map((product, prodIndex) => {
-                                        const isSelected = selectedProducts.some((selProd) => selProd.id === product.id);
-                                        const buttonClass = isSelected ? 'btn-danger' : 'btn-primary';
-                                        const action = isSelected ? 'remove' : 'select';
-                                        const buttonText = isSelected ? 'Remove' : 'Select';
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+                        onClick={handleCloseModal}
+                    />
 
-                                        return (
-                                            <tr key={prodIndex} className={`${prodIndex % 2 === 0 ? '' : 'bg-gray-100'}`}>
-                                                <td>
-                                                    <div className="flex flex-col">
-                                                        <span>{product.name}</span>
-                                                        <span className="text-xs text-slate-500 font-semibold">SKU: {product.SKU || '-'}</span>
-                                                        <span className="text-xs text-slate-400">{product.description || ''}</span>
-                                                    </div>
-                                                </td>
-                                                <td className='text-center capitalize'>{product.pm_category}</td>
-                                                <td className='text-center capitalize'>
-                                                    {product.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                                </td>
-                                                <td className='text-center'>
-                                                    <div className="flex flex-col justify-center items-center">
-                                                        <span>RM {product.provisioning.supply.retail_price + product.provisioning.install.retail_price}</span>
-                                                    </div>
-                                                </td>
-                                                <td className='text-center'>
-                                                    <div className="flex justify-around gap-2">
-                                                        <button
-                                                            className={`btn ${buttonClass} btn-sm`}
-                                                            data-action={action}
-                                                            data-id={product.id}
-                                                            data-sku={product.SKU}
-                                                            data-price={product.provisioning.supply.retail_price + product.provisioning.install.retail_price}
-                                                            data-name={product.name}
-                                                            data-desc={product.description}
-                                                            onClick={(e) => handleSelectProduct(e.target as HTMLButtonElement)}
-                                                        >
-                                                            {buttonText}
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                ) : (
-                                    <tr>
-                                        <td colSpan={7} className="text-center text-gray-500">
-                                            No products available
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="modal-footer justify-center md:justify-between flex-col md:flex-row gap-3 text-gray-600 text-2sm font-medium">
-                        <div className="flex items-center gap-2">
-                            Show
-                            <select
-                                className="select select-sm w-16"
-                                name="perpage"
-                                value={size}
-                                onChange={(e) => handleSizeChange(parseInt(e.target.value))}
-                            >
-                                <option value="5">5</option>
-                                <option value="10">10</option>
-                                <option value="20">20</option>
-                                <option value="30">30</option>
-                                <option value="50">50</option>
-                            </select>
-                            per page
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="relative w-full max-w-4xl max-h-[80vh] bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden flex flex-col"
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200/50">
+                            <div>
+                                <h2 className="text-2xl font-semibold text-gray-900">Add Products</h2>
+                                <p className="text-gray-600 mt-1">Select products to add to your package</p>
+                            </div>
+                            <button onClick={handleCloseModal} className="p-2 rounded-full hover:bg-gray-100/80 transition-colors duration-200">
+                                <X className="h-5 w-5 text-gray-500" />
+                            </button>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <span>{(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}</span>
-                            <div className="pagination">
-                                <button
-                                    className={`btn ${page === 1 ? 'disabled' : ''}`}
-                                    onClick={() => handlePageChange(page - 1)}
-                                >
-                                    <i className="ki-outline ki-black-left"></i>
-                                </button>
-                                {totalPages > 0 && (
-                                    <>
-                                        {page > 3 && (
-                                            <>
-                                                <button className="btn" onClick={() => handlePageChange(1)}>1</button>
-                                                <span className="btn btn-disabled">...</span>
-                                            </>
-                                        )}
-                                        {Array.from({ length: Math.min(3, totalPages) }, (_, index) => {
-                                            const startPage = Math.max(1, Math.min(page - 1, totalPages - 2));
-                                            const currentPage = startPage + index;
-                                            return (
-                                                <button
-                                                    key={currentPage}
-                                                    className={`btn ${page === currentPage ? 'active' : ''}`}
-                                                    onClick={() => handlePageChange(currentPage)}
-                                                >
-                                                    {currentPage}
-                                                </button>
-                                            );
-                                        })}
-                                        {page < totalPages - 2 && (
-                                            <>
-                                                <span className="btn btn-disabled">...</span>
-                                                <button className="btn" onClick={() => handlePageChange(totalPages)}>
-                                                    {totalPages}
-                                                </button>
-                                            </>
-                                        )}
-                                    </>
-                                )}
-                                <button
-                                    className={`btn ${page === totalPages ? 'disabled' : ''}`}
-                                    onClick={() => handlePageChange(page + 1)}
-                                >
-                                    <i className="ki-outline ki-black-right"></i>
-                                </button>
+
+                        {/* Search */}
+                        <div className="p-6 border-b border-gray-200/50">
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search products..."
+                                    value={searchTerm}
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                    className="w-full pl-12 pr-4 py-3 h-12 rounded-xl border border-gray-200 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
+                                />
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </>
-    );
-}
 
-export default IncludeProductModal;
+                        {/* Content */}
+                        <div className="flex-1 overflow-y-auto p-6">
+                            {isLoading ? (
+                                <div className="space-y-4">
+                                    {[...Array(4)].map((_, i) => (
+                                        <div key={i} className="animate-pulse flex space-x-4">
+                                            <div className="rounded-lg bg-gray-200 h-16 w-16" />
+                                            <div className="flex-1 space-y-2 py-1">
+                                                <div className="h-4 bg-gray-200 rounded w-3/4" />
+                                                <div className="h-4 bg-gray-200 rounded w-1/2" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : products.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                                        <Search className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                                    <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-4">
+                                    {products.map((product, index) => {
+                                        const selected = isSelected(product.id)
+
+                                        return (
+                                            <motion.div
+                                                key={product.id}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: index * 0.05 }}
+                                                className="flex flex-col justify-between p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-200"
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <div className="h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm font-medium">
+                                                        {product.attachments?.thumbnail ? (
+                                                            <img src={AWS_S3_URL + product.attachments.thumbnail.file_url} alt={product.name} className="h-full w-full object-cover rounded-lg" />
+                                                        ) : (
+                                                            <span>No Image</span>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="flex-1">
+                                                        <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
+                                                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
+                                                        {product.internal_desc && (
+                                                            <div className="flex gap-2 items-center mb-2">
+                                                                <i className="ki-filled ki-information-2 text-warning text-xl"></i>
+                                                                <span className="text-sm text-gray-700">{product.internal_desc}</span>
+                                                            </div>
+                                                        )}
+                                                        <div className="mt-1 text-xs text-gray-500 space-y-1">
+                                                            <div><span className="font-medium">Supplier:</span> {product.supplier_name || '-'}</div>
+                                                            <div><span className="font-medium">Category:</span> {product.pm_category || '-'}</div>
+                                                            <div><span className="font-medium">Product Type:</span> {product.type || '-'}</div>
+                                                        </div>
+                                                        <div className="text-base font-bold text-gray-900 mt-2">
+                                                            RM {(product.provisioning.install.retail_price + product.provisioning.supply.retail_price).toLocaleString()}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-4">
+                                                    {selected ? (
+                                                        <button
+                                                            onClick={() => handleSelectProduct(product)}
+                                                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium shadow-lg shadow-red-500/25 transition-all duration-200"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                            Remove Product
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleSelectProduct(product)}
+                                                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-lg shadow-blue-500/25 transition-all duration-200"
+                                                        >
+                                                            <Plus className="h-4 w-4" />
+                                                            Add Product
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Pagination Controls */}
+                        <div className="flex flex-col md:flex-row items-center justify-between mt-6 bg-white p-4 rounded-3xl shadow-md">
+                            <div className="flex items-center gap-2 mb-4 md:mb-0">
+                                <span>Show</span>
+                                <select
+                                    value={size}
+                                    onChange={(e) => {
+                                        setPage(1)
+                                        setSize(parseInt(e.target.value))
+                                    }}
+                                    className="border rounded-lg px-3 py-1"
+                                >
+                                    {[5, 10, 20, 30, 50].map((s) => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
+                                </select>
+                                <span>per page</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span>
+                                    {(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}
+                                </span>
+                                <div className="flex gap-2">
+                                    <button
+                                        disabled={page === 1}
+                                        onClick={() => setPage(page - 1)}
+                                        className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+                                    >
+                                        Previous
+                                    </button>
+                                    {Array.from({ length: Math.min(5, Math.ceil(totalItems / size)) }, (_, index) => {
+                                        const totalPages = Math.ceil(totalItems / size)
+                                        const startPage = Math.max(1, Math.min(page - 2, totalPages - 4))
+                                        const currentPage = startPage + index
+                                        return (
+                                            <button
+                                                key={currentPage}
+                                                onClick={() => setPage(currentPage)}
+                                                className={`px-3 py-1 border rounded-lg ${page === currentPage ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+                                            >
+                                                {currentPage}
+                                            </button>
+                                        )
+                                    })}
+                                    <button
+                                        disabled={page === Math.ceil(totalItems / size)}
+                                        onClick={() => setPage(page + 1)}
+                                        className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    )
+}
