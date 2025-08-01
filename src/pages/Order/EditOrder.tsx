@@ -41,6 +41,7 @@ interface FormData {
     internalRemark: string;
     installment_method?: 'fixed' | 'dynamic' | string;
     installment_amount?: number;
+    be_powered_base_price?: number;
 }
 
 const steps = [
@@ -508,6 +509,7 @@ export default function EditOrder() {
             tenure: formData.tenure,
             installment_method: formData.installment_method,
             installment_amount: formData.installment_amount,
+            be_powered_base_price: formData.be_powered_base_price,
             bonus: {
                 description: formData.bonusDescription,
                 value: formData.bonusValue,

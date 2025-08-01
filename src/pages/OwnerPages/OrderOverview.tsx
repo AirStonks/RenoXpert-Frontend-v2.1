@@ -524,7 +524,7 @@ function OrderOverview() {
             (pkg.is_addon ? pkg.is_addon_included === true : true)
             ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price) * (pkg.quantity || 1)
             : 0)
-        , 25000);
+        , orderDetail.be_powered_base_price);
 
     const monthlySum = packages.reduce((acc, pkg) => acc + (
         orderDetail.is_be_powered &&
@@ -1209,12 +1209,8 @@ function OrderOverview() {
                                             <div className="card-body p-4">
                                                 <div className="flex flex-col">
                                                     <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-1 mb-2">
+                                                        <div className="flex items-center gap-1">
                                                             <CreditCardIcon className="w-5 h-5 text-blue-600" aria-label="Payment Icon" />
-                                                            <span className="text-xs font-semibold text-gray-700">Easy Payment Plan</span>
-                                                        </div>
-                                                        {/* Show BePowered option if quotation has BePowered packages */}
-                                                        {hasBePoweredPackages() && (
                                                             <select
                                                                 className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
                                                                 id="program"
@@ -1223,80 +1219,32 @@ function OrderOverview() {
                                                                 name="program"
                                                             >
                                                                 <option value="normal">Normal</option>
-                                                                <option value="bePowered">BePowered 2.0</option>
+                                                                {hasBePoweredPackages() && (
+                                                                    <option value="bePowered">BePowered 2.0</option>
+                                                                )}
                                                             </select>
-                                                        )}
-                                                    </div>
+                                                        </div>
 
+                                                        <select
+                                                            className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
+                                                            id="payment_plan"
+                                                            value={selectedPlan}
+                                                            onChange={handlePlanChange}
+                                                            name="payment_plan"
+                                                        >
+                                                            {selectedProgram !== "bePowered" && (
+                                                                <option value="36">36 months</option>
+                                                            )}
+                                                            <option value="60">60 months</option>
+                                                        </select>
+                                                    </div>
                                                     <div className="flex justify-between">
                                                         {selectedProgram !== "bePowered" ? (
                                                             <>
                                                                 <div className="flex flex-col items-start w-full">
                                                                     <p className="text-lg text-[#d71e42] font-bold">
                                                                         RM{" "}
-                                                                        {selectedProgram === "bePowered"
-                                                                            ? (
-                                                                                (25000 * (selectedPlan === "60" ? 1.14 : 1.105)) /
-                                                                                Number(selectedPlan)
-                                                                            ).toLocaleString(undefined, {
-                                                                                minimumFractionDigits: 0,
-                                                                                maximumFractionDigits: 0,
-                                                                            })
-                                                                            : (
-                                                                                ((totalExcludedAddonAmount - (bonus?.value || 0)) *
-                                                                                    (selectedPlan === "60" ? 1.14 : 1.105)) /
-                                                                                Number(selectedPlan)
-                                                                            ).toLocaleString(undefined, {
-                                                                                minimumFractionDigits: 0,
-                                                                                maximumFractionDigits: 0,
-                                                                            })}
-                                                                        <span className="text-sm text-gray-600">/month </span>
-                                                                        <span className="text-xs text-gray-600">
-                                                                            for {selectedPlan === "60" ? "60" : "36"} months
-                                                                        </span>
-                                                                    </p>
-                                                                    <div className="flex justify-between w-full">
-                                                                        <p className="italic text-gray-600 text-xs flex items-center">
-                                                                            <span>(Terms & Conditions)</span>
-                                                                            <button className="mx-1" data-modal-toggle="#payment_info_modal">
-                                                                                <InformationCircleIcon
-                                                                                    className="w-4 h-4 text-yellow-500"
-                                                                                    aria-label="Payment Info"
-                                                                                />
-                                                                            </button>
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-
-                                                                <select
-                                                                    className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
-                                                                    id="payment_plan"
-                                                                    value={selectedPlan}
-                                                                    onChange={handlePlanChange}
-                                                                    name="payment_plan"
-                                                                >
-                                                                    <option value="36">36 months</option>
-                                                                    <option value="60">60 months</option>
-                                                                </select>
-                                                            </>
-                                                        ) : (
-                                                            <div className="flex flex-col items-start w-full">
-                                                                <p className="text-lg text-[#d71e42] font-bold">
-                                                                    <span className="text-sm text-gray-600">Total </span>
-                                                                    RM 25,000
-                                                                    <span className="text-sm text-gray-600"> Upfront</span>
-                                                                </p>
-                                                                <p className="text-sm text-[#d71e42] font-bold">
-                                                                    RM{" "}
-                                                                    {hasBePoweredPackages()
-                                                                        ? (
-                                                                            (25000 * (selectedPlan === "60" ? 1.14 : 1.105)) /
-                                                                            Number(selectedPlan)
-                                                                        ).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 0,
-                                                                            maximumFractionDigits: 0,
-                                                                        })
-                                                                        : (
+                                                                        {(
                                                                             ((totalExcludedAddonAmount - (bonus?.value || 0)) *
                                                                                 (selectedPlan === "60" ? 1.14 : 1.105)) /
                                                                             Number(selectedPlan)
@@ -1304,35 +1252,81 @@ function OrderOverview() {
                                                                             minimumFractionDigits: 0,
                                                                             maximumFractionDigits: 0,
                                                                         })}
+                                                                        <span className="text-sm text-gray-600">/month </span>
+                                                                        <span className="text-xs text-gray-600">for {selectedPlan === "60" ? "60" : "36"} months</span>
+                                                                    </p>
+                                                                    <div className="flex justify-between w-full">
+                                                                        <p className="italic text-gray-600 text-xs flex items-center">
+                                                                            <span>(Terms & Conditions)</span>
+                                                                            <button className="mx-1" data-modal-toggle="#payment_info_modal">
+                                                                                <InformationCircleIcon className="w-4 h-4 text-yellow-500" aria-label="Payment Info" />
+                                                                            </button>
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <div className="flex flex-col items-start w-full">
+                                                                <p className="text-lg text-[#d71e42] font-bold">
+                                                                    <span className="text-sm text-gray-600">Total </span>
+                                                                    RM {upfrontAmount.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 0,
+                                                                    })}
+                                                                    <span className="text-sm text-gray-600"> Upfront</span>
+                                                                </p>
+                                                                <p className="text-sm text-[#d71e42] font-bold">
+                                                                    RM{" "}
+                                                                    {hasBePoweredPackages()
+                                                                        ? (orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(
+                                                                            undefined,
+                                                                            {
+                                                                                minimumFractionDigits: 0,
+                                                                                maximumFractionDigits: 0,
+                                                                            },
+                                                                        )
+                                                                        : (
+                                                                            ((totalExcludedAddonAmount - (bonus?.value || 0)) * (selectedPlan === "60" ? 1.14 : 1.105)) /
+                                                                            Number(selectedPlan)
+                                                                        ).toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 0,
+                                                                        })}
                                                                     <span className="text-sm text-gray-600">/month </span>
-                                                                    <span className="text-xs text-gray-600">
-                                                                        for {selectedPlan === "60" ? "60" : "36"} months
-                                                                    </span>
+                                                                    <span className="text-xs text-gray-600">for {selectedPlan === "60" ? "60" : "36"} months</span>
                                                                 </p>
                                                                 <div className="flex justify-between w-full">
                                                                     <p className="italic text-gray-600 text-xs flex items-center">
                                                                         <span>(Terms & Conditions)</span>
                                                                         <button className="mx-1" data-modal-toggle="#payment_info_modal">
-                                                                            <InformationCircleIcon
-                                                                                className="w-4 h-4 text-yellow-500"
-                                                                                aria-label="Payment Info"
-                                                                            />
+                                                                            <InformationCircleIcon className="w-4 h-4 text-yellow-500" aria-label="Payment Info" />
                                                                         </button>
                                                                     </p>
                                                                 </div>
                                                             </div>
                                                         )}
                                                     </div>
-
                                                     <div className="flex items-start justify-between mt-4">
-                                                        {selectedProgram !== "bePowered" && (
-                                                            <span className="text-xs text-gray-600">
-                                                                <strong>Or</strong> pay one-time: RM{" "}
-                                                                {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
-                                                                    minimumFractionDigits: 2,
-                                                                    maximumFractionDigits: 2,
-                                                                })}
-                                                            </span>
+                                                        {selectedProgram === "bePowered" ? (
+                                                            <div className="flex flex-col space-y-2">
+                                                                <span className="text-2xs font-semibold text-gray-600 p-2 border border-gray-300 rounded-md">
+                                                                    Normal Price: RM{" "}
+                                                                    {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs text-gray-600">
+                                                                    <strong>Or</strong> pay one-time: RM{" "}
+                                                                    {(totalExcludedAddonAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                </span>
+                                                            </div>
                                                         )}
                                                         <button
                                                             className="md:hidden italic underline text-blue-600 text-xs"
@@ -1350,7 +1344,81 @@ function OrderOverview() {
                                                             }`}
                                                     >
                                                         {selectedProgram === "bePowered" ? (
-                                                            ""
+                                                            <div className="mt-2 space-y-4">
+                                                                {/* <div className="flex flex-col">
+                                                                        <div className="flex justify-between items-center">
+                                                                            <span className="text-sm font-semibold text-gray-800">Original Nett Amount: </span>
+                                                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(
+                                                                                (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
+                                                                                (bonus?.value || 0)
+                                                                            ).toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}</span>
+                                                                        </div>
+                                                                    </div> */}
+                                                                <div className="flex flex-col">
+                                                                    <div className="flex justify-between items-center">
+                                                                        <span className="text-sm font-semibold text-gray-800">Upfront Payment: </span>
+                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {upfrontAmount.toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 0,
+                                                                        })}</span>
+                                                                    </div>
+                                                                    {/* <div className="flex justify-between items-center mt-1">
+                                                                            <span className="text-xs text-gray-600">Base Pricing: </span>
+                                                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM 25,000</span>
+                                                                        </div>
+                                                                        {packages.filter(pkg =>
+                                                                            orderDetail.is_be_powered &&
+                                                                            pkg.payment_method === 'one-off' &&
+                                                                            (pkg.is_addon ? pkg.is_addon_included === true : true)
+                                                                        ).map((pkg, index) => (
+                                                                            <div key={index} className="flex justify-between items-center mt-1">
+                                                                                <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
+                                                                                <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                                                                    minimumFractionDigits: 0,
+                                                                                    maximumFractionDigits: 0,
+                                                                                })}</span>
+                                                                            </div>
+                                                                        ))} */}
+                                                                </div>
+                                                                <div className="flex flex-col">
+                                                                    <div className="flex justify-between items-center">
+                                                                        <span className="text-sm font-semibold text-gray-800">Installment ({orderDetail.tenure} months): </span>
+                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 0,
+                                                                        })}/mth</span>
+                                                                    </div>
+                                                                    {/* {orderDetail.installment_method === 'dynamic' && packages.filter(pkg =>
+                                                                        orderDetail.is_be_powered &&
+                                                                        pkg.payment_method !== 'one-off' &&
+                                                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
+                                                                    ).map((pkg, index) => (
+                                                                        <div key={index} className="flex justify-between items-center mt-1">
+                                                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
+                                                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.monthly_amount * pkg.quantity).toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 0,
+                                                                                maximumFractionDigits: 0,
+                                                                            })}/mth</span>
+                                                                        </div>
+                                                                    ))} */}
+                                                                </div>
+                                                                <div className="">
+                                                                    <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
+                                                                    <p className="text-sm text-gray-900 font-semibold">
+                                                                        RM{" "}
+                                                                        {upfrontAmount.toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 0
+                                                                        })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 0
+                                                                        })} / month)
+                                                                    </p>
+                                                                </div>
+                                                            </div>
                                                         ) : (
                                                             <div className="mt-2 space-y-4">
                                                                 <div className="flex flex-col">
@@ -1371,13 +1439,11 @@ function OrderOverview() {
                                                                     <div className="">
                                                                         <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
                                                                         <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                                            {(bonus.description?.split("\n") || ["No Details"]).map(
-                                                                                (item: string, index: number) => (
-                                                                                    <p key={index} className="mb-1 last:mb-0">
-                                                                                        {item}
-                                                                                    </p>
-                                                                                ),
-                                                                            )}
+                                                                            {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
+                                                                                <p key={index} className="mb-1 last:mb-0">
+                                                                                    {item}
+                                                                                </p>
+                                                                            ))}
                                                                         </div>
                                                                         <div className="mt-2">
                                                                             <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
@@ -1396,9 +1462,8 @@ function OrderOverview() {
                                                                     <p className="text-sm text-gray-900 font-semibold">
                                                                         RM{" "}
                                                                         {(
-                                                                            (orderDetail.final_amount > 0
-                                                                                ? orderDetail.final_amount
-                                                                                : totalExcludedAddonAmount) - (bonus?.value || 0)
+                                                                            (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
+                                                                            (bonus?.value || 0)
                                                                         ).toLocaleString(undefined, {
                                                                             minimumFractionDigits: 2,
                                                                             maximumFractionDigits: 2,
@@ -2100,7 +2165,7 @@ function OrderOverview() {
                     >
                         {selectedProgram === "bePowered" ? (
                             <div className="mt-2 space-y-4">
-                                <div className="flex flex-col">
+                                {/* <div className="flex flex-col">
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Original Nett Amount: </span>
                                         <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(
@@ -2111,7 +2176,7 @@ function OrderOverview() {
                                             maximumFractionDigits: 2,
                                         })}</span>
                                     </div>
-                                </div>
+                                </div> */}
                                 <div className="flex flex-col">
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Upfront Payment: </span>
@@ -2120,7 +2185,7 @@ function OrderOverview() {
                                             maximumFractionDigits: 0,
                                         })}</span>
                                     </div>
-                                    <div className="flex justify-between items-center mt-1">
+                                    {/* <div className="flex justify-between items-center mt-1">
                                         <span className="text-xs text-gray-600">Base Pricing: </span>
                                         <span className="text-xs text-gray-600 whitespace-nowrap">RM 25,000</span>
                                     </div>
@@ -2136,7 +2201,7 @@ function OrderOverview() {
                                                 maximumFractionDigits: 0,
                                             })}</span>
                                         </div>
-                                    ))}
+                                    ))} */}
                                 </div>
                                 <div className="flex flex-col">
                                     <div className="flex justify-between items-center">
@@ -2146,7 +2211,7 @@ function OrderOverview() {
                                             maximumFractionDigits: 0,
                                         })}/mth</span>
                                     </div>
-                                    {orderDetail.installment_method === 'dynamic' && packages.filter(pkg =>
+                                    {/* {orderDetail.installment_method === 'dynamic' && packages.filter(pkg =>
                                         orderDetail.is_be_powered &&
                                         pkg.payment_method !== 'one-off' &&
                                         (pkg.is_addon ? pkg.is_addon_included === true : true)
@@ -2158,7 +2223,7 @@ function OrderOverview() {
                                                 maximumFractionDigits: 0,
                                             })}/mth</span>
                                         </div>
-                                    ))}
+                                    ))} */}
                                 </div>
                                 <div className="">
                                     <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>

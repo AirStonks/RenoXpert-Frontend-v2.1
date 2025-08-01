@@ -288,6 +288,7 @@ export interface Order {
     include_partition?: boolean,
     is_progressive_payment?: boolean,
     is_be_powered?: boolean,
+    be_powered_base_price?: number,
     installment_method?: string,
     installment_amount?: number,
     sale?: Sale,

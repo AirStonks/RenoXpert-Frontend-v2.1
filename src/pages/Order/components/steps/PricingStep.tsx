@@ -21,6 +21,7 @@ interface FormData {
     internalRemark: string;
     installment_method?: 'fixed' | 'dynamic' | string
     installment_amount?: number;
+    be_powered_base_price?: number;
 }
 
 interface PricingStepProps {
@@ -89,7 +90,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
             (pkg.is_addon ? pkg.is_addon_included === true : true)
             ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price) * (pkg.quantity || 1)
             : 0)
-        , 25000);
+        , formData.be_powered_base_price || 25000);
 
     const monthlySum = formData.installment_method === 'fixed'
         ? (formData.installment_amount || 0)
@@ -199,6 +200,19 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                 </div>
                             )}
 
+                            {formData.isBePowered && (
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">Base Price (RM)</label>
+                                    <input
+                                        type="number"
+                                        value={formData.be_powered_base_price || 25000}
+                                        onChange={(e) => setFormData({ ...formData, be_powered_base_price: Number.parseFloat(e.target.value) || 25000 })}
+                                        className="w-full px-4 py-3 h-12 rounded-xl border border-gray-200 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">Base price for installment plan</p>
+                                </div>
+                            )}
+
                             {formData.isBePowered && formData.installment_method === 'fixed' && (
                                 <div>
                                     <label className="text-sm font-medium text-gray-700 mb-2 block">Fixed Installment Amount (RM)</label>
@@ -267,7 +281,10 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
 
                             <div className="flex justify-between items-center text-gray-600 mt-2">
                                 <span>Base Price</span>
-                                <span>RM 25,000</span>
+                                <span>RM {(formData.be_powered_base_price || 25000).toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })}</span>
                             </div>
 
                             {selectedPackages.filter(pkg =>

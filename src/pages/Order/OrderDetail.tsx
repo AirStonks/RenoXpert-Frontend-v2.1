@@ -524,7 +524,7 @@ function OrderDetail() {
             (pkg.is_addon ? pkg.is_addon_included === true : true)
             ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price) * (pkg.quantity || 1)
             : 0)
-        , 25000);
+        , orderDetail.be_powered_base_price || 0);
 
     const monthlySum = selectedPackages.reduce((acc, pkg) => acc + (
         orderDetail.is_be_powered &&
@@ -1293,7 +1293,7 @@ function OrderDetail() {
 
                                             <div className="flex justify-between items-center text-gray-600 mt-1">
                                                 <span>Base Price</span>
-                                                <span>RM 25,000</span>
+                                                <span>RM {orderDetail.be_powered_base_price.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                                             </div>
 
                                             {selectedPackages.filter(pkg =>
