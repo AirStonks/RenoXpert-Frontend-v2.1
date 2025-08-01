@@ -19,7 +19,7 @@ interface FormData {
     bonusDescription: string;
     bonusValue: number;
     internalRemark: string;
-    installment_method?: 'fixed' | 'dynamic';
+    installment_method?: 'fixed' | 'dynamic' | string
     installment_amount?: number;
 }
 
