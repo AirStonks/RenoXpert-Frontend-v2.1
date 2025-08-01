@@ -2141,12 +2141,12 @@ function OrderOverview() {
                                 <div className="flex flex-col">
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Installment ({orderDetail.tenure} months): </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {monthlySum.toLocaleString(undefined, {
+                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 0,
                                         })}/mth</span>
                                     </div>
-                                    {packages.filter(pkg =>
+                                    {orderDetail.installment_method === 'dynamic' && packages.filter(pkg =>
                                         orderDetail.is_be_powered &&
                                         pkg.payment_method !== 'one-off' &&
                                         (pkg.is_addon ? pkg.is_addon_included === true : true)
@@ -2167,7 +2167,7 @@ function OrderOverview() {
                                         {upfrontAmount.toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 0
-                                        })} + (RM {monthlySum.toLocaleString(undefined, {
+                                        })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 0
                                         })} / month)
@@ -2311,7 +2311,7 @@ function OrderOverview() {
                                     <p className="text-sm text-[#d71e42] font-bold">
                                         RM{" "}
                                         {hasBePoweredPackages()
-                                            ? monthlySum.toLocaleString(
+                                            ? (orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(
                                                 undefined,
                                                 {
                                                     minimumFractionDigits: 0,

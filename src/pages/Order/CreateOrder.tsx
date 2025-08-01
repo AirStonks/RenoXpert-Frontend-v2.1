@@ -37,6 +37,8 @@ interface FormData {
     bonusDescription: string;
     bonusValue: number;
     internalRemark: string;
+    installment_method?: 'fixed' | 'dynamic';
+    installment_amount?: number;
 }
 
 const steps = [
@@ -474,6 +476,8 @@ export default function CreateOrder() {
                 description: formData.bonusDescription,
                 value: formData.bonusValue,
             },
+            installment_method: formData.installment_method,
+            installment_amount: formData.installment_amount,
             metadata: selectedPackages ? JSON.stringify(selectedPackages) : undefined,
         };
 

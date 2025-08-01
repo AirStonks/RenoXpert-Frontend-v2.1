@@ -14,11 +14,13 @@ interface FormData {
     isProgressivePayment: boolean;
     isDraftMode: boolean;
     isBePowered: boolean;
-    tenure: number
+    tenure: number;
     finalAmount: number;
     bonusDescription: string;
     bonusValue: number;
     internalRemark: string;
+    installment_method?: 'fixed' | 'dynamic';
+    installment_amount?: number;
 }
 
 interface PricingStepProps {
@@ -33,8 +35,6 @@ interface PricingStepProps {
 }
 
 export default function PricingStep({ formData, setFormData, totalAmount, netAmount, selectedPackages, addonPackages, onToggleQuoBePowered, includedAddonPackages }: PricingStepProps) {
-
-    // PricingStep.tsx
     const calculatePackageTotal = (pkg: Package) => {
         if (pkg.is_addon && pkg.is_addon_included === false) {
             return 0;
@@ -77,7 +77,6 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
             packageTotal = pkg.total_price || 0;
         }
 
-        // Apply markup
         const markupAmount = pkg.markup_amount || 0;
         const markupPercentage = pkg.markup_percentage || 0;
         const baseTotal = packageTotal * (pkg.quantity || 1);
@@ -92,18 +91,19 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
             : 0)
         , 25000);
 
-    const monthlySum = selectedPackages.reduce((acc, pkg) => acc + (
-        formData.isBePowered &&
-            pkg.payment_method !== 'one-off' &&
-            (pkg.is_addon ? pkg.is_addon_included === true : true)
-            ? pkg.monthly_amount * (pkg.quantity || 1)
-            : 0)
-        , 0);
+    const monthlySum = formData.installment_method === 'fixed'
+        ? (formData.installment_amount || 0)
+        : selectedPackages.reduce((acc, pkg) => acc + (
+            formData.isBePowered &&
+                pkg.payment_method !== 'one-off' &&
+                (pkg.is_addon ? pkg.is_addon_included === true : true)
+                ? pkg.monthly_amount * (pkg.quantity || 1)
+                : 0)
+            , 0);
 
     const handleQuoBePoweredChange = () => {
         onToggleQuoBePowered(!formData.isBePowered);
     };
-
 
     return (
         <div className="space-y-8">
@@ -184,6 +184,33 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                     {formData.isBePowered ? "Active" : "Inactive"}
                                 </p>
                             </div>
+
+                            {formData.isBePowered && (
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">Installment Method</label>
+                                    <select
+                                        value={formData.installment_method || 'dynamic'}
+                                        onChange={(e) => setFormData({ ...formData, installment_method: e.target.value as 'fixed' | 'dynamic' })}
+                                        className="w-full px-4 py-3 h-12 rounded-xl border border-gray-200 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
+                                    >
+                                        <option value="dynamic">Dynamic</option>
+                                        <option value="fixed">Fixed</option>
+                                    </select>
+                                </div>
+                            )}
+
+                            {formData.isBePowered && formData.installment_method === 'fixed' && (
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">Fixed Installment Amount (RM)</label>
+                                    <input
+                                        type="number"
+                                        value={formData.installment_amount || ''}
+                                        onChange={(e) => setFormData({ ...formData, installment_amount: Number.parseFloat(e.target.value) || 0 })}
+                                        className="w-full px-4 py-3 h-12 rounded-xl border border-gray-200 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
+                                    />
+                                    <span className="text-sm text-red-600">* Note: Fixed installment will hide the packages from Installment section</span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-6">
@@ -209,23 +236,6 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                             </div>
                         </div>
                     </div>
-
-                    {addonPackages && addonPackages.length > 0 && (
-                        <div className="border-t border-gray-200 pt-6">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Add-On Packages Summary</h4>
-                            <div className="space-y-2">
-                                <div className="text-sm text-gray-600">
-                                    Total Add-On Packages: {addonPackages.length}
-                                </div>
-                                <div className="text-sm text-gray-600">
-                                    Included Add-On Packages: {includedAddonPackages ? includedAddonPackages.length : 0}
-                                </div>
-                                <div className="text-sm text-gray-600">
-                                    Excluded Add-On Packages: {addonPackages.length - (includedAddonPackages ? includedAddonPackages.length : 0)}
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
 
@@ -234,7 +244,6 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                     <div className="space-y-8">
                         <div>
                             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Installment Plan Detail</h2>
-                            {/* <p className="text-gray-600"></p> */}
                         </div>
                         <div className="flex justify-between items-center">
                             <div>
@@ -286,42 +295,49 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                         <div>
                             <div className="flex justify-between items-center">
                                 <span className="font-medium text-gray-900">Installment ({formData.tenure} months)</span>
-                                <span className="font-medium">RM {monthlySum.toLocaleString(undefined, {
+                                <span className="font-medium">RM {formData.installment_method === 'fixed' ? formData.installment_amount : monthlySum.toLocaleString(undefined, {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 0
                                 })}/mth</span>
                             </div>
 
-                            {selectedPackages.filter(pkg =>
-                                formData.isBePowered &&
-                                pkg.payment_method !== 'one-off' &&
-                                (pkg.is_addon ? pkg.is_addon_included === true : true)
-                            ).map((pkg, index) => (
-                                <div
-                                    key={index}
-                                    className="flex justify-between items-center text-gray-600 mt-2"
-                                >
-                                    <div className="flex items-center">
-                                        <span>{pkg.name} x{(pkg.quantity || 1)}</span>
-                                        {pkg.is_addon && (
-                                            <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
-                                                Add-On
-                                            </span>
-                                        )}
+                            {formData.installment_method === 'fixed'
+                                ? (
+                                    <div className="flex justify-between items-center text-gray-600 mt-1">
+                                        <div className="flex items-center">
+                                            <span>Installment method fixed</span>
+                                        </div>
+                                        <span>Fixed</span>
                                     </div>
-                                    <span>RM {(pkg.monthly_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
-                                </div>
-                            ))}
+                                ) : selectedPackages.filter(pkg =>
+                                    formData.isBePowered &&
+                                    pkg.payment_method !== 'one-off' &&
+                                    (pkg.is_addon ? pkg.is_addon_included === true : true)
+                                ).map((pkg, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex justify-between items-center text-gray-600 mt-2"
+                                    >
+                                        <div className="flex items-center">
+                                            <span>{pkg.name} x{(pkg.quantity || 1)}</span>
+                                            {pkg.is_addon && (
+                                                <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                                    Add-On
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span>RM {(pkg.monthly_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
+                                    </div>
+                                ))}
                         </div>
 
-                        {/* Installment Plan Detail */}
                         <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
                             <div className="flex justify-between items-center text-xl font-bold text-gray-900">
                                 <span>Total</span>
                                 <span>RM {upfrontAmount.toLocaleString(undefined, {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 0
-                                })} + (RM {monthlySum.toLocaleString(undefined, {
+                                })} + (RM {formData.installment_method === 'fixed' ? formData.installment_amount : monthlySum.toLocaleString(undefined, {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 0
                                 })} / month)</span>

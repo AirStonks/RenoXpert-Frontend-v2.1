@@ -39,6 +39,8 @@ interface FormData {
     bonusDescription: string;
     bonusValue: number;
     internalRemark: string;
+    installment_method?: 'fixed' | 'dynamic' | string;
+    installment_amount?: number;
 }
 
 const steps = [
@@ -86,6 +88,8 @@ export default function EditOrder() {
         bonusDescription: "",
         bonusValue: 0,
         internalRemark: "",
+        installment_method: 'dynamic',
+        installment_amount: 0
     } as FormData)
 
     const notify = (type: "success" | "error", message: string) => {
@@ -123,6 +127,8 @@ export default function EditOrder() {
                     isProgressivePayment: !!orderDetail.is_progressive_payment,
                     isBePowered: !!orderDetail.is_be_powered,
                     tenure: orderDetail.tenure || 0,
+                    installment_method: orderDetail.installment_method || 'dynamic',
+                    installment_amount: orderDetail.installment_amount || 0,
                     bonusDescription: orderDetail.latest_quotation.bonus?.description || "",
                     bonusValue: Number(orderDetail.latest_quotation.bonus?.value) || 0,
                 });
@@ -500,6 +506,8 @@ export default function EditOrder() {
             internal_remark: formData.internalRemark,
             completion_day: formData.completionDays,
             tenure: formData.tenure,
+            installment_method: formData.installment_method,
+            installment_amount: formData.installment_amount,
             bonus: {
                 description: formData.bonusDescription,
                 value: formData.bonusValue,

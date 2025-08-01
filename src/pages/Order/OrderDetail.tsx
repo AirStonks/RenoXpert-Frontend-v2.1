@@ -1321,32 +1321,40 @@ function OrderDetail() {
                                         <div>
                                             <div className="flex justify-between items-center">
                                                 <span className="font-medium text-gray-900">Installment ({orderDetail.tenure} months)</span>
-                                                <span className="font-medium">RM {(monthlySum).toLocaleString(undefined, {
+                                                <span className="font-medium">RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
                                                     minimumFractionDigits: 0,
                                                     maximumFractionDigits: 0
                                                 })}/mth</span>
                                             </div>
 
-                                            {selectedPackages.filter(pkg =>
-                                                orderDetail.is_be_powered &&
-                                                pkg.payment_method !== 'one-off' &&
-                                                (pkg.is_addon ? pkg.is_addon_included === true : true)
-                                            ).map((pkg, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="flex justify-between items-center text-gray-600 mt-1"
-                                                >
-                                                    <div className="flex items-center">
-                                                        <span>{pkg.name} x{pkg.quantity || 1}</span>
-                                                        {pkg.is_addon && (
-                                                            <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
-                                                                Add-On
-                                                            </span>
-                                                        )}
+                                            {orderDetail.installment_method === 'fixed'
+                                                ? (
+                                                    <div className="flex justify-between items-center text-gray-600 mt-1">
+                                                        <div className="flex items-center">
+                                                            <span>Installment method fixed</span>
+                                                        </div>
+                                                        <span>Fixed</span>
                                                     </div>
-                                                    <span>RM {(pkg.monthly_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
-                                                </div>
-                                            ))}
+                                                ) : selectedPackages.filter(pkg =>
+                                                    orderDetail.is_be_powered &&
+                                                    pkg.payment_method !== 'one-off' &&
+                                                    (pkg.is_addon ? pkg.is_addon_included === true : true)
+                                                ).map((pkg, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex justify-between items-center text-gray-600 mt-1"
+                                                    >
+                                                        <div className="flex items-center">
+                                                            <span>{pkg.name} x{pkg.quantity || 1}</span>
+                                                            {pkg.is_addon && (
+                                                                <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                                                    Add-On
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span>RM {(pkg.monthly_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
+                                                    </div>
+                                                ))}
                                         </div>
 
                                         {/* Installment Plan Total Pricing */}
@@ -1356,7 +1364,7 @@ function OrderDetail() {
                                                 <span>RM {upfrontAmount.toLocaleString(undefined, {
                                                     minimumFractionDigits: 0,
                                                     maximumFractionDigits: 0
-                                                })} + (RM {monthlySum.toLocaleString(undefined, {
+                                                })} + (RM {orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum.toLocaleString(undefined, {
                                                     minimumFractionDigits: 0,
                                                     maximumFractionDigits: 0
                                                 })} / month)</span>
