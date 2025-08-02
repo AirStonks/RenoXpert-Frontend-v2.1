@@ -526,6 +526,7 @@ function OrderDetail() {
             : 0)
         , orderDetail.be_powered_base_price || 0);
 
+
     const monthlySum = selectedPackages.reduce((acc, pkg) => acc + (
         orderDetail.is_be_powered &&
             pkg.payment_method !== 'one-off' &&
@@ -1357,11 +1358,23 @@ function OrderDetail() {
                                                 ))}
                                         </div>
 
+                                        {orderDetail?.latest_quotation?.bonus &&
+                                            <div>
+                                                <div className="flex justify-between items-center text-red-600">
+                                                    <span className="font-medium">Bonus</span>
+                                                    <span className="font-medium">- RM {Number(orderDetail?.latest_quotation?.bonus.value).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 0
+                                                    })}</span>
+                                                </div>
+                                            </div>
+                                        }
+
                                         {/* Installment Plan Total Pricing */}
                                         <div className="flex flex-col mt-2 pt-2 border-t border-gray-200">
                                             <div className="flex justify-between items-center text-xl font-bold text-gray-900">
                                                 <span>Total</span>
-                                                <span>RM {upfrontAmount.toLocaleString(undefined, {
+                                                <span>RM {(upfrontAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
                                                     minimumFractionDigits: 0,
                                                     maximumFractionDigits: 0
                                                 })} + (RM {orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum.toLocaleString(undefined, {

@@ -152,22 +152,24 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                 )}
                             </div>
 
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <label className="text-sm font-medium text-gray-700">Progressive Payment</label>
-                                    <button
-                                        onClick={() => setFormData({ ...formData, isProgressivePayment: !formData.isProgressivePayment })}
-                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isProgressivePayment ? "bg-blue-500" : "bg-gray-200"}`}
-                                    >
-                                        <span
-                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isProgressivePayment ? "translate-x-6" : "translate-x-1"}`}
-                                        />
-                                    </button>
+                            {!formData.isBePowered && (
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="text-sm font-medium text-gray-700">Progressive Payment</label>
+                                        <button
+                                            onClick={() => setFormData({ ...formData, isProgressivePayment: !formData.isProgressivePayment })}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isProgressivePayment ? "bg-blue-500" : "bg-gray-200"}`}
+                                        >
+                                            <span
+                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isProgressivePayment ? "translate-x-6" : "translate-x-1"}`}
+                                            />
+                                        </button>
+                                    </div>
+                                    <p className="text-sm text-gray-500 font-semibold">
+                                        {formData.isProgressivePayment ? "Payment in stages" : "Full payment upfront"}
+                                    </p>
                                 </div>
-                                <p className="text-sm text-gray-500 font-semibold">
-                                    {formData.isProgressivePayment ? "Payment in stages" : "Full payment upfront"}
-                                </p>
-                            </div>
+                            )}
 
                             <div>
                                 <div className="flex items-center justify-between mb-2">
@@ -348,10 +350,22 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                 ))}
                         </div>
 
+                        {formData.bonusValue > 0 &&
+                            <div>
+                                <div className="flex justify-between items-center text-red-600">
+                                    <span className="font-medium">Bonus</span>
+                                    <span className="font-medium">- RM {formData.bonusValue.toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    })}</span>
+                                </div>
+                            </div>
+                        }
+
                         <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
                             <div className="flex justify-between items-center text-xl font-bold text-gray-900">
                                 <span>Total</span>
-                                <span>RM {upfrontAmount.toLocaleString(undefined, {
+                                <span>RM {(upfrontAmount - (formData.bonusValue || 0)).toLocaleString(undefined, {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 0
                                 })} + (RM {formData.installment_method === 'fixed' ? formData.installment_amount : monthlySum.toLocaleString(undefined, {
@@ -380,7 +394,8 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                 </div>
             }
 
-            {!formData.isBePowered &&
+            {
+                !formData.isBePowered &&
                 <div className="p-8 backdrop-blur-xl bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border border-white/20 shadow-xl rounded-3xl">
                     <h3 className="text-xl font-semibold text-gray-900 mb-6">Pricing Summary</h3>
 
@@ -440,6 +455,6 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                     </div>
                 </div>
             }
-        </div>
+        </div >
     )
 }

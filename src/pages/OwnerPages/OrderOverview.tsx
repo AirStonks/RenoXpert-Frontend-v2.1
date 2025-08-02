@@ -1409,7 +1409,7 @@ function OrderOverview() {
                                                                     <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
                                                                     <p className="text-sm text-gray-900 font-semibold">
                                                                         RM{" "}
-                                                                        {upfrontAmount.toLocaleString(undefined, {
+                                                                        {(upfrontAmount - (bonus ? bonus.value : 0)).toLocaleString(undefined, {
                                                                             minimumFractionDigits: 0,
                                                                             maximumFractionDigits: 0
                                                                         })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
@@ -2225,11 +2225,33 @@ function OrderOverview() {
                                         </div>
                                     ))} */}
                                 </div>
+                                {bonus && (
+                                    <div className="">
+                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
+                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
+                                            {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
+                                                <p key={index} className="mb-1 last:mb-0">
+                                                    {item}
+                                                </p>
+                                            ))}
+                                        </div>
+                                        <div className="mt-2">
+                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
+                                            <p className="text-md text-teal-600 font-bold">
+                                                RM{" "}
+                                                {bonus.value.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="">
                                     <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
                                     <p className="text-sm text-gray-900 font-semibold">
                                         RM{" "}
-                                        {upfrontAmount.toLocaleString(undefined, {
+                                        {(upfrontAmount - (bonus ? bonus.value : 0)).toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 0
                                         })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
@@ -2367,7 +2389,7 @@ function OrderOverview() {
                                 <div className="flex flex-col items-start w-full">
                                     <p className="text-lg text-[#d71e42] font-bold">
                                         <span className="text-sm text-gray-600">Total </span>
-                                        RM {upfrontAmount.toLocaleString(undefined, {
+                                        RM {(upfrontAmount - (bonus ? bonus.value : 0)).toLocaleString(undefined, {
                                             minimumFractionDigits: 0,
                                             maximumFractionDigits: 0,
                                         })}
