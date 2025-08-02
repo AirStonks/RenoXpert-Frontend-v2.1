@@ -458,7 +458,7 @@ const OrderPreviewModal = ({
             (pkg.is_addon ? pkg.is_addon_included === true : true)
             ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price) * (pkg.quantity || 1)
             : 0)
-        , 25000);
+        , orderDetail.be_powered_base_price);
 
     const monthlySum = packages.reduce((acc, pkg) => acc + (
         orderDetail.is_be_powered &&
