@@ -1315,10 +1315,6 @@ const OrderPreviewModal = ({
                                                 maximumFractionDigits: 0,
                                             })}</span>
                                         </div>
-                                        <div className="flex justify-between items-center mt-1">
-                                            <span className="text-xs text-gray-600">Base Pricing: </span>
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM 25,000</span>
-                                        </div>
                                         {/* {packages.filter(pkg =>
                                             orderDetail.is_be_powered &&
                                             pkg.payment_method === 'one-off' &&
@@ -1341,7 +1337,7 @@ const OrderPreviewModal = ({
                                                 maximumFractionDigits: 0,
                                             })}/mth</span>
                                         </div>
-                                        {orderDetail.installment_method === 'dynamic' && packages.filter(pkg =>
+                                        {/* {orderDetail.installment_method === 'dynamic' && packages.filter(pkg =>
                                             orderDetail.is_be_powered &&
                                             pkg.payment_method !== 'one-off' &&
                                             (pkg.is_addon ? pkg.is_addon_included === true : true)
@@ -1353,7 +1349,7 @@ const OrderPreviewModal = ({
                                                     maximumFractionDigits: 0,
                                                 })}/mth</span>
                                             </div>
-                                        ))}
+                                        ))} */}
                                     </div>
                                     {orderDetail?.latest_quotation?.bonus && (
                                         <div className="">
