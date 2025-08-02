@@ -130,6 +130,7 @@ export default function EditOrder() {
                     tenure: orderDetail.tenure || 0,
                     installment_method: orderDetail.installment_method || 'dynamic',
                     installment_amount: orderDetail.installment_amount || 0,
+                    be_powered_base_price: orderDetail.be_powered_base_price || 0,
                     bonusDescription: orderDetail.latest_quotation.bonus?.description || "",
                     bonusValue: Number(orderDetail.latest_quotation.bonus?.value) || 0,
                 });

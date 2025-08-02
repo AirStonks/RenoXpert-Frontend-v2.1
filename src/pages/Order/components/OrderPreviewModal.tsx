@@ -1309,18 +1309,6 @@ const OrderPreviewModal = ({
                                 <div className="mt-2 space-y-4">
                                     <div className="flex flex-col">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-sm font-semibold text-gray-800">Original Nett Amount: </span>
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(
-                                                (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                                (Number(selectedQuotation.bonus?.value) || 0)
-                                            ).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <div className="flex justify-between items-center">
                                             <span className="text-sm font-semibold text-gray-800">Upfront Payment: </span>
                                             <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {upfrontAmount.toLocaleString(undefined, {
                                                 minimumFractionDigits: 0,
@@ -1331,7 +1319,7 @@ const OrderPreviewModal = ({
                                             <span className="text-xs text-gray-600">Base Pricing: </span>
                                             <span className="text-xs text-gray-600 whitespace-nowrap">RM 25,000</span>
                                         </div>
-                                        {packages.filter(pkg =>
+                                        {/* {packages.filter(pkg =>
                                             orderDetail.is_be_powered &&
                                             pkg.payment_method === 'one-off' &&
                                             (pkg.is_addon ? pkg.is_addon_included === true : true)
@@ -1343,7 +1331,7 @@ const OrderPreviewModal = ({
                                                     maximumFractionDigits: 0,
                                                 })}</span>
                                             </div>
-                                        ))}
+                                        ))} */}
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="flex justify-between items-center">
@@ -1367,11 +1355,33 @@ const OrderPreviewModal = ({
                                             </div>
                                         ))}
                                     </div>
+                                    {orderDetail?.latest_quotation?.bonus && (
+                                        <div className="">
+                                            <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
+                                            <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
+                                                {(orderDetail?.latest_quotation?.bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
+                                                    <p key={index} className="mb-1 last:mb-0">
+                                                        {item}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                            <div className="mt-2">
+                                                <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
+                                                <p className="text-md text-teal-600 font-bold">
+                                                    RM{" "}
+                                                    {Number(orderDetail?.latest_quotation?.bonus.value).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="">
                                         <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
                                         <p className="text-sm text-gray-900 font-semibold">
                                             RM{" "}
-                                            {upfrontAmount.toLocaleString(undefined, {
+                                            {(upfrontAmount - Number(orderDetail?.latest_quotation?.bonus.value)).toLocaleString(undefined, {
                                                 minimumFractionDigits: 0,
                                                 maximumFractionDigits: 0
                                             })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
@@ -1509,7 +1519,7 @@ const OrderPreviewModal = ({
                                     <div className="flex flex-col items-start w-full">
                                         <p className="text-lg text-[#d71e42] font-bold">
                                             <span className="text-sm text-gray-600">Total </span>
-                                            RM {upfrontAmount.toLocaleString(undefined, {
+                                            RM {(upfrontAmount - Number(orderDetail?.latest_quotation?.bonus.value)).toLocaleString(undefined, {
                                                 minimumFractionDigits: 0,
                                                 maximumFractionDigits: 0,
                                             })}
