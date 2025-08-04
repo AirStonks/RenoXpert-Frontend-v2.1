@@ -17,13 +17,13 @@ type SortField = 'id' | 'name' | 'address';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
-const PUBLIC_URL =
+const FORM_URL =
     import.meta.env.VITE_APP_ENV === "production"
-        ? import.meta.env.VITE_PUBLIC_URL
+        ? import.meta.env.VITE_FORM_URL
         : import.meta.env.VITE_APP_ENV === "staging"
-            ? import.meta.env.VITE_STAGING_PUBLIC_URL
+            ? import.meta.env.VITE_STAGING_FORM_URL
             : import.meta.env.VITE_APP_ENV === "local"
-                ? 'localhost:5173/public/'
+                ? 'localhost:5173/form/'
                 : null;
 
 const statusConfig = {
@@ -185,7 +185,7 @@ function IIFMain() {
                     <div className="flex gap-3 flex-wrap">
                         <button
                             className="btn btn-sm btn-outline btn-info copy-link flex justify-center gap-2"
-                            data-clipboard-text={`${PUBLIC_URL}investor-interest-form`}
+                            data-clipboard-text={`${FORM_URL}investor-interest-form`}
                         >
                             <i className="ki-filled ki-copy"></i>
                             <span>Copy Interest Form Link</span>
