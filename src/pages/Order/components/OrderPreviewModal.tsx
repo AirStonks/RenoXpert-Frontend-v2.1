@@ -1393,7 +1393,7 @@ const OrderPreviewModal = ({
                                         <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
                                         <p className="text-sm text-gray-900 font-semibold">
                                             RM{" "}
-                                            {(upfrontAmount - Number(orderDetail?.latest_quotation?.bonus.value)).toLocaleString(undefined, {
+                                            {(upfrontAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
                                                 minimumFractionDigits: 0,
                                                 maximumFractionDigits: 0
                                             })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
