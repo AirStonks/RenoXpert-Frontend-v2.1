@@ -553,6 +553,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                             <h2 className="text-lg font-semibold text-gray-800 mr-4">Installment Details</h2>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
+                                            {/* Original Amount Section - Always Displayed */}
                                             <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
                                                 <div className="flex items-center gap-1 mb-1">
                                                     <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -574,124 +575,116 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                                 </span>
                                             </div>
 
-                                            <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
-                                                <div className="flex items-center gap-1 mb-1">
-                                                    <svg
-                                                        className="w-4 h-4 text-orange-500"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                                                        />
-                                                    </svg>
-                                                    <span className="text-xs font-semibold text-gray-700">Markup Amount</span>
-                                                </div>
-                                                <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
-                                                    <span className="text-sm font-bold text-orange-700 mr-1">RM</span>
-                                                    <input
-                                                        type="number"
-                                                        value={markupAmount}
-                                                        onChange={(e) => handleMarkupAmountChange(Number(e.target.value))}
-                                                        className="w-full text-sm font-bold text-orange-700 bg-transparent border-none outline-none"
-                                                        placeholder="0"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
-                                                <div className="flex items-center gap-1 mb-1">
-                                                    <svg
-                                                        className="w-4 h-4 text-purple-500"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                                                        />
-                                                    </svg>
-                                                    <span className="text-xs font-semibold text-gray-700">Markup %</span>
-                                                </div>
-                                                <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
-                                                    <input
-                                                        type="number"
-                                                        value={markupPercentage}
-                                                        onChange={(e) => handleMarkupPercentageChange(Number(e.target.value))}
-                                                        className="w-full text-sm font-bold text-purple-700 bg-transparent border-none outline-none"
-                                                        placeholder="0"
-                                                        step="0.01"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {tenure > 0 && (
-                                                <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
-                                                    <div className="flex items-center gap-1 mb-1">
-                                                        <svg
-                                                            className="w-4 h-4 text-indigo-500"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                            />
-                                                        </svg>
-                                                        <span className="text-xs font-semibold text-gray-700">Tenure</span>
-                                                    </div>
-                                                    <span className="text-sm font-bold text-indigo-700">{tenure} months</span>
-                                                </div>
-                                            )}
-
-                                            {pkg.payment_method !== "one-off" && (
-                                                <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
-                                                    <div className="flex items-center gap-1 mb-1">
-                                                        <svg
-                                                            className="w-4 h-4 text-teal-500"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                            />
-                                                        </svg>
-                                                        <span className="text-xs font-semibold text-gray-700">Monthly Amount</span>
-                                                    </div>
-                                                    {pkg.payment_method === "fixed-installation" ? (
+                                            {/* Other Sections - Displayed only if pkg.payment_method !== 'base-price' */}
+                                            {pkg.payment_method !== "base-price" ? (
+                                                <>
+                                                    <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                        <div className="flex items-center gap-1 mb-1">
+                                                            <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                            </svg>
+                                                            <span className="text-xs font-semibold text-gray-700">Markup Amount</span>
+                                                        </div>
                                                         <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
-                                                            <span className="text-sm font-bold text-teal-700 mr-1">RM</span>
+                                                            <span className="text-sm font-bold text-orange-700 mr-1">RM</span>
                                                             <input
                                                                 type="number"
-                                                                value={pkg.monthly_amount}
-                                                                onChange={(e) => handleCustomMonthlyAmountChange(Number(e.target.value))}
-                                                                className="w-full text-sm font-bold text-teal-700 bg-transparent border-none outline-none"
+                                                                value={markupAmount}
+                                                                onChange={(e) => handleMarkupAmountChange(Number(e.target.value))}
+                                                                className="w-full text-sm font-bold text-orange-700 bg-transparent border-none outline-none"
                                                                 placeholder="0"
                                                             />
                                                         </div>
-                                                    ) : (
-                                                        <span className="text-sm font-bold text-teal-700">
-                                                            RM{" "}
-                                                            {calculatedMonthlyAmount.toLocaleString(undefined, {
-                                                                minimumFractionDigits: 0,
-                                                                maximumFractionDigits: 0,
-                                                            })}
-                                                        </span>
+                                                    </div>
+
+                                                    <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                        <div className="flex items-center gap-1 mb-1">
+                                                            <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                            </svg>
+                                                            <span className="text-xs font-semibold text-gray-700">Markup %</span>
+                                                        </div>
+                                                        <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
+                                                            <input
+                                                                type="number"
+                                                                value={markupPercentage}
+                                                                onChange={(e) => handleMarkupPercentageChange(Number(e.target.value))}
+                                                                className="w-full text-sm font-bold text-purple-700 bg-transparent border-none outline-none"
+                                                                placeholder="0"
+                                                                step="0.01"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    {tenure > 0 && (
+                                                        <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                            <div className="flex items-center gap-1 mb-1">
+                                                                <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                                    />
+                                                                </svg>
+                                                                <span className="text-xs font-semibold text-gray-700">Tenure</span>
+                                                            </div>
+                                                            <span className="text-sm font-bold text-indigo-700">{tenure} months</span>
+                                                        </div>
                                                     )}
+
+                                                    {pkg.payment_method !== "one-off" && (
+                                                        <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                            <div className="flex items-center gap-1 mb-1">
+                                                                <svg className="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                                    />
+                                                                </svg>
+                                                                <span className="text-xs font-semibold text-gray-700">Monthly Amount</span>
+                                                            </div>
+                                                            {pkg.payment_method === "fixed-installation" ? (
+                                                                <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
+                                                                    <span className="text-sm font-bold text-teal-700 mr-1">RM</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        value={pkg.monthly_amount}
+                                                                        onChange={(e) => handleCustomMonthlyAmountChange(Number(e.target.value))}
+                                                                        className="w-full text-sm font-bold text-teal-700 bg-transparent border-none outline-none"
+                                                                        placeholder="0"
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-sm font-bold text-teal-700">
+                                                                    RM{" "}
+                                                                    {calculatedMonthlyAmount.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 0,
+                                                                    })}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                    <div className="flex items-center gap-1 mb-1">
+                                                        <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3-.672 3-1.5S13.657 8 12 8zm0 0c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0 0V6m0 12v2"
+                                                            />
+                                                        </svg>
+                                                        <span className="text-xs font-semibold text-gray-700">Note</span>
+                                                    </div>
+                                                    <span className="text-sm font-semibold text-orange-700">
+                                                        This package pricing will not include in Upfront Amount
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>
@@ -722,13 +715,14 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                                     className="w-full text-sm font-semibold text-blue-700 bg-white border border-gray-300 rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                                                     value={pkg.payment_method}
                                                     onChange={(e) => {
-                                                        const method = e.target.value as "one-off" | "fixed-installation" | "dynamic-installation"
+                                                        const method = e.target.value as "one-off" | "base-price" | "fixed-installation" | "dynamic-installation"
                                                         handlePaymentMethodChangeInternal(method)
                                                     }}
                                                 >
                                                     <option value="one-off">One-off</option>
-                                                    <option value="fixed-installation">Fixed Installation</option>
-                                                    <option value="dynamic-installation">Dynamic Installation</option>
+                                                    <option value="base-price">Base Price</option>
+                                                    <option value="fixed-installation">Fixed Installment</option>
+                                                    <option value="dynamic-installation">Dynamic Installment</option>
                                                 </select>
                                             </div>
                                         </div>

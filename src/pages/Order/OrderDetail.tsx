@@ -1571,7 +1571,7 @@ function OrderDetail() {
                                                                                 </span>
                                                                             )}
                                                                         </div>
-                                                                        {orderDetail.is_be_powered && prodPackage.payment_method !== 'one-off' && (prodPackage.is_addon ? prodPackage.is_addon_included === true : true) &&
+                                                                        {orderDetail.is_be_powered && (prodPackage.payment_method !== 'one-off' && prodPackage.payment_method !== 'base-price') && (prodPackage.is_addon ? prodPackage.is_addon_included === true : true) &&
                                                                             <div className="flex items-center justify-end">
                                                                                 <span className="text-sm text-gray-600 mr-2">
                                                                                     Installment ({prodPackage.payment_method === 'fixed-installation' ? "Fixed" : "Dynamic"}) :
