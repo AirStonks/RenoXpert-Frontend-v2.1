@@ -244,6 +244,10 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
     [
         { path: '/login', element: <VendorLogin />, layout: null },
     ],
+    // Form
+    [
+        { path: '/investor-interest-form', element: <InvestorInterestForm />, layout: null },
+    ],
     // General
     [
         { path: '/test', element: <Test />, layout: null },
@@ -365,6 +369,10 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
     [
         { path: '/vendor/login', element: <VendorLogin />, layout: null },
     ],
+    // Form
+    [
+        { path: '/form/investor-interest-form', element: <InvestorInterestForm />, layout: null },
+    ],
     // General
     [
         { path: '/', element: <OwnerHome />, layout: OwnerProtectedLayout },
@@ -385,6 +393,7 @@ function App() {
     const isOpDomain = hostname === 'op.renoxpert.my' || hostname === 'sop.renoxpert.my' || hostname === 'localhost';
     const isVendorDomain = hostname === 'ven.renoxpert.my' || hostname === 'sven.renoxpert.my' || hostname === 'localhost';
     const isPublicDomain = hostname === 'public.renoxpert.my' || hostname === 'staging.renoxpert.my' || hostname === 'localhost';
+    const isFormDomain = hostname === 'form.renoxpert.my' || hostname === 'sform.renoxpert.my' || hostname === 'localhost';
 
     useEffect(() => {
         KTComponent.init();
@@ -403,7 +412,7 @@ function App() {
 
     if (hostname === 'localhost') {
         // All routes in routeCatLocal
-        filteredRoutes = [...routeCatLocal[0], ...routeCatLocal[1], ...routeCatLocal[2], ...routeCatLocal[3], ...routeCatLocal[4]];
+        filteredRoutes = [...routeCatLocal[0], ...routeCatLocal[1], ...routeCatLocal[2], ...routeCatLocal[3], ...routeCatLocal[4], ...routeCatLocal[5]];
     } else {
         if (isMainDomain) {
             // Main domain: Owner, Vendor, and General routes
@@ -423,6 +432,9 @@ function App() {
         } else if (isPublicDomain) {
             // Vendor domain: Vendor routes
             filteredRoutes = routeCat[4]; // Vendor
+        } else if (isFormDomain) {
+            // Form domain: Form routes
+            filteredRoutes = routeCat[5];
         } else {
             // Fallback for invalid domains
             // filteredRoutes = [{ path: '*', element: <NotFound />, layout: null }];
