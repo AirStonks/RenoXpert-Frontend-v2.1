@@ -1360,7 +1360,7 @@ function OrderOverview() {
                                                                 <div className="flex flex-col">
                                                                     <div className="flex justify-between items-center">
                                                                         <span className="text-sm font-semibold text-gray-800">Upfront Payment: </span>
-                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(upfrontAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {upfrontAmount.toLocaleString(undefined, {
                                                                             minimumFractionDigits: 0,
                                                                             maximumFractionDigits: 0,
                                                                         })}</span>
