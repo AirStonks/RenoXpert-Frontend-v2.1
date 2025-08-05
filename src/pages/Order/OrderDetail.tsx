@@ -1514,7 +1514,7 @@ function OrderDetail() {
                                                                             <div className="flex items-center gap-2">
                                                                                 <i className="ki-filled ki-information-2 text-warning text-xl"></i>
                                                                                 <ul className="text-xs text-gray-500">
-                                                                                    {prodPackage?.description?.split("\n").map((item, index) => (
+                                                                                    {prodPackage?.description_internal?.split("\n").map((item, index) => (
                                                                                         <li key={index} className="flex items-start">
                                                                                             {item}
                                                                                         </li>
