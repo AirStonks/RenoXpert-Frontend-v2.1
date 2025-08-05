@@ -204,7 +204,7 @@ export function PackageSelector({ isOpen, onClose, selectedPackages, onSelectPac
                                                         <p className="text-gray-800 text-sm">Internal Description:</p>
                                                         <div className="text-gray-600 text-sm bg-gray-100 rounded-xl p-3">
                                                             <ul className="text-xs text-gray-500">
-                                                                {pkg?.description?.split("\n").map((item, index) => (
+                                                                {pkg?.description_internal?.split("\n").map((item, index) => (
                                                                     <li key={index} className="flex items-start">
                                                                         {item}
                                                                     </li>
