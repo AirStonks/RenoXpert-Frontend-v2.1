@@ -513,7 +513,15 @@ function PackageMain() {
                                                     </ul>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3">{pkg.description_internal || '-'}</td>
+                                            <td className="px-4 py-3">
+                                                <ul className="text-xs text-gray-500">
+                                                    {pkg?.description_internal?.split("\n").map((item, index) => (
+                                                        <li key={index} className="flex items-start">
+                                                            {item}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </td>
                                             <td className="px-4 py-3 whitespace-nowrap">
                                                 RM{' '}
                                                 {pkg.total_price.toLocaleString(undefined, {

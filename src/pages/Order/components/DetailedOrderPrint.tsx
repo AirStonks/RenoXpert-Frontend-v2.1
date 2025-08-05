@@ -135,9 +135,6 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
             return acc;
         }, {} as Record<string, { total_price: number; cogs: number; quantity: number }>);
 
-        // Calculate filtered total_amount
-        const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0)
-
         const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, quantity }]) => ({
             category: category.startsWith("Add-on Option")
                 ? category
@@ -146,9 +143,6 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
             quantity,
             cogs: categoryTotals[category].cogs,
         }))
-
-        console.log(categoriesArray);
-
 
         const sortedCategories = [
             ...categoriesArray.filter((item) => !item.category.startsWith("Add-on Option")),
@@ -267,7 +261,7 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
     const totalItems = orderDetail.latest_quotation.packages.reduce((sum, item) => sum + item.quantity, 0)
     const categoryTotals = orderDetail.latest_quotation.packages.reduce(
         (acc: Record<string, { total_price: number; quantity: number }>, pkg) => {
-            const category = pkg.category ?? "Others" // Fallback to 'Others' if category is undefined
+            const category = pkg.category ?? "Others"
             const categoryTotal = (pkg.total_price ?? 0) * (pkg.quantity ?? 1)
 
             if (!acc[category]) {
@@ -326,9 +320,29 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
         )
     }
 
+    const selectedPackages = orderDetail.latest_quotation.packages
+
+    const nettAmount = totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)
+    const upfrontAmount = selectedPackages.reduce((acc, pkg) => acc + (
+        orderDetail.is_be_powered &&
+            pkg.payment_method === "one-off" &&
+            (pkg.is_addon ? pkg.is_addon_included === true : true)
+            ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price) * (pkg.quantity || 1)
+            : 0)
+        , orderDetail.be_powered_base_price || 0);
+
+
+    const monthlySum = selectedPackages.reduce((acc, pkg) => acc + (
+        orderDetail.is_be_powered &&
+            pkg.payment_method !== 'one-off' &&
+            (pkg.is_addon ? pkg.is_addon_included === true : true)
+            ? pkg.monthly_amount * (pkg.quantity || 1)
+            : 0)
+        , 0);
+
     const QuotationPDF = () => (
         <Page size="A4" style={styles.page}>
-            {/* Redesigned Company Header */}
+            {/* Company Header */}
             <View style={styles.companyHeader}>
                 <View>
                     <Image src={COMPANY_LOGO_URL || "/placeholder.svg"} style={styles.companyImage} />
@@ -352,7 +366,7 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                 </View>
             </View>
 
-            {/* Redesigned Quotation Header */}
+            {/* Quotation Header */}
             <View style={styles.quotationHeader}>
                 <Text style={styles.quotationTitle}>{QUOTATION_TITLE}</Text>
                 <View style={styles.quotationDetails}>
@@ -361,7 +375,7 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                 </View>
             </View>
 
-            {/* Redesigned Attn Header */}
+            {/* Attn Header */}
             <View style={styles.headerRow}>
                 <View style={styles.attnHeader}>
                     <View style={styles.attnTitle}>
@@ -574,64 +588,212 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                 </View>
             </View>
 
-            {/* BePowered 2.0 Section */}
-            <View wrap={false}>
-                <View style={styles.summaryTable}>
-                    <View style={styles.summaryHeader}>
-                        <Text style={styles.summaryTitle}>BePowered 2.0</Text>
-                    </View>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Original Nett Amount</Text>
-                        <Text style={styles.summaryValue}>
-                            RM{" "}
-                            {(totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)).toLocaleString(
-                                undefined,
-                                { minimumFractionDigits: 2, maximumFractionDigits: 2 },
-                            )}
-                        </Text>
-                    </View>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Markup Price (20%)</Text>
-                        <Text style={styles.summaryValue}>
-                            RM{" "}
-                            {((totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)) * 1.20).toLocaleString(
-                                undefined,
-                                { minimumFractionDigits: 2, maximumFractionDigits: 2 },
-                            )}
-                        </Text>
-                    </View>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Upfront Amount</Text>
-                        <Text style={styles.summaryValue}>
-                            RM{" "}
-                            {(25000).toLocaleString(
-                                undefined,
-                                { minimumFractionDigits: 2, maximumFractionDigits: 2 },
-                            )}
-                        </Text>
-                    </View>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Upfront EPP (60 months)</Text>
-                        <Text style={styles.summaryValue}>
-                            RM{" "}
-                            {((25000 * 1.14) / 60).toLocaleString(
-                                undefined,
-                                { minimumFractionDigits: 0, maximumFractionDigits: 0 },
-                            )}/month
-                        </Text>
-                    </View>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Remaining Balance</Text>
-                        <Text style={styles.summaryValue}>
-                            RM{" "}
-                            {((totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)) - 25000).toLocaleString(
-                                undefined,
-                                { minimumFractionDigits: 2, maximumFractionDigits: 2 },
-                            )}
-                        </Text>
+            {/* Installment Detail Section */}
+            {orderDetail.is_be_powered && (
+                <View wrap={false} style={styles.summaryPricingSection}>
+                    <Text style={styles.summaryPricingTitle}>Installment Detail</Text>
+                    <View style={styles.summaryPricingTable}>
+                        {/* Original Nett Amount Row */}
+                        <View style={styles.summaryPricingRow}>
+                            <View style={{ flex: 3 }}>
+                                <Text style={[additionalStyles.summaryCell, { fontWeight: "bold" }]}>Original Nett Amount</Text>
+                            </View>
+                            <View style={{ flex: 2 }}>
+                                <Text style={[additionalStyles.summaryCell, { textAlign: "right", fontWeight: "bold" }]}>
+                                    RM {nettAmount.toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    })}
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Upfront Payment Header */}
+                        <View style={[styles.summaryPricingRow, { borderTopWidth: 1, borderTopColor: "#e5e7eb", marginTop: 2 }]}>
+                            <View style={{ flex: 3 }}>
+                                <Text style={[additionalStyles.summaryCell, { fontWeight: "bold" }]}>Upfront Payment</Text>
+                            </View>
+                            <View style={{ flex: 2 }}>
+                                <Text style={[additionalStyles.summaryCell, { textAlign: "right", fontWeight: "bold" }]}>
+                                    RM {upfrontAmount.toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    })}
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Base Price Sub-row */}
+                        <View style={styles.summaryPricingRow}>
+                            <View style={{ flex: 3 }}>
+                                <Text style={[additionalStyles.summaryCell, { paddingLeft: 12 }]}>Base Price</Text>
+                            </View>
+                            <View style={{ flex: 2 }}>
+                                <Text style={[additionalStyles.summaryCell, { textAlign: "right" }]}>
+                                    RM {orderDetail.be_powered_base_price.toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    })}
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* One-off packages */}
+                        {selectedPackages.filter(pkg =>
+                            orderDetail.is_be_powered &&
+                            pkg.payment_method === 'one-off' &&
+                            (pkg.is_addon ? pkg.is_addon_included === true : true)
+                        ).map((pkg, index) => (
+                            <View style={styles.summaryPricingRow} key={index}>
+                                <View style={{ flex: 3 }}>
+                                    <View style={{ flexDirection: "row", alignItems: "center", paddingLeft: 12 }}>
+                                        <Text style={additionalStyles.summaryCell}>
+                                            {pkg.name} x{pkg.quantity || 1}
+                                        </Text>
+                                        {pkg.is_addon && (
+                                            <View style={additionalStyles.addOnBadge}>
+                                                <Text style={additionalStyles.addOnBadgeText}>Add-On</Text>
+                                            </View>
+                                        )}
+                                    </View>
+                                </View>
+                                <View style={{ flex: 2 }}>
+                                    <Text style={[additionalStyles.summaryCell, { textAlign: "right" }]}>
+                                        RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        })}
+                                    </Text>
+                                </View>
+                            </View>
+                        ))}
+
+                        {/* Installment Header */}
+                        <View style={[styles.summaryPricingRow, { borderTopWidth: 1, borderTopColor: "#e5e7eb", marginTop: 2 }]}>
+                            <View style={{ flex: 3 }}>
+                                <Text style={[additionalStyles.summaryCell, { fontWeight: "bold" }]}>
+                                    Installment ({orderDetail.tenure} months)
+                                </Text>
+                            </View>
+                            <View style={{ flex: 2 }}>
+                                <Text style={[additionalStyles.summaryCell, { textAlign: "right", fontWeight: "bold" }]}>
+                                    RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    })}/mth
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Installment details */}
+                        {orderDetail.installment_method === 'fixed' ? (
+                            <View style={styles.summaryPricingRow}>
+                                <View style={{ flex: 3 }}>
+                                    <Text style={[additionalStyles.summaryCell, { paddingLeft: 12 }]}>Installment method fixed</Text>
+                                </View>
+                                <View style={{ flex: 2 }}>
+                                    <Text style={[additionalStyles.summaryCell, { textAlign: "right" }]}>Fixed</Text>
+                                </View>
+                            </View>
+                        ) : selectedPackages.filter(pkg =>
+                            orderDetail.is_be_powered &&
+                            pkg.payment_method !== 'one-off' &&
+                            (pkg.is_addon ? pkg.is_addon_included === true : true)
+                        ).map((pkg, index) => (
+                            <View style={styles.summaryPricingRow} key={index}>
+                                <View style={{ flex: 3 }}>
+                                    <View style={{ flexDirection: "row", alignItems: "center", paddingLeft: 12 }}>
+                                        <Text style={additionalStyles.summaryCell}>
+                                            {pkg.name} x{pkg.quantity || 1}
+                                        </Text>
+                                        {pkg.is_addon && (
+                                            <View style={additionalStyles.addOnBadge}>
+                                                <Text style={additionalStyles.addOnBadgeText}>Add-On</Text>
+                                            </View>
+                                        )}
+                                    </View>
+                                </View>
+                                <View style={{ flex: 2 }}>
+                                    <Text style={[additionalStyles.summaryCell, { textAlign: "right" }]}>
+                                        RM {(pkg.monthly_amount * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        })}/mth
+                                    </Text>
+                                </View>
+                            </View>
+                        ))}
+
+                        {/* Bonus section */}
+                        {orderDetail?.latest_quotation?.bonus && (
+                            <View style={[styles.summaryPricingRow, { borderTopWidth: 1, borderTopColor: "#e5e7eb", marginTop: 2 }]}>
+                                <View style={{ flex: 3 }}>
+                                    <Text style={[additionalStyles.summaryCell, { fontWeight: "bold", color: "#dc2626" }]}>Bonus</Text>
+                                </View>
+                                <View style={{ flex: 2 }}>
+                                    <Text style={[additionalStyles.summaryCell, { textAlign: "right", fontWeight: "bold", color: "#dc2626" }]}>
+                                        - RM {Number(orderDetail?.latest_quotation?.bonus.value).toLocaleString(undefined, {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        })}
+                                    </Text>
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Total section */}
+                        <View style={[styles.summaryPricingRow, { borderTopWidth: 2, borderTopColor: "#374151", marginTop: 4, paddingTop: 4 }]}>
+                            <View style={{ flex: 3 }}>
+                                <Text style={[additionalStyles.summaryCell, { fontWeight: "bold", fontSize: 8 }]}>Total</Text>
+                            </View>
+                            <View style={{ flex: 2 }}>
+                                <Text style={[additionalStyles.summaryCell, { textAlign: "right", fontWeight: "bold", fontSize: 8 }]}>
+                                    RM {(upfrontAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    })} / month)
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* EPP Options */}
+                        <View style={styles.summaryPricingRow}>
+                            <View style={{ flex: 3 }}>
+                                <Text style={[additionalStyles.summaryCell, { paddingLeft: 12, color: "#15803d" }]}>
+                                    EPP (36 months)
+                                </Text>
+                            </View>
+                            <View style={{ flex: 2 }}>
+                                <Text style={[additionalStyles.summaryCell, { textAlign: "right", color: "#15803d" }]}>
+                                    RM {((upfrontAmount * 1.105) / 36).toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    })}/mth
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.summaryPricingRow}>
+                            <View style={{ flex: 3 }}>
+                                <Text style={[additionalStyles.summaryCell, { paddingLeft: 12, color: "#15803d" }]}>
+                                    EPP (60 months)
+                                </Text>
+                            </View>
+                            <View style={{ flex: 2 }}>
+                                <Text style={[additionalStyles.summaryCell, { textAlign: "right", color: "#15803d" }]}>
+                                    RM {((upfrontAmount * 1.14) / 60).toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    })}/mth
+                                </Text>
+                            </View>
+                        </View>
                     </View>
                 </View>
-            </View>
+            )}
 
             {/* Quotation Body */}
             <View>
@@ -650,6 +812,9 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                         if (!isAddon || (isAddon && isIncluded)) {
                             return (
                                 <View style={styles.packageCard} key={pkgIndex} wrap={false}>
+                                    <View>
+
+                                    </View>
                                     <View style={styles.packageHeader}>
                                         {isAddon ? <Text style={styles.packageLabel}>{`ADD-ON OPTION ${counter + 1}:`}</Text> : ""}
                                         <Text style={additionalStyles.smallerPackageTitle}>{pkg.name}</Text>
@@ -1048,7 +1213,7 @@ const DetailedOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                         <View style={styles.bonusTable}>
                             <Text style={styles.bonusTitle}>Bonus:</Text>
                             <View style={styles.bonusList}>
-                                {orderDetail.latest_quotation?.bonus?.description.split("\n").map((item, index) => (
+                                {orderDetail.latest_quotation?.bonus?.description?.split("\n").map((item, index) => (
                                     <Text style={styles.bonusItem} key={index}>
                                         {item}
                                     </Text>
@@ -1107,11 +1272,11 @@ const viewerStyles = StyleSheet.create({
         width: "100%",
         height: "100%",
         border: "none",
-        overflow: "hidden", // Prevent scrolling issues
+        overflow: "hidden",
     },
 })
 
-// Additional styles for smaller text in tables
+// Additional styles for smaller text in tables and new Installment Detail section
 const additionalStyles = StyleSheet.create({
     smallerItemTh: {
         fontSize: 5,
@@ -1119,7 +1284,7 @@ const additionalStyles = StyleSheet.create({
         padding: 3,
         textAlign: "left",
         color: "#1f2937",
-        flexDirection: "column", // Stack children vertically
+        flexDirection: "column",
         display: "flex",
     },
     smallerItemTd: {
@@ -1155,12 +1320,108 @@ const additionalStyles = StyleSheet.create({
     },
     summaryCell: {
         fontSize: 6,
-        padding: 3,
+        padding: 0,
         color: "#4b5563",
     },
+    installmentContainer: {
+        backgroundColor: "#ffffffcc", // bg-white/80
+        borderRadius: 16, // rounded-2xl
+        borderWidth: 1,
+        borderColor: "#e5e7eb80", // border-gray-200/50
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        marginBottom: 8,
+    },
+    installmentHeader: {
+        paddingHorizontal: 24, // px-6
+        paddingVertical: 16, // py-4
+        borderBottomWidth: 1,
+        borderBottomColor: "#e5e7eb80", // border-gray-200/50
+    },
+    installmentTitle: {
+        fontSize: 12, // text-lg
+        fontWeight: "semibold",
+        color: "#111827", // text-gray-900
+    },
+    installmentContent: {
+        padding: 24, // p-6
+        flexDirection: "column",
+        gap: 16, // space-y-4
+    },
+    installmentRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    installmentSection: {
+        flexDirection: "column",
+        gap: 4, // space-y-1
+    },
+    installmentSubRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: 4, // mt-1
+    },
+    installmentLabel: {
+        fontSize: 8,
+        fontWeight: "medium",
+        color: "#111827", // text-gray-900
+    },
+    installmentValue: {
+        fontSize: 8,
+        fontWeight: "medium",
+        color: "#111827", // text-gray-900
+    },
+    installmentSubLabel: {
+        fontSize: 7,
+        color: "#4b5563", // text-gray-600
+    },
+    installmentSubValue: {
+        fontSize: 7,
+        color: "#4b5563", // text-gray-600
+    },
+    installmentSubLabelContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    addOnBadge: {
+        marginLeft: 8, // ml-2
+        paddingHorizontal: 8, // px-2
+        paddingVertical: 4, // py-1
+        backgroundColor: "#dbeafe", // bg-blue-100
+        borderRadius: 999, // rounded-full
+    },
+    addOnBadgeText: {
+        fontSize: 6, // text-xs
+        color: "#1e40af", // text-blue-700
+        fontWeight: "medium",
+    },
+    installmentTotalSection: {
+        flexDirection: "column",
+        paddingTop: 8, // pt-2
+        borderTopWidth: 1,
+        borderTopColor: "#e5e7eb", // border-gray-200
+        marginTop: 8, // mt-2
+    },
+    installmentTotalRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    installmentTotalLabel: {
+        fontSize: 10, // text-xl
+        fontWeight: "bold",
+        color: "#111827", // text-gray-900
+    },
+    installmentTotalValue: {
+        fontSize: 10, // text-xl
+        fontWeight: "bold",
+        color: "#111827", // text-gray-900
+    },
 })
-
-// Add the necessary styles to the styles StyleSheet (add this to the styles object):
 
 
 function DetailedOrderPrint() {
@@ -1200,7 +1461,6 @@ function DetailedOrderPrint() {
             <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-6 flex flex-col h-screen">
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-6">
-                    {/* Back */}
                     <Link
                         to={LOCAL_PATH_PREFIX + "orders/" + orderDetail.id}
                         className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
@@ -1216,8 +1476,7 @@ function DetailedOrderPrint() {
                     <PDFDownloadLink document={pdfDocument} fileName={fileName}>
                         {({ loading }) => (
                             <button
-                                className={`w-full sm:w-auto px-6 py-3 rounded-lg text-white font-semibold transition-colors duration-200 ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                                    }`}
+                                className={`w-full sm:w-auto px-6 py-3 rounded-lg text-white font-semibold transition-colors duration-200 ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}`}
                                 disabled={loading}
                             >
                                 {loading ? "Generating PDF..." : "Download PDF"}
@@ -1226,13 +1485,13 @@ function DetailedOrderPrint() {
                     </PDFDownloadLink>
                 </div>
 
-                {/* PDF Preview (Always Visible, Fills Remaining Space) */}
+                {/* PDF Preview */}
                 <div className="w-full flex-1 bg-white border border-gray-300 rounded-lg overflow-hidden shadow-md">
                     <PDFViewer
                         width="100%"
                         height="100%"
                         style={viewerStyles.viewer}
-                        showToolbar={false} // Hides the default toolbar with download button
+                        showToolbar={false}
                     >
                         {pdfDocument}
                     </PDFViewer>
