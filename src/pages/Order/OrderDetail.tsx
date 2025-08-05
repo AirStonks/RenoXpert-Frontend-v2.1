@@ -1509,11 +1509,17 @@ function OrderDetail() {
                                                                             {categoryOptions.find((option) => option.value === prodPackage.category)?.label}
                                                                         </div>
                                                                     )}
-                                                                    <span className="text-sm text-gray-600 font-medium text-start">
+                                                                    <span className="text-sm text-gray-600 font-medium text-start my-2">
                                                                         {prodPackage.description_internal && (
                                                                             <div className="flex items-center gap-2">
                                                                                 <i className="ki-filled ki-information-2 text-warning text-xl"></i>
-                                                                                {prodPackage.description_internal}
+                                                                                <ul className="text-xs text-gray-500">
+                                                                                    {prodPackage?.description?.split("\n").map((item, index) => (
+                                                                                        <li key={index} className="flex items-start">
+                                                                                            {item}
+                                                                                        </li>
+                                                                                    ))}
+                                                                                </ul>
                                                                             </div>
                                                                         )}
                                                                     </span>
