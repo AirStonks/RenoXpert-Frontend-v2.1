@@ -121,8 +121,13 @@ export default function CreateOrder() {
                         queenBedrooms: response.data.queen_bedroom_count,
                         studios: response.data.studio_count,
                         bathrooms: response.data.bathroom_count,
+                        isBePowered: !!response.data.is_be_powered,
+                        tenure: response.data.tenure || 0,
+                        installment_method: response.data.installment_method || 'dynamic',
+                        installment_amount: response.data.installment_amount || 0,
+                        be_powered_base_price: response.data.be_powered_base_price || 0,
                         bonusDescription: response.data.latest_quotation.bonus?.description || "",
-                        bonusValue: response.data.latest_quotation.bonus?.value || 0,
+                        bonusValue: Number(response.data.latest_quotation.bonus?.value) || 0,
                     }));
                     if (response.data.property_id) setSelectedProperty(response.data.property);
                     setSelectedPackages(response.data.latest_quotation.packages);
