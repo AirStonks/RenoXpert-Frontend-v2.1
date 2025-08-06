@@ -334,6 +334,26 @@ function OrderMain() {
         }
     }
 
+    const getUpfrontAmount = (order: Order) => {
+        return order.latest_quotation.packages.reduce((acc, pkg) => acc + (
+            order.is_be_powered &&
+                pkg.payment_method === "one-off" &&
+                (pkg.is_addon ? pkg.is_addon_included === true : true)
+                ? (pkg.markup_amount ? pkg.markup_amount : pkg.total_price) * (pkg.quantity || 1)
+                : 0)
+            , order.be_powered_base_price || 0);
+    }
+
+    const getInstallmentAmount = (order: Order) => {
+        if (order.installment_method === 'fixed') {
+            return order.installment_amount;
+        } else {
+            return
+        }
+    }
+
+
+
     return (
         <div className="min-h-screen bg-gray-100 p-4">
             {/* Sticky Header */}
@@ -414,63 +434,6 @@ function OrderMain() {
                 </div>
             )}
 
-            {/* Loading Overlay */}
-            {isLoading && (
-                <></>
-                // <div className="flex flex-col md:flex-row items-center justify-between mt-6 bg-white p-4 rounded-lg shadow-md">
-                //     <div className="flex items-center gap-2 mb-4 md:mb-0">
-                //         <span>Show</span>
-                //         <select
-                //             value={size}
-                //             onChange={(e) => handleSizeChange(parseInt(e.target.value))}
-                //             className="border rounded-lg px-3 py-1"
-                //         >
-                //             <option value="5">5</option>
-                //             <option value="10">10</option>
-                //             <option value="20">20</option>
-                //             <option value="30">30</option>
-                //             <option value="50">50</option>
-                //         </select>
-                //         <span>per page</span>
-                //     </div>
-                //     <div className="flex items-center gap-4">
-                //         <span>
-                //             {(page - 1) * size + 1}-{Math.min(page * size, totalItems)} of {totalItems}
-                //         </span>
-                //         <div className="flex gap-2">
-                //             <button
-                //                 disabled={page === 1}
-                //                 onClick={() => handlePageChange(page - 1)}
-                //                 className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
-                //             >
-                //                 Previous
-                //             </button>
-                //             {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
-                //                 const startPage = Math.max(1, Math.min(page - 2, totalPages - 4));
-                //                 const currentPage = startPage + index;
-                //                 return (
-                //                     <button
-                //                         key={currentPage}
-                //                         onClick={() => handlePageChange(currentPage)}
-                //                         className={`px-3 py-1 border rounded-lg ${page === currentPage ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'
-                //                             }`}
-                //                     >
-                //                         {currentPage}
-                //                     </button>
-                //                 );
-                //             })}
-                //             <button
-                //                 disabled={page === totalPages}
-                //                 onClick={() => handlePageChange(page + 1)}
-                //                 className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
-                //             >
-                //                 Next
-                //             </button>
-                //         </div>
-                //     </div>
-                // </div>
-            )}
-
             {/* Table */}
             <div className="bg-white rounded-lg shadow-md overflow-x-auto">
                 <table className="w-full text-sm text-left text-gray-700">
@@ -485,6 +448,9 @@ function OrderMain() {
                             <th className="px-4 py-3 w-24 text-center">Partition</th>
                             <th className="px-4 py-3 w-32 text-center">Program</th>
                             <th className="px-4 py-3 w-32 text-center">Original Amount</th>
+                            <th className="px-4 py-3 w-32 text-center">Base Price</th>
+                            <th className="px-4 py-3 w-32 text-center">Upfront Price</th>
+                            <th className="px-4 py-3 w-32 text-center">Installment Amount</th>
                             <th
                                 className="px-4 py-3 w-32 text-center cursor-pointer hover:bg-gray-100"
                                 onClick={() => handleSort('created_at')}
@@ -538,6 +504,15 @@ function OrderMain() {
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
@@ -613,6 +588,48 @@ function OrderMain() {
                                                 maximumFractionDigits: 2
                                             })}
                                         </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        {order.is_be_powered ? (
+                                            <span className="font-semibold">
+                                                RM {order.be_powered_base_price.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0
+                                                })}
+                                            </span>
+                                        ) : (
+                                            <span className="font-semibold">
+                                                -
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        {order.is_be_powered ? (
+                                            <span className="font-semibold">
+                                                RM {getUpfrontAmount(order).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0
+                                                })}
+                                            </span>
+                                        ) : (
+                                            <span className="font-semibold">
+                                                -
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        {order.is_be_powered ? (
+                                            <span className="font-semibold">
+                                                RM {getInstallmentAmount(order).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0
+                                                })}/mth
+                                            </span>
+                                        ) : (
+                                            <span className="font-semibold">
+                                                -
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <div className="space-y-1">
