@@ -213,16 +213,34 @@ function OrderOverview() {
             const totalAmount = orderDetail.f_1
                 ? orderDetail.total_amount
                 : packages.reduce((total, pkg) => {
-                    // Skip if package is not an addon or not included
+                    // Skip if package is an addon and not included
                     if (pkg.is_addon === true && pkg.is_addon_included === false) {
                         return total
                     }
 
-                    // Use final_amount if available, otherwise use total_price
-                    return total + pkg.total_price * (pkg.quantity || 1)
+                    const packageRetail = pkg.products.reduce((pkgTotal, product) => {
+                        let supplyPrice = 0
+                        if (product.pivot.includeSupply) {
+                            supplyPrice = product.provisioning.supply.retail_price * product.pivot.quantity || 0
+                        } else {
+                            supplyPrice = product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price || 0
+                        }
+
+                        let installPrice = 0
+                        if (product.pivot.includeInstall) {
+                            installPrice = product.provisioning.install.retail_price * product.pivot.quantity || 0
+                        } else {
+                            installPrice = product.provisioning.install.retail_price - product.provisioning.install.excluded_price || 0
+                        }
+
+                        return pkgTotal + (supplyPrice + installPrice)
+                    }, 0)
+
+                    return total + packageRetail * (pkg.quantity || 1)
                 }, 0)
 
             setTotalExcludedAddonAmount(totalAmount)
+
         }
     }, [orderDetail])
 
