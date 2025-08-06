@@ -324,6 +324,16 @@ function OrderMain() {
         }
     }
 
+    const getOriginalPrice = (order: Order) => {
+        if (order.f_1) {
+            return (order.latest_quotation.bonus
+                ? (order.final_amount - (Number(order?.latest_quotation?.bonus?.value) || 0))
+                : order.final_amount)
+        } else {
+            return order.total_amount - (Number(order?.latest_quotation?.bonus?.value) || 0);
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gray-100 p-4">
             {/* Sticky Header */}
@@ -474,7 +484,7 @@ function OrderMain() {
                             <th className="px-4 py-3 w-24 text-center">Unit</th>
                             <th className="px-4 py-3 w-24 text-center">Partition</th>
                             <th className="px-4 py-3 w-32 text-center">Program</th>
-                            <th className="px-4 py-3 w-32 text-center">Price</th>
+                            <th className="px-4 py-3 w-32 text-center">Original Amount</th>
                             <th
                                 className="px-4 py-3 w-32 text-center cursor-pointer hover:bg-gray-100"
                                 onClick={() => handleSort('created_at')}
@@ -598,7 +608,10 @@ function OrderMain() {
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <span className="font-semibold text-green-600">
-                                            RM {(order.f_1 ? (order.latest_quotation.bonus ? (order.final_amount - Number(order.latest_quotation.bonus.value)) : order.final_amount) : order.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            RM {getOriginalPrice(order).toLocaleString(undefined, {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 text-center">

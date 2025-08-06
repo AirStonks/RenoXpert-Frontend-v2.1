@@ -485,7 +485,7 @@ export default function CreateOrder() {
             installment_method: formData.installment_method,
             installment_amount: formData.installment_amount,
             be_powered_base_price: formData.be_powered_base_price,
-            metadata: selectedPackages ? JSON.stringify(selectedPackages) : undefined,
+            metadata: selectedPackages,
         };
 
         try {

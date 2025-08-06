@@ -219,8 +219,6 @@ export default function EditOrder() {
                                 ? Math.ceil(pkg.markup_amount / formData.tenure)
                                 : 0)
                     };
-                    console.log(pkg.markup_amount);
-
                     return updatedPackage;
                 }
                 return pkg;
@@ -515,7 +513,7 @@ export default function EditOrder() {
                 description: formData.bonusDescription,
                 value: formData.bonusValue,
             },
-            metadata: selectedPackages ? JSON.stringify(selectedPackages) : undefined,
+            metadata: selectedPackages,
         };
 
         try {

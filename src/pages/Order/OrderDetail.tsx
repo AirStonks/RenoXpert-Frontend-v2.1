@@ -1498,6 +1498,9 @@ function OrderDetail() {
                                                                         ))}
                                                                     </ul>
                                                                     <span className="text-base text-gray-700">
+                                                                        {orderDetail.is_be_powered && 
+                                                                            <span>Original Amount: </span>
+                                                                        }
                                                                         RM{" "}
                                                                         {calculatePackageTotal(prodPackage).toLocaleString(undefined, {
                                                                             minimumFractionDigits: 2,
