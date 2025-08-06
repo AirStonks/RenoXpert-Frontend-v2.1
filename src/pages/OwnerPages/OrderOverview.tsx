@@ -1145,8 +1145,8 @@ function OrderOverview() {
                                         onClick={() => window.innerWidth < 768 && toggleAccordion("property")}
                                     >
                                         <div className="card-body p-0 px-4 flex justify-around items-center">
-                                            <span className="text-xs text-gray-600">Quote: QUO-2500031</span>
-                                            <span className="text-xs text-gray-600">Date: 16 Apr 2025</span>
+                                            <span className="text-xs text-gray-600">Quote: {orderDetail.order_no}</span>
+                                            <span className="text-xs text-gray-600">Date: {formatDate(orderDetail.released_at)}</span>
                                             {orderDetail.status !== "released" && (
                                                 <div className="flex flex-col">
                                                     {/* Quotation Status */}

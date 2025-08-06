@@ -313,7 +313,7 @@ export interface Order {
     status?: string,
     released_at?: string;
     confirmed_at?: string;
-    metadata?: string,
+    metadata?: string | Package[],
     created_by?: User;
     updated_by?: User;
     created_at?: string;

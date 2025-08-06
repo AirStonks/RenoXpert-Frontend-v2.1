@@ -1587,7 +1587,7 @@ const OrderPreviewModal = ({
                                     <div className="flex flex-col">
                                         <span className="text-xs text-gray-600">
                                             <strong>Or</strong> pay one-time: RM{" "}
-                                            {(totalExcludedAddonAmount - Number(selectedQuotation.bonus?.value)).toLocaleString(undefined, {
+                                            {(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,
                                             })}
