@@ -13,6 +13,9 @@ const OP_URL =
                 ? 'localhost:5173/op/'
                 : null;
 
+
+const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/op/' : '/';
+
 const MEDIA_URL =
     import.meta.env.VITE_APP_ENV === "local"
         ? '/public/media/'
@@ -64,7 +67,7 @@ const OperationLogin: React.FC = () => {
         try {
             const userData = await operationLogin(formData.mobile, formData.password);
             if (userData) {
-                navigate(OP_URL);
+                navigate(LOCAL_PATH_PREFIX);
             }
         } catch (err) {
             setError('Invalid user credentials. Please try again.');

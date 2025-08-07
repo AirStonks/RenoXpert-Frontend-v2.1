@@ -167,7 +167,7 @@ const OwnerLogin: React.FC = () => {
             if (response.data.status === 'verified') {
                 localStorage.setItem('o_token', response.data.o_token);
                 const searchParams = new URLSearchParams(location.search);
-                const redirectUrl = location.state?.from || searchParams.get('redirect') || CLIENT_URL;
+                const redirectUrl = location.state?.from || searchParams.get('redirect') || LOCAL_PATH_PREFIX;
                 navigate(redirectUrl);
             } else {
                 console.log('Invalid');
