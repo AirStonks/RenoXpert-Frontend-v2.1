@@ -55,7 +55,7 @@ function DeleteModal({
                 
                 // navigate(navigateUrl || '/', { replace: true }); // Navigate to the specified URL or default to /products
                 if (navigateUrl) {
-                    navigate(navigateUrl, { replace: true });
+                    navigate(LOCAL_PATH_PREFIX + 'orders');
                 } else {
                     navigate(0);
                 }
