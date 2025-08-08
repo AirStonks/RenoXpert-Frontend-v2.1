@@ -1,5 +1,17 @@
 import { File } from "buffer";
 
+// Chatwoot SDK type declaration
+declare global {
+    interface Window {
+        chatwootSDK: {
+            run: (config: {
+                websiteToken: string;
+                baseUrl: string;
+            }) => void;
+        };
+    }
+}
+
 export interface MyData {
     key: string;
 }
