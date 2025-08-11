@@ -9,6 +9,23 @@ declare global {
                 baseUrl: string;
             }) => void;
         };
+        $chatwoot: {
+            setUser: (uuid: string, user: {
+                name: string;
+                email: string;
+                phone?: string;
+                avatar_url?: string;
+            }) => void;
+            toggle: () => void;
+            setCustomAttributes: (attributes: Record<string, string | number | boolean>) => void;
+        };
+        chatwootSettings: {
+            hideMessageBubble: boolean;
+            position: 'left' | 'right';
+            locale: string;
+            type: 'standard' | 'expanded';
+        };
+        handleChatwootToggle: () => void;
     }
 }
 
@@ -735,7 +752,7 @@ export interface QCForm {
     inspector_role?: 'belive' | 'contractor' | 'owner',
     contractor_email?: string,
     area?: {
-        [key: string]: any; // Add index signature to allow dynamic key access
+        [key: string]: unknown; // Add index signature to allow dynamic key access
         foyer?: {
             s1?: {
                 label?: string,

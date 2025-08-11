@@ -1,6 +1,7 @@
 import { ReactNode, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import { useUser } from '../../hook/useUser';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
@@ -9,7 +10,12 @@ interface MasterLayoutProps {
 }
 
 function OwnerMasterLayout({ children }: MasterLayoutProps) {
+    const { user: owner } = useUser();
+
     useEffect(() => {
+        // Only initialize Chatwoot when user data is available
+        if (!owner) return;
+        
         // Chatwoot integration
         const loadChatwoot = () => {
             const BASE_URL = "https://staging-aichat.spacify.asia";
@@ -31,9 +37,47 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
             script.onload = function () {
                 try {
                     if (window.chatwootSDK) {
+                        // Set settings before running Chatwoot to ensure they're applied
+                        window.chatwootSettings = {
+                            hideMessageBubble: true, // This hides the default Chatwoot button
+                            position: 'right',
+                            locale: 'en',
+                            type: 'expanded'
+                        };
+                        
                         window.chatwootSDK.run({
                             websiteToken: 'fmJB6isRgjvZ3XCJGy3cQjCh',
                             baseUrl: BASE_URL
+                        });
+                        
+                        window.addEventListener("chatwoot:ready", function () {
+                            // Use real user data if available, otherwise fallback to test data
+                            const userData = owner || {
+                                id: "testing-user-uuid",
+                                name: "Test User",
+                                email: "test@test.com"
+                            };
+                            
+                            window.$chatwoot.setUser(userData.id || "testing-user-uuid", {
+                                name: userData.name || "Test User",
+                                email: userData.email || "test@test.com",
+                                phone: userData.phone_no || "",
+                                avatar_url: "", // You can add avatar URL if available
+                            });
+
+                            // Set custom attributes for better user identification
+                            window.$chatwoot.setCustomAttributes({
+                                user_id: userData.id,
+                                user_type: userData.type || "owner",
+                                country_code: userData.country_code || "",
+                                created_at: userData.created_at || "",
+                            });
+                            
+                            // Additional safety measure: hide any existing chat bubbles
+                            const chatBubbles = document.querySelectorAll('[data-testid="chat-bubble"]');
+                            chatBubbles.forEach(bubble => {
+                                (bubble as HTMLElement).style.display = 'none';
+                            });
                         });
                     }
                 } catch (error) {
@@ -50,15 +94,46 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
 
         loadChatwoot();
 
+        // Add CSS to hide Chatwoot bubble if it appears
+        const style = document.createElement('style');
+        style.textContent = `
+            /* Hide Chatwoot bubble completely */
+            [data-testid="chat-bubble"],
+            .cw--bubble-button,
+            .cw--widget-button,
+            .chatwoot--bubble-button,
+            .chatwoot--widget-button {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+
         // Cleanup function
         return () => {
-            // Remove Chatwoot script if component unmounts
             const script = document.querySelector('script[src*="sdk.js"]');
             if (script) {
                 script.remove();
             }
+            // Remove the style element
+            if (style && style.parentNode) {
+                style.parentNode.removeChild(style);
+            }
         };
-    }, []);
+    }, [owner]);
+
+    // Function to handle custom chat button click
+    const handleChatButtonClick = () => {
+        if (window.$chatwoot) {
+            window.$chatwoot.toggle(); // Opens or closes the chat widget
+        }
+    };
+
+    // Expose the chat handler globally so it can be used by other components
+    window.handleChatwootToggle = handleChatButtonClick;
+
 
     return (
         <>
@@ -76,6 +151,8 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
                         </div>
                     </div>
                 </div>
+
+
 
                 <ToastContainer />
             </main>

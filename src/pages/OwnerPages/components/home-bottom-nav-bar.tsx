@@ -1,6 +1,6 @@
 import type React from "react"
 import { useState, useEffect } from "react"
-import { HammerIcon, HomeIcon, ScrollTextIcon, UserIcon } from "lucide-react"
+import { HammerIcon, HomeIcon, MessageCircle, ScrollTextIcon, UserIcon } from "lucide-react"
 
 type NavItem = {
     icon: React.ReactNode
@@ -13,6 +13,11 @@ const navItems: NavItem[] = [
         icon: <HomeIcon className="h-4 w-4 md:h-6 md:w-6" />,
         label: "Home",
         category: "home",
+    },
+    {
+        icon: <MessageCircle className="h-4 w-4 md:h-6 md:w-6" />,
+        label: "Chat",
+        category: "chat",
     },
     {
         icon: <ScrollTextIcon className="h-4 w-4 md:h-6 md:w-6" />,
@@ -94,10 +99,19 @@ export function HomeBottomNav({ activeItem, setActiveItem }: BottomNavProps) {
                         <button
                             key={item.category}
                             className={`flex flex-col items-center justify-center px-2 py-1 rounded-lg transition-colors duration-200 ${activeItem === item.category
-                                    ? "text-[#D71E42] bg-[#d71e430f]"
-                                    : "text-gray-500 hover:text-[#D71E42] hover:bg-[#d71e430f]"
+                                ? "text-[#D71E42] bg-[#d71e430f]"
+                                : "text-gray-500 hover:text-[#D71E42] hover:bg-[#d71e430f]"
                                 }`}
-                            onClick={() => setActiveItem(item.category)}
+                            onClick={() => {
+                                if (item.category === "chat") {
+                                    // Handle Chatwoot toggle
+                                    if (window.handleChatwootToggle) {
+                                        window.handleChatwootToggle();
+                                    }
+                                } else {
+                                    setActiveItem(item.category);
+                                }
+                            }}
                         >
                             <div className="mb-0.5">{item.icon}</div>
                             <span className="text-2xs md:text-xs font-medium leading-none">{item.label}</span>

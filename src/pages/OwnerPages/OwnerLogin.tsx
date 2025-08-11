@@ -166,6 +166,17 @@ const OwnerLogin: React.FC = () => {
 
             if (response.data.status === 'verified') {
                 localStorage.setItem('o_token', response.data.o_token);
+                
+                // Restore Chatwoot session if available
+                try {
+                    const { ChatwootSessionManager } = await import('../../services/chatwootSessionManager');
+                    if (ChatwootSessionManager.hasActiveSession()) {
+                        console.log('Restoring Chatwoot session for returning user');
+                    }
+                } catch (chatwootError) {
+                    console.error('Failed to check Chatwoot session:', chatwootError);
+                }
+                
                 const searchParams = new URLSearchParams(location.search);
                 const redirectUrl = location.state?.from || searchParams.get('redirect') || LOCAL_PATH_PREFIX;
                 navigate(redirectUrl);
@@ -183,6 +194,16 @@ const OwnerLogin: React.FC = () => {
         try {
             const userData = await staffLoginToOwner(countryCode, mobile, passphrase);
             if (userData) {
+                // Restore Chatwoot session if available
+                try {
+                    const { ChatwootSessionManager } = await import('../../services/chatwootSessionManager');
+                    if (ChatwootSessionManager.hasActiveSession()) {
+                        console.log('Restoring Chatwoot session for returning staff user');
+                    }
+                } catch (chatwootError) {
+                    console.error('Failed to check Chatwoot session:', chatwootError);
+                }
+                
                 navigate(CLIENT_URL);
             }
         } catch (err) {
