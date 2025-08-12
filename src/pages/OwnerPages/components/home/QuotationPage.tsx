@@ -114,15 +114,23 @@ function QuotationContent({ orders, abort }: { orders: Order[]; abort: () => voi
                                         <p className="text-xs text-gray-500">Unit</p>
                                         <p className="text-sm font-medium text-gray-900">{`${order.block}-${order.floor}-${order.unit_no}`}</p>
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">Amount</p>
-                                        <p className="text-sm font-medium text-gray-900">
-                                            RM {calculateTotalAmount(order).toLocaleString(undefined, {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                        </p>
-                                    </div>
+                                    {order.is_be_powered ?
+                                        <div>
+                                            <p className="text-xs text-gray-500">Amount</p>
+                                            <p className="text-sm font-medium text-gray-700 italic">
+                                                Click to see the amount
+                                            </p>
+                                        </div>
+                                        : <div>
+                                            <p className="text-xs text-gray-500">Amount</p>
+                                            <p className="text-sm font-medium text-gray-900">
+                                                RM {calculateTotalAmount(order).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </p>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </div>
