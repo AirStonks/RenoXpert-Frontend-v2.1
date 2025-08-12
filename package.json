@@ -13,6 +13,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@emotion/css": "^11.13.5",
+    "@figuro/chatwoot-sdk": "^1.1.17",
     "@heroicons/react": "^2.2.0",
     "@popperjs/core": "^2.11.8",
     "@react-pdf/renderer": "^4.2.1",

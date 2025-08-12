@@ -7,7 +7,7 @@ import { KTModal } from '../../metronic/core';
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
 interface DeleteModalProps {
-    item: { id: number |string, name: string } | null;
+    item: { id: number | string, name: string } | null;
     modalTitle?: string;
     modalPrompt?: string;
     notifySuccess?: string;
@@ -26,7 +26,7 @@ function DeleteModal({
     deleteFunction, // Destructure new prop
 }: DeleteModalProps) {
     const navigate = useNavigate();
-    
+
     if (!item) return null; // Return nothing if no item is selected
 
     const notify = (type: 'success' | 'error', message: string) => {
@@ -52,14 +52,14 @@ function DeleteModal({
                 const modalEl = document.querySelector('#delete_item_modal') as HTMLElement;
                 const modal = KTModal.getInstance(modalEl);
                 modal.hide();
-                
+
                 // navigate(navigateUrl || '/', { replace: true }); // Navigate to the specified URL or default to /products
                 if (navigateUrl) {
                     navigate(LOCAL_PATH_PREFIX + 'orders');
                 } else {
                     navigate(0);
                 }
-                
+
             } else {
                 notify('error', notifyError || 'Error occurred during deletion.');
             }

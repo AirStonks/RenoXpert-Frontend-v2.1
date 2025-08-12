@@ -1,6 +1,7 @@
 import { ReactNode, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import { useUser } from '../../hook/useUser';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
@@ -9,28 +10,153 @@ interface MasterLayoutProps {
 }
 
 function OwnerMasterLayout({ children }: MasterLayoutProps) {
-    useEffect(() => {
+    const { user: owner } = useUser();
 
-    }, []);
+    useEffect(() => {
+        // Only initialize Chatwoot when user data is available
+        if (!owner) return;
+        
+        // Chatwoot integration
+        const loadChatwoot = () => {
+            const BASE_URL = "https://staging-aichat.spacify.asia";
+
+            // Check if script is already loaded
+            if (document.querySelector('script[src*="sdk.js"]')) {
+                return;
+            }
+
+            // Check if Chatwoot is already initialized
+            if (window.chatwootSDK) {
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = BASE_URL + "/packs/js/sdk.js";
+            script.async = true;
+
+            script.onload = function () {
+                try {
+                    if (window.chatwootSDK) {
+                        // Set settings before running Chatwoot to ensure they're applied
+                        window.chatwootSettings = {
+                            hideMessageBubble: true, // This hides the default Chatwoot button
+                            position: 'right',
+                            locale: 'en',
+                            type: 'expanded'
+                        };
+                        
+                        window.chatwootSDK.run({
+                            websiteToken: 'fmJB6isRgjvZ3XCJGy3cQjCh',
+                            baseUrl: BASE_URL
+                        });
+                        
+                        window.addEventListener("chatwoot:ready", function () {
+                            // Use real user data if available, otherwise fallback to test data
+                            const userData = owner || {
+                                id: "testing-user-uuid",
+                                name: "Test User",
+                                email: "test@test.com"
+                            };
+                            
+                            window.$chatwoot.setUser(userData.id || "testing-user-uuid", {
+                                name: userData.name || "Test User",
+                                email: userData.email || "test@test.com",
+                                phone: userData.phone_no || "",
+                                avatar_url: "", // You can add avatar URL if available
+                            });
+
+                            // Set custom attributes for better user identification
+                            window.$chatwoot.setCustomAttributes({
+                                user_id: userData.id,
+                                user_type: userData.type || "owner",
+                                country_code: userData.country_code || "",
+                                created_at: userData.created_at || "",
+                            });
+                            
+                            // Additional safety measure: hide any existing chat bubbles
+                            const chatBubbles = document.querySelectorAll('[data-testid="chat-bubble"]');
+                            chatBubbles.forEach(bubble => {
+                                (bubble as HTMLElement).style.display = 'none';
+                            });
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error initializing Chatwoot:', error);
+                }
+            };
+
+            script.onerror = function () {
+                console.error('Failed to load Chatwoot SDK');
+            };
+
+            document.head.appendChild(script);
+        };
+
+        loadChatwoot();
+
+        // Add CSS to hide Chatwoot bubble if it appears
+        const style = document.createElement('style');
+        style.textContent = `
+            /* Hide Chatwoot bubble completely */
+            [data-testid="chat-bubble"],
+            .cw--bubble-button,
+            .cw--widget-button,
+            .chatwoot--bubble-button,
+            .chatwoot--widget-button {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Cleanup function
+        return () => {
+            const script = document.querySelector('script[src*="sdk.js"]');
+            if (script) {
+                script.remove();
+            }
+            // Remove the style element
+            if (style && style.parentNode) {
+                style.parentNode.removeChild(style);
+            }
+        };
+    }, [owner]);
+
+    // Function to handle custom chat button click
+    const handleChatButtonClick = () => {
+        if (window.$chatwoot) {
+            window.$chatwoot.toggle(); // Opens or closes the chat widget
+        }
+    };
+
+    // Expose the chat handler globally so it can be used by other components
+    window.handleChatwootToggle = handleChatButtonClick;
+
 
     return (
-        <main className="grow items-center bg-gray-50" id="content" role="content">
-            <div className="flex flex-col items-center bg-gray-50">
-                <div className="container relative flex items-center justify-center" id="content_container">
-                    <div className="flex flex-col flex-wrap pt-5 pb-40 justify-center items-center w-full max-w-4xl">
-                        <Link
-                            to={LOCAL_PATH_PREFIX + 'home'}
-                            className='mb-4 w-full px-5'
-                        >
-                            <img className="default-logo min-h-[22px] h-[42px] max-w-none" src="/app/RenoExpert_logo-01.svg"></img>
-                        </Link>
-                        {children}
+        <>
+            <main className="grow items-center bg-gray-50" id="content" role="content">
+                <div className="flex flex-col items-center bg-gray-50">
+                    <div className="container relative flex items-center justify-center" id="content_container">
+                        <div className="flex flex-col flex-wrap pt-5 pb-40 justify-center items-center w-full max-w-4xl">
+                            <Link
+                                to={LOCAL_PATH_PREFIX + 'home'}
+                                className='mb-4 w-full px-5'
+                            >
+                                <img className="default-logo min-h-[22px] h-[42px] max-w-none" src="/app/RenoExpert_logo-01.svg"></img>
+                            </Link>
+                            {children}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <ToastContainer />
-        </main>
+
+
+                <ToastContainer />
+            </main>
+        </>
     );
 }
 
