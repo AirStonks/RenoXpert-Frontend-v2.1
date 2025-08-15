@@ -78,7 +78,7 @@ export default function PaymentDetailModal({ paymentId, payment, isOpen, onClose
 
     return (
         <>
-            <style jsx>{`
+            <style>{`
                 @keyframes fadeIn {
                     from { opacity: 0; }
                     to { opacity: 1; }

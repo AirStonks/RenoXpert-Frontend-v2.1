@@ -31,7 +31,7 @@ import PaymentSuccess from './pages/OwnerPages/PaymentSuccess';
 import PaymentError from './pages/OwnerPages/PaymentError';
 import OrderDetail from './pages/Order/OrderDetail';
 import OrderOverview from './pages/OwnerPages/OrderOverview';
-import OTPVerifyPage from './pages/OTPVerifyPage';
+// import OTPVerifyPage from './pages/OTPVerifyPage';
 import OTPConfirmOrder from './pages/OTPConfirmOrder';
 import OwnerProtectedRoute from './utils/OwnerProtectedRoute';
 import OwnerMasterLayout from './pages/OwnerPages/OwnerMasterLayout';
@@ -46,7 +46,7 @@ import RegistrationFormMain from './pages/RegistrationForm/RegistrationFormMain'
 import EditRegistrationForm from './pages/RegistrationForm/EditRegistrationForm';
 import RegistrationFormDetail from './pages/RegistrationForm/RegistrationFormDetail';
 import RenoRegistrationFormDetail from './pages/OwnerPages/RenoRegistrationFormDetail';
-import CreatePO from './pages/PO/CreatePO';
+// import CreatePO from './pages/PO/CreatePO';
 import DeveloperTool from './pages/DeveloperTools';
 import PackageDetail from './pages/Package/PackageDetail';
 import QuotationDetail from './pages/Quotation/QuotationDetail';
@@ -68,11 +68,11 @@ import UserDetail from './pages/User/UserDetail';
 import AddOwner from './pages/User/AddOwner';
 import RenoAcceptanceForm from './pages/OwnerPages/RenoAcceptanceForm';
 import PreviousOrderDetail from './pages/Order/PreviousOrderDetail';
-import POMain from './pages/PO/POMain';
+// import POMain from './pages/PO/POMain';
 import AddUser from './pages/User/AddUser';
 import InventoryMain from './pages/Inventory/InventoryMain';
 import PODetail from './pages/PO/PODetail';
-import POFulfillment from './pages/PO/POFulfillment';
+// import POFulfillment from './pages/PO/POFulfillment';
 import RenoProgressDetail from './pages/OwnerPages/RenoProgressDetail';
 import RenoProgressManagement from './pages/OperationPages/RenoProgressManagement';
 import OwnerInspectionReport from './pages/OwnerPages/OwnerInspectionReport';
@@ -80,21 +80,21 @@ import RenoProgressPhaseAttachments from './pages/OwnerPages/RenoProgressPhaseAt
 import ProductArchive from './pages/Product/ProductArchive';
 import PackageArchive from './pages/Package/PackageArchive';
 import QuotationArchive from './pages/Quotation/QuotationArchive';
-import KeyManagementForm from './pages/OwnerPages/KeyManagementForm';
+// import KeyManagementForm from './pages/OwnerPages/KeyManagementForm';
 import KeyManagementOverview from './pages/ProjectManagement/KeyManagementOverview';
 import UpdateKeyManagement from './pages/ProjectManagement/UpdateKeyManagement';
-import Test2 from './pages/Test2/Test2';
+// import Test2 from './pages/Test2/Test2';
 import PMProgressTrack from './pages/ProjectManagement/PMProgressTrack';
 import QuotationOrderPrint from './pages/Order/components/QuotationOrderPrint';
-import POPrint from './pages/PO/components/POPrint';
+// import POPrint from './pages/PO/components/POPrint';
 import EditPO from './pages/PO/EditPO';
 import VendorLogin from './pages/VendorLogin';
 import SalesOrderPO from './pages/Finance/SalesOrderPO';
-import POPaymentVoucher from './pages/PO/components/POPaymentVoucher';
-import POPropertyOverview from './pages/PO/POPropertyOverview';
-import POInvoice from './pages/PO/POInvoice';
+// import POPaymentVoucher from './pages/PO/components/POPaymentVoucher';
+// import POPropertyOverview from './pages/PO/POPropertyOverview';
+// import POInvoice from './pages/PO/POInvoice';
 import OTPRequestList from './pages/OTPRequestList';
-import POInvoicePrint from './pages/PO/components/POInvoicePrint';
+// import POInvoicePrint from './pages/PO/components/POInvoicePrint';
 import DIFormMain from './pages/ProjectManagement/DIFormMain';
 import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
 import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
@@ -110,7 +110,7 @@ import OrderConfirmSuccess from './pages/OwnerPages/OrderConfirmSuccess';
 import RenoSalesMain from './pages/RenoSales/RenoSaleMain';
 import RenoSaleDetail from './pages/RenoSales/RenoSaleDetail';
 import EditUser from './pages/User/EditUser';
-import VendorProtectedRoute from './utils/VendorProtectedRoute';
+// import VendorProtectedRoute from './utils/VendorProtectedRoute';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -184,16 +184,16 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
         { path: '/reno-sales', element: <RenoSalesMain />, layout: ProtectedLayout },
         { path: '/reno-sales/:id', element: <RenoSaleDetail />, layout: ProtectedLayout },
-        { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
-        { path: '/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
-        { path: '/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
+        // { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
+        // { path: '/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
+        // { path: '/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
         { path: '/purchase-orders/:id', element: <PODetail />, layout: ProtectedLayout },
         { path: '/purchase-orders/edit/:id', element: <EditPO />, layout: ProtectedLayout },
-        { path: '/purchase-orders/fulfillment/:id', element: <POFulfillment />, layout: ProtectedLayout },
-        { path: '/purchase-orders/print/:id', element: <POPrint />, layout: null },
-        { path: '/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
-        { path: '/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
-        { path: '/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
+        // { path: '/purchase-orders/fulfillment/:id', element: <POFulfillment />, layout: ProtectedLayout },
+        // { path: '/purchase-orders/print/:id', element: <POPrint />, layout: null },
+        // { path: '/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
+        // { path: '/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
+        // { path: '/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
         { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
         { path: '/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
         { path: '/reno-progress/overview/v3', element: <PMMainV3 />, layout: ProtectedLayout },
@@ -311,16 +311,16 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
         { path: '/staff/reno-sales', element: <RenoSalesMain />, layout: ProtectedLayout },
         { path: '/staff/reno-sales/:id', element: <RenoSaleDetail />, layout: ProtectedLayout },
-        { path: '/staff/purchase-orders', element: <POMain />, layout: ProtectedLayout },
-        { path: '/staff/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
-        { path: '/staff/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
+        // { path: '/staff/purchase-orders', element: <POMain />, layout: ProtectedLayout },
+        // { path: '/staff/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
+        // { path: '/staff/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
         { path: '/staff/purchase-orders/:id', element: <PODetail />, layout: ProtectedLayout },
         { path: '/staff/purchase-orders/edit/:id', element: <EditPO />, layout: ProtectedLayout },
-        { path: '/staff/purchase-orders/fulfillment/:id', element: <POFulfillment />, layout: ProtectedLayout },
-        { path: '/staff/purchase-orders/print/:id', element: <POPrint />, layout: null },
-        { path: '/staff/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
-        { path: '/staff/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
-        { path: '/staff/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
+        // { path: '/staff/purchase-orders/fulfillment/:id', element: <POFulfillment />, layout: ProtectedLayout },
+        // { path: '/staff/purchase-orders/print/:id', element: <POPrint />, layout: null },
+        // { path: '/staff/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
+        // { path: '/staff/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
+        // { path: '/staff/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
         { path: '/staff/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/overview/v3', element: <PMMainV3 />, layout: ProtectedLayout },

@@ -7,7 +7,6 @@ interface SortablePOItemRowProps {
     packId: number;
     adjustProductQty: (prodId: number, packId: number, action: "increase" | "decrease") => void;
     handleRemovePOProduct: (packId: number, prodId: number) => void;
-    toggleProperty: (id: number, packId: number, property: "supply" | "install") => void;
     handleChangeQty: (e: React.ChangeEvent<HTMLInputElement>, packId: number, prodId: string) => void;
 }
 
@@ -16,7 +15,6 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
     packId,
     adjustProductQty,
     handleRemovePOProduct,
-    toggleProperty,
     handleChangeQty,
 }) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -34,23 +32,30 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
     const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
     return (
-        <tr
+        <div
             ref={setNodeRef}
             style={style}
             {...attributes}
-            className={`${!poItem.supply && !poItem.install ? "bg-orange-50" : ""}`}
+            className="grid grid-cols-11 gap-2 items-center bg-white rounded-xl p-3 border border-gray-200/50 hover:shadow-sm transition-all duration-200"
         >
-            <td className="p-3" onClick={stopPropagation}>
-                <span {...listeners} style={{ cursor: "move", padding: "8px" }}>
-                    ☰
-                </span>
-            </td>
-            <td className="p-3">{poItem.product_name}</td>
-            <td className="p-3 text-gray-600">{poItem.product_desc || "-"}</td>
-            <td className="p-3 text-center">RM {poItem.supply_price.toFixed(2)}</td>
-            <td className="p-3 text-center">RM {poItem.install_price.toFixed(2)}</td>
-            <td className="p-3 text-center">
-                <div className="flex items-center justify-center gap-2" onClick={stopPropagation}>
+            <div className="col-span-4">
+                <div className="flex items-center gap-2 mb-1">
+                    <span {...listeners} style={{ cursor: "move" }}>
+                        ☰
+                    </span>
+                    <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                        Item
+                    </span>
+                </div>
+                <h5 className="font-medium text-gray-900 text-sm mb-1 leading-tight">
+                    {poItem.product_name}
+                </h5>
+                <div className="space-y-0.5 text-xs text-gray-500">
+                    <span>{poItem.product_desc || "-"}</span>
+                </div>
+            </div>
+            <div className="col-span-1 flex items-center justify-center">
+                <div className="flex items-center gap-1" onClick={stopPropagation}>
                     <button
                         className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
                         onClick={(e) => {
@@ -77,57 +82,52 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
                         <i className="ki-solid ki-plus-squared text-gray-600"></i>
                     </button>
                 </div>
-            </td>
-            <td className="p-3 text-center">{poItem.uom || "-"}</td>
-            <td className="p-3 text-center">
-                {poItem.supply ? (
-                    <span className="text-green-600">
-                        RM {(poItem.supply_price * poItem.qty).toFixed(2)}
-                    </span>
-                ) : (
-                    <span className="text-gray-400">-</span>
-                )}
-            </td>
-            <td className="p-3 text-center">
-                {poItem.install ? (
-                    <span className="text-green-600">
-                        RM {(poItem.install_price * poItem.qty).toFixed(2)}
-                    </span>
-                ) : (
-                    <span className="text-gray-400">-</span>
-                )}
-            </td>
-            <td className="p-3 text-center font-semibold">
-                RM{" "}
-                {(
-                    ((poItem.supply ? poItem.supply_price : 0) +
-                        (poItem.install ? poItem.install_price : 0)) *
-                    poItem.qty
-                ).toFixed(2)}
-            </td>
-            <td className="p-3 text-center" onClick={stopPropagation}>
-                <input
-                    className="checkbox checkbox-sm rounded checked:bg-primary"
-                    type="checkbox"
-                    checked={!!poItem.supply}
-                    onChange={(e) => {
-                        stopPropagation(e);
-                        toggleProperty(Number(poItem.product_id), packId, "supply");
-                    }}
-                />
-            </td>
-            <td className="p-3 text-center" onClick={stopPropagation}>
-                <input
-                    className="checkbox checkbox-sm rounded checked:bg-primary"
-                    type="checkbox"
-                    checked={!!poItem.install}
-                    onChange={(e) => {
-                        stopPropagation(e);
-                        toggleProperty(Number(poItem.product_id), packId, "install");
-                    }}
-                />
-            </td>
-            <td className="p-3" onClick={stopPropagation}>
+            </div>
+            <div className="col-span-1 flex items-center justify-center">
+                <span className="w-8 text-center text-sm font-medium">
+                    {poItem.supply_qty || 0}
+                </span>
+            </div>
+            <div className="col-span-1 flex items-center justify-center">
+                <span className="w-8 text-center text-sm font-medium">
+                    {poItem.install_qty || 0}
+                </span>
+            </div>
+            <div className="col-span-1 text-right">
+                <div className="text-sm font-medium text-gray-900">
+                    RM{" "}
+                    {(
+                        (poItem.supply_price || 0) *
+                        (poItem.supply_qty || 0)
+                    ).toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500">
+                    {poItem.supply_qty || 0} × RM {(poItem.supply_price || 0).toLocaleString()}
+                </div>
+            </div>
+            <div className="col-span-1 text-right">
+                <div className="text-sm font-medium text-gray-900">
+                    RM{" "}
+                    {(
+                        (poItem.install_price || 0) *
+                        (poItem.install_qty || 0)
+                    ).toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500">
+                    {poItem.install_qty || 0} × RM {(poItem.install_price || 0).toLocaleString()}
+                </div>
+            </div>
+            <div className="col-span-1 text-right">
+                <div className="text-lg font-semibold text-blue-600">
+                    RM{" "}
+                    {(
+                        ((poItem.supply_price || 0) * (poItem.supply_qty || 0)) +
+                        ((poItem.install_price || 0) * (poItem.install_qty || 0))
+                    ).toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500">Total</div>
+            </div>
+            <div className="col-span-1 flex justify-center" onClick={stopPropagation}>
                 <button
                     className="btn btn-icon btn-sm hover:bg-red-100 rounded-full transition-colors duration-200"
                     onClick={(e) => {
@@ -137,7 +137,7 @@ export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
                 >
                     <i className="ki-filled ki-cross text-red-500"></i>
                 </button>
-            </td>
-        </tr>
+            </div>
+        </div>
     );
 };

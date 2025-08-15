@@ -166,17 +166,17 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                             install_qty: remainingInstallQty,
                         }
                     }
-                })
+                }) || []
             }))
 
             // Filter out packages where all items have 0 quantity for both supply_qty and install_qty
             const packagesWithNonZeroQuantities = packagesWithCalculatedQuantities.filter(pkg => {
                 // Check if any product in the package has non-zero supply_qty or install_qty
-                return pkg.products?.some(product => {
+                return (pkg.products || []).some(product => {
                     const supplyQty = product.pivot?.supply_qty || 0
                     const installQty = product.pivot?.install_qty || 0
                     return supplyQty > 0 || installQty > 0
-                }) || false
+                })
             })
 
             setSelectedPackages(packagesWithNonZeroQuantities)
@@ -202,17 +202,17 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                         supply_qty: product.pivot?.includeSupply ? (product.pivot?.quantity || 1) * (pkg.quantity || 1) : 0,
                         install_qty: product.pivot?.includeInstall ? (product.pivot?.quantity || 1) * (pkg.quantity || 1) : 0,
                     }
-                }))
+                })) || []
             }))
 
             // Filter out packages where all items have 0 quantity for both supply_qty and install_qty
             const packagesWithNonZeroQuantities = packagesWithCalculatedQuantities.filter(pkg => {
                 // Check if any product in the package has non-zero supply_qty or install_qty
-                return pkg.products?.some(product => {
+                return (pkg.products || []).some(product => {
                     const supplyQty = product.pivot?.supply_qty || 0
                     const installQty = product.pivot?.install_qty || 0
                     return supplyQty > 0 || installQty > 0
-                }) || false
+                })
             })
 
             setSelectedPackages(packagesWithNonZeroQuantities)
@@ -292,18 +292,18 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
 
         let price = 0
         if (supplyQty > 0 && product.provisioning?.supply?.cogs) {
-            price += product.provisioning.supply.cogs * supplyQty
+            price += (product.provisioning.supply.cogs || 0) * supplyQty
         }
         if (installQty > 0 && product.provisioning?.install?.cogs) {
-            price += product.provisioning.install.cogs * installQty
+            price += (product.provisioning.install.cogs || 0) * installQty
         }
 
         return price
     }
 
     const calculatePackageTotalPrice = (pkg: Package) => {
-        return pkg.products.reduce(
-            (total, item) => total + calculateProductPrice(item, item.pivot.quantity, item.pivot.supply_qty, item.pivot.install_qty),
+        return (pkg.products || []).reduce(
+            (total, item) => total + calculateProductPrice(item, item.pivot?.quantity, item.pivot?.supply_qty, item.pivot?.install_qty),
             0,
         )
     }
@@ -326,7 +326,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
             item.id === packageId
                 ? {
                     ...item,
-                    products: item.products?.map((product) =>
+                    products: (item.products || []).map((product) =>
                         product.id === productId
                             ? {
                                 ...product,
@@ -387,7 +387,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
             item.id === packageId
                 ? {
                     ...item,
-                    products: item.products?.map((product) =>
+                    products: (item.products || []).map((product) =>
                         product.id === productId
                             ? {
                                 ...product,
@@ -454,7 +454,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                 total +
                 (pkg.products || []).reduce(
                     (totalProd, item) =>
-                        totalProd + (calculateProductPrice(item, item.pivot.quantity, item.pivot.supply_qty, item.pivot.install_qty) * pkg.quantity || 1),
+                        totalProd + (calculateProductPrice(item, item.pivot?.quantity, item.pivot?.supply_qty, item.pivot?.install_qty) * (pkg.quantity || 1)),
                     0,
                 ),
             0,
@@ -518,17 +518,17 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                 description_internal: pkg.description_internal,
                 category: pkg.category,
                 total_price: calculatePackageTotalPrice(pkg),
-                po_items: pkg.products?.map(product => ({
+                po_items: (pkg.products || []).map(product => ({
                     product_id: String(product.id),
                     product_name: product.name,
                     product_desc: product.description,
-                    qty: product.pivot.quantity,
-                    supply_qty: product.pivot.supply_qty || 0,
-                    install_qty: product.pivot.install_qty || 0,
-                    supply_price: product.provisioning.supply.cogs,
-                    install_price: product.provisioning.install.cogs,
-                    unit_price: product.provisioning.supply.retail_price + product.provisioning.install.retail_price,
-                    total_price: calculateProductPrice(product, product.pivot.quantity, product.pivot.supply_qty, product.pivot.install_qty),
+                    qty: product.pivot?.quantity || 0,
+                    supply_qty: product.pivot?.supply_qty || 0,
+                    install_qty: product.pivot?.install_qty || 0,
+                    supply_price: product.provisioning?.supply?.cogs || 0,
+                    install_price: product.provisioning?.install?.cogs || 0,
+                    unit_price: (product.provisioning?.supply?.retail_price || 0) + (product.provisioning?.install?.retail_price || 0),
+                    total_price: calculateProductPrice(product, product.pivot?.quantity, product.pivot?.supply_qty, product.pivot?.install_qty),
                 }))
             }))
         };
@@ -794,7 +794,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                 </div>
                                                                 <p className="text-gray-600 text-sm mb-2">{pkg.description}</p>
                                                                 <div className="flex items-center gap-4 text-sm">
-                                                                    <span className="text-gray-500">{pkg.products.length} items</span>
+                                                                    <span className="text-gray-500">{(pkg.products || []).length} items</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -848,7 +848,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                     <div className="col-span-1"></div>
                                                                 </div>
                                                                 <div className="space-y-2">
-                                                                    {pkg.products.map((item, itemIndex) => (
+                                                                    {(pkg.products || []).map((item, itemIndex) => (
                                                                         <motion.div
                                                                             key={itemIndex}
                                                                             initial={{ opacity: 0, y: 10 }}
@@ -882,7 +882,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                         <Minus className="h-3 w-3" />
                                                                                     </button> */}
                                                                                     <span className="w-8 text-center text-sm font-medium">
-                                                                                        {item.pivot.quantity}
+                                                                                        {item.pivot?.quantity || 0}
                                                                                     </span>
                                                                                     {/* <button
                                                                                         onClick={() =>
@@ -899,7 +899,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                     {(() => {
                                                                                         const deductions = getDeductionPONumbers(pkg.id, item.id!, 'supply');
                                                                                         const totalDeducted = deductions.reduce((sum, d) => sum + d.qty, 0);
-                                                                                        const remainingQty = (item.pivot.quantity || 0) - totalDeducted;
+                                                                                        const remainingQty = (item.pivot?.quantity || 0) - totalDeducted;
                                                                                         
                                                                                         // If remaining quantity is 0, only show deduction info
                                                                                         if (remainingQty === 0) {
@@ -962,7 +962,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                     {(() => {
                                                                                         const deductions = getDeductionPONumbers(pkg.id, item.id!, 'install');
                                                                                         const totalDeducted = deductions.reduce((sum, d) => sum + d.qty, 0);
-                                                                                        const remainingQty = (item.pivot.quantity || 0) - totalDeducted;
+                                                                                        const remainingQty = (item.pivot?.quantity || 0) - totalDeducted;
                                                                                         
                                                                                         // If remaining quantity is 0, only show deduction info
                                                                                         if (remainingQty === 0) {
@@ -1025,11 +1025,11 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                     RM{" "}
                                                                                     {(
                                                                                         (item.provisioning?.supply?.cogs || 0) *
-                                                                                        (item.pivot.supply_qty || 0)
+                                                                                        (item.pivot?.supply_qty || 0)
                                                                                     ).toLocaleString()}
                                                                                 </div>
                                                                                 <div className="text-xs text-gray-500">
-                                                                                    {item.pivot.supply_qty || 0} × RM {(item.provisioning?.supply?.cogs || 0).toLocaleString()}
+                                                                                    {item.pivot?.supply_qty || 0} × RM {(item.provisioning?.supply?.cogs || 0).toLocaleString()}
                                                                                 </div>
                                                                             </div>
                                                                             <div className="col-span-1 text-right">
@@ -1037,11 +1037,11 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                     RM{" "}
                                                                                     {(
                                                                                         (item.provisioning?.install?.cogs || 0) *
-                                                                                        (item.pivot.install_qty || 0)
+                                                                                        (item.pivot?.install_qty || 0)
                                                                                     ).toLocaleString()}
                                                                                 </div>
                                                                                 <div className="text-xs text-gray-500">
-                                                                                    {item.pivot.install_qty || 0} × RM {(item.provisioning?.install?.cogs || 0).toLocaleString()}
+                                                                                    {item.pivot?.install_qty || 0} × RM {(item.provisioning?.install?.cogs || 0).toLocaleString()}
                                                                                 </div>
                                                                             </div>
                                                                             <div className="col-span-1 text-right">
@@ -1049,9 +1049,9 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                     RM{" "}
                                                                                     {calculateProductPrice(
                                                                                         item,
-                                                                                        item.pivot.quantity,
-                                                                                        item.pivot.supply_qty,
-                                                                                        item.pivot.install_qty,
+                                                                                        item.pivot?.quantity,
+                                                                                        item.pivot?.supply_qty,
+                                                                                        item.pivot?.install_qty,
                                                                                     ).toLocaleString()}
                                                                                 </div>
                                                                                 <div className="text-xs text-gray-500">Total</div>

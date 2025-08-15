@@ -527,78 +527,87 @@ function PODetail() {
                                             >
                                                 <div className="p-5 pt-0">
                                                     <div className="overflow-x-auto">
-                                                        <table className="w-full text-sm">
-                                                            <thead className="bg-gray-50/80 rounded-lg">
-                                                                <tr className="text-gray-600">
-                                                                    <th className="p-3 text-left font-medium">Item</th>
-                                                                    <th className="p-3 text-left font-medium">Description</th>
-                                                                    <th className="p-3 text-center font-medium">Supply Price</th>
-                                                                    <th className="p-3 text-center font-medium">Install Price</th>
-                                                                    <th className="p-3 text-center font-medium">Qty</th>
-                                                                    <th className="p-3 text-center font-medium">UOM</th>
-                                                                    <th className="p-3 text-center font-medium">Total Supply</th>
-                                                                    <th className="p-3 text-center font-medium">Total Install</th>
-                                                                    <th className="p-3 text-center font-medium">Total Price</th>
-                                                                    <th className="p-3 text-center font-medium">Supply</th>
-                                                                    <th className="p-3 text-center font-medium">Install</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody className="divide-y divide-gray-100">
-                                                                {poPackage.po_items.map((poProd: POItem, itemIndex) => (
-                                                                    <tr
-                                                                        key={itemIndex}
-                                                                        className={`hover:bg-gray-50/50 transition-colors duration-150 ${!poProd.supply && !poProd.install ? 'bg-orange-50/50' : ''}`}
-                                                                    >
-                                                                        <td className="p-3 font-medium text-gray-900">{poProd.product_name}</td>
-                                                                        <td className="p-3 text-gray-600">{poProd.product_desc}</td>
-                                                                        <td className="p-3 text-center text-gray-900">RM {poProd.supply_price}</td>
-                                                                        <td className="p-3 text-center text-gray-900">RM {poProd.install_price}</td>
-                                                                        <td className="p-3 text-center">
-                                                                            <div className="flex items-center justify-center">
-                                                                                <input
-                                                                                    type="text"
-                                                                                    className="w-12 px-2 py-1 text-center text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-500/20 transition-all duration-200 bg-gray-50"
-                                                                                    value={poProd.qty}
-                                                                                    readOnly
-                                                                                />
-                                                                            </div>
-                                                                        </td>
-                                                                        <td className="p-3 text-center text-gray-600">
-                                                                            {poProd.uom}
-                                                                        </td>
-                                                                        <td className="p-3 text-center">
-                                                                            {poProd.supply ?
-                                                                                <span className="text-green-600 font-medium">RM {(poProd.supply_price * poProd.qty).toFixed(2)}</span>
-                                                                                : <span className="text-gray-400">-</span>
-                                                                            }
-                                                                        </td>
-                                                                        <td className="p-3 text-center">
-                                                                            {poProd.install ?
-                                                                                <span className="text-green-600 font-medium">RM {(poProd.install_price * poProd.qty).toFixed(2)}</span>
-                                                                                : <span className="text-gray-400">-</span>
-                                                                            }
-                                                                        </td>
-                                                                        <td className="p-3 text-center font-semibold text-gray-900">
-                                                                            RM {(((poProd.supply ? poProd.supply_price : 0) + (poProd.install ? poProd.install_price : 0)) * poProd.qty).toFixed(2)}
-                                                                        </td>
-                                                                        <td className="p-3 text-center">
-                                                                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${poProd.supply ? 'bg-green-500 border-green-500' : 'bg-gray-100 border-gray-300'}`}>
-                                                                                {poProd.supply && (
-                                                                                    <Check className="w-3 h-3 text-white" />
-                                                                                )}
-                                                                            </div>
-                                                                        </td>
-                                                                        <td className="p-3 text-center">
-                                                                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${poProd.install ? 'bg-green-500 border-green-500' : 'bg-gray-100 border-gray-300'}`}>
-                                                                                {poProd.install && (
-                                                                                    <Check className="w-3 h-3 text-white" />
-                                                                                )}
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
+                                                        <div className="grid grid-cols-11 gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 px-2">
+                                                            <div className="col-span-4">Item Details</div>
+                                                            <div className="col-span-1 text-center">BASE QTY</div>
+                                                            <div className="col-span-1 text-center">SUPPLY QTY</div>
+                                                            <div className="col-span-1 text-center">INSTALL QTY</div>
+                                                            <div className="col-span-1 text-right">Supply Total</div>
+                                                            <div className="col-span-1 text-right">Install Total</div>
+                                                            <div className="col-span-1 text-right">Item Total</div>
+                                                            <div className="col-span-1"></div>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            {poPackage.po_items.map((poProd: POItem, itemIndex) => (
+                                                                <div
+                                                                    key={itemIndex}
+                                                                    className="grid grid-cols-11 gap-2 items-center bg-white rounded-xl p-3 border border-gray-200/50 hover:shadow-sm transition-all duration-200"
+                                                                >
+                                                                    <div className="col-span-4">
+                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                                                                                Item
+                                                                            </span>
+                                                                        </div>
+                                                                        <h5 className="font-medium text-gray-900 text-sm mb-1 leading-tight">
+                                                                            {poProd.product_name}
+                                                                        </h5>
+                                                                        <div className="space-y-0.5 text-xs text-gray-500">
+                                                                            <span>{poProd.product_desc || "-"}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="col-span-1 flex items-center justify-center">
+                                                                        <span className="w-8 text-center text-sm font-medium">
+                                                                            {poProd.qty || 0}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="col-span-1 flex items-center justify-center">
+                                                                        <span className="w-8 text-center text-sm font-medium">
+                                                                            {poProd.supply_qty || 0}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="col-span-1 flex items-center justify-center">
+                                                                        <span className="w-8 text-center text-sm font-medium">
+                                                                            {poProd.install_qty || 0}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="col-span-1 text-right">
+                                                                        <div className="text-sm font-medium text-gray-900">
+                                                                            RM{" "}
+                                                                            {(
+                                                                                (poProd.supply_price || 0) *
+                                                                                (poProd.supply_qty || 0)
+                                                                            ).toLocaleString()}
+                                                                        </div>
+                                                                        <div className="text-xs text-gray-500">
+                                                                            {poProd.supply_qty || 0} × RM {(poProd.supply_price || 0).toLocaleString()}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="col-span-1 text-right">
+                                                                        <div className="text-sm font-medium text-gray-900">
+                                                                            RM{" "}
+                                                                            {(
+                                                                                (poProd.install_price || 0) *
+                                                                                (poProd.install_qty || 0)
+                                                                            ).toLocaleString()}
+                                                                        </div>
+                                                                        <div className="text-xs text-gray-500">
+                                                                            {poProd.install_qty || 0} × RM {(poProd.install_price || 0).toLocaleString()}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="col-span-1 text-right">
+                                                                        <div className="text-lg font-semibold text-blue-600">
+                                                                            RM{" "}
+                                                                            {(
+                                                                                ((poProd.supply_price || 0) * (poProd.supply_qty || 0)) +
+                                                                                ((poProd.install_price || 0) * (poProd.install_qty || 0))
+                                                                            ).toLocaleString()}
+                                                                        </div>
+                                                                        <div className="text-xs text-gray-500">Total</div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

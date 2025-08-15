@@ -366,9 +366,9 @@ function EditPO() {
                             const updatedProduct = {
                                 ...product,
                                 qty: value,
-                                total_price: value * (
-                                    (product.supply ? product.supply_price : 0) +
-                                    (product.install ? product.install_price : 0)
+                                total_price: (
+                                    (product.supply_qty || 0) * (product.supply_price || 0) +
+                                    (product.install_qty || 0) * (product.install_price || 0)
                                 ),
                             };
                             return updatedProduct;
@@ -402,10 +402,10 @@ function EditPO() {
                             const updatedProduct = {
                                 ...product,
                                 qty: value,
-                                total_price: (value * (
-                                    (product.supply ? product.supply_price : 0) +
-                                    (product.install ? product.install_price : 0)
-                                )),
+                                total_price: (
+                                    (product.supply_qty || 0) * (product.supply_price || 0) +
+                                    (product.install_qty || 0) * (product.install_price || 0)
+                                ),
                             };
                             return updatedProduct;
                         }
@@ -439,38 +439,7 @@ function EditPO() {
         );
     };
 
-    const toggleProperty = (id: number, packId: number, property: 'supply' | 'install') => {
-        setSelectedPOPackages((prevSelectedPOPackages) => {
-            const updatedPackages = prevSelectedPOPackages.map((packageItem) => {
-                if (Number(packageItem.package_id) === packId) {
-                    const updatedProducts = packageItem.po_items.map((product) => {
-                        if (Number(product.product_id) === id) {
-                            const updatedProduct = { ...product };
-                            if (property === 'supply') {
-                                updatedProduct.supply = !product.supply;
-                            } else if (property === 'install') {
-                                updatedProduct.install = !product.install;
-                            }
-                            updatedProduct.total_price = updatedProduct.qty * (
-                                (updatedProduct.supply ? updatedProduct.supply_price : 0) +
-                                (updatedProduct.install ? updatedProduct.install_price : 0)
-                            );
-                            return updatedProduct;
-                        }
-                        return product;
-                    });
-                    const newTotalPrice = calculatePackageTotal({ ...packageItem, po_items: updatedProducts });
-                    return {
-                        ...packageItem,
-                        po_items: updatedProducts,
-                        total_price: newTotalPrice
-                    };
-                }
-                return packageItem;
-            });
-            return updatedPackages;
-        });
-    };
+
 
     const handleSubmit = async () => {
 
@@ -516,10 +485,10 @@ function EditPO() {
     const recalculateTotalAmount = () => {
         const newTotal = selectedPOPackages.reduce((total, packageItem) => {
             const packageTotal = packageItem.po_items.reduce((packageTotal, product) => {
-                const productTotal = product.qty * (
-                    (product.supply ? product.supply_price : 0) +
-                    (product.install ? product.install_price : 0)
-                );
+                                            const productTotal = (
+                                (product.supply_qty || 0) * (product.supply_price || 0) +
+                                (product.install_qty || 0) * (product.install_price || 0)
+                            );
                 return packageTotal + productTotal;
             }, 0);
             return total + (packageTotal * (packageItem.quantity || 1));
@@ -533,9 +502,9 @@ function EditPO() {
     const calculatePackageTotal = (poPackage: POPackage): number => {
         return poPackage.po_items.reduce((total, item) => {
 
-            const itemTotal = item.qty * (
-                (item.supply ? item.supply_price : 0) +
-                (item.install ? item.install_price : 0)
+            const itemTotal = (
+                (item.supply_qty || 0) * (item.supply_price || 0) +
+                (item.install_qty || 0) * (item.install_price || 0)
             );
             return total + itemTotal;
         }, 0);
@@ -600,8 +569,8 @@ function EditPO() {
                 product_desc: product.description,
                 qty: product.pivot?.quantity || 1,
                 uom: product.uom,
-                supply: product.pivot?.includeSupply || false,
-                install: product.pivot?.includeInstall || false,
+                                    supply_qty: product.pivot?.supply_qty || 0,
+                    install_qty: product.pivot?.install_qty || 0,
                 unit_price: (product.provisioning?.supply?.cogs || 0) + (product.provisioning?.install?.cogs || 0),
                 supply_price: product.provisioning?.supply?.cogs || 0,
                 install_price: product.provisioning?.install?.cogs || 0,
@@ -629,8 +598,8 @@ function EditPO() {
                         product_desc: product.description,
                         qty: 1,
                         uom: product.uom,
-                        supply: false,
-                        install: false,
+                        supply_qty: 0,
+                        install_qty: 0,
                         unit_price: (product.provisioning?.supply?.cogs || 0) + (product.provisioning?.install?.cogs || 0),
                         supply_price: product.provisioning?.supply?.cogs || 0,
                         install_price: product.provisioning?.install?.cogs || 0,
@@ -1067,7 +1036,7 @@ function EditPO() {
                                                     adjustPackageQty={adjustPackageQty}
                                                     handleRemovePOPackage={handleRemovePOPackage}
                                                     handleOpenProductModal={handleOpenProductModal}
-                                                    toggleProperty={toggleProperty}
+
                                                     adjustProductQty={adjustProductQty}
                                                     handleRemovePOProduct={handleRemovePOProduct}
                                                     handleChangeQty={handleChangeQty}
@@ -1106,8 +1075,10 @@ function EditPO() {
                         },
                         pivot: {
                             quantity: item.qty,
-                            includeSupply: item.supply,
-                            includeInstall: item.install
+                            supply_qty: item.supply_qty || 0,
+                            install_qty: item.install_qty || 0,
+                            includeSupply: (item.supply_qty || 0) > 0,
+                            includeInstall: (item.install_qty || 0) > 0
                         }
                     }))
                 }))}
@@ -1132,8 +1103,10 @@ function EditPO() {
                     },
                     pivot: {
                         quantity: item.qty,
-                        includeSupply: item.supply,
-                        includeInstall: item.install
+                        supply_qty: item.supply_qty || 0,
+                        install_qty: item.install_qty || 0,
+                        includeSupply: (item.supply_qty || 0) > 0,
+                        includeInstall: (item.install_qty || 0) > 0
                     }
                 })) || []}
                 onSelectProduct={handleSelectCustomProduct}

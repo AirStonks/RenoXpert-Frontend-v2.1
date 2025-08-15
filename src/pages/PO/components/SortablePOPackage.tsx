@@ -9,7 +9,6 @@ interface SortablePOPackageProps {
     adjustPackageQty: (id: number, action: "increase" | "decrease") => void;
     handleRemovePOPackage: (id: number) => void;
     handleOpenProductModal: (packageId: string) => void;
-    toggleProperty: (id: number, packId: number, property: "supply" | "install") => void;
     adjustProductQty: (prodId: number, packId: number, action: "increase" | "decrease") => void;
     handleRemovePOProduct: (packId: number, prodId: number) => void;
     handleChangeQty: (e: React.ChangeEvent<HTMLInputElement>, packId: number, prodId: string) => void;
@@ -22,7 +21,6 @@ export const SortablePOPackage: React.FC<SortablePOPackageProps> = ({
     adjustPackageQty,
     handleRemovePOPackage,
     handleOpenProductModal,
-    toggleProperty,
     adjustProductQty,
     handleRemovePOProduct,
     handleChangeQty,
@@ -129,31 +127,24 @@ export const SortablePOPackage: React.FC<SortablePOPackageProps> = ({
                         Add Product
                     </button>
                 </div>
-                <table className="table align-middle text-gray-700 font-medium text-2xs w-full">
-                    <thead className="bg-gray-100 rounded-t">
-                        <tr className="text-gray-600">
-                            <th className="w-[10px] p-3"></th>
-                            <th className="w-[180px] p-3">Item</th>
-                            <th className="w-[180px] p-3">Description</th>
-                            <th className="w-[100px] p-3 text-center">Supply Price</th>
-                            <th className="w-[100px] p-3 text-center">Install Price</th>
-                            <th className="w-[70px] p-3 text-center">Qty</th>
-                            <th className="w-[50px] p-3 text-center">UOM</th>
-                            <th className="w-[100px] p-3 text-center">Total Supply</th>
-                            <th className="w-[100px] p-3 text-center">Total Install</th>
-                            <th className="w-[100px] p-3 text-center">Total Price</th>
-                            <th className="w-[10px] p-3 text-center">Supply</th>
-                            <th className="w-[10px] p-3 text-center">Install</th>
-                            <th className="w-[10px] p-3"></th> {/* Added for remove button */}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <SortableContext
-                            items={poPackage.po_items.map(
-                                (item) => `item-${item.product_id}-${poPackage.package_id}`
-                            )}
-                            strategy={verticalListSortingStrategy}
-                        >
+                <div className="overflow-x-auto">
+                    <div className="grid grid-cols-11 gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 px-2">
+                        <div className="col-span-4">Item Details</div>
+                        <div className="col-span-1 text-center">BASE QTY</div>
+                        <div className="col-span-1 text-center">SUPPLY QTY</div>
+                        <div className="col-span-1 text-center">INSTALL QTY</div>
+                        <div className="col-span-1 text-right">Supply Total</div>
+                        <div className="col-span-1 text-right">Install Total</div>
+                        <div className="col-span-1 text-right">Item Total</div>
+                        <div className="col-span-1"></div>
+                    </div>
+                    <SortableContext
+                        items={poPackage.po_items.map(
+                            (item) => `item-${item.product_id}-${poPackage.package_id}`
+                        )}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        <div className="space-y-2">
                             {poPackage.po_items.map((poProd: POItem) => (
                                 <SortablePOItemRow
                                     key={poProd.product_id}
@@ -161,13 +152,12 @@ export const SortablePOPackage: React.FC<SortablePOPackageProps> = ({
                                     packId={Number(poPackage.package_id)}
                                     adjustProductQty={adjustProductQty}
                                     handleRemovePOProduct={handleRemovePOProduct}
-                                    toggleProperty={toggleProperty}
                                     handleChangeQty={handleChangeQty}
                                 />
                             ))}
-                        </SortableContext>
-                    </tbody>
-                </table>
+                        </div>
+                    </SortableContext>
+                </div>
             </div>
         </div>
     );

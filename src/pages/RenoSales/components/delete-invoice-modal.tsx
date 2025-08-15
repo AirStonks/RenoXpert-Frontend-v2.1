@@ -39,7 +39,7 @@ export default function DeleteInvoiceModal({ invoice, isOpen, onClose, onConfirm
 
     return (
         <>
-            <style jsx>{`
+            <style>{`
                 @keyframes fadeIn {
                     from { opacity: 0; }
                     to { opacity: 1; }
