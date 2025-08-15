@@ -1116,6 +1116,55 @@ export const toggleBePowered = async (orderId: number) => {
     }
 }
 
+export const renoSalesIndex = async (
+    size: number = 5,
+    page: number = 1,
+    searchTerm?: string,
+    order?: string,
+    field?: string,
+    filters: FilterParams = {},
+    isHead: boolean = true
+) => {
+    try {
+        const params: any = {
+            size: size,
+            page: page,
+            search: searchTerm,
+            sortOrder: order,
+            sortField: field,
+            head: isHead,
+        };
+
+        if (Object.keys(filters).length > 0) {
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined && value !== '') {
+                    params[`filter[${key}]`] = value;
+                }
+            });
+        }
+
+        const response = await axios.get(API_URL + 'reno-sales', {
+            headers: getAuthHeaders(),
+            params: params
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchRenoSale = async (id: number, signal?: AbortSignal) => {
+    try {
+        const response = await axios.get(API_URL + `reno-sales/${id}`, {
+            headers: getAuthHeaders(),
+            signal // Pass the AbortSignal to Axios
+        })
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
 export const salesIndex = async (
     size: number = 5,
     page: number = 1,
@@ -2428,6 +2477,18 @@ export const createPurchaseOrder = async (purchaseOrderData: PurchaseOrder) => {
         return response.data;
     } catch (error) {
         handle401Error(error as AxiosError);
+    }
+};
+
+export const fetchPurchaseOrdersBySaleId = async (saleId: string) => {
+    try {
+        const response = await axios.get(API_URL + `purchase-orders/sale/${saleId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
     }
 };
 

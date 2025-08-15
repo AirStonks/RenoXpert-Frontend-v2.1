@@ -107,7 +107,10 @@ import InvestorInterestForm from './pages/InvestorInterestForm';
 import IIFMain from './pages/InvestorInterestForm/IIFMain';
 import IIFDetail from './pages/InvestorInterestForm/IIFDetail';
 import OrderConfirmSuccess from './pages/OwnerPages/OrderConfirmSuccess';
+import RenoSalesMain from './pages/RenoSales/RenoSaleMain';
+import RenoSaleDetail from './pages/RenoSales/RenoSaleDetail';
 import EditUser from './pages/User/EditUser';
+import VendorProtectedRoute from './utils/VendorProtectedRoute';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -130,6 +133,12 @@ const OperationProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) 
         <OperationMasterLayout>{children}</OperationMasterLayout>
     </OperationProtectedRoute>
 );
+
+// const VendorProtectedLayout: React.FC<ProtectedLayoutProps> = ({ children }) => (
+//     <VendorProtectedRoute>
+//         <VendorMasterLayout>{children}</VendorMasterLayout>
+//     </VendorProtectedRoute>
+// );
 
 // Define route configuration
 const routeCat: { path: string; element: JSX.Element; layout?: React.FC<ProtectedLayoutProps> | null }[][] = [
@@ -173,6 +182,8 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/orders/print/:id/internal', element: <DetailedOrderPrint />, layout: null },
         { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },
         { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
+        { path: '/reno-sales', element: <RenoSalesMain />, layout: ProtectedLayout },
+        { path: '/reno-sales/:id', element: <RenoSaleDetail />, layout: ProtectedLayout },
         { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
         { path: '/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
         { path: '/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
@@ -298,6 +309,8 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/orders/print/:id/internal', element: <DetailedOrderPrint />, layout: null },
         { path: '/staff/sales', element: <SalesMain />, layout: ProtectedLayout },
         { path: '/staff/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
+        { path: '/staff/reno-sales', element: <RenoSalesMain />, layout: ProtectedLayout },
+        { path: '/staff/reno-sales/:id', element: <RenoSaleDetail />, layout: ProtectedLayout },
         { path: '/staff/purchase-orders', element: <POMain />, layout: ProtectedLayout },
         { path: '/staff/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
         { path: '/staff/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },

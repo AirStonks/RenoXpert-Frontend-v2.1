@@ -1,16 +1,30 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Package, POItem, POPackage, Product, PurchaseOrder, Sale, User } from "../../types";
+import { Package, POPackage, Product, PurchaseOrder, Sale, User } from "../../types";
 import { KTDropdown } from '../../metronic/core/components/dropdown/dropdown';
-import { createPurchaseOrder, fetchPO, fetchSale, fetchSales, fetchUser, fetchUsers, updatePurchaseOrder } from "../../services/api";
-import IncludePOItemsModal from "./components/IncludePOItemsModal";
+import { fetchPO, fetchSale, fetchSales, fetchUsers, updatePurchaseOrder } from "../../services/api";
 import { Slide, toast } from "react-toastify";
-import IncludePOPackageModal from "./components/IncludePOPackageModal";
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { SortablePOPackage } from "./components/SortablePOPackage";
 import Loading from "../../components/Loading";
-import { KTModal } from "../../metronic/core";
+import {
+    ArrowLeft,
+    FileText,
+    User as UserIcon,
+    Building2,
+    Package as PackageIcon,
+    Search,
+    X,
+    Plus,
+    Save,
+    Home,
+    Bed,
+    Bath,
+    Layers
+} from "lucide-react";
+import { POPackageSelector } from "../RenoSales/components/po-package-selector";
+import { POProductModal } from "../RenoSales/components/po-product-selector";
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -37,17 +51,19 @@ function EditPO() {
 
     const [selectedPOPackages, setSelectedPOPackages] = useState<POPackage[]>([]);
 
-    const [selectedPOPackageId, setSelectedPOPackageId] = useState('');
-    const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
-    const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const [openAccordions, setOpenAccordions] = useState<{ [key: number]: boolean }>({});
     const [isLoading, setIsLoading] = useState(false);
+
+    // New state variables for POPackageSelector and POProductModal
+    const [isPackageSelectorOpen, setIsPackageSelectorOpen] = useState(false);
+    const [isProductSelectorOpen, setIsProductSelectorOpen] = useState(false);
+    const [activePackageId, setActivePackageId] = useState<number | null>(null);
 
     const handleBackClick = () => {
         if (state) {
             navigate(state.fromUrl);
         } else {
-            navigate(LOCAL_PATH_PREFIX + 'purchase-orders/ ' + poId);
+            navigate(LOCAL_PATH_PREFIX + 'purchase-orders/' + poId);
         }
     };
 
@@ -85,20 +101,9 @@ function EditPO() {
         }
     }, [selectedPOPackages]);
 
-    const handleOpenPackageModal = () => {
-        setIsPackageModalOpen(true);
-    };
-
     const handleOpenProductModal = (packageId: string) => {
-        setIsProductModalOpen(true);
-
-        const modalEl = document.querySelector('#add_item_modal') as HTMLElement;
-        const modal = KTModal.getInstance(modalEl);
-
-        modal.show();
-
-
-        setSelectedPOPackageId(packageId);
+        setActivePackageId(Number(packageId));
+        setIsProductSelectorOpen(true);
     };
 
     const fetchPurchaseOrderData = async () => {
@@ -291,7 +296,7 @@ function EditPO() {
         }
     };
 
-    const handleSelectVendor = async (vendor?: User, vendorId?: string) => {
+    const handleSelectVendor = async (vendor?: User) => {
         if (vendor) {
             setSelectedVendor(vendor);
             setSearchVendorTerm('');
@@ -578,6 +583,87 @@ function EditPO() {
         }
     };
 
+    // Helper functions for POPackageSelector and POProductModal
+    const handleSelectCustomPackage = (pkg: Package) => {
+        // Convert Package to POPackage format
+        const poPackage: POPackage = {
+            package_id: String(pkg.id),
+            name: pkg.name,
+            description: pkg.description,
+            description_internal: pkg.description_internal || null,
+            category: pkg.category || null,
+            quantity: pkg.quantity || 1,
+            status: 'pending',
+            po_items: pkg.products?.map((product: Product) => ({
+                product_id: String(product.id),
+                product_name: product.name,
+                product_desc: product.description,
+                qty: product.pivot?.quantity || 1,
+                uom: product.uom,
+                supply: product.pivot?.includeSupply || false,
+                install: product.pivot?.includeInstall || false,
+                unit_price: (product.provisioning?.supply?.cogs || 0) + (product.provisioning?.install?.cogs || 0),
+                supply_price: product.provisioning?.supply?.cogs || 0,
+                install_price: product.provisioning?.install?.cogs || 0,
+                total_price: ((product.provisioning?.supply?.cogs || 0) + (product.provisioning?.install?.cogs || 0)) * (product.pivot?.quantity || 1),
+            })) || []
+        };
+
+        setSelectedPOPackages(prev => [...prev, poPackage]);
+        setIsPackageSelectorOpen(false);
+        recalculateTotalAmount();
+    };
+
+    const removePackage = (pkgId: number) => {
+        setSelectedPOPackages(prev => prev.filter(pkg => Number(pkg.package_id) !== pkgId));
+        recalculateTotalAmount();
+    };
+
+    const handleSelectCustomProduct = (product: Product) => {
+        if (activePackageId) {
+            setSelectedPOPackages(prev => prev.map(pkg => {
+                if (Number(pkg.package_id) === activePackageId) {
+                    const newPoItem = {
+                        product_id: String(product.id),
+                        product_name: product.name,
+                        product_desc: product.description,
+                        qty: 1,
+                        uom: product.uom,
+                        supply: false,
+                        install: false,
+                        unit_price: (product.provisioning?.supply?.cogs || 0) + (product.provisioning?.install?.cogs || 0),
+                        supply_price: product.provisioning?.supply?.cogs || 0,
+                        install_price: product.provisioning?.install?.cogs || 0,
+                        total_price: (product.provisioning?.supply?.cogs || 0) + (product.provisioning?.install?.cogs || 0),
+                    };
+                    
+                    return {
+                        ...pkg,
+                        po_items: [...pkg.po_items, newPoItem]
+                    };
+                }
+                return pkg;
+            }));
+            recalculateTotalAmount();
+        }
+        setIsProductSelectorOpen(false);
+    };
+
+    const removeProduct = (productId: number) => {
+        if (activePackageId) {
+            setSelectedPOPackages(prev => prev.map(pkg => {
+                if (Number(pkg.package_id) === activePackageId) {
+                    return {
+                        ...pkg,
+                        po_items: pkg.po_items.filter(item => Number(item.product_id) !== productId)
+                    };
+                }
+                return pkg;
+            }));
+            recalculateTotalAmount();
+        }
+    };
+
     if (selectedSale) {
         // console.log('packages:', selectedOrder.latest_quotation.packages);
         // selectedOrder.latest_quotation.quotation.packages.map((prodPackage: Package) => {
@@ -590,375 +676,384 @@ function EditPO() {
         <>
             {isLoading && <Loading />}
 
-            <div className="flex justify-between items-center flex-wrap mb-6">
-                <div className="flex gap-4 items-center">
-                    <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
-                        <i className="ki-solid ki-arrow-left"></i>
-                    </button>
-                    <span className="text-2xl font-bold text-gray-900">
-                        Edit Purchase Order
-                    </span>
+            {/* Header */}
+            <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/95 border-b border-gray-200/50 px-6 py-4 mb-8">
+                <div className="flex justify-between items-center">
+                    <div className="flex gap-4 items-center">
+                        <button
+                            className="w-10 h-10 rounded-full bg-gray-100/80 hover:bg-gray-200/80 flex items-center justify-center transition-all duration-200 active:scale-95"
+                            onClick={handleBackClick}
+                        >
+                            <ArrowLeft className="w-5 h-5 text-gray-700" />
+                        </button>
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-orange-100 rounded-full">
+                                <FileText className="h-6 w-6 text-orange-600" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-semibold text-gray-900 -tracking-wide">Edit Purchase Order</h1>
+                                <p className="text-sm text-gray-500 mt-1">PO #{poDetail?.po_no}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button
+                            className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-2"
+                            onClick={handleBackClick}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-2"
+                            onClick={handleSubmit}
+                        >
+                            <Save className="h-4 w-4" />
+                            Update PO
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div className="flex gap-8 mb-4">
-                <div className="flex flex-col gap-4 flex-1">
-                    <div className="card flex w-full">
-                        <div className="card-header">
-                            <span className="font-semibold">General</span>
-                        </div>
+            {/* Main Content */}
+            <div className="w-full mx-auto px-6 pb-8">
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                    {/* Left Column - Order Details */}
+                    <div className="xl:col-span-3 space-y-6">
+                        {/* General Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-blue-50/50 to-indigo-50/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 rounded-lg">
+                                        <FileText className="h-5 w-5 text-blue-600" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900">General</h3>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    {/* Sales Order Section */}
+                                    <div className="flex flex-col space-y-2">
+                                        <label className="text-sm text-gray-900 font-semibold">
+                                            Sales Order
+                                        </label>
 
-                        <div className="card-body py-6 px-4 lg:px-6 bg-white rounded-lg shadow-sm">
-                            <div className="grid grid-rows-1 md:grid-rows-2 gap-6">
-                                {/* Sales Order Section */}
-                                <div className="flex flex-col space-y-2">
-                                    <label className="text-sm text-gray-900 font-semibold">
-                                        Sales Order
-                                    </label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="relative w-full" data-dropdown="true" data-dropdown-trigger="click" id='sales_dropdown'>
+                                                <button className="dropdown-toggle w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                                                    <span>{selectedSale ? selectedSale.sales_no : 'Select a Sales Order'}</span>
+                                                    <Search className="w-4 h-4 text-gray-500" />
+                                                </button>
 
-                                    <div className="flex items-center gap-2">
-                                        <div className="relative w-full max-w-md" data-dropdown="true" data-dropdown-trigger="click" id='sales_dropdown'>
-                                            <button className="dropdown-toggle w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                <span>{selectedSale ? selectedSale.sales_no : 'Select a Sales Order'}</span>
-                                                <i className="ki-filled ki-down w-4 h-4 text-gray-500"></i>
+                                                <div className="dropdown-content absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg hidden">
+                                                    <div className="p-3">
+                                                        <input
+                                                            ref={inputOrderRef}
+                                                            placeholder="Search Orders..."
+                                                            type="text"
+                                                            value={searchSaleTerm}
+                                                            onChange={handleSearchSale}
+                                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        />
+                                                    </div>
+                                                    <div className="menu menu-default flex flex-col max-h-48 overflow-y-auto scrollable-y">
+                                                        {sales.length > 0 ? (
+                                                            sales.map((sale, key) => (
+                                                                <div className="menu-item" key={key} data-id={sale.id}>
+                                                                    <button
+                                                                        key={key}
+                                                                        className="menu-link"
+                                                                        onClick={() => handleSelectSale(sale)}
+                                                                    >
+                                                                        {sale.sales_no} ({sale.order.property.name} {sale.order.block}-{sale.order.floor}-{sale.order.unit_no})
+                                                                    </button>
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <div className="px-3 py-2 text-sm text-gray-500">
+                                                                No sale orders found
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {selectedSale && (
+                                                <button
+                                                    className="flex items-center justify-center w-8 h-8 text-red-500 hover:text-red-600 focus:outline-none transition-colors duration-200"
+                                                    onClick={handleRemoveSalesOrder}
+                                                >
+                                                    <X className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        <span className="text-xs text-gray-600">
+                                            Duplicate from Order/Quotation
+                                        </span>
+                                    </div>
+
+                                    {/* Vendor Section */}
+                                    <div className="flex flex-col space-y-2">
+                                        <label className="text-sm text-gray-900 font-semibold">
+                                            Vendor
+                                        </label>
+
+                                        <div className="relative w-full" data-dropdown="true" data-dropdown-trigger="click" id='vendors_dropdown'>
+                                            <button className="dropdown-toggle w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                                                <span>{selectedVendor ? selectedVendor.name : 'Select a Vendor'}</span>
+                                                <Search className="w-4 h-4 text-gray-500" />
                                             </button>
 
-                                            <div className="dropdown-content absolute z-10 mt-1 w-full max-w-80 bg-white border border-gray-200 rounded-md shadow-lg hidden">
+                                            <div className="dropdown-content absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg hidden">
                                                 <div className="p-3">
                                                     <input
-                                                        ref={inputOrderRef}
-                                                        placeholder="Search Orders..."
+                                                        ref={inputVendorRef}
+                                                        placeholder="Search Vendors..."
                                                         type="text"
-                                                        value={searchSaleTerm}
-                                                        onChange={handleSearchSale}
-                                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        value={searchVendorTerm}
+                                                        onChange={handleSearchVendor}
+                                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                     />
                                                 </div>
                                                 <div className="menu menu-default flex flex-col max-h-48 overflow-y-auto scrollable-y">
-                                                    {sales.length > 0 ? (
-                                                        sales.map((sale, key) => (
-                                                            <div className="menu-item" key={key} data-id={sale.id}>
-                                                                <button
-                                                                    key={key}
-                                                                    className="menu-link"
-                                                                    onClick={() => handleSelectSale(sale)}
-                                                                >
-                                                                    {sale.sales_no} ({sale.order.property.name} {sale.order.block}-{sale.order.floor}-{sale.order.unit_no})
-                                                                </button>
-                                                            </div>
+                                                    {vendors.length > 0 ? (
+                                                        vendors.map((vendor, key) => (
+                                                            <button
+                                                                key={key}
+                                                                className="menu-link"
+                                                                onClick={() => handleSelectVendor(vendor)}
+                                                            >
+                                                                {vendor.name}
+                                                            </button>
                                                         ))
                                                     ) : (
                                                         <div className="px-3 py-2 text-sm text-gray-500">
-                                                            No sale orders found
+                                                            No vendors found
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {selectedSale && (
-                                            <button
-                                                className="flex items-center justify-center w-8 h-8 text-red-500 hover:text-red-600 focus:outline-none"
-                                                onClick={handleRemoveSalesOrder}
-                                            >
-                                                <i className="ki-filled ki-cross w-5 h-5"></i>
-                                            </button>
-                                        )}
+                                        <span className="text-xs text-gray-600">
+                                            Select a vendor
+                                        </span>
                                     </div>
-
-                                    <span className="text-xs text-gray-600">
-                                        Duplicate from Order/Quotation
-                                    </span>
                                 </div>
+                            </div>
+                        </div>
 
-                                {/* Vendor Section */}
-                                <div className="flex flex-col space-y-2">
-                                    <label className="text-sm text-gray-900 font-semibold">
-                                        Vendor
-                                    </label>
-
-                                    <div className="relative w-full max-w-md" data-dropdown="true" data-dropdown-trigger="click" id='vendors_dropdown'>
-                                        <button className="dropdown-toggle w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                            <span>{selectedVendor ? selectedVendor.name : 'Select a Vendor'}</span>
-                                            <i className="ki-filled ki-down w-4 h-4 text-gray-500"></i>
-                                        </button>
-
-                                        <div className="dropdown-content absolute z-10 mt-1 w-full max-w-80 bg-white border border-gray-200 rounded-md shadow-lg hidden">
-                                            <div className="p-3">
-                                                <input
-                                                    ref={inputVendorRef}
-                                                    placeholder="Search Vendors..."
-                                                    type="text"
-                                                    value={searchVendorTerm}
-                                                    onChange={handleSearchVendor}
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                            <div className="menu menu-default flex flex-col max-h-48 overflow-y-auto scrollable-y">
-                                                {vendors.length > 0 ? (
-                                                    vendors.map((vendor, key) => (
-                                                        <button
-                                                            key={key}
-                                                            className="menu-link"
-                                                            onClick={() => handleSelectVendor(vendor)}
-                                                        >
-                                                            {vendor.name}
-                                                        </button>
-                                                    ))
-                                                ) : (
-                                                    <div className="px-3 py-2 text-sm text-gray-500">
-                                                        No vendors found
-                                                    </div>
-                                                )}
-                                            </div>
+                        {/* Sales Order Detail Card */}
+                        {selectedSale && (
+                            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                                <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-green-50/50 to-emerald-50/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-green-100 rounded-lg">
+                                            <FileText className="h-5 w-5 text-green-600" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900">Sales Order Detail</h3>
+                                    </div>
+                                </div>
+                                <div className="p-6">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Sales No:</span>
+                                            <span className="text-sm font-medium text-gray-900">{selectedSale.sales_no}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Status:</span>
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium
+                                                ${selectedSale.status === 'issued' ? 'bg-blue-100 text-blue-800' : ''} 
+                                                ${selectedSale.status === 'partial-paid' ? 'bg-yellow-100 text-yellow-800' : ''} 
+                                                ${selectedSale.status === 'fully-paid' ? 'bg-green-100 text-green-800' : ''}`}
+                                            >
+                                                {selectedSale.status}
+                                            </span>
                                         </div>
                                     </div>
-
-                                    <span className="text-xs text-gray-600">
-                                        Select a vendor
-                                    </span>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        )}
 
-                    {selectedSale && (
-                        <>
-                            <div className="card flex w-full">
-                                <div className="card-header">
-                                    <span className="font-semibold">Sales Order Detail</span>
-                                </div>
-                                <div className="card-body">
-                                    <table className="table-auto">
-                                        <tbody>
-                                            <tr>
-                                                <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                    Sales No:
-                                                </td>
-                                                <td className="text-xs text-gray-900 pb-3">
-                                                    {selectedSale.sales_no}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                    Status:
-                                                </td>
-                                                <td className="text-xs text-gray-900 pb-3">
-                                                    <span className={`badge badge-pill cursor-default
-                                                ${selectedSale.status === 'issued' ? 'badge-primary' : ''} 
-                                                ${selectedSale.status === 'partial-paid' ? 'badge-info' : ''} 
-                                                ${selectedSale.status === 'fully-paid' ? 'badge-success' : ''} 
-                                                badge-outline`}
-                                                    >
-                                                        {selectedSale.status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div className="card w-full">
-                                <div className="card-header flex justify-between items-center">
-                                    <h3 className="card-title">
-                                        Owner
-                                    </h3>
-                                </div>
-                                <div className="card-body pt-3.5 pb-3.5">
-                                    <table className="table-auto">
-                                        <tbody>
-                                            {selectedSale.order.user ?
-                                                <>
-                                                    <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                            Name:
-                                                        </td>
-                                                        <td className="text-sm text-gray-900 pb-3">
-                                                            {selectedSale.order.user.name}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                            Email:
-                                                        </td>
-                                                        <td className="text-sm text-gray-900 pb-3">
-                                                            {selectedSale.order.user.email}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                            Phone No.:
-                                                        </td>
-                                                        <td className="text-sm text-gray-900 pb-3">
-                                                            +{selectedSale.order.user.country_code} {selectedSale.order.user.phone_no}
-                                                        </td>
-                                                    </tr>
-                                                </>
-                                                :
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    N/A
-                                                </td>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div className="card w-full">
-                                <div className="card-header flex justify-between items-center">
-                                    <h3 className="card-title">
-                                        Property
-                                    </h3>
-                                </div>
-                                <div className="card-body pt-3.5 pb-3.5">
-                                    <table className="table-auto">
-                                        <tbody>
-                                            {selectedSale.order.property ?
-                                                <>
-
-                                                    <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                            Property Name:
-                                                        </td>
-                                                        <td className="text-sm text-gray-900 pb-3">
-                                                            {selectedSale.order.property.name}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                            Unit:
-                                                        </td>
-                                                        <td className="text-sm text-gray-900 pb-3">
-                                                            {selectedSale.order.block}-{selectedSale.order.floor}-{selectedSale.order.unit_no}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                            Unit Type:
-                                                        </td>
-                                                        <td className="text-sm text-gray-900 pb-3">
-                                                            {selectedSale.order.unit_type ? selectedSale.order.unit_type : "-"}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                            Address:
-                                                        </td>
-                                                        <td className="text-sm text-gray-900 pb-3">
-                                                            {[
-                                                                selectedSale.order.property.address,
-                                                                selectedSale.order.property.street,
-                                                                selectedSale.order.property.postcode,
-                                                                selectedSale.order.property.city,
-                                                                selectedSale.order.property.state,
-                                                            ]
-                                                                .filter(Boolean)
-                                                                .join(', ')
-                                                            }
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                            Total Bedroom:
-                                                        </td>
-                                                        <td className="text-sm text-gray-900 pb-3">
-                                                            {selectedSale.order.bedroom_count}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                            Total Bathroom:
-                                                        </td>
-                                                        <td className="text-sm text-gray-900 pb-3">
-                                                            {selectedSale.order.bathroom_count}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                            Partition:
-                                                        </td>
-                                                        <td className="text-sm text-gray-900 pb-3">
-                                                            {selectedSale.order.include_partition ? 'Yes' : 'No'}
-                                                        </td>
-                                                    </tr>
-                                                </>
-                                                :
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    N/A
-                                                </td>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </>
-                    )}
-
-                    {selectedVendor && (
-                        <div className="card flex flex-auto w-full">
-                            <div className="card-header">
-                                <span className="font-semibold">Vendor Detail</span>
-                            </div>
-                            <div className="card-body">
-                                <table className="table-auto">
-                                    <tbody>
-                                        <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Vendor Name:
-                                            </td>
-                                            <td className="text-xs text-gray-900 pb-3">
-                                                {selectedVendor.name}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Email:
-                                            </td>
-                                            <td className="text-xs text-gray-900 pb-3">
-                                                {selectedVendor.email}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Phone No.:
-                                            </td>
-                                            <td className="text-xs text-gray-900 pb-3">
-                                                +{selectedVendor.country_code} {selectedVendor.phone_no}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex flex-col gap-4 flex-[4]">
-                    <div className="card flex w-full">
-                        <div className="card-header">
-                            <span className="font-semibold">Total Amount</span>
-                        </div>
-                        <div className="card-body">
-                            <span>RM {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>
-                    </div>
-
-                    <div className="card w-full">
-                        <div className="card-body flex flex-col">
-                            <div className="flex flex-col">
-                                <div className="flex justify-between">
-                                    <h2 className="text-lg font-semibold mb-4">Items</h2>
-                                    <div className="flex gap-4">
-                                        <button
-                                            className="btn btn-primary btn-sm"
-                                            data-modal-toggle="#add_package_modal"
-                                            onClick={handleOpenPackageModal}
-                                        >
-                                            Add Package
-                                        </button>
+                        {/* Owner Card */}
+                        {selectedSale && (
+                            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                                <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-purple-50/50 to-violet-50/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-purple-100 rounded-lg">
+                                            <UserIcon className="h-5 w-5 text-purple-600" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900">Owner</h3>
                                     </div>
                                 </div>
+                                <div className="p-6">
+                                    <div className="space-y-4">
+                                        {selectedSale.order.user ?
+                                            <>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-600">Name:</span>
+                                                    <span className="text-sm font-medium text-gray-900">{selectedSale.order.user.name}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-600">Email:</span>
+                                                    <span className="text-sm font-medium text-gray-900">{selectedSale.order.user.email}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-600">Phone No.:</span>
+                                                    <span className="text-sm font-medium text-gray-900">+{selectedSale.order.user.country_code} {selectedSale.order.user.phone_no}</span>
+                                                </div>
+                                            </>
+                                            :
+                                            <div className="text-sm text-gray-600">N/A</div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Property Card */}
+                        {selectedSale && (
+                            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                                <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-orange-50/50 to-amber-50/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-orange-100 rounded-lg">
+                                            <Home className="h-5 w-5 text-orange-600" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900">Property</h3>
+                                    </div>
+                                </div>
+                                <div className="p-6">
+                                    <div className="space-y-4">
+                                        {selectedSale.order.property ?
+                                            <>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-600">Property Name:</span>
+                                                    <span className="text-sm font-medium text-gray-900">{selectedSale.order.property.name}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-600">Unit:</span>
+                                                    <span className="text-sm font-medium text-gray-900">{selectedSale.order.block}-{selectedSale.order.floor}-{selectedSale.order.unit_no}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-600">Unit Type:</span>
+                                                    <span className="text-sm font-medium text-gray-900">{selectedSale.order.unit_type ? selectedSale.order.unit_type : "-"}</span>
+                                                </div>
+                                                <div className="flex justify-between items-start">
+                                                    <span className="text-sm text-gray-600">Address:</span>
+                                                    <span className="text-sm font-medium text-gray-900 text-right">
+                                                        {[
+                                                            selectedSale.order.property.address,
+                                                            selectedSale.order.property.street,
+                                                            selectedSale.order.property.postcode,
+                                                            selectedSale.order.property.city,
+                                                            selectedSale.order.property.state,
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(', ')
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-600">Bedrooms:</span>
+                                                    <span className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                                        <Bed className="w-4 h-4" />
+                                                        {selectedSale.order.bedroom_count}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-600">Bathrooms:</span>
+                                                    <span className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                                        <Bath className="w-4 h-4" />
+                                                        {selectedSale.order.bathroom_count}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm text-gray-600">Partition:</span>
+                                                    <span className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                                                        <Layers className="w-4 h-4" />
+                                                        {selectedSale.order.include_partition ? 'Yes' : 'No'}
+                                                    </span>
+                                                </div>
+                                            </>
+                                            :
+                                            <div className="text-sm text-gray-600">N/A</div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Vendor Detail Card */}
+                        {selectedVendor && (
+                            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                                <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-indigo-50/50 to-blue-50/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-indigo-100 rounded-lg">
+                                            <Building2 className="h-5 w-5 text-indigo-600" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900">Vendor Detail</h3>
+                                    </div>
+                                </div>
+                                <div className="p-6">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Vendor Name:</span>
+                                            <span className="text-sm font-medium text-gray-900">{selectedVendor.name}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Email:</span>
+                                            <span className="text-sm font-medium text-gray-900">{selectedVendor.email}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Phone No.:</span>
+                                            <span className="text-sm font-medium text-gray-900">+{selectedVendor.country_code} {selectedVendor.phone_no}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Right Column - Items & Total */}
+                    <div className="xl:col-span-9 space-y-6">
+                        {/* Total Amount Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-emerald-50/50 to-teal-50/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-emerald-100 rounded-lg">
+                                        <FileText className="h-5 w-5 text-emerald-600" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900">Total Amount</h3>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <div className="text-3xl font-bold text-gray-900">
+                                    RM {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Items Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-orange-50/50 to-amber-50/50">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-orange-100 rounded-lg">
+                                            <PackageIcon className="h-5 w-5 text-orange-600" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900">Items</h3>
+                                    </div>
+                                    <button
+                                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-2"
+                                        onClick={() => setIsPackageSelectorOpen(true)}
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        Add Package
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="p-6">
                                 <div className="flex flex-col gap-4">
                                     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                                         <SortableContext
@@ -986,37 +1081,63 @@ function EditPO() {
                             </div>
                         </div>
                     </div>
-
-                    <div className="flex justify-end gap-4">
-                        <button className="btn btn-lg btn-light">
-                            Cancel
-                        </button>
-                        <button
-                            className="btn btn-lg btn-primary"
-                            onClick={handleSubmit}
-                        >
-                            Update
-                        </button>
-                    </div>
                 </div>
-            </div >
+            </div>
 
-            <IncludePOPackageModal
-                selectedPOPackages={selectedPOPackages}
-                setSelectedPOPackages={setSelectedPOPackages}
-                isOpen={isPackageModalOpen}
-                setIsOpen={setIsPackageModalOpen}
-                recalculateTotalAmount={recalculateTotalAmount}
+
+            <POPackageSelector
+                isOpen={isPackageSelectorOpen}
+                onClose={() => setIsPackageSelectorOpen(false)}
+                selectedPackages={selectedPOPackages.map(poPkg => ({
+                    id: Number(poPkg.package_id),
+                    name: poPkg.name,
+                    description: poPkg.description,
+                    description_internal: poPkg.description_internal,
+                    category: poPkg.category,
+                    quantity: poPkg.quantity,
+                    products: poPkg.po_items.map(item => ({
+                        id: Number(item.product_id),
+                        name: item.product_name,
+                        description: item.product_desc,
+                        uom: item.uom,
+                        provisioning: {
+                            supply: { cogs: item.supply_price },
+                            install: { cogs: item.install_price }
+                        },
+                        pivot: {
+                            quantity: item.qty,
+                            includeSupply: item.supply,
+                            includeInstall: item.install
+                        }
+                    }))
+                }))}
+                onSelectPackage={handleSelectCustomPackage}
+                onRemovePackage={removePackage}
             />
 
-            <IncludePOItemsModal
-                selectedPOPackageId={selectedPOPackageId}
-                setSelectedPOPackageId={setSelectedPOPackageId}
-                selectedPOPackages={selectedPOPackages}
-                setSelectedPOPackages={setSelectedPOPackages}
-                isOpen={isProductModalOpen}
-                setIsOpen={setIsProductModalOpen}
-                recalculateTotalAmount={recalculateTotalAmount}
+            <POProductModal
+                isOpen={isProductSelectorOpen}
+                onClose={() => {
+                    setIsProductSelectorOpen(false);
+                    setActivePackageId(null); // Reset active package
+                }}
+                selectedProducts={selectedPOPackages.find(p => Number(p.package_id) === activePackageId)?.po_items.map(item => ({
+                    id: Number(item.product_id),
+                    name: item.product_name,
+                    description: item.product_desc,
+                    uom: item.uom,
+                    provisioning: {
+                        supply: { cogs: item.supply_price },
+                        install: { cogs: item.install_price }
+                    },
+                    pivot: {
+                        quantity: item.qty,
+                        includeSupply: item.supply,
+                        includeInstall: item.install
+                    }
+                })) || []}
+                onSelectProduct={handleSelectCustomProduct}
+                onRemoveProduct={removeProduct}
             />
         </>
     );

@@ -418,7 +418,7 @@ function OrderMain() {
                             className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
                         >
                             <PlusIcon className="h-5 w-5" />
-                            Add New Order
+                            Create New Order
                         </Link>
                     </div>
                 </div>

@@ -217,6 +217,8 @@ function OrderDetail() {
                     return total + packageRetail * (pkg.quantity || 1)
                 }, 0)
 
+            console.log(totalRetailPrice);
+
             setTotalExcludedAddonAmount(totalRetailPrice)
 
             const clipboard = new ClipboardJS(".copy-link")

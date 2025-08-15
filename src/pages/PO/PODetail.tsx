@@ -1,19 +1,47 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useFetchPO from "../../hook/useFetchPO";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
-import { POItem, POPackage } from "../../types";
+import { POItem, POPackage, PurchaseOrder } from "../../types";
 import { useUser } from "../../context/UserContext";
 import ConfirmationModal from "./components/ConfirmationModal";
 import { acceptPO, rejectPO, releasePO, revertPO } from "../../services/api";
 import { Slide, toast } from "react-toastify";
 import { KTModal } from "../../metronic/core";
+import { 
+    ArrowLeft, 
+    MoreVertical, 
+    FileText, 
+    User, 
+    Building2, 
+    Package, 
+    ChevronDown, 
+    ChevronRight,
+    Check,
+    Eye,
+    RotateCcw,
+    Printer,
+    X
+} from "lucide-react";
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
 interface AccordionState {
     [key: number]: boolean;
+}
+
+// Extended interface for PurchaseOrder with sale property
+interface ExtendedPurchaseOrder extends PurchaseOrder {
+    sale?: {
+        order?: {
+            user?: {
+                name?: string;
+                email?: string;
+                phone_no?: string;
+            };
+        };
+    };
 }
 
 function PODetail() {
@@ -22,9 +50,37 @@ function PODetail() {
     const { id } = useParams<{ id: string }>();
     const poId = id ? parseInt(id, 10) : null;
     const { poDetail, loading, error, refetch } = useFetchPO(poId);
+    const extendedPoDetail = poDetail as ExtendedPurchaseOrder;
     const { currentUser, loading: userLoading } = useUser();
-    const [isLoading, setIsLoading] = useState(false);
     const [openAccordions, setOpenAccordions] = useState<AccordionState>({});
+
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    const buttonRef = useRef(null);
+
+    // Toggle dropdown visibility
+    const toggleDropdown = () => {
+        setIsDropdownOpen((prev) => !prev);
+    };
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target) &&
+                buttonRef.current &&
+                !buttonRef.current.contains(event.target)
+            ) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -114,7 +170,6 @@ function PODetail() {
     }
 
     const handleRevertPo = async () => {
-        setIsLoading(true);
         try {
             const response = await revertPO(Number(poDetail.id));
 
@@ -130,8 +185,6 @@ function PODetail() {
 
         } catch (error) {
             notify('error', 'Error occurred during PO revert.');
-        } finally {
-            setIsLoading(false);
         }
     }
 
@@ -152,140 +205,177 @@ function PODetail() {
         }));
     };
 
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'released':
+                return 'bg-blue-100 text-blue-800';
+            case 'accepted':
+                return 'bg-green-100 text-green-800';
+            case 'rejected':
+                return 'bg-red-100 text-red-800';
+            case 'unreleased':
+                return 'bg-gray-100 text-gray-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getPaymentStatusColor = (status: string) => {
+        switch (status) {
+            case 'issued':
+                return 'bg-blue-100 text-blue-800';
+            case 'partial-paid':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'fully-paid':
+                return 'bg-green-100 text-green-800';
+            case 'unpaid':
+                return 'bg-gray-100 text-gray-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    };
+
     return (
         <>
-            <div className="flex justify-between items-center flex-wrap mb-4">
-                <div className="flex gap-4 items-center">
-                    <button className='text-gray-800 dark:text-gray-400' onClick={handleBackClick}>
-                        <i className="ki-solid ki-arrow-left"></i>
-                    </button>
-                    <span className="text-2xl font-bold text-gray-900">
-                        Purchase Order Detail
-                    </span>
-                </div>
-                <div className="flex gap-3">
-                    {currentUser.type !== 'backend-vendor' ?
-                        <>
-                            {poDetail.order_status === 'released' ?
+            {/* Header */}
+            <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/95 border-b border-gray-200/50 px-6 py-4 mb-8">
+                <div className="flex justify-between items-center">
+                    <div className="flex gap-4 items-center">
+                        <button
+                            className="w-10 h-10 rounded-full bg-gray-100/80 hover:bg-gray-200/80 flex items-center justify-center transition-all duration-200 active:scale-95"
+                            onClick={handleBackClick}
+                        >
+                            <ArrowLeft className="w-5 h-5 text-gray-700" />
+                        </button>
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 rounded-full">
+                                <FileText className="h-6 w-6 text-blue-600" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-semibold text-gray-900 -tracking-wide">Purchase Order Detail</h1>
+                                <p className="text-sm text-gray-500 mt-1">PO #{poDetail.po_no}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                        {currentUser.type !== 'backend-vendor' ?
+                            <>
+                                {poDetail.order_status === 'released' ?
+                                    <Link
+                                        to={LOCAL_PATH_PREFIX + 'purchase-orders/' + poId + '/invoices'}
+                                        className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-2"
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                        Invoices
+                                    </Link>
+                                    :
+                                    <>
+                                        <Link
+                                            to={LOCAL_PATH_PREFIX + 'purchase-orders/edit/' + poId}
+                                            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-2"
+                                        >
+                                            <FileText className="h-4 w-4" />
+                                            Edit PO
+                                        </Link>
+                                        <button
+                                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-2"
+                                            data-modal-toggle="#po_release_modal"
+                                        >
+                                            <Check className="h-4 w-4" />
+                                            Release PO
+                                        </button>
+                                    </>
+                                }
+                            </>
+                            :
+                            poDetail.order_status === 'released' &&
+                            <>
+                                <button
+                                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-2"
+                                    data-modal-toggle="#po_accept_modal"
+                                >
+                                    <Check className="h-4 w-4" />
+                                    Accept Order
+                                </button>
+                                <button
+                                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-2"
+                                    data-modal-toggle="#po_reject_modal"
+                                >
+                                    <X className="h-4 w-4" />
+                                    Reject Order
+                                </button>
                                 <Link
                                     to={LOCAL_PATH_PREFIX + 'purchase-orders/' + poId + '/invoices'}
-                                    className="btn btn-primary btn-sm"
+                                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-95 shadow-sm flex items-center gap-2"
                                 >
+                                    <Eye className="h-4 w-4" />
                                     Invoices
                                 </Link>
-                                :
-                                <>
-                                    <Link
-                                        to={LOCAL_PATH_PREFIX + 'purchase-orders/edit/' + poId}
-                                        className="btn btn-info btn-sm"
-                                    >
-                                        Edit PO
-                                    </Link>
-                                    <button
-                                        className="btn btn-success btn-sm"
-                                        data-modal-toggle="#po_release_modal"
-                                    >
-                                        Release Order
-                                    </button>
-                                </>
-                            }
-                        </>
-                        :
-                        poDetail.order_status === 'released' &&
-                        <>
-                            <button
-                                className="btn btn-success btn-sm"
-                                data-modal-toggle="#po_accept_modal"
-                            >
-                                Accept Order
-                            </button>
-                            <button
-                                className="btn btn-danger btn-outline btn-sm"
-                                data-modal-toggle="#po_reject_modal"
-                            >
-                                Reject Order
-                            </button>
-                            <Link
-                                to={LOCAL_PATH_PREFIX + 'purchase-orders/' + poId + '/invoices'}
-                                className="btn btn-primary btn-sm"
-                            >
-                                Invoices
-                            </Link>
-                        </>
-                    }
-                    <div className="dropdown" data-dropdown="true" data-dropdown-placement="bottom-end" data-dropdown-trigger="click">
-                        <button className="dropdown-toggle btn btn-icon btn-outline btn-light btn-sm" >
-                            <i className="ki-filled ki-dots-vertical"></i>
-                        </button>
+                            </>
+                        }
 
-                        <div className="dropdown-content menu menu-default w-full max-w-64 py-2" data-dropdown-dismiss="true">
-                            <div className="menu-item">
-                                {currentUser.type !== 'backend-vendor' && poDetail.order_status !== 'unreleased' && poDetail.invoices.length < 1 &&
-                                    <button
-                                        className="menu-link"
-                                        data-modal-toggle="#po_revert_modal"
+                        <div className="relative">
+                            <button
+                                ref={buttonRef}
+                                className="w-10 h-10 rounded-full bg-gray-100/80 hover:bg-gray-200/80 flex items-center justify-center transition-all duration-200 active:scale-95"
+                                onClick={toggleDropdown}
+                            >
+                                <MoreVertical className="w-5 h-5 text-gray-700" />
+                            </button>
+
+                            {isDropdownOpen && (
+                                <div
+                                    ref={dropdownRef}
+                                    className="absolute right-0 mt-2 w-64 bg-white/95 border border-gray-200 backdrop-blur-xl rounded-2xl shadow-xl py-2 z-50"
+                                >
+                                    {currentUser.type !== 'backend-vendor' && poDetail.order_status !== 'unreleased' && poDetail.invoices.length < 1 &&
+                                        <button
+                                            className="w-full px-4 py-3 text-left hover:bg-gray-50/80 transition-colors duration-200 flex items-center gap-3"
+                                            data-modal-toggle="#po_revert_modal"
+                                        >
+                                            <RotateCcw className="h-4 w-4 text-gray-600" />
+                                            <span className="text-sm text-gray-700">Revert PO</span>
+                                        </button>
+                                    }
+                                    <Link
+                                        to={LOCAL_PATH_PREFIX + `purchase-orders/print/${poId}`}
+                                        className="w-full px-4 py-3 text-left hover:bg-gray-50/80 transition-colors duration-200 flex items-center gap-3"
                                     >
-                                        <span className="menu-title">
-                                            <div className="flex gap-2 items-center">
-                                                <i className="ki-filled ki-arrows-loop text-lg"></i>
-                                                <span>Revert PO</span>
-                                            </div>
-                                        </span>
-                                    </button>
-                                }
-                                <Link
-                                    to={LOCAL_PATH_PREFIX + `purchase-orders/print/${poId}`}
-                                    className="menu-link"
-                                >
-                                    <span className="menu-title">
-                                        <div className="flex gap-2 items-center">
-                                            <i className="ki-filled ki-file-down text-lg"></i>
-                                            <span>Print PO</span>
-                                        </div>
-                                    </span>
-                                </Link>
-                            </div>
-                            <div className="menu-item">
-                                {/* <Link
-                                    to={/purchase-orders/print/payment-voucher/${poId}}
-                                    className="menu-link"
-                                >
-                                    <span className="menu-title">
-                                        <div className="flex gap-2 items-center">
-                                            <i className="ki-filled ki-file-down text-lg"></i>
-                                            <span>Print Payment Voucher</span>
-                                        </div>
-                                    </span>
-                                </Link> */}
-                            </div>
+                                        <Printer className="h-4 w-4 text-gray-600" />
+                                        <span className="text-sm text-gray-700">Print PO</span>
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex gap-8 mb-4">
-                <div className="flex flex-col flex-[2] gap-4">
-
-                    <div className="card">
-                        <div className="card-header">
-                            <span className="font-semibold">General</span>
-                        </div>
-                        <div className="card-body">
-                            <table className="table-auto">
-                                <tbody>
-                                    <tr>
-                                        <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            PO No.:
-                                        </td>
-                                        <td className="text-xs text-gray-900 pb-3">
-                                            {poDetail.po_no}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            Created Date:
-                                        </td>
-                                        <td className="text-xs text-gray-900 pb-3">
+            {/* Main Content */}
+            <div className="w-full mx-auto px-6 pb-8">
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                    {/* Left Column - Order Details */}
+                    <div className="xl:col-span-3 space-y-6">
+                        {/* General Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-blue-50/50 to-indigo-50/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 rounded-lg">
+                                        <FileText className="h-5 w-5 text-blue-600" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900">General</h3>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">PO No.:</span>
+                                        <span className="text-sm font-medium text-gray-900">{poDetail.po_no}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Created Date:</span>
+                                        <span className="text-sm font-medium text-gray-900">
                                             {poDetail.created_at
                                                 ? new Date(poDetail.created_at).toLocaleDateString('en-GB', {
                                                     day: 'numeric',
@@ -293,378 +383,224 @@ function PODetail() {
                                                     year: 'numeric'
                                                 })
                                                 : 'N/A'}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            Order Status:
-                                        </td>
-                                        <td className="text-xs text-gray-900 pb-3">
-                                            <span className={`badge badge-pill cursor-default capitalize
-                                                        ${poDetail.order_status === 'released' ? 'badge-primary' : ''} 
-                                                        ${poDetail.order_status === 'accepted' ? 'badge-success' : ''} 
-                                                        ${poDetail.order_status === 'rejected' ? 'badge-danger' : ''} 
-                                                        badge-outline`}
-                                            >
-                                                {poDetail.order_status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            Payment Status:
-                                        </td>
-                                        <td className="text-xs text-gray-900 pb-3">
-                                            <span className={`badge badge-pill cursor-default
-                                                        ${poDetail.payment_status === 'issued' ? 'badge-primary' : ''} 
-                                                        ${poDetail.payment_status === 'partial-paid' ? 'badge-info' : ''} 
-                                                        ${poDetail.payment_status === 'fully-paid' ? 'badge-success' : ''} 
-                                                        badge-outline`}
-                                            >
-                                                {poDetail.payment_status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                            Total Amount
-                                        </td>
-                                        <td className="text-xs text-gray-900 pb-3">
-                                            RM {poDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Owner
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    {poDetail.sale ?
-                                        <>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Name:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {poDetail.sale.order.user.name}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Email:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {poDetail.sale.order.user.email}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Phone No.:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    +{poDetail.sale.order.user.country_code} {poDetail.sale.order.user.phone_no}
-                                                </td>
-                                            </tr>
-                                        </>
-                                        :
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            N/A
-                                        </td>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div className="card">
-                        <div className="card-header flex justify-between items-center">
-                            <h3 className="card-title">
-                                Property
-                            </h3>
-                        </div>
-                        <div className="card-body pt-3.5 pb-3.5">
-                            <table className="table-auto">
-                                <tbody>
-                                    {poDetail.sale ?
-                                        <>
-
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Property Name:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {poDetail.sale.order.property.name}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Unit:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {poDetail.sale.order.block}-{poDetail.sale.order.floor}-{poDetail.sale.order.unit_no}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Unit Type:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {poDetail.sale.order.unit_type ? poDetail.sale.order.unit_type : "-"}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Address:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {[
-                                                        poDetail.sale.order.property.address,
-                                                        poDetail.sale.order.property.street,
-                                                        poDetail.sale.order.property.postcode,
-                                                        poDetail.sale.order.property.city,
-                                                        poDetail.sale.order.property.state,
-                                                    ]
-                                                        .filter(Boolean)
-                                                        .join(', ')
-                                                    }
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Total Bedroom:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {poDetail.sale.order.bedroom_count}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Total Bathroom:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {poDetail.sale.order.bathroom_count}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                                    Partition:
-                                                </td>
-                                                <td className="text-sm text-gray-900 pb-3">
-                                                    {poDetail.sale.order.include_partition ? 'Yes' : 'No'}
-                                                </td>
-                                            </tr>
-                                        </>
-                                        :
-                                        <td className="text-sm text-gray-600 pb-3 pe-4 lg:pe-8">
-                                            N/A
-                                        </td>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {poDetail.sale_id && (
-                        <div className="card">
-                            <div className="card-header">
-                                <span className="font-semibold">Sales Order Detail</span>
-                            </div>
-                            <div className="card-body">
-                                <table className="table-auto">
-                                    <tbody>
-                                        <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Sales No:
-                                            </td>
-                                            <td className="text-xs text-gray-900 pb-3">
-                                                {poDetail.sale.sales_no}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Status:
-                                            </td>
-                                            <td className="text-xs text-gray-900 pb-3">
-                                                <span className={`badge badge-pill cursor-default
-                                                        ${poDetail.sale.status === 'issued' ? 'badge-primary' : ''} 
-                                                        ${poDetail.sale.status === 'partial-paid' ? 'badge-info' : ''} 
-                                                        ${poDetail.sale.status === 'fully-paid' ? 'badge-success' : ''} 
-                                                        badge-outline`}
-                                                >
-                                                    {poDetail.sale.status}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-
-                    {poDetail.vendor_id && (
-                        <div className="card">
-                            <div className="card-header">
-                                <span className="font-semibold">Vendor Detail</span>
-                            </div>
-                            <div className="card-body">
-                                <table className="table-auto">
-                                    <tbody>
-                                        <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Vendor Name:
-                                            </td>
-                                            <td className="text-xs text-gray-900 pb-3">
-                                                {poDetail.vendor.name}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Email:
-                                            </td>
-                                            <td className="text-xs text-gray-900 pb-3">
-                                                {poDetail.vendor.email}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="text-xs text-gray-600 pb-3 pe-4 lg:pe-8 font-semibold">
-                                                Phone No.:
-                                            </td>
-                                            <td className="text-xs text-gray-900 pb-3">
-                                                {/* +{poDetail.vendor.country} {poDetail.vendor.phone_no} */}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-                </div>
-                <div className="flex flex-[6]">
-                    <div className="card w-full">
-                        <div className="card-body flex flex-col">
-                            <div className="flex flex-col">
-                                <div className="flex">
-                                    <h2 className="text-lg font-semibold mb-4">PO Items</h2>
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Order Status:</span>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(poDetail.order_status)}`}>
+                                            {poDetail.order_status}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Payment Status:</span>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(poDetail.payment_status)}`}>
+                                            {poDetail.payment_status}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Total Amount:</span>
+                                        <span className="text-lg font-semibold text-gray-900">RM {poDetail.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Owner Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-green-50/50 to-emerald-50/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-green-100 rounded-lg">
+                                        <User className="h-5 w-5 text-green-600" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900">Owner</h3>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Name:</span>
+                                        <span className="text-sm font-medium text-gray-900">{extendedPoDetail?.sale?.order?.user?.name || 'N/A'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Email:</span>
+                                        <span className="text-sm font-medium text-gray-900">{extendedPoDetail?.sale?.order?.user?.email || 'N/A'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Phone No.:</span>
+                                        <span className="text-sm font-medium text-gray-900">{extendedPoDetail?.sale?.order?.user?.phone_no || 'N/A'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Vendor Card */}
+                        {poDetail.vendor_id && (
+                            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                                <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-purple-50/50 to-violet-50/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-purple-100 rounded-lg">
+                                            <Building2 className="h-5 w-5 text-purple-600" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900">Vendor</h3>
+                                    </div>
+                                </div>
+                                <div className="p-6">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Vendor Name:</span>
+                                            <span className="text-sm font-medium text-gray-900">{poDetail.vendor.name}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Email:</span>
+                                            <span className="text-sm font-medium text-gray-900">{poDetail.vendor.email}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Phone No.:</span>
+                                            <span className="text-sm font-medium text-gray-900">
+                                                {poDetail.vendor.country_code && poDetail.vendor.phone_no 
+                                                    ? `+${poDetail.vendor.country_code} ${poDetail.vendor.phone_no}` 
+                                                    : 'N/A'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Right Column - Summary & Packages */}
+                    <div className="xl:col-span-9 space-y-6">
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-orange-50/50 to-amber-50/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-orange-100 rounded-lg">
+                                        <Package className="h-5 w-5 text-orange-600" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900">PO Items</h3>
+                                </div>
+                            </div>
+                            <div className="p-6">
                                 <div className="flex flex-col gap-4">
                                     {poDetail.po_packages.map((poPackage: POPackage, index) => (
                                         <div
                                             key={index}
-                                            className="accordion rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white"
+                                            className="bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
                                         >
                                             {/* Accordion Header */}
                                             <div
-                                                className="accordion-header flex items-center justify-between w-full p-5 hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                                                className="flex items-center justify-between w-full p-5 hover:bg-gray-50/50 cursor-pointer transition-colors duration-200"
                                                 onClick={() => toggleAccordion(index)}
                                             >
-                                                <div className="flex flex-col">
-                                                    <span className="text-gray-800 font-semibold text-sm">{poPackage.name}</span>
-                                                    <span className="text-gray-600 font-semibold text-sm">RM {(poPackage.total_price * poPackage.quantity).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                <div className="flex items-center gap-4 flex-1">
+                                                    <div className="p-2 bg-orange-100 rounded-lg">
+                                                        <Package className="h-5 w-5 text-orange-600" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-gray-800 font-semibold text-sm">{poPackage.name}</span>
+                                                        <span className="text-gray-600 font-medium text-sm">RM {(poPackage.total_price * (poPackage.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                                    </div>
                                                 </div>
                                                 <div className="flex items-center gap-4">
                                                     {/* Package Quantity Input */}
                                                     <div className="flex items-center justify-center gap-2">
                                                         <input
                                                             type="text"
-                                                            className="input input-sm text-center px-2 w-12 border-gray-200 focus:border-primary focus:ring focus:ring-primary/20 transition-all duration-200 disabled"
-                                                            value={poPackage.quantity || 1} // Assuming package has a qty 
+                                                            className="w-12 px-2 py-1 text-center text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-500/20 transition-all duration-200 bg-gray-50"
+                                                            value={poPackage.quantity || 1}
                                                             readOnly
                                                         />
                                                     </div>
-                                                    <i className={`ki-solid ki-down text-gray-600 transition-transform duration-300 ease-in-out ${openAccordions[index] ? 'rotate-180' : ''}`}></i>
+                                                    {openAccordions[index] ? (
+                                                        <ChevronDown className="w-5 h-5 text-gray-600 transition-transform duration-300 ease-in-out" />
+                                                    ) : (
+                                                        <ChevronRight className="w-5 h-5 text-gray-600 transition-transform duration-300 ease-in-out" />
+                                                    )}
                                                 </div>
                                             </div>
 
                                             {/* Accordion Content */}
                                             <div
-                                                className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${openAccordions[index]
-                                                    ? 'opacity-100'
-                                                    : 'max-h-0 opacity-0 p-0'
+                                                className={`overflow-hidden transition-all duration-300 ease-in-out ${openAccordions[index]
+                                                    ? 'opacity-100 max-h-screen'
+                                                    : 'max-h-0 opacity-0'
                                                     }`}
                                             >
-                                                <table className="table align-middle text-gray-700 font-medium text-2xs w-full">
-                                                    <thead className="bg-gray-100 rounded-t">
-                                                        <tr className="text-gray-600">
-                                                            <th className="w-[180px] p-3">Item</th>
-                                                            <th className="w-[180px] p-3">Description</th>
-                                                            <th className="w-[100px] p-3 text-center">Supply Price</th>
-                                                            <th className="w-[100px] p-3 text-center">Install Price</th>
-                                                            <th className="w-[70px] p-3 text-center">Qty</th>
-                                                            <th className="w-[50px] p-3 text-center">UOM</th>
-                                                            <th className="w-[100px] p-3 text-center">Total Supply</th>
-                                                            <th className="w-[100px] p-3 text-center">Total Install</th>
-                                                            <th className="w-[100px] p-3 text-center">Total Price</th>
-                                                            <th className="w-[10px] p-3 text-center">Supply</th>
-                                                            <th className="w-[10px] p-3 text-center">Install</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {poPackage.po_items.map((poProd: POItem, index) => (
-                                                            <tr
-                                                                key={index}
-                                                                className={`border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 ${!poProd.supply && !poProd.install ? 'bg-orange-50' : ''
-                                                                    }`}
-                                                            >
-                                                                <td className="p-3">{poProd.product_name}</td>
-                                                                <td className="p-3 text-gray-600">{poProd.product_desc}</td>
-                                                                <td className="p-3 text-center">RM {poProd.supply_price}</td>
-                                                                <td className="p-3 text-center">RM {poProd.install_price}</td>
-                                                                <td className="p-3 text-center">
-                                                                    <div className="flex items-center justify-center gap-2">
-                                                                        <input
-                                                                            type="text"
-                                                                            className="input input-sm text-center px-2 w-12 border-gray-200 focus:border-primary focus:ring focus:ring-primary/20 transition-all duration-200 disabled"
-                                                                            value={poProd.qty}
-                                                                            readOnly
-                                                                        />
-                                                                    </div>
-                                                                </td>
-                                                                <td className="text-center">
-                                                                    {poProd.uom}
-                                                                </td>
-                                                                <td className="p-3 text-center">
-                                                                    {poProd.supply ?
-                                                                        <span className="text-green-600">RM {(poProd.supply_price * poProd.qty).toFixed(2)}</span>
-                                                                        : <span className="text-gray-400">-</span>
-                                                                    }
-                                                                </td>
-                                                                <td className="p-3 text-center">
-                                                                    {poProd.install ?
-                                                                        <span className="text-green-600">RM {(poProd.install_price * poProd.qty).toFixed(2)}</span>
-                                                                        : <span className="text-gray-400">-</span>
-                                                                    }
-                                                                </td>
-                                                                <td className="p-3 text-center font-semibold">
-                                                                    RM {(((poProd.supply ? poProd.supply_price : 0) + (poProd.install ? poProd.install_price : 0)) * poProd.qty).toFixed(2)}
-                                                                </td>
-                                                                <td className="p-3 text-center">
-                                                                    <input
-                                                                        className="checkbox checkbox-sm rounded checked:bg-primary"
-                                                                        type="checkbox"
-                                                                        checked={!!poProd.supply}
-                                                                        readOnly
-                                                                    />
-                                                                </td>
-                                                                <td className="p-3 text-center">
-                                                                    <input
-                                                                        className="checkbox checkbox-sm rounded checked:bg-primary"
-                                                                        type="checkbox"
-                                                                        checked={!!poProd.install}
-                                                                        readOnly
-                                                                    />
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
+                                                <div className="p-5 pt-0">
+                                                    <div className="overflow-x-auto">
+                                                        <table className="w-full text-sm">
+                                                            <thead className="bg-gray-50/80 rounded-lg">
+                                                                <tr className="text-gray-600">
+                                                                    <th className="p-3 text-left font-medium">Item</th>
+                                                                    <th className="p-3 text-left font-medium">Description</th>
+                                                                    <th className="p-3 text-center font-medium">Supply Price</th>
+                                                                    <th className="p-3 text-center font-medium">Install Price</th>
+                                                                    <th className="p-3 text-center font-medium">Qty</th>
+                                                                    <th className="p-3 text-center font-medium">UOM</th>
+                                                                    <th className="p-3 text-center font-medium">Total Supply</th>
+                                                                    <th className="p-3 text-center font-medium">Total Install</th>
+                                                                    <th className="p-3 text-center font-medium">Total Price</th>
+                                                                    <th className="p-3 text-center font-medium">Supply</th>
+                                                                    <th className="p-3 text-center font-medium">Install</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-gray-100">
+                                                                {poPackage.po_items.map((poProd: POItem, itemIndex) => (
+                                                                    <tr
+                                                                        key={itemIndex}
+                                                                        className={`hover:bg-gray-50/50 transition-colors duration-150 ${!poProd.supply && !poProd.install ? 'bg-orange-50/50' : ''}`}
+                                                                    >
+                                                                        <td className="p-3 font-medium text-gray-900">{poProd.product_name}</td>
+                                                                        <td className="p-3 text-gray-600">{poProd.product_desc}</td>
+                                                                        <td className="p-3 text-center text-gray-900">RM {poProd.supply_price}</td>
+                                                                        <td className="p-3 text-center text-gray-900">RM {poProd.install_price}</td>
+                                                                        <td className="p-3 text-center">
+                                                                            <div className="flex items-center justify-center">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className="w-12 px-2 py-1 text-center text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:ring focus:ring-blue-500/20 transition-all duration-200 bg-gray-50"
+                                                                                    value={poProd.qty}
+                                                                                    readOnly
+                                                                                />
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="p-3 text-center text-gray-600">
+                                                                            {poProd.uom}
+                                                                        </td>
+                                                                        <td className="p-3 text-center">
+                                                                            {poProd.supply ?
+                                                                                <span className="text-green-600 font-medium">RM {(poProd.supply_price * poProd.qty).toFixed(2)}</span>
+                                                                                : <span className="text-gray-400">-</span>
+                                                                            }
+                                                                        </td>
+                                                                        <td className="p-3 text-center">
+                                                                            {poProd.install ?
+                                                                                <span className="text-green-600 font-medium">RM {(poProd.install_price * poProd.qty).toFixed(2)}</span>
+                                                                                : <span className="text-gray-400">-</span>
+                                                                            }
+                                                                        </td>
+                                                                        <td className="p-3 text-center font-semibold text-gray-900">
+                                                                            RM {(((poProd.supply ? poProd.supply_price : 0) + (poProd.install ? poProd.install_price : 0)) * poProd.qty).toFixed(2)}
+                                                                        </td>
+                                                                        <td className="p-3 text-center">
+                                                                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${poProd.supply ? 'bg-green-500 border-green-500' : 'bg-gray-100 border-gray-300'}`}>
+                                                                                {poProd.supply && (
+                                                                                    <Check className="w-3 h-3 text-white" />
+                                                                                )}
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="p-3 text-center">
+                                                                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${poProd.install ? 'bg-green-500 border-green-500' : 'bg-gray-100 border-gray-300'}`}>
+                                                                                {poProd.install && (
+                                                                                    <Check className="w-3 h-3 text-white" />
+                                                                                )}
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -675,11 +611,9 @@ function PODetail() {
                 </div>
             </div>
 
-            <div className="flex justify-end gap-4"></div>
-
             <ConfirmationModal
                 modalId="po_release_modal"
-                modalTitle="Accept PO"
+                modalTitle="Release PO"
                 modalPrompt="Are you sure you want to release this PO?"
                 modalItemName={poDetail.po_no}
                 submitBtnClass="btn-success"
