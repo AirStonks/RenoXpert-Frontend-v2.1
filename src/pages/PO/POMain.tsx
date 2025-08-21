@@ -178,13 +178,33 @@ export default function POMain() {
                             onChange={handleSearch}
                             className="w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
-                        <Link
+                        <button
+                            type="button"
+                            disabled
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-300 text-white rounded-lg cursor-not-allowed relative"
+                            onMouseOver={e => {
+                                const tooltip = document.createElement('div');
+                                tooltip.textContent = "Coming Soon";
+                                tooltip.className = "absolute left-1/2 -translate-x-1/2 top-full mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow z-20";
+                                tooltip.style.whiteSpace = "nowrap";
+                                tooltip.setAttribute('id', 'coming-soon-tooltip');
+                                e.currentTarget.appendChild(tooltip);
+                            }}
+                            onMouseOut={e => {
+                                const tooltip = e.currentTarget.querySelector('#coming-soon-tooltip');
+                                if (tooltip) e.currentTarget.removeChild(tooltip);
+                            }}
+                        >
+                            <PlusIcon className="h-5 w-5" />
+                            Create New PO
+                        </button>
+                        {/* <Link
                             to={LOCAL_PATH_PREFIX + 'orders/create'}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
                         >
                             <PlusIcon className="h-5 w-5" />
-                            Create New PO
-                        </Link>
+                            Create
+                        </Link> */}
                     </div>
                 </div>
             </div>
