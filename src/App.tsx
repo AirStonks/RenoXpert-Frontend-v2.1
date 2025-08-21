@@ -68,7 +68,7 @@ import UserDetail from './pages/User/UserDetail';
 import AddOwner from './pages/User/AddOwner';
 import RenoAcceptanceForm from './pages/OwnerPages/RenoAcceptanceForm';
 import PreviousOrderDetail from './pages/Order/PreviousOrderDetail';
-// import POMain from './pages/PO/POMain';
+import POMain from './pages/PO/POMain';
 import AddUser from './pages/User/AddUser';
 import InventoryMain from './pages/Inventory/InventoryMain';
 import PODetail from './pages/PO/PODetail';
@@ -94,7 +94,7 @@ import SalesOrderPO from './pages/Finance/SalesOrderPO';
 // import POPropertyOverview from './pages/PO/POPropertyOverview';
 // import POInvoice from './pages/PO/POInvoice';
 import OTPRequestList from './pages/OTPRequestList';
-// import POInvoicePrint from './pages/PO/components/POInvoicePrint';
+import POInvoicePrint from './pages/PO/components/POInvoicePrint';
 import DIFormMain from './pages/ProjectManagement/DIFormMain';
 import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
 import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
@@ -184,7 +184,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
         { path: '/reno-sales', element: <RenoSalesMain />, layout: ProtectedLayout },
         { path: '/reno-sales/:id', element: <RenoSaleDetail />, layout: ProtectedLayout },
-        // { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
+        { path: '/purchase-orders', element: <POMain />, layout: ProtectedLayout },
         // { path: '/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
         // { path: '/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
         { path: '/purchase-orders/:id', element: <PODetail />, layout: ProtectedLayout },
@@ -193,7 +193,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         // { path: '/purchase-orders/print/:id', element: <POPrint />, layout: null },
         // { path: '/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
         // { path: '/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
-        // { path: '/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
+        { path: '/purchase-orders/:id/print', element: <POInvoicePrint />, layout: null },
         { path: '/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
         { path: '/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
         { path: '/reno-progress/overview/v3', element: <PMMainV3 />, layout: ProtectedLayout },
@@ -311,7 +311,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
         { path: '/staff/reno-sales', element: <RenoSalesMain />, layout: ProtectedLayout },
         { path: '/staff/reno-sales/:id', element: <RenoSaleDetail />, layout: ProtectedLayout },
-        // { path: '/staff/purchase-orders', element: <POMain />, layout: ProtectedLayout },
+        { path: '/staff/purchase-orders', element: <POMain />, layout: ProtectedLayout },
         // { path: '/staff/purchase-orders/property/view', element: <POPropertyOverview />, layout: ProtectedLayout },
         // { path: '/staff/purchase-orders/create', element: <CreatePO />, layout: ProtectedLayout },
         { path: '/staff/purchase-orders/:id', element: <PODetail />, layout: ProtectedLayout },
@@ -320,7 +320,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         // { path: '/staff/purchase-orders/print/:id', element: <POPrint />, layout: null },
         // { path: '/staff/purchase-orders/print/payment-voucher/:id', element: <POPaymentVoucher />, layout: null },
         // { path: '/staff/purchase-orders/:id/invoices', element: <POInvoice />, layout: ProtectedLayout },
-        // { path: '/staff/purchase-orders/:id/invoices/:invId/print', element: <POInvoicePrint />, layout: null },
+        { path: '/staff/purchase-orders/:id/print', element: <POInvoicePrint />, layout: null },
         { path: '/staff/discountFee', element: <DiscountFeeMain />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/overview/v3', element: <PMMainV3 />, layout: ProtectedLayout },

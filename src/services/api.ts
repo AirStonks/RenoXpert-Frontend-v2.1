@@ -2506,7 +2506,7 @@ export const updatePurchaseOrder = async (poId: number, purchaseOrderData: Purch
     }
 };
 
-export const POIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
+export const poIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, isHead: boolean = true) => {
     try {
         const response = await axios.get(API_URL + 'purchase-orders', {
             headers: getAuthHeaders(),
@@ -2525,7 +2525,7 @@ export const POIndex = async (size: number = 5, page: number = 1, searchTerm?: s
     }
 };
 
-export const POAdvanceTable = async (groubBy?: string, groupOp?: string, groupValue?: string, filterBy?: string, filterOp?: string, filterValue?: string) => {
+export const poAdvanceTable = async (groubBy?: string, groupOp?: string, groupValue?: string, filterBy?: string, filterOp?: string, filterValue?: string) => {
     try {
         const response = await axios.get(API_URL + 'purchase-orders/table/advance', {
             headers: getAuthHeaders(),
@@ -2544,7 +2544,7 @@ export const POAdvanceTable = async (groubBy?: string, groupOp?: string, groupVa
     }
 }
 
-export const fetchPO = async (poId: number) => {
+export const fetchPo = async (poId: number) => {
     try {
         const response = await axios.get(API_URL + `purchase-orders/${poId}`, {
             headers: getAuthHeaders()

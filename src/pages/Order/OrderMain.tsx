@@ -352,8 +352,6 @@ function OrderMain() {
         }
     }
 
-
-
     return (
         <div className="min-h-screen bg-gray-100 p-4">
             {/* Sticky Header */}

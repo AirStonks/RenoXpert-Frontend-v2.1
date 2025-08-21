@@ -11,7 +11,7 @@ import {
     AlertCircle,
     Plus,
     Minus,
-    // Trash2,
+    Trash2,
     PackageIcon,
 } from "lucide-react"
 import { Package, Product, PurchaseOrder, Sale, User, POPackage, POItem } from "../../../types"
@@ -169,8 +169,18 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                 }) || []
             }))
 
+            // Filter out items with 0 supply_qty and install_qty from each package
+            const packagesWithFilteredItems = packagesWithCalculatedQuantities.map(pkg => ({
+                ...pkg,
+                products: (pkg.products || []).filter(product => {
+                    const supplyQty = product.pivot?.supply_qty || 0
+                    const installQty = product.pivot?.install_qty || 0
+                    return supplyQty > 0 || installQty > 0
+                })
+            }))
+
             // Filter out packages where all items have 0 quantity for both supply_qty and install_qty
-            const packagesWithNonZeroQuantities = packagesWithCalculatedQuantities.filter(pkg => {
+            const packagesWithNonZeroQuantities = packagesWithFilteredItems.filter(pkg => {
                 // Check if any product in the package has non-zero supply_qty or install_qty
                 return (pkg.products || []).some(product => {
                     const supplyQty = product.pivot?.supply_qty || 0
@@ -205,8 +215,18 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                 })) || []
             }))
 
+            // Filter out items with 0 supply_qty and install_qty from each package
+            const packagesWithFilteredItems = packagesWithCalculatedQuantities.map(pkg => ({
+                ...pkg,
+                products: (pkg.products || []).filter(product => {
+                    const supplyQty = product.pivot?.supply_qty || 0
+                    const installQty = product.pivot?.install_qty || 0
+                    return supplyQty > 0 || installQty > 0
+                })
+            }))
+
             // Filter out packages where all items have 0 quantity for both supply_qty and install_qty
-            const packagesWithNonZeroQuantities = packagesWithCalculatedQuantities.filter(pkg => {
+            const packagesWithNonZeroQuantities = packagesWithFilteredItems.filter(pkg => {
                 // Check if any product in the package has non-zero supply_qty or install_qty
                 return (pkg.products || []).some(product => {
                     const supplyQty = product.pivot?.supply_qty || 0
@@ -314,14 +334,10 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
     //     )
     // }
 
-
-
-
-
     const updateProductSupplyQuantity = (productId: number, packageId: number, newSupplyQuantity: number) => {
         const maxAllowed = getMaxSupplyQuantity(productId, packageId);
         const clampedQuantity = Math.max(0, Math.min(newSupplyQuantity, maxAllowed));
-        
+
         const newSelectedPackages = selectedPackages.map((item) =>
             item.id === packageId
                 ? {
@@ -342,7 +358,26 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                 : item,
         );
 
-        setSelectedPackages(newSelectedPackages);
+        // Filter out items with 0 supply_qty and install_qty from each package
+        const packagesWithFilteredItems = newSelectedPackages.map(pkg => ({
+            ...pkg,
+            products: (pkg.products || []).filter(product => {
+                const supplyQty = product.pivot?.supply_qty || 0
+                const installQty = product.pivot?.install_qty || 0
+                return supplyQty > 0 || installQty > 0
+            })
+        }))
+
+        // Filter out packages where all items have 0 quantity for both supply_qty and install_qty
+        const packagesWithNonZeroQuantities = packagesWithFilteredItems.filter(pkg => {
+            return (pkg.products || []).some(product => {
+                const supplyQty = product.pivot?.supply_qty || 0
+                const installQty = product.pivot?.install_qty || 0
+                return supplyQty > 0 || installQty > 0
+            })
+        })
+
+        setSelectedPackages(packagesWithNonZeroQuantities);
     }
 
     // Helper function to get maximum allowed quantity for supply_qty
@@ -350,13 +385,13 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
         const product = selectedPackages
             .find(pkg => pkg.id === packageId)
             ?.products?.find(prod => prod.id === productId);
-        
+
         if (!product) return 0;
-        
+
         // Get existing PO deductions for this product
         const deductions = getDeductionPONumbers(packageId, productId, 'supply');
         const totalDeducted = deductions.reduce((sum, d) => sum + d.qty, 0);
-        
+
         // Maximum allowed is base quantity minus existing PO quantities
         const baseQuantity = product.pivot?.quantity || 0;
         return Math.max(0, baseQuantity - totalDeducted);
@@ -367,13 +402,13 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
         const product = selectedPackages
             .find(pkg => pkg.id === packageId)
             ?.products?.find(prod => prod.id === productId);
-        
+
         if (!product) return 0;
-        
+
         // Get existing PO deductions for this product
         const deductions = getDeductionPONumbers(packageId, productId, 'install');
         const totalDeducted = deductions.reduce((sum, d) => sum + d.qty, 0);
-        
+
         // Maximum allowed is base quantity minus existing PO quantities
         const baseQuantity = product.pivot?.quantity || 0;
         return Math.max(0, baseQuantity - totalDeducted);
@@ -382,7 +417,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
     const updateProductInstallQuantity = (productId: number, packageId: number, newInstallQuantity: number) => {
         const maxAllowed = getMaxInstallQuantity(productId, packageId);
         const clampedQuantity = Math.max(0, Math.min(newInstallQuantity, maxAllowed));
-        
+
         const newSelectedPackages = selectedPackages.map((item) =>
             item.id === packageId
                 ? {
@@ -403,49 +438,64 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                 : item,
         );
 
-        setSelectedPackages(newSelectedPackages);
+        // Filter out items with 0 supply_qty and install_qty from each package
+        const packagesWithFilteredItems = newSelectedPackages.map(pkg => ({
+            ...pkg,
+            products: (pkg.products || []).filter(product => {
+                const supplyQty = product.pivot?.supply_qty || 0
+                const installQty = product.pivot?.install_qty || 0
+                return supplyQty > 0 || installQty > 0
+            })
+        }))
+
+        // Filter out packages where all items have 0 quantity for both supply_qty and install_qty
+        const packagesWithNonZeroQuantities = packagesWithFilteredItems.filter(pkg => {
+            return (pkg.products || []).some(product => {
+                const supplyQty = product.pivot?.supply_qty || 0
+                const installQty = product.pivot?.install_qty || 0
+                return supplyQty > 0 || installQty > 0
+            })
+        })
+
+        setSelectedPackages(packagesWithNonZeroQuantities);
     };
 
-    // const removeProduct = (productId: number, packageId?: number) => {
-    //     let newSelectedPackages;
+    const removeProduct = (productId: number, packageId: number) => {
+        const newSelectedPackages = selectedPackages.map((item) =>
+            item.id === packageId
+                ? {
+                    ...item,
+                    products: item.products?.filter((product) => product.id !== productId) || [],
+                }
+                : item,
+        );
 
-    //     if (packageId) {
-    //         newSelectedPackages = selectedPackages.map((item) =>
-    //             item.id === packageId
-    //                 ? {
-    //                     ...item,
-    //                     products: item.products?.filter((product) => product.id !== productId) || [],
-    //                 }
-    //                 : item,
-    //         );
-    //     } else {
-    //         newSelectedPackages = [...selectedPackages]
+        // Filter out packages where all items have 0 quantity for both supply_qty and install_qty
+        const packagesWithNonZeroQuantities = newSelectedPackages.filter(pkg => {
+            return (pkg.products || []).some(product => {
+                const supplyQty = product.pivot?.supply_qty || 0
+                const installQty = product.pivot?.install_qty || 0
+                return supplyQty > 0 || installQty > 0
+            })
+        })
 
-    //         const selectedPackage = newSelectedPackages.find((p) => p.id === activePackageId)
+        setSelectedPackages(packagesWithNonZeroQuantities);
+    };
 
-    //         if (selectedPackage) {
-    //         selectedPackage.products = selectedPackage.products?.filter((product) => product.id !== productId) || []
-    //         }
-    //     }
-
-    //     setSelectedPackages(newSelectedPackages);
-    // };
-
-    // const removePackage = (packageId: number) => {
-    //     const newSelectedPackages = selectedPackages.filter((pkg) => pkg.id !== packageId)
-    //     setExpandedSelectedPackages((prev) => {
-    //         const newSet = new Set(prev)
-    //         newSet.delete(packageId)
-    //         return newSet
-    //     })
-    //     setSelectedPackages(newSelectedPackages)
-    // }
+    const removePackage = (packageId: number) => {
+        const newSelectedPackages = selectedPackages.filter((pkg) => pkg.id !== packageId)
+        setExpandedSelectedPackages((prev) => {
+            const newSet = new Set(prev)
+            newSet.delete(packageId)
+            return newSet
+        })
+        setSelectedPackages(newSelectedPackages)
+    }
 
     // const handleAddProduct = (packageId: number) => {
     //     setActivePackageId(packageId);
     //     setIsProductSelectorOpen(true);
     // };
-
 
 
     const getTotalSelectedValue = () => {
@@ -454,7 +504,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                 total +
                 (pkg.products || []).reduce(
                     (totalProd, item) =>
-                        totalProd + (calculateProductPrice(item, item.pivot?.quantity, item.pivot?.supply_qty, item.pivot?.install_qty) * (pkg.quantity || 1)),
+                        totalProd + (calculateProductPrice(item, item.pivot?.quantity, item.pivot?.supply_qty, item.pivot?.install_qty)),
                     0,
                 ),
             0,
@@ -475,7 +525,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
     // Helper function to get PO numbers and quantities that contributed to deduction for a specific product
     const getDeductionPONumbers = (packageId: number, productId: number, deductionType: 'supply' | 'install') => {
         const poDeductions: { po_no: string; qty: number }[] = [];
-        
+
         existingPurchaseOrders.forEach((po: PurchaseOrder) => {
             po.po_packages?.forEach((poPackage: POPackage) => {
                 if (String(poPackage.package_id) === String(packageId)) {
@@ -490,7 +540,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                 }
             });
         });
-        
+
         return poDeductions;
     };
 
@@ -513,7 +563,6 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
             po_packages: selectedPackages.map(pkg => ({
                 package_id: String(pkg.id),
                 name: pkg.name,
-                quantity: pkg.quantity,
                 description: pkg.description,
                 description_internal: pkg.description_internal,
                 category: pkg.category,
@@ -805,12 +854,12 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                     <span>RM {(calculatePackageTotalPrice(pkg)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                                 </div>
                                                             </div>
-                                                            {/* <button
+                                                            <button
                                                                 onClick={() => removePackage(pkg.id)}
                                                                 className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors duration-200"
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
-                                                            </button> */}
+                                                            </button>
                                                             <button
                                                                 onClick={() => toggleSelectedPackageExpansion(pkg.id)}
                                                                 className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
@@ -900,7 +949,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                         const deductions = getDeductionPONumbers(pkg.id, item.id!, 'supply');
                                                                                         const totalDeducted = deductions.reduce((sum, d) => sum + d.qty, 0);
                                                                                         const remainingQty = (item.pivot?.quantity || 0) - totalDeducted;
-                                                                                        
+
                                                                                         // If remaining quantity is 0, only show deduction info
                                                                                         if (remainingQty === 0) {
                                                                                             return (
@@ -913,7 +962,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                                 </div>
                                                                                             );
                                                                                         }
-                                                                                        
+
                                                                                         // Otherwise show controls and deduction info
                                                                                         return (
                                                                                             <>
@@ -935,8 +984,8 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                                         }
                                                                                                         disabled={(item.pivot.supply_qty || 0) >= getMaxSupplyQuantity(item.id!, pkg.id)}
                                                                                                         className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-colors duration-200 ${(item.pivot.supply_qty || 0) >= getMaxSupplyQuantity(item.id!, pkg.id)
-                                                                                                                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                                                                                : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600'
+                                                                                                            ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                                                                            : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600'
                                                                                                             }`}
                                                                                                     >
                                                                                                         <Plus className="h-3 w-3" />
@@ -963,7 +1012,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                         const deductions = getDeductionPONumbers(pkg.id, item.id!, 'install');
                                                                                         const totalDeducted = deductions.reduce((sum, d) => sum + d.qty, 0);
                                                                                         const remainingQty = (item.pivot?.quantity || 0) - totalDeducted;
-                                                                                        
+
                                                                                         // If remaining quantity is 0, only show deduction info
                                                                                         if (remainingQty === 0) {
                                                                                             return (
@@ -976,7 +1025,7 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                                 </div>
                                                                                             );
                                                                                         }
-                                                                                        
+
                                                                                         // Otherwise show controls and deduction info
                                                                                         return (
                                                                                             <>
@@ -998,8 +1047,8 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                                         }
                                                                                                         disabled={(item.pivot.install_qty || 0) >= getMaxInstallQuantity(item.id!, pkg.id)}
                                                                                                         className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-colors duration-200 ${(item.pivot.install_qty || 0) >= getMaxInstallQuantity(item.id!, pkg.id)
-                                                                                                                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                                                                                : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600'
+                                                                                                            ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                                                                            : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600'
                                                                                                             }`}
                                                                                                     >
                                                                                                         <Plus className="h-3 w-3" />
@@ -1056,14 +1105,14 @@ export default function CreatePOModal({ sales, isOpen, onCreate, onClose }: Crea
                                                                                 </div>
                                                                                 <div className="text-xs text-gray-500">Total</div>
                                                                             </div>
-                                                                            {/* <div className="col-span-1 flex justify-center">
+                                                                            <div className="col-span-1 flex justify-center">
                                                                                 <button
                                                                                     onClick={() => removeProduct(item.id!, pkg.id)}
                                                                                     className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors duration-200"
                                                                                 >
                                                                                     <Trash2 className="h-4 w-4" />
                                                                                 </button>
-                                                                            </div> */}
+                                                                            </div>
                                                                         </motion.div>
                                                                     ))}
                                                                 </div>
