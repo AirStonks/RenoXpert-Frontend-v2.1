@@ -7,7 +7,6 @@ import {
     Phone,
     Mail,
     Building,
-    FileText,
     ShoppingCart,
     Package,
     Clock,
@@ -15,11 +14,10 @@ import {
     Download,
     Eye,
     Plus,
-    ChevronDown,
-    ChevronRight,
     Receipt,
     Calendar,
-    DollarSign,
+    ChevronDown,
+    ChevronRight,
 } from "lucide-react"
 import type { Invoice, PurchaseOrder, RenoXSale, Sale } from "../../types"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
@@ -130,9 +128,19 @@ const InvoiceListView = ({
     }
     return (
         <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
-            <div className="bg-white/70 rounded-xl border border-white/80 overflow-hidden">
-                <div className="px-6 py-3 bg-white/50 border-b border-gray-200/50">
-                    <div className="grid grid-cols-5 gap-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <div className=" rounded-2xl border-2 border-blue-100/60 overflow-hidden shadow-lg">
+                {/* Header */}
+                <div className="px-6 py-4 bg-gradient-to-r from-blue-500/8 to-sky-500/8 border-b border-blue-200/50">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-gradient-to-br from-blue-500 to-sky-600 rounded-xl">
+                            <Receipt className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-semibold text-gray-900">Invoice Details</h4>
+                            <p className="text-sm text-gray-600">Manage and track all invoices</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-5 gap-4 text-xs font-semibold text-blue-700 uppercase tracking-wider">
                         <div>Invoice Details</div>
                         <div>Due Date</div>
                         <div>Amount</div>
@@ -140,41 +148,47 @@ const InvoiceListView = ({
                         <div className="text-right">Actions</div>
                     </div>
                 </div>
-                <div className="divide-y divide-gray-200/50">
-                    {invoices.map((invoice) => (
-                        <div key={invoice.id} className="px-6 py-4 hover:bg-white/50 transition-colors duration-200">
+                
+                {/* Invoice Rows */}
+                <div className="divide-y divide-blue-100/50">
+                    {invoices.map((invoice, index) => (
+                        <div key={invoice.id} className="px-6 py-4 hover:bg-white/70 transition-all duration-200 group">
                             <div className="grid grid-cols-5 gap-4 items-center">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-emerald-100 rounded-lg">
-                                        <FileText className="h-4 w-4 text-emerald-600" />
+                                    <div className="p-2 bg-gradient-to-br from-blue-400 to-sky-500 rounded-xl shadow-sm">
+                                        <Receipt className="h-4 w-4 text-white" />
                                     </div>
                                     <div>
-                                        <h6 className="font-semibold text-gray-900 text-sm">{invoice.invoice_no}</h6>
-                                        <p className="text-xs text-gray-600">Invoice Number</p>
+                                        <h6 className="font-semibold text-gray-900 text-sm group-hover:text-blue-700 transition-colors">{invoice.invoice_no}</h6>
+                                        <p className="text-xs text-gray-600">Invoice #{index + 1}</p>
                                     </div>
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2 text-sm text-gray-900">
-                                        <Calendar className="h-3 w-3 text-gray-500" />
-                                        <span>{format(invoice.due_date)}</span>
+                                        <div className="p-1 bg-blue-100 rounded-lg">
+                                            <Calendar className="h-3 w-3 text-blue-600" />
+                                        </div>
+                                        <span className="font-medium">{format(invoice.due_date)}</span>
                                     </div>
-                                    <p className="text-xs text-gray-600">Due Date</p>
+                                    <p className="text-xs text-gray-600 mt-1">Due Date</p>
                                 </div>
                                 <div>
-                                    <p className="text-lg font-bold text-gray-900">{currency(invoice.amount || 0)}</p>
+                                    <p className="text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors">{currency(invoice.amount || 0)}</p>
                                     <p className="text-xs text-gray-600">Amount</p>
                                 </div>
                                 <div>
-                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusClass(invoice.status)}`}>{invoice.status}</span>
+                                    <span className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 ${statusClass(invoice.status)} shadow-sm`}>
+                                        {invoice.status}
+                                    </span>
                                 </div>
                                 <div className="flex gap-2 justify-end">
-                                    <button className="px-3 py-1 text-xs font-medium text-gray-700 bg-white/60 hover:bg-white/80 border border-gray-200 rounded-full transition-colors duration-200 flex items-center gap-1 opacity-50 cursor-not-allowed">
+                                    <button className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg transition-all duration-200 flex items-center gap-1.5 opacity-50 cursor-not-allowed shadow-sm">
                                         <Download className="h-3 w-3" />
                                         PDF
                                     </button>
                                     <button
                                         onClick={() => onViewInvoice(invoice, item)}
-                                        className="px-3 py-1 text-xs font-medium text-gray-700 bg-white/60 hover:bg-white/80 border border-gray-200 rounded-full transition-colors duration-200 flex items-center gap-1"
+                                        className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-all duration-200 flex items-center gap-1.5 shadow-sm group-hover:shadow-md"
                                     >
                                         <Eye className="h-3 w-3" />
                                         View
@@ -184,14 +198,334 @@ const InvoiceListView = ({
                         </div>
                     ))}
                 </div>
+                
+                {/* Generate Button */}
                 {showGenerateButton && (
-                    <div className="px-6 py-4 bg-white/30 border-t border-gray-200/50">
-                        <button onClick={onGenerate} className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white/60 hover:bg-white/80 border-2 border-dashed border-gray-300 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
-                            <Plus className="h-4 w-4" />
+                    <div className="px-6 py-4 bg-gradient-to-r from-blue-50/50 to-sky-50/50 border-t border-blue-200/50">
+                        <button 
+                            onClick={onGenerate} 
+                            className="w-full px-4 py-3 text-sm font-medium text-blue-700 bg-gradient-to-r from-blue-50 to-sky-50 hover:from-blue-100 hover:to-sky-100 border-2 border-dashed border-blue-300 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md group"
+                        >
+                            <div className="p-1 bg-blue-500 rounded-lg group-hover:bg-blue-600 transition-colors">
+                                <Plus className="h-4 w-4 text-white" />
+                            </div>
                             {generateLabel}
                         </button>
                     </div>
                 )}
+            </div>
+        </div>
+    )
+}
+
+// Reusable: Sales Orders Table
+const SalesOrdersTable = ({
+    sales,
+    onViewSale,
+    onGenerateInvoice,
+    onViewInvoice,
+    expandedSales,
+    onToggleExpansion,
+}: {
+    sales: Sale[]
+    onViewSale: (sale: Sale) => void
+    onGenerateInvoice: (sale: Sale) => void
+    onViewInvoice: (invoice: Invoice, sale: Sale) => void
+    expandedSales: string[]
+    onToggleExpansion: (saleId: string) => void
+}) => {
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("en-MY", {
+            style: "currency",
+            currency: "MYR",
+            minimumFractionDigits: 2,
+        }).format(amount)
+    }
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString("en-MY", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        })
+    }
+
+    const getSaleStatus = (status: string) => {
+        if (status === 'partial-paid') return 'Partial Paid'
+        if (status === 'issued') return 'Issued'
+        if (status === 'fully-paid') return 'Fully Paid'
+        return status
+    }
+
+    const getSaleStatusColor = (status: string) => {
+        switch (status) {
+            case "partial-paid":
+                return "bg-purple-50 text-purple-700 border-purple-200"
+            case "issued":
+                return "bg-blue-50 text-blue-700 border-blue-200"
+            case "fully-paid":
+                return "bg-emerald-50 text-emerald-700 border-emerald-200"
+            default:
+                return "bg-gray-50 text-gray-700 border-gray-200"
+        }
+    }
+
+    return (
+        <div className="bg-white/70 rounded-xl border border-white/80 overflow-hidden">
+            <div className="px-6 py-3 bg-white/50 border-b border-gray-200/50">
+                <div className="grid grid-cols-7 gap-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <div>Sales Order</div>
+                    <div>Created Date</div>
+                    <div>Total Amount</div>
+                    <div>Paid Amount</div>
+                    <div>Remaining</div>
+                    <div>Status</div>
+                    <div className="text-right">Actions</div>
+                </div>
+            </div>
+            <div className="divide-y divide-gray-200/50">
+                {sales.map((sale) => {
+                    const isExpanded = expandedSales.includes(sale.id)
+                    
+                    return (
+                        <div key={sale.id}>
+                            <div className="px-6 py-4 hover:bg-white/50 transition-colors duration-200">
+                                <div className="grid grid-cols-7 gap-4 items-center">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-100 rounded-lg">
+                                            <ShoppingCart className="h-4 w-4 text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <h6 className="font-semibold text-gray-900 text-sm">{sale.sales_no}</h6>
+                                            <p className="text-xs text-gray-600">Sales Order</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-900">
+                                            <Calendar className="h-3 w-3 text-gray-500" />
+                                            <span>{formatDate(sale.created_at)}</span>
+                                        </div>
+                                        <p className="text-xs text-gray-600">Created Date</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-lg font-bold text-gray-900">{formatCurrency(sale.total_amount)}</p>
+                                        <p className="text-xs text-gray-600">Total Amount</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-lg font-bold text-emerald-600">{formatCurrency(sale.paid_percentage * sale.total_amount)}</p>
+                                        <p className="text-xs text-gray-600">Paid Amount</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-lg font-bold text-amber-600">{formatCurrency(sale.remaining_amount)}</p>
+                                        <p className="text-xs text-gray-600">Remaining</p>
+                                    </div>
+                                    <div>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getSaleStatusColor(sale.status)}`}>
+                                            {getSaleStatus(sale.status)}
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-2 justify-end">
+                                        <button
+                                            onClick={() => onViewSale(sale)}
+                                            className="px-3 py-1 text-xs font-medium text-gray-700 bg-white/60 hover:bg-white/80 border border-gray-200 rounded-full transition-colors duration-200 flex items-center gap-1"
+                                        >
+                                            <Eye className="h-3 w-3" />
+                                            View
+                                        </button>
+                                         {sale.invoices && sale.invoices.length > 0 && (
+                                             <button
+                                                 onClick={() => onToggleExpansion(sale.id)}
+                                                 className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full transition-all duration-300 flex items-center gap-1.5 hover:shadow-md transform hover:scale-105"
+                                             >
+                                                 {isExpanded ? (
+                                                     <ChevronDown className="h-3 w-3 transition-transform duration-300" />
+                                                 ) : (
+                                                     <ChevronRight className="h-3 w-3 transition-transform duration-300" />
+                                                 )}
+                                                 Invoices
+                                             </button>
+                                         )}
+                                        <button
+                                            onClick={() => onGenerateInvoice(sale)}
+                                            className="px-3 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors duration-200 flex items-center gap-1"
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                            Invoice
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Expanded Invoices Section */}
+                            {isExpanded && sale.invoices && sale.invoices.length > 0 && (
+                                <div className="px-6 pb-4 bg-blue-50/20 animate-in slide-in-from-top-2 duration-300 ease-out">
+                                    <InvoiceListView
+                                        item={sale}
+                                        invoices={sale.invoices}
+                                        onViewInvoice={(invoice) => onViewInvoice(invoice, sale)}
+                                        onGenerate={() => onGenerateInvoice(sale)}
+                                        showGenerateButton={true}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
+            </div>
+        </div>
+    )
+}
+
+// Reusable: Purchase Orders Table
+const PurchaseOrdersTable = ({
+    purchaseOrders,
+    onViewPO,
+    onGenerateInvoice,
+    onViewInvoice,
+    expandedPurchaseOrders,
+    onToggleExpansion,
+}: {
+    purchaseOrders: PurchaseOrder[]
+    onViewPO: (po: PurchaseOrder) => void
+    onGenerateInvoice: (po: PurchaseOrder) => void
+    onViewInvoice: (invoice: Invoice, po: PurchaseOrder) => void
+    expandedPurchaseOrders: string[]
+    onToggleExpansion: (poId: string) => void
+}) => {
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("en-MY", {
+            style: "currency",
+            currency: "MYR",
+            minimumFractionDigits: 2,
+        }).format(amount)
+    }
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString("en-MY", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        })
+    }
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "active":
+                return "bg-emerald-50 text-emerald-700 border-emerald-200"
+            case "pending":
+                return "bg-amber-50 text-amber-700 border-amber-200"
+            case "paid":
+                return "bg-emerald-50 text-emerald-700 border-emerald-200"
+            case "overdue":
+                return "bg-red-50 text-red-700 border-red-200"
+            case "cancelled":
+                return "bg-red-50 text-red-700 border-red-200"
+            default:
+                return "bg-gray-50 text-gray-700 border-gray-200"
+        }
+    }
+
+    return (
+        <div className="bg-white/70 rounded-xl border border-white/80 overflow-hidden">
+            <div className="px-6 py-3 bg-white/50 border-b border-gray-200/50">
+                <div className="grid grid-cols-7 gap-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <div>Purchase Order</div>
+                    <div>Created Date</div>
+                    <div>Total Amount</div>
+                    <div>Paid Amount</div>
+                    <div>Remaining</div>
+                    <div>Status</div>
+                    <div className="text-right">Actions</div>
+                </div>
+            </div>
+            <div className="divide-y divide-gray-200/50">
+                {purchaseOrders.map((po) => {
+                    const isExpanded = expandedPurchaseOrders.includes(po.id)
+                    
+                    return (
+                        <div key={po.id}>
+                            <div className="px-6 py-4 hover:bg-white/50 transition-colors duration-200">
+                                <div className="grid grid-cols-7 gap-4 items-center">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-purple-100 rounded-lg">
+                                            <Package className="h-4 w-4 text-purple-600" />
+                                        </div>
+                                        <div>
+                                            <h6 className="font-semibold text-gray-900 text-sm">{po.po_no}</h6>
+                                            <p className="text-xs text-gray-600">Purchase Order</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-900">
+                                            <Calendar className="h-3 w-3 text-gray-500" />
+                                            <span>{formatDate(po.created_at)}</span>
+                                        </div>
+                                        <p className="text-xs text-gray-600">Created Date</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-lg font-bold text-gray-900">{formatCurrency(po.total_amount)}</p>
+                                        <p className="text-xs text-gray-600">Total Amount</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-lg font-bold text-emerald-600">{formatCurrency(po.paid_percentage * po.total_amount)}</p>
+                                        <p className="text-xs text-gray-600">Paid Amount</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-lg font-bold text-amber-600">{formatCurrency(po.remaining_amount)}</p>
+                                        <p className="text-xs text-gray-600">Remaining</p>
+                                    </div>
+                                    <div>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(po.payment_status)}`}>
+                                            {po.payment_status}
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-2 justify-end">
+                                        <button
+                                            onClick={() => onViewPO(po)}
+                                            className="px-3 py-1 text-xs font-medium text-gray-700 bg-white/60 hover:bg-white/80 border border-gray-200 rounded-full transition-colors duration-200 flex items-center gap-1"
+                                        >
+                                            <Eye className="h-3 w-3" />
+                                            View
+                                        </button>
+                                        {po.invoices && po.invoices.length > 0 && (
+                                            <button
+                                                onClick={() => onToggleExpansion(po.id)}
+                                                className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full transition-all duration-300 flex items-center gap-1.5 hover:shadow-md transform hover:scale-105"
+                                            >
+                                                {isExpanded ? (
+                                                    <ChevronDown className="h-3 w-3 transition-transform duration-300" />
+                                                ) : (
+                                                    <ChevronRight className="h-3 w-3 transition-transform duration-300" />
+                                                )}
+                                                Invoices
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => onGenerateInvoice(po)}
+                                            className="px-3 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors duration-200 flex items-center gap-1"
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                            Invoice
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Expanded Invoices Section */}
+                            {isExpanded && po.invoices && po.invoices.length > 0 && (
+                                <div className="px-6 pb-4 bg-blue-50/20 animate-in slide-in-from-top-2 duration-300 ease-out">
+                                    <InvoiceListView
+                                        item={po}
+                                        invoices={po.invoices}
+                                        onViewInvoice={(invoice) => onViewInvoice(invoice, po)}
+                                        onGenerate={() => onGenerateInvoice(po)}
+                                        showGenerateButton={true}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
             </div>
         </div>
     )
@@ -265,22 +599,6 @@ export default function RenoSaleDetail() {
     }, [searchParams, renoSale])
 
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("en-MY", {
-            style: "currency",
-            currency: "MYR",
-            minimumFractionDigits: 2,
-        }).format(amount)
-    }
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("en-MY", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-        })
-    }
-
     const getStatusColor = (status: string) => {
         switch (status) {
             case "active":
@@ -298,39 +616,12 @@ export default function RenoSaleDetail() {
         }
     }
 
-    const getSaleStatus = (status: string) => {
-        if (status === 'partial-paid') return 'Partial Paid'
-        if (status === 'issued') return 'Issued'
-        if (status === 'fully-paid') return 'Fully Paid'
-        return status
-    }
-
-    const getSaleStatusColor = (status: string) => {
-        switch (status) {
-            case "partial-paid":
-                return "bg-purple-50 text-purple-700 border-purple-200"
-            case "issued":
-                return "bg-blue-50 text-blue-700 border-blue-200"
-            case "fully-paid":
-                return "bg-emerald-50 text-emerald-700 border-emerald-200"
-            default:
-                return "bg-gray-50 text-gray-700 border-gray-200"
-        }
-    }
-
     const toggleSaleExpansion = (saleId: string) => {
         setExpandedSales((prev) => (prev.includes(saleId) ? prev.filter((id) => id !== saleId) : [...prev, saleId]))
     }
 
     const togglePurchaseOrderExpansion = (purchaseOrderId: string) => {
         setExpandedPurchaseOrders((prev) => (prev.includes(purchaseOrderId) ? prev.filter((id) => id !== purchaseOrderId) : [...prev, purchaseOrderId]))
-    }
-
-    const calculateInvoiceTotals = (invoices: Invoice[]) => {
-        const paidInvoices = invoices?.filter((inv) => inv.status === "paid") || []
-        const paidAmount = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0)
-        const totalAmount = invoices?.reduce((sum, inv) => sum + inv.amount, 0) || 0
-        return { paidAmount, totalAmount }
     }
 
     // Modal handlers
@@ -840,171 +1131,33 @@ export default function RenoSaleDetail() {
                                         <h3 className="text-lg font-semibold">Sales Orders ({renoSale.sales?.length || 0})</h3>
                                     </div>
 
-                                    <div className="grid gap-6">
-                                        {renoSale.sales?.map((sale) => {
-                                            const invoiceTotals = calculateInvoiceTotals(sale.invoices)
-                                            const isExpanded = expandedSales.includes(sale.id)
-
-                                            return (
-                                                <div
-                                                    key={sale.id}
-                                                    className="p-6 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-2xl border border-blue-100/50 transition-all duration-300"
-                                                >
-                                                    {/* Sales Order Header */}
-                                                    <div className="flex items-center justify-between mb-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="p-2 bg-blue-100 rounded-full">
-                                                                <ShoppingCart className="h-5 w-5 text-blue-600" />
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="font-semibold text-gray-900">{sale.sales_no}</h4>
-                                                                <p className="text-sm text-gray-600">Created {formatDate(sale.created_at)}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-3">
-                                                            <span
-                                                                className={`px-3 py-1 rounded-full text-sm font-medium border ${getSaleStatusColor(sale.status)}`}
-                                                            >
-                                                                {getSaleStatus(sale.status)}
-                                                            </span>
-
-                                                            {/* Action Buttons */}
-                                                            <div className="flex justify-end gap-2">
-                                                                <Link
-                                                                    to={LOCAL_PATH_PREFIX + "sales/" + sale.id}
-                                                                    state={{ fromUrl: location.pathname }}
-                                                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2"
-                                                                >
-                                                                    <Eye className="h-4 w-4" />
-                                                                    View Details
-                                                                </Link>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Comprehensive Financial Summary */}
-                                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                                                        <div className="text-center p-4 bg-white/60 rounded-xl border border-blue-100/30">
-                                                            <div className="flex items-center justify-center gap-1 mb-2">
-                                                                <DollarSign className="h-4 w-4 text-gray-600" />
-                                                                <span className="text-xs text-gray-600 font-medium">Total Amount</span>
-                                                            </div>
-                                                            <p className="text-xl font-bold text-gray-900">{formatCurrency(sale.total_amount)}</p>
-                                                        </div>
-                                                        <div className="text-center p-4 bg-blue-50/60 rounded-xl border border-blue-200/30">
-                                                            <div className="flex items-center justify-center gap-1 mb-2">
-                                                                <Receipt className="h-4 w-4 text-blue-600" />
-                                                                <span className="text-xs text-blue-600 font-medium">Issued Amount</span>
-                                                            </div>
-                                                            <p className="text-xl font-bold text-blue-600">
-                                                                {formatCurrency(sale.total_amount - sale.remaining_amount)}
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-center p-4 bg-emerald-50/60 rounded-xl border border-emerald-200/30">
-                                                            <div className="flex items-center justify-center gap-1 mb-2">
-                                                                <TrendingUp className="h-4 w-4 text-emerald-600" />
-                                                                <span className="text-xs text-emerald-600 font-medium">Paid Amount</span>
-                                                            </div>
-                                                            <p className="text-xl font-bold text-emerald-600">
-                                                                {formatCurrency(sale.paid_percentage * sale.total_amount)}
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-center p-4 bg-amber-50/60 rounded-xl border border-amber-200/30">
-                                                            <div className="flex items-center justify-center gap-1 mb-2">
-                                                                <Clock className="h-4 w-4 text-amber-600" />
-                                                                <span className="text-xs text-amber-600 font-medium">Balance</span>
-                                                            </div>
-                                                            <p className="text-xl font-bold text-amber-600">
-                                                                {formatCurrency(sale.remaining_amount)}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Progress Bar */}
-                                                    <div className="mb-4">
-                                                        <div className="flex justify-between items-center mb-2">
-                                                            <span className="text-sm font-medium text-gray-700">Payment Progress</span>
-                                                            <div className="flex gap-2">
-                                                                <span className="text-xs font-medium text-gray-600 p-2 rounded-md border border-blue-200 bg-blue-50">{100 - (sale.remaining_percentage * 100)}% Issued</span>
-                                                                <span className="text-xs font-medium text-gray-600 p-2 rounded-md border border-emerald-200 bg-emerald-50">{sale.paid_percentage * 100}% Paid</span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="relative w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                                                            <div
-                                                                className="absolute left-0 top-0 h-3 bg-blue-200"
-                                                                style={{
-                                                                    width: `${sale.total_amount > 0 ? (invoiceTotals.totalAmount / sale.total_amount) * 100 : 0}%`,
-                                                                }}
-                                                            ></div>
-                                                            <div
-                                                                className="absolute left-0 top-0 h-3 bg-emerald-300"
-                                                                style={{
-                                                                    width: `${sale.total_amount > 0 ? (invoiceTotals.paidAmount / sale.total_amount) * 100 : 0}%`,
-                                                                }}
-                                                            ></div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Invoices Section */}
-                                                    <div className="border-t border-blue-100/50 pt-4">
-                                                        {sale.invoices && sale.invoices.length > 0 ? (
-                                                            <>
-                                                                <button
-                                                                    onClick={() => toggleSaleExpansion(sale.id)}
-                                                                    className="flex items-center justify-between w-full p-3 border border-gray-300 bg-white/60 hover:bg-white/90 rounded-xl transition-all duration-200"
-                                                                >
-                                                                    <div className="flex items-center gap-3">
-                                                                        <Receipt className="h-5 w-5 text-blue-600" />
-                                                                        <div className="text-left">
-                                                                            <h5 className="font-semibold text-gray-900">Invoices ({sale.invoices.length})</h5>
-                                                                            <p className="text-sm text-gray-600">
-                                                                                {formatCurrency(invoiceTotals.paidAmount)} paid of{" "}
-                                                                                {formatCurrency(invoiceTotals.totalAmount)} total
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                    {isExpanded ? (
-                                                                        <ChevronDown className="h-5 w-5 text-gray-500" />
-                                                                    ) : (
-                                                                        <ChevronRight className="h-5 w-5 text-gray-500" />
-                                                                    )}
-                                                                </button>
-
-                                                                {/* Expanded Invoices - List View */}
-                                                                {isExpanded && (
-                                                                    <InvoiceListView
-                                                                        item={sale}
-                                                                        invoices={sale.invoices}
-                                                                        onViewInvoice={(invoice) => handleViewInvoice(invoice, sale, 'sale')}
-                                                                        onGenerate={() => handleGenerateInvoice(sale, 'sale')}
-                                                                        showGenerateButton={true}
-                                                                    />
-                                                                )}
-                                                            </>
-                                                        ) : (
-                                                            <div className="text-center p-4 bg-white/60 rounded-xl border border-blue-100/30">
-                                                                <p className="text-sm text-gray-600 mb-3">No invoices found for this sale.</p>
-                                                                <button
-                                                                    onClick={() => handleGenerateInvoice(sale, 'sale')}
-                                                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white/60 hover:bg-white/80 border-2 border-dashed border-gray-300 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 mx-auto"
-                                                                >
-                                                                    <Plus className="h-4 w-4" />
-                                                                    Generate First Invoice
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
+                                    {renoSale.sales && renoSale.sales.length > 0 ? (
+                                        <SalesOrdersTable
+                                            sales={renoSale.sales}
+                                            onViewSale={(sale) => {
+                                                navigate(LOCAL_PATH_PREFIX + "sales/" + sale.id, { state: { fromUrl: location.pathname } })
+                                            }}
+                                            onGenerateInvoice={(sale) => handleGenerateInvoice(sale, 'sale')}
+                                            onViewInvoice={(invoice, sale) => handleViewInvoice(invoice, sale, 'sale')}
+                                            expandedSales={expandedSales}
+                                            onToggleExpansion={toggleSaleExpansion}
+                                        />
+                                    ) : (
+                                        <div className="text-center py-12 bg-white/70 rounded-xl border border-white/80">
+                                            <div className="p-4 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                                                <ShoppingCart className="h-10 w-10 text-blue-600" />
+                                            </div>
+                                            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Sales Orders</h3>
+                                            <p className="text-gray-600 mb-6">No sales orders have been created for this renovation sale yet.</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
                             {activeTab === "purchase-orders" && (
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold">Purchase Orders</h3>
+                                        <h3 className="text-lg font-semibold">Purchase Orders ({renoSale.purchase_orders?.length || 0})</h3>
                                         <button
                                             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors duration-200 flex items-center gap-2"
                                             onClick={handleCreatePo}
@@ -1014,176 +1167,33 @@ export default function RenoSaleDetail() {
                                         </button>
                                     </div>
 
-                                    <div className="grid gap-4">
-                                        {renoSale.purchase_orders?.map((po) => {
-
-                                            const invoiceTotals = calculateInvoiceTotals(po.invoices)
-                                            const isExpanded = expandedPurchaseOrders.includes(po.id)
-
-                                            return (
-                                                <div
-                                                    key={po.id}
-                                                    className="p-6 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-2xl border border-purple-100/50"
-                                                >
-                                                    <div className="flex items-center justify-between mb-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="p-2 bg-purple-100 rounded-full">
-                                                                <Package className="h-5 w-5 text-purple-600" />
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="font-semibold text-gray-900">{po.po_no}</h4>
-                                                                <p className="text-sm text-gray-600">Created {formatDate(po.created_at)}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex gap-2">
-                                                            <span
-                                                                className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(po.payment_status)}`}
-                                                            >
-                                                                {po.payment_status}
-                                                            </span>
-
-                                                            {/* Action Buttons */}
-                                                            <div className="flex justify-end gap-2">
-                                                                <Link
-                                                                    to={LOCAL_PATH_PREFIX + "purchase-orders/" + po.id}
-                                                                    state={{ fromUrl: location.pathname }}
-                                                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2"
-                                                                >
-                                                                    <Eye className="h-4 w-4" />
-                                                                    View Details
-                                                                </Link>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Comprehensive Financial Summary */}
-                                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                                                        <div className="text-center p-4 bg-white/60 rounded-xl border border-blue-100/30">
-                                                            <div className="flex items-center justify-center gap-1 mb-2">
-                                                                <DollarSign className="h-4 w-4 text-gray-600" />
-                                                                <span className="text-xs text-gray-600 font-medium">Total Amount</span>
-                                                            </div>
-                                                            <p className="text-xl font-bold text-gray-900">{formatCurrency(po.total_amount)}</p>
-                                                        </div>
-                                                        <div className="text-center p-4 bg-blue-50/60 rounded-xl border border-blue-200/30">
-                                                            <div className="flex items-center justify-center gap-1 mb-2">
-                                                                <Receipt className="h-4 w-4 text-blue-600" />
-                                                                <span className="text-xs text-blue-600 font-medium">Issued Amount</span>
-                                                            </div>
-                                                            <p className="text-xl font-bold text-blue-600">
-                                                                {formatCurrency(po.total_amount - po.remaining_amount)}
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-center p-4 bg-emerald-50/60 rounded-xl border border-emerald-200/30">
-                                                            <div className="flex items-center justify-center gap-1 mb-2">
-                                                                <TrendingUp className="h-4 w-4 text-emerald-600" />
-                                                                <span className="text-xs text-emerald-600 font-medium">Paid Amount</span>
-                                                            </div>
-                                                            <p className="text-xl font-bold text-emerald-600">
-                                                                {formatCurrency(po.paid_percentage * po.total_amount)}
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-center p-4 bg-amber-50/60 rounded-xl border border-amber-200/30">
-                                                            <div className="flex items-center justify-center gap-1 mb-2">
-                                                                <Clock className="h-4 w-4 text-amber-600" />
-                                                                <span className="text-xs text-amber-600 font-medium">Balance</span>
-                                                            </div>
-                                                            <p className="text-xl font-bold text-amber-600">
-                                                                {formatCurrency(po.remaining_amount)}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div className="text-center p-3 bg-white/60 rounded-xl">
-                                                        <p className="text-lg font-bold text-gray-900">{formatCurrency(po.total_amount)}</p>
-                                                        <p className="text-xs text-gray-600">PO Amount</p>
-                                                    </div>
-                                                    <div className="text-center p-3 bg-white/60 rounded-xl">
-                                                        <p className="text-lg font-bold text-blue-600">{formatDate(po.shipping_date)}</p>
-                                                        <p className="text-xs text-gray-600">Shipping Date</p>
-                                                    </div>
-                                                </div> */}
-
-                                                    {/* Progress Bar */}
-                                                    <div className="mb-4">
-                                                        <div className="flex justify-between items-center mb-2">
-                                                            <span className="text-sm font-medium text-gray-700">Payment Progress</span>
-                                                            <div className="flex gap-2">
-                                                                <span className="text-xs font-medium text-gray-600 p-2 rounded-md border border-blue-200 bg-blue-50">{100 - (po.remaining_percentage * 100)}% Issued</span>
-                                                                <span className="text-xs font-medium text-gray-600 p-2 rounded-md border border-emerald-200 bg-emerald-50">{po.paid_percentage * 100}% Paid</span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="relative w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                                                            <div
-                                                                className="absolute left-0 top-0 h-3 bg-blue-200"
-                                                                style={{
-                                                                    width: `${po.total_amount > 0 ? (invoiceTotals.totalAmount / po.total_amount) * 100 : 0}%`,
-                                                                }}
-                                                            ></div>
-                                                            <div
-                                                                className="absolute left-0 top-0 h-3 bg-emerald-300"
-                                                                style={{
-                                                                    width: `${po.total_amount > 0 ? (invoiceTotals.paidAmount / po.total_amount) * 100 : 0}%`,
-                                                                }}
-                                                            ></div>
-                                                        </div>
-                                                    </div>
-
-
-                                                    {/* Invoices Section */}
-                                                    <div className="border-t border-blue-100/50 pt-4">
-                                                        {po.invoices && po.invoices.length > 0 ? (
-                                                            <>
-                                                                <button
-                                                                    onClick={() => togglePurchaseOrderExpansion(po.id)}
-                                                                    className="flex items-center justify-between w-full p-3 border border-gray-300 bg-white/60 hover:bg-white/90 rounded-xl transition-all duration-200"
-                                                                >
-                                                                    <div className="flex items-center gap-3">
-                                                                        <Receipt className="h-5 w-5 text-blue-600" />
-                                                                        <div className="text-left">
-                                                                            <h5 className="font-semibold text-gray-900">Invoices ({po.invoices.length})</h5>
-                                                                            <p className="text-sm text-gray-600">
-                                                                                {formatCurrency(invoiceTotals.paidAmount)} paid of{" "}
-                                                                                {formatCurrency(invoiceTotals.totalAmount)} total
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                    {isExpanded ? (
-                                                                        <ChevronDown className="h-5 w-5 text-gray-500" />
-                                                                    ) : (
-                                                                        <ChevronRight className="h-5 w-5 text-gray-500" />
-                                                                    )}
-                                                                </button>
-
-                                                                {/* Expanded Invoices - Reusable List View */}
-                                                                {isExpanded && (
-                                                                    <InvoiceListView
-                                                                        item={po}
-                                                                        invoices={po.invoices}
-                                                                        onViewInvoice={(invoice) => handleViewInvoice(invoice, po, 'purchase_order')}
-                                                                        onGenerate={() => handleGenerateInvoice(po, 'purchase_order')}
-                                                                        showGenerateButton={true}
-                                                                    />
-                                                                )}
-                                                            </>
-                                                        ) : (
-                                                            <div className="text-center p-4 bg-white/60 rounded-xl border border-blue-100/30">
-                                                                <p className="text-sm text-gray-600 mb-3">No invoices found for this purchase order.</p>
-                                                                <button
-                                                                    onClick={() => handleGenerateInvoice(po, 'purchase_order')}
-                                                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white/60 hover:bg-white/80 border-2 border-dashed border-gray-300 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 mx-auto"
-                                                                >
-                                                                    <Plus className="h-4 w-4" />
-                                                                    Generate First Invoice
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
+                                    {renoSale.purchase_orders && renoSale.purchase_orders.length > 0 ? (
+                                        <PurchaseOrdersTable
+                                            purchaseOrders={renoSale.purchase_orders}
+                                            onViewPO={(po) => {
+                                                navigate(LOCAL_PATH_PREFIX + "purchase-orders/" + po.id, { state: { fromUrl: location.pathname } })
+                                            }}
+                                            onGenerateInvoice={(po) => handleGenerateInvoice(po, 'purchase_order')}
+                                            onViewInvoice={(invoice, po) => handleViewInvoice(invoice, po, 'purchase_order')}
+                                            expandedPurchaseOrders={expandedPurchaseOrders}
+                                            onToggleExpansion={togglePurchaseOrderExpansion}
+                                        />
+                                    ) : (
+                                        <div className="text-center py-12 bg-white/70 rounded-xl border border-white/80">
+                                            <div className="p-4 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                                                <Package className="h-10 w-10 text-purple-600" />
+                                            </div>
+                                            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Purchase Orders</h3>
+                                            <p className="text-gray-600 mb-6">No purchase orders have been created for this renovation sale yet.</p>
+                                            <button
+                                                onClick={handleCreatePo}
+                                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors duration-200 flex items-center gap-2 mx-auto"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                                Create First PO
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
