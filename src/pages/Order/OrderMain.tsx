@@ -348,7 +348,7 @@ function OrderMain() {
         if (order.installment_method === 'fixed') {
             return order.installment_amount;
         } else {
-            return
+            return 0;
         }
     }
 
