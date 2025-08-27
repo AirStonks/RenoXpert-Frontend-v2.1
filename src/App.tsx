@@ -110,7 +110,7 @@ import OrderConfirmSuccess from './pages/OwnerPages/OrderConfirmSuccess';
 import RenoSalesMain from './pages/RenoSales/RenoSaleMain';
 import RenoSaleDetail from './pages/RenoSales/RenoSaleDetail';
 import EditUser from './pages/User/EditUser';
-// import VendorProtectedRoute from './utils/VendorProtectedRoute';
+import ApiKeys from './pages/ApiKeys';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -215,6 +215,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/finance/sales-order-po', element: <SalesOrderPO />, layout: ProtectedLayout },
         { path: '/otp-requests', element: <OTPRequestList />, layout: ProtectedLayout },
         { path: '/developer-tools', element: <DeveloperTool />, layout: ProtectedLayout },
+        { path: '/api-keys', element: <ApiKeys />, layout: ProtectedLayout },
     ],
     // Owner
     [
@@ -342,6 +343,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/finance/sales-order-po', element: <SalesOrderPO />, layout: ProtectedLayout },
         { path: '/staff/otp-requests', element: <OTPRequestList />, layout: ProtectedLayout },
         { path: '/staff/developer-tools', element: <DeveloperTool />, layout: ProtectedLayout },
+        { path: '/staff/api-keys', element: <ApiKeys />, layout: ProtectedLayout },
     ],
     // Owner
     [

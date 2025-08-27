@@ -1522,3 +1522,27 @@ export interface OTPRequest {
     created_at?: number,
     updated_at?: number,
 }
+
+export interface ApiKey {
+    id?: string;
+    name?: string;
+    key?: string;
+    prefix?: string;
+    last_used_at?: string;
+    expires_at?: string;
+    created_at?: string;
+    updated_at?: string;
+    created_by?: User;
+    updated_by?: User;
+    is_active?: boolean;
+}
+
+export interface ApiKeyCreateRequest {
+    name: string;
+    expires_at?: string;
+}
+
+export interface ApiKeyUpdateRequest {
+    name?: string;
+    expires_at?: string;
+}

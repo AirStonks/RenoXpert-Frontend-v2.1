@@ -610,6 +610,19 @@ function Sidebar() {
 										</span>
 									</Link>
 								</div>
+								<div className="menu-item">
+									<Link
+										to={LOCAL_PATH_PREFIX + "api-keys"}
+										className="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] pl-[10px] pr-[10px] py-[6px] menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg"
+									>
+										<span className="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
+											<i className="ki-filled ki-key text-lg"></i>
+										</span>
+										<span className="menu-title text-sm font-semibold text-gray-700 menu-item-active:text-primary menu-link-hover:!text-primary">
+											API Keys
+										</span>
+									</Link>
+								</div>
 							</>
 						)}
 					</div>

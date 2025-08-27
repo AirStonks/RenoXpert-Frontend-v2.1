@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { handle401Error } from '../utils/error401'; // Adjust the import path as needed
-import { DiscountFee, Invoice, KeyManagement, Order, QuotationRequestForm, Package, Payment, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
+import { ApiKey, ApiKeyCreateRequest, ApiKeyUpdateRequest, DiscountFee, Invoice, KeyManagement, Order, QuotationRequestForm, Package, Payment, PMCategory, Product, Property, PurchaseOrder, QCForm, Quotation, Sale, User } from '../types';
 
 const API_URL =
     import.meta.env.VITE_APP_ENV === "production"
@@ -2661,5 +2661,79 @@ export const otpRequestsIndex = async (size: number = 5, page: number = 1, searc
         return response.data;
     } catch (error) {
         handle401Error(error as AxiosError);
+    }
+};
+
+// API Key Management Functions
+export const apiKeysIndex = async (size: number = 10, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'api-keys', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field,
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const createApiKey = async (apiKeyData: ApiKeyCreateRequest) => {
+    try {
+        const response = await axios.post(API_URL + 'api-keys', apiKeyData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const updateApiKey = async (apiKeyId: string, apiKeyData: ApiKeyUpdateRequest) => {
+    try {
+        const response = await axios.put(API_URL + `api-keys/${apiKeyId}`, apiKeyData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const revokeApiKey = async (apiKeyId: string) => {
+    try {
+        const response = await axios.delete(API_URL + `api-keys/${apiKeyId}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const regenerateApiKey = async (apiKeyId: string) => {
+    try {
+        const response = await axios.post(API_URL + `api-keys/${apiKeyId}/regenerate`, {}, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
     }
 };
