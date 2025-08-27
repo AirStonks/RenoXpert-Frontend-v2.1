@@ -558,7 +558,7 @@ export const TaskDetailDrawer = ({
                                 )}
                             </div>
 
-                            {[5, 6, 7, 8].includes(selectedStage) && (
+                            {([5, 6, 7, 8].includes(selectedStage) && selectedTask.job.job_category !== "post_reno" && selectedTask.job.job_category !== "handover") && (
                                 <>
                                     <div className="space-y-4 rounded-lg border border-gray-200 p-5 bg-white shadow-sm">
                                         <div className="flex justify-between items-center">
@@ -659,7 +659,7 @@ export const TaskDetailDrawer = ({
                                         </svg>
                                         Internal Section
                                     </h3>
-                                    {[0, 1, 2, 3, 4].includes(selectedStage) && (
+                                    {([0, 1, 2, 3, 4].includes(selectedStage) || selectedTask.job.job_category === "post_reno" || selectedTask.job.job_category === "handover") && (
                                         (editMode.section === "internal" && editMode.taskId === selectedTask.id) ? (
                                             <div className="flex gap-2">
                                                 <button className="btn btn-success btn-xs rounded-full px-4" onClick={() => handleSave(selectedTask.id)}>
@@ -699,7 +699,7 @@ export const TaskDetailDrawer = ({
                                         </svg>
                                         External Section (Owner View)
                                     </h3>
-                                    {[0, 1, 2, 3, 4].includes(selectedStage) && (
+                                    {([0, 1, 2, 3, 4].includes(selectedStage) || selectedTask.job.job_category === "post_reno" || selectedTask.job.job_category === "handover") && (
                                         editMode.section === "external" && editMode.taskId === selectedTask.id ? (
                                             <div className="flex gap-2">
                                                 <button className="btn btn-success btn-xs rounded-full px-4" onClick={() => handleSave(selectedTask.id)}>
