@@ -1302,7 +1302,7 @@ function OrderOverview() {
                                                                     </label>
                                                                     <label className="flex items-center gap-1 cursor-pointer">
                                                                         <input
-                                                                            ty  pe="radio"
+                                                                            type="radio"
                                                                             name="program_toggle_lg"
                                                                             value="normal"
                                                                             checked={selectedProgram === "normal"}
