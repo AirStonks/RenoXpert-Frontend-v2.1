@@ -148,7 +148,7 @@ const InvoiceListView = ({
                         <div className="text-right">Actions</div>
                     </div>
                 </div>
-                
+
                 {/* Invoice Rows */}
                 <div className="divide-y divide-blue-100/50">
                     {invoices.map((invoice, index) => (
@@ -198,12 +198,12 @@ const InvoiceListView = ({
                         </div>
                     ))}
                 </div>
-                
+
                 {/* Generate Button */}
                 {showGenerateButton && (
                     <div className="px-6 py-4 bg-gradient-to-r from-blue-50/50 to-sky-50/50 border-t border-blue-200/50">
-                        <button 
-                            onClick={onGenerate} 
+                        <button
+                            onClick={onGenerate}
                             className="w-full px-4 py-3 text-sm font-medium text-blue-700 bg-gradient-to-r from-blue-50 to-sky-50 hover:from-blue-100 hover:to-sky-100 border-2 border-dashed border-blue-300 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md group"
                         >
                             <div className="p-1 bg-blue-500 rounded-lg group-hover:bg-blue-600 transition-colors">
@@ -220,6 +220,7 @@ const InvoiceListView = ({
 
 // Reusable: Sales Orders Table
 const SalesOrdersTable = ({
+    renoSaleId,
     sales,
     onViewSale,
     onGenerateInvoice,
@@ -227,6 +228,7 @@ const SalesOrdersTable = ({
     expandedSales,
     onToggleExpansion,
 }: {
+    renoSaleId?: string
     sales: Sale[]
     onViewSale: (sale: Sale) => void
     onGenerateInvoice: (sale: Sale) => void
@@ -286,7 +288,7 @@ const SalesOrdersTable = ({
             <div className="divide-y divide-gray-200/50">
                 {sales.map((sale) => {
                     const isExpanded = expandedSales.includes(sale.id)
-                    
+
                     return (
                         <div key={sale.id}>
                             <div className="px-6 py-4 hover:bg-white/50 transition-colors duration-200">
@@ -298,6 +300,15 @@ const SalesOrdersTable = ({
                                         <div>
                                             <h6 className="font-semibold text-gray-900 text-sm">{sale.sales_no}</h6>
                                             <p className="text-xs text-gray-600">Sales Order</p>
+                                            {sale.order?.order_no && (
+                                                <Link
+                                                    to={LOCAL_PATH_PREFIX + "orders/" + sale.order.id}
+                                                    state={{ fromUrl: LOCAL_PATH_PREFIX + 'reno-sales/' + renoSaleId}}
+                                                    className="text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+                                                >
+                                                    Order #{sale.order.order_no}
+                                                </Link>
+                                            )}
                                         </div>
                                     </div>
                                     <div>
@@ -332,19 +343,19 @@ const SalesOrdersTable = ({
                                             <Eye className="h-3 w-3" />
                                             View
                                         </button>
-                                         {sale.invoices && sale.invoices.length > 0 && (
-                                             <button
-                                                 onClick={() => onToggleExpansion(sale.id)}
-                                                 className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full transition-all duration-300 flex items-center gap-1.5 hover:shadow-md transform hover:scale-105"
-                                             >
-                                                 {isExpanded ? (
-                                                     <ChevronDown className="h-3 w-3 transition-transform duration-300" />
-                                                 ) : (
-                                                     <ChevronRight className="h-3 w-3 transition-transform duration-300" />
-                                                 )}
-                                                 Invoices
-                                             </button>
-                                         )}
+                                        {sale.invoices && sale.invoices.length > 0 && (
+                                            <button
+                                                onClick={() => onToggleExpansion(sale.id)}
+                                                className="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full transition-all duration-300 flex items-center gap-1.5 hover:shadow-md transform hover:scale-105"
+                                            >
+                                                {isExpanded ? (
+                                                    <ChevronDown className="h-3 w-3 transition-transform duration-300" />
+                                                ) : (
+                                                    <ChevronRight className="h-3 w-3 transition-transform duration-300" />
+                                                )}
+                                                Invoices
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => onGenerateInvoice(sale)}
                                             className="px-3 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full transition-colors duration-200 flex items-center gap-1"
@@ -355,7 +366,7 @@ const SalesOrdersTable = ({
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Expanded Invoices Section */}
                             {isExpanded && sale.invoices && sale.invoices.length > 0 && (
                                 <div className="px-6 pb-4 bg-blue-50/20 animate-in slide-in-from-top-2 duration-300 ease-out">
@@ -441,7 +452,7 @@ const PurchaseOrdersTable = ({
             <div className="divide-y divide-gray-200/50">
                 {purchaseOrders.map((po) => {
                     const isExpanded = expandedPurchaseOrders.includes(po.id)
-                    
+
                     return (
                         <div key={po.id}>
                             <div className="px-6 py-4 hover:bg-white/50 transition-colors duration-200">
@@ -510,7 +521,7 @@ const PurchaseOrdersTable = ({
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Expanded Invoices Section */}
                             {isExpanded && po.invoices && po.invoices.length > 0 && (
                                 <div className="px-6 pb-4 bg-blue-50/20 animate-in slide-in-from-top-2 duration-300 ease-out">
@@ -582,7 +593,7 @@ export default function RenoSaleDetail() {
                     setSelectedItem(renoSale?.sales?.find((sale) => Number(sale.id) === Number(saleId)))
                     setSelectedInvoice(invoice);
                     setIsInvoiceModalOpen(true);
-                    
+
                 }
             } else if (poId) {
                 const invoice = renoSale?.purchase_orders
@@ -1050,7 +1061,7 @@ export default function RenoSaleDetail() {
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-3 gap-3">
+                                            <div className="grid grid-cols-3 gap-3 mb-4">
                                                 <div className="text-center p-3 bg-white/60 rounded-xl">
                                                     <p className="text-lg font-bold text-gray-900">
                                                         {primarySale?.order?.block}-{primarySale?.order?.floor}-{primarySale?.order?.unit_no}
@@ -1065,6 +1076,30 @@ export default function RenoSaleDetail() {
                                                     <p className="text-lg font-bold text-gray-900">{primarySale?.order?.bathroom_count}</p>
                                                     <p className="text-xs text-gray-600">Bathrooms</p>
                                                 </div>
+                                            </div>
+
+                                            {/* Additional Property Details */}
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="text-center p-3 bg-white/60 rounded-xl">
+                                                    <p className="text-lg font-bold text-gray-900">{primarySale?.order?.single_bedroom_count || 0}</p>
+                                                    <p className="text-xs text-gray-600">Single Beds</p>
+                                                </div>
+                                                <div className="text-center p-3 bg-white/60 rounded-xl">
+                                                    <p className="text-lg font-bold text-gray-900">{primarySale?.order?.queen_bedroom_count || 0}</p>
+                                                    <p className="text-xs text-gray-600">Queen Beds</p>
+                                                </div>
+                                                <div className="text-center p-3 bg-white/60 rounded-xl">
+                                                    <p className="text-lg font-bold text-gray-900">{primarySale?.order?.studio_count || 0}</p>
+                                                    <p className="text-xs text-gray-600">Studio</p>
+                                                </div>
+                                                {primarySale?.order?.include_partition !== undefined && (
+                                                    <div className="text-center p-3 bg-white/60 rounded-xl">
+                                                        <p className="text-lg font-bold text-gray-900">
+                                                            {primarySale.order.include_partition ? 'Yes' : 'No'}
+                                                        </p>
+                                                        <p className="text-xs text-gray-600">Partition</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -1133,6 +1168,7 @@ export default function RenoSaleDetail() {
 
                                     {renoSale.sales && renoSale.sales.length > 0 ? (
                                         <SalesOrdersTable
+                                            renoSaleId={renoSale.id}
                                             sales={renoSale.sales}
                                             onViewSale={(sale) => {
                                                 navigate(LOCAL_PATH_PREFIX + "sales/" + sale.id, { state: { fromUrl: location.pathname } })
