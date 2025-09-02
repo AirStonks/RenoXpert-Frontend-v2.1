@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useRef } from "react";
 import { RPMTask, Attachment, RenoProgress, TaskStatus, TaskQCStatus, RPMTaskQC } from "../../../types";
-import { changeRPMTaskQcStatus, changeRPMTaskStatus, removeRPMExternalAttachment, removeRPMInternalAttachment, removeRPMTaskQcAttachment, updateRPMExternalComment, updateRPMInternalComment, updateRPMTaskQcComment, uploadRPMExternalAttachment, uploadRPMInternalAttachment, uploadRPMTaskQcAttachment } from "../../../services/api";
+import { changeRPMTaskQcStatus, changeRPMTaskStatus, removeRPMExternalAttachment, removeRPMInternalAttachment, removeRPMTaskQcAttachment, updateRPMExternalComment, updateRPMInternalComment, updateRPMTaskQcComment, uploadRPMExternalAttachment, uploadRPMInternalAttachment, uploadRPMTaskQcAttachment, releaseOwnerHandover } from "../../../services/api";
 import { Slide, toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { TaskStatusBadge } from "../../../components/task-status-badge";
 import { TaskQCStatusBadge } from "../../../components/task-qc-status-badge";
 import { DocumentIcon } from "@heroicons/react/24/outline";
+import { formatDate } from "../../../utils/formatDate";
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -71,7 +72,7 @@ const AttachmentComponent = ({ attachment, taskId, taskQcId, index, editMode, on
             ) : (
                 <div className="relative">
                     <img
-                        src={AWS_S3_URL + attachment.file_url || getFileIcon("video")}
+                        src={AWS_S3_URL + attachment.file_url || getFileIcon()}
                         alt={attachment.original_name}
                         className="w-full h-28 object-cover rounded-t-lg"
                     />
@@ -141,7 +142,7 @@ const notify = (type: "success" | "error", message: string) => {
     });
 };
 
-const getFileIcon = (type: string) => "https://picsum.photos/200/200";
+const getFileIcon = () => "https://picsum.photos/200/200";
 
 interface TaskDetailDrawerProps {
     selectedTask: RPMTask | null;
@@ -151,8 +152,8 @@ interface TaskDetailDrawerProps {
     onSave: (comment_type: "internal" | "external" | "qc", taskId: string, comment: string) => void;
     onAttachmentChanges?: (updatedRPMTask: RPMTask, taskId: string) => void;
     taskName: string;
-    statusOptions?: string[];
     onStatusChange?: (updatedData: RPMTask | RPMTaskQC | RenoProgress, newStatus: string) => void;
+    renoProgress?: RenoProgress;
 }
 
 export const TaskDetailDrawer = ({
@@ -163,8 +164,8 @@ export const TaskDetailDrawer = ({
     onSave,
     onAttachmentChanges,
     taskName,
-    statusOptions = ["not-started", "in-progress", "completed", "pending"],
     onStatusChange,
+    renoProgress,
 }: TaskDetailDrawerProps) => {
     const [editMode, setEditMode] = useState<{ section: "internal" | "external" | "qc" | null; taskId: string | null }>({ section: null, taskId: null });
     const [editedComment, setEditedComment] = useState<string>("");
@@ -296,6 +297,28 @@ export const TaskDetailDrawer = ({
         setEditedAttachments([]);
         setIsDragOver({ section: null });
     }, []);
+
+    const handleReleaseOwnerHandover = useCallback(async () => {
+        if (!selectedTask?.job?.reno_progress_id) {
+            notify("error", "Reno progress ID not found");
+            return;
+        }
+
+        try {
+            const response = await releaseOwnerHandover(Number(selectedTask.job.reno_progress_id));
+            
+            if (response?.success) {
+                notify("success", "Owner handover agreement released successfully");
+                // Refresh the task data
+                onStatusChange?.(response.data, "released");
+                return;
+            }
+        } catch (error) {
+            notify("error", "Failed to release owner handover: " + error);
+        }
+    }, [selectedTask, onStatusChange]);
+
+
 
     const handleFileInputChange = useCallback(
         async (e: React.ChangeEvent<HTMLInputElement>, section: "internal" | "external" | "qc") => {
@@ -647,6 +670,85 @@ export const TaskDetailDrawer = ({
                                             <span className="text-2xs">📋</span>
                                             <span className="text-2xs">Open Key Management Detail</span>
                                         </Link>
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedTask.item_name === "Owner Handover" && (
+                                <div className="space-y-4 rounded-lg border border-gray-200 p-5 bg-white shadow-sm">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                                            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                                                />
+                                            </svg>
+                                            Owner Handover Agreement
+                                        </h3>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {/* Status Indicator */}
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-sm font-medium text-gray-700">Status:</span>
+                                            {!renoProgress?.owner_handover_released_at && !renoProgress?.owner_handover_submitted_at ? (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Pending Release
+                                                </span>
+                                            ) : renoProgress?.owner_handover_released_at && !renoProgress?.owner_handover_submitted_at ? (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Released
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                    Submitted
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Dates */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <span className="text-sm font-medium text-gray-700">Released Date:</span>
+                                                <p className="text-sm text-gray-600">
+                                                    {formatDate(renoProgress?.owner_handover_released_at)}
+                                                </p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <span className="text-sm font-medium text-gray-700">Submitted Date:</span>
+                                                <p className="text-sm text-gray-600">
+                                                    {formatDate(renoProgress?.owner_handover_submitted_at)}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Action Buttons */}
+                                        {!renoProgress?.owner_handover_released_at && !renoProgress?.owner_handover_submitted_at && (
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={handleReleaseOwnerHandover}
+                                                    className="btn btn-primary btn-sm rounded-lg px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                                                >
+                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                                    </svg>
+                                                    Release Agreement
+                                                </button>
+                                            </div>
+                                        )}
+
+
                                     </div>
                                 </div>
                             )}

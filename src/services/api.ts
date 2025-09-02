@@ -2737,3 +2737,28 @@ export const regenerateApiKey = async (apiKeyId: string) => {
         throw error;
     }
 };
+
+// Owner Handover Functions
+export const releaseOwnerHandover = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/owner-handover/release`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const submitOwnerHandover = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/owner-handover/submit`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};

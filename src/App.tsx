@@ -98,6 +98,8 @@ import POInvoicePrint from './pages/PO/components/POInvoicePrint';
 import DIFormMain from './pages/ProjectManagement/DIFormMain';
 import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
 import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
+import OwnerHandoverAgreementPage from './pages/OwnerPages/components/home/OwnerHandoverAgreementPage';
+import OTPVerifyHandover from './pages/OwnerPages/OTPVerifyHandover';
 import DetailedOrderPrint from './pages/Order/components/DetailedOrderPrint';
 import PMMainV3 from './pages/ProjectManagement/PMMainV3';
 import DIReport from './pages/ProjectManagement/DIReport';
@@ -239,6 +241,8 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
         { path: '/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },
         { path: '/reno/progress/:id/phase/:phase/attachments', element: <RenoProgressPhaseAttachments />, layout: OwnerProtectedLayout },
+        { path: '/reno/progress/:id/handover-agreement', element: <OwnerHandoverAgreementPage />, layout: OwnerProtectedLayout },
+        { path: '/reno/progress/:id/handover-agreement/otp', element: <OTPVerifyHandover />, layout: null },
         { path: '/order/:id/customize-addons', element: <CustomAddonPackage />, layout: OwnerProtectedLayout },
     ],
     // Operation
@@ -367,6 +371,8 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/owner/reno/accept-form/:id', element: <RenoAcceptanceForm />, layout: OwnerProtectedLayout },
         { path: '/owner/reno/:id/inspection', element: <OwnerInspectionReport />, layout: OwnerProtectedLayout },
         { path: '/owner/reno/progress/:id/phase/:phase/attachments', element: <RenoProgressPhaseAttachments />, layout: OwnerProtectedLayout },
+        { path: '/owner/reno/progress/:id/handover-agreement', element: <OwnerHandoverAgreementPage />, layout: OwnerProtectedLayout },
+        { path: '/owner/reno/progress/:id/handover-agreement/otp', element: <OTPVerifyHandover />, layout: null },
         { path: '/owner/order/:id/customize-addons', element: <CustomAddonPackage />, layout: OwnerProtectedLayout },
     ],
     // Operation

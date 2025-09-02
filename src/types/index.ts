@@ -1245,6 +1245,8 @@ export interface RenoProgress {
     permissions?: User[],
     defect_updated_at?: string,
     permit_updated_at?: string,
+    owner_handover_released_at?: string,
+    owner_handover_submitted_at?: string,
     completed_at?: string,
     rpm_version?: number,
     sent_to_lark_date?: string,

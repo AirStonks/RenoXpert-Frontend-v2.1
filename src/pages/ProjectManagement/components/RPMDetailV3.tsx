@@ -565,6 +565,7 @@ function RPMDetailV3({ renoProgress, setRenoProgress }: Props) {
                 onAttachmentChanges={handleAttachmentUpdate}
                 taskName="Renovation Task"
                 onStatusChange={handleStatusChange}
+                renoProgress={renoProgress}
             />
         </>
     );

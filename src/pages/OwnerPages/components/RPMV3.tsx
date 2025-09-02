@@ -674,6 +674,66 @@ function RPMV3({ renoProgress, setRenoProgress }: RPMV3Props) {
                 </div>
             </div>
 
+            {/* Owner Handover Agreement Card */}
+            {renoProgress.owner_handover_released_at && !renoProgress.owner_handover_submitted_at && (
+                <div className="mx-2 mb-4">
+                    <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl p-4 shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                    <DocumentCheckIcon className="w-5 h-5 text-red-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-semibold text-red-900">
+                                        Owner Handover Agreement
+                                    </h3>
+                                    <p className="text-xs text-red-700">
+                                        Agreement has been released and is pending your submission
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                to={`${LOCAL_PATH_PREFIX}reno/progress/${renoProgress.id}/handover-agreement`}
+                                state={{ fromUrl: `${LOCAL_PATH_PREFIX}reno/progress/${renoProgress.id}` }}
+                                className="btn btn-primary btn-sm bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                            >
+                                View Agreement
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Owner Handover Agreement - Submitted Card */}
+            {renoProgress.owner_handover_submitted_at && (
+                <div className="mx-2 mb-4">
+                    <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl p-4 shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <CheckCircleIcon className="w-5 h-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-semibold text-green-900">
+                                        Owner Handover Agreement
+                                    </h3>
+                                    <p className="text-xs text-green-700">
+                                        Submitted on {new Date(renoProgress.owner_handover_submitted_at).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                to={`${LOCAL_PATH_PREFIX}reno/progress/${renoProgress.id}/handover-agreement`}
+                                state={{ fromUrl: `${LOCAL_PATH_PREFIX}reno/progress/${renoProgress.id}` }}
+                                className="btn btn-primary btn-sm bg-green-600 hover:bg-green-700 border-green-600 hover:border-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                            >
+                                View Submission
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Task Section */}
             < section className="space-y-2 h-full max-h-[calc(100vw-2rem)]" >
                 {/* Task List Section */}

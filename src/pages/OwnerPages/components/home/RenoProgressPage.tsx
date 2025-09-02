@@ -44,6 +44,10 @@ function RenoProgressContent({ renoProgresses, abort }: { renoProgresses: RenoPr
         if (progress.status === 'handed-over') return 'Handed Over';
     };
 
+    const hasPendingHandover = (progress: RenoProgress) => {
+        return progress.owner_handover_released_at && !progress.owner_handover_submitted_at;
+    };
+
     if (renoProgresses.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-12">
@@ -71,14 +75,24 @@ function RenoProgressContent({ renoProgresses, abort }: { renoProgresses: RenoPr
                     >
                         <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0 relative">
                                     <HotelIcon className="w-6 h-6 text-indigo-500" />
+                                    {/* Red dot badge for pending handover agreements */}
+                                    {hasPendingHandover(progress) && (
+                                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <h3 className="text-sm font-semibold text-gray-900">
                                         {progress.property.block}-{progress.property.floor}-{progress.property.unit_no}
                                     </h3>
                                     <p className="text-sm text-gray-500">{progress.property.name}</p>
+                                    {/* Pending handover agreement message */}
+                                    {hasPendingHandover(progress) && (
+                                        <p className="text-xs text-red-600 font-medium">
+                                            Pending Agreement for Owner Handover
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                             <div>
