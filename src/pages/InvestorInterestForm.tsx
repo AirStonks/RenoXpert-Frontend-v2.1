@@ -105,6 +105,8 @@ function InvestorInterestForm() {
         { id: "income-no-manage", label: "I'm interested in rental income but don't want to self-manage" },
         { id: "maximize-roi", label: "I want to maximise rental ROI with minimal involvement" },
         { id: "explore-coliving", label: "I already renovated but want to explore CoLiving" },
+        { id: "interested-to-buy", label: "I haven't bought any unit yet and I'm interested to buy" },
+        { id: "just-exploring", label: "I haven't bought any unit yet and just exploring around" },
     ]
 
     const strategyOptions = [
@@ -282,14 +284,8 @@ function InvestorInterestForm() {
             <div className="max-w-4xl mx-auto mb-12">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <div className="flex items-center justify-center mb-8">
-                        <div className="w-16 h-16 bg-[#D71E42] rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                            <img src={`${MEDIA_URL}red-bg-ico.jpg`} alt="" className="object-cover w-16 h-16 rounded-2xl shadow-lg" />
-                        </div>
-                        <div className="text-left">
-                            <h1 className="text-4xl font-bold bg-[#D71E42] bg-clip-text text-transparent">RenoXpert</h1>
-                            <p className="text-lg text-gray-500 font-medium text-right">Reno for ROI</p>
-                        </div>
+                    <div className="flex items-center justify-center mb-6">
+                        <img className="default-logo min-h-[22px] h-[110px] max-w-none" src="/app/RenoExpert_logo-01.svg"></img>
                     </div>
                     <h2 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
                         Not Sure What To Do After Vacant Possession?
