@@ -60,6 +60,8 @@ const getProgramLabel = (program: string) => {
     switch (program) {
         case 'be-powered':
             return 'Installment Plan';
+        case 'rnpl':
+            return 'RNPL';
         default:
             return program.charAt(0).toUpperCase() + program.slice(1);
     }
@@ -319,6 +321,8 @@ function OrderMain() {
         switch (program) {
             case 'be-powered':
                 return `bg-blue-100 text-blue-800`;
+            case 'rnpl':
+                return `bg-green-100 text-green-800`;
             default:
                 return `bg-gray-100 text-gray-800`;
         }
@@ -577,8 +581,8 @@ function OrderMain() {
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getProgramBadge(order.is_be_powered ? 'be-powered' : '-')}`}>
-                                            {order.is_be_powered ? getProgramLabel('be-powered') : getProgramLabel('-')}
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getProgramBadge(order.is_be_powered ? 'be-powered' : order.is_rnpl ? 'rnpl' : '-')}`}>
+                                            {order.is_be_powered ? getProgramLabel('be-powered') : order.is_rnpl ? getProgramLabel('rnpl') : getProgramLabel('-')}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 text-center">

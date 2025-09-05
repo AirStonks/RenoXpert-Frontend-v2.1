@@ -222,6 +222,9 @@ export interface Package {
     is_addon?: boolean;
     is_addon_included?: boolean;
     is_be_powered?: boolean;
+    is_rnpl?: boolean
+    rnpl_base_price?: number,
+    rnpl_method?: string,
     payment_method?: string;
     status?: string;
     created_by?: User;
@@ -316,6 +319,8 @@ export interface Order {
     bathroom_count?: number,
     include_partition?: boolean,
     is_progressive_payment?: boolean,
+    is_rnpl?: boolean,
+    rnpl_base_price?: number,
     is_be_powered?: boolean,
     be_powered_base_price?: number,
     installment_method?: string,

@@ -14,6 +14,8 @@ interface FormData {
     isProgressivePayment: boolean;
     isDraftMode: boolean;
     isBePowered: boolean;
+    isRnpl: boolean;
+    rnpl_base_price: number;
     tenure: number;
     finalAmount: number;
     bonusDescription: string;
@@ -32,10 +34,11 @@ interface PricingStepProps {
     selectedPackages: Package[];
     addonPackages: Package[];
     onToggleQuoBePowered: (isIncluded: boolean) => void;
+    onToggleRnpl: (isIncluded: boolean) => void;
     includedAddonPackages: Package[];
 }
 
-export default function PricingStep({ formData, setFormData, totalAmount, netAmount, selectedPackages, addonPackages, onToggleQuoBePowered, includedAddonPackages }: PricingStepProps) {
+export default function PricingStep({ formData, setFormData, totalAmount, netAmount, selectedPackages, addonPackages, onToggleQuoBePowered, onToggleRnpl, includedAddonPackages }: PricingStepProps) {
     const calculatePackageTotal = (pkg: Package) => {
         if (pkg.is_addon && pkg.is_addon_included === false) {
             return 0;
@@ -152,7 +155,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                 )}
                             </div>
 
-                            {!formData.isBePowered && (
+                            {(!formData.isBePowered && !formData.isRnpl) && (
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
                                         <label className="text-sm font-medium text-gray-700">Progressive Payment</label>
@@ -171,22 +174,51 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                 </div>
                             )}
 
-                            <div>
+                            {!formData.isBePowered && (
                                 <div className="flex items-center justify-between mb-2">
-                                    <label className="text-sm font-medium text-gray-700">Installment Plan</label>
+                                    <label className="text-sm font-medium text-gray-700">RenoNow PayLater</label>
                                     <button
-                                        onClick={handleQuoBePoweredChange}
-                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isBePowered ? "bg-blue-500" : "bg-gray-200"}`}
+                                        onClick={() => onToggleRnpl(!formData.isRnpl)}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isRnpl ? "bg-blue-500" : "bg-gray-200"}`}
                                     >
                                         <span
-                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isBePowered ? "translate-x-6" : "translate-x-1"}`}
+                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isRnpl ? "translate-x-6" : "translate-x-1"}`}
                                         />
                                     </button>
                                 </div>
-                                <p className="text-sm text-gray-500 font-semibold">
-                                    {formData.isBePowered ? "Active" : "Inactive"}
-                                </p>
-                            </div>
+                            )}
+
+                            {(!formData.isBePowered && formData.isRnpl) && (
+                                <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-2 block">RenoNow Price (RM)</label>
+                                    <input
+                                        type="number"
+                                        value={formData.rnpl_base_price || 0}
+                                        onChange={(e) => setFormData({ ...formData, rnpl_base_price: Number.parseFloat(e.target.value) || 0 })}
+                                        className="w-full px-4 py-3 h-12 rounded-xl border border-gray-200 bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:outline-none transition-all duration-200"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">Base price for RenoNow PayLater</p>
+                                </div>
+                            )}
+
+                            {!formData.isRnpl && (
+                                <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="text-sm font-medium text-gray-700">Installment Plan</label>
+                                        <button
+                                            onClick={handleQuoBePoweredChange}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${formData.isBePowered ? "bg-blue-500" : "bg-gray-200"}`}
+                                        >
+                                            <span
+                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isBePowered ? "translate-x-6" : "translate-x-1"}`}
+                                            />
+                                        </button>
+                                    </div>
+                                    <p className="text-sm text-gray-500 font-semibold">
+                                        {formData.isBePowered ? "Active" : "Inactive"}
+                                    </p>
+                                </div>
+                            )}
 
                             {formData.isBePowered && (
                                 <div>
@@ -255,7 +287,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                 </div>
             </div>
 
-            {formData.isBePowered &&
+            {(formData.isBePowered && !formData.isRnpl) &&
                 <div className="p-8 backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl rounded-3xl">
                     <div className="space-y-8">
                         <div>
@@ -394,8 +426,166 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                 </div>
             }
 
-            {
-                !formData.isBePowered &&
+            {(formData.isRnpl && !formData.isBePowered) &&
+                <div className="p-8 backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl rounded-3xl">
+                    <div className="space-y-8">
+                        <div>
+                            <h2 className="text-2xl font-semibold text-gray-900 mb-2">RenoNow PayLater Detail</h2>
+                        </div>
+
+                        {/* <div className="flex justify-between items-center">
+                            <div>
+                                <span className="font-medium text-gray-900">Original Nett Amount</span>
+                            </div>
+                            <span className="font-medium">RM {netAmount.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            })}
+                            </span>
+                        </div> */}
+
+                        <div>
+                            <div className="flex justify-between items-center">
+                                <span className="font-medium text-gray-900">Packages</span>
+                                <span className="font-medium">RM {totalAmount.toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })}</span>
+                            </div>
+
+                            {selectedPackages.map((pkg: Package, index: number) => {
+                                if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                                    return null;
+                                }
+
+                                return (
+                                    <div
+                                        key={index}
+                                        className="flex justify-between items-center text-gray-600 mt-2"
+                                    >
+                                        <div className="flex items-center">
+                                            <span>{pkg.name} x{(pkg.quantity || 1)}</span>
+                                            {pkg.is_addon && (
+                                                <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                                    Add-On
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span>RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* <div className="flex justify-between items-center">
+                            <span className="font-medium text-gray-900">RenoNow Price</span>
+                            <span className="font-medium">RM {(formData.rnpl_base_price || 0).toLocaleString(undefined, {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0
+                            })}</span>
+                        </div>
+
+                        <div>
+                            <div className="flex justify-between items-center">
+                                <span className="font-medium text-gray-900">PayLater Price (Original)</span>
+                                <span className="font-medium">RM {(totalAmount - (formData.rnpl_base_price || 0)).toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })}</span>
+                            </div>
+                        </div> */}
+                        {formData.bonusValue > 0 &&
+                            <div>
+                                <div className="flex justify-between items-center text-red-600">
+                                    <span className="font-medium">Bonus</span>
+                                    <span className="font-medium">- RM {formData.bonusValue.toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    })}</span>
+                                </div>
+                            </div>
+                        }
+
+                        <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
+                            <div className="flex justify-between items-center text-xl font-bold text-gray-900">
+                                <span>Subtotal</span>
+                                <span className="font-medium text-lg">RM {(totalAmount - formData.bonusValue).toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })}</span>
+                            </div>
+                        </div>
+
+                        {(() => {
+                            // Find all packages with rnpl_method === 'reno-now'
+                            const renoNowPackages = selectedPackages.filter((pkg: Package) => pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true));
+                            // Calculate the sum of total_price for these packages
+                            const renoNowPackagesTotal = renoNowPackages.reduce(
+                                (sum, pkg) => sum + ((pkg.total_price || 0) * (pkg.quantity || 1)),
+                                0
+                            );
+                            // The RenoNow Price is the base price plus the sum of the returned packages' total_price
+                            const renoNowPrice = (formData.rnpl_base_price || 0) + renoNowPackagesTotal;
+
+                            return (
+                                <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
+                                    <div className="flex justify-between items-center text-xl font-bold text-gray-900">
+                                        <span>RenoNow Price</span>
+                                        <span>
+                                            RM {renoNowPrice.toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0
+                                            })}
+                                        </span>
+                                    </div>
+
+                                    {renoNowPackages &&
+                                        <div className="flex justify-between items-center text-gray-600 mt-2">
+                                            <div className="flex items-center">
+                                                <span>RenoNow Base Price</span>
+                                            </div>
+                                            <span>
+                                                RM {((formData.rnpl_base_price || 0)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                            </span>
+                                        </div>
+                                    }
+
+                                    {renoNowPackages.map((pkg: Package, index: number) => (
+                                        <div
+                                            key={index}
+                                            className="flex justify-between items-center text-gray-600 mt-2"
+                                        >
+                                            <div className="flex items-center">
+                                                <span>{pkg.name} x{(pkg.quantity || 1)}</span>
+                                                {pkg.is_addon && (
+                                                    <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                                        Add-On
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span>
+                                                RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                            </span>
+                                        </div>
+                                    ))}
+
+                                    <div className="flex justify-between items-center text-xl font-bold text-gray-900 mt-4">
+                                        <span>PayLater Price</span>
+                                        <span className="font-medium text-lg">
+                                            RM {((totalAmount - renoNowPrice) - formData.bonusValue).toLocaleString(undefined, {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0
+                                            })}
+                                        </span>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                </div>
+            }
+
+            {!formData.isBePowered && !formData.isRnpl &&
                 <div className="p-8 backdrop-blur-xl bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border border-white/20 shadow-xl rounded-3xl">
                     <h3 className="text-xl font-semibold text-gray-900 mb-6">Pricing Summary</h3>
 

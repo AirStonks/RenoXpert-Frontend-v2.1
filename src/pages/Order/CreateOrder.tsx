@@ -30,6 +30,8 @@ interface FormData {
     includePartition: boolean;
     completionDays: number;
     isProgressivePayment: boolean;
+    isRnpl: boolean;
+    rnpl_base_price: number;
     isDraftMode: boolean;
     isBePowered: boolean;
     finalAmount: number;
@@ -121,6 +123,8 @@ export default function CreateOrder() {
                         queenBedrooms: response.data.queen_bedroom_count,
                         studios: response.data.studio_count,
                         bathrooms: response.data.bathroom_count,
+                        isRnpl: !!response.data.is_rnpl,
+                        rnpl_base_price: response.data.rnpl_base_price || 0,
                         isBePowered: !!response.data.is_be_powered,
                         tenure: response.data.tenure || 0,
                         installment_method: response.data.installment_method || 'dynamic',
@@ -147,7 +151,8 @@ export default function CreateOrder() {
     const handleQuoBePoweredToggle = () => {
         setFormData(prevFormData => ({
             ...prevFormData,
-            isBePowered: !prevFormData.isBePowered
+            isBePowered: !prevFormData.isBePowered,
+            isRnpl: false,
         }));
 
         if (!formData.isBePowered) {
@@ -169,6 +174,14 @@ export default function CreateOrder() {
             })
         }
     };
+
+    const handleRnplToggle = () => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            isRnpl: !prevFormData.isRnpl,
+            isBePowered: false,
+        }));
+    }
 
     const handleAddonPackageToggle = (packageId: number, isIncluded: boolean): void => {
         setSelectedPackages(prevPackages =>
@@ -219,6 +232,17 @@ export default function CreateOrder() {
             })
         );
     }
+
+    const handleRnplMethodChange = (packageId: number, method: string) => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    return { ...pkg, rnpl_method: method };
+                }
+                return pkg;
+            })
+        );
+    };
 
     const handleTenureChange = (newTenure: number) => {
         setFormData(prevFormData => ({
@@ -473,6 +497,8 @@ export default function CreateOrder() {
             bathroom_count: formData.bathrooms,
             include_partition: formData.includePartition,
             is_progressive_payment: formData.isProgressivePayment,
+            is_rnpl: formData.isRnpl,
+            rnpl_base_price: formData.rnpl_base_price,
             is_be_powered: formData.isBePowered,
             description: "",
             internal_remark: formData.internalRemark,
@@ -638,6 +664,8 @@ export default function CreateOrder() {
                                         onPaymentMethodChange={handlePaymentMethodChange}
                                         onCustomMonthlyAmountChange={handleCustomMonthlyAmountChange}
                                         onTenureChange={handleTenureChange}
+                                        onRnplToggle={handleRnplToggle}
+                                        onRnplMethodChange={handleRnplMethodChange}
                                     />
                                 )}
 
@@ -650,6 +678,7 @@ export default function CreateOrder() {
                                         selectedPackages={selectedPackages}
                                         addonPackages={getAddonPackages()}
                                         onToggleQuoBePowered={handleQuoBePoweredToggle}
+                                        onToggleRnpl={handleRnplToggle}
                                         includedAddonPackages={getIncludedAddonPackages()}
                                     />
                                 )}
@@ -699,6 +728,9 @@ export default function CreateOrder() {
                         is_addon_included: false,
                         is_be_powered: false,
                         is_be_powered_included: false,
+                        is_rnpl: false,
+                        rnpl_base_price: 0,
+                        rnpl_method: 'pay-later',
                         payment_method: 'one-off',
                         markup_amount: (pkg.markup_amount ? Math.ceil(pkg.markup_amount) : pkg.markup_amount) | (pkg.total_price ? Math.ceil(pkg.total_price) : pkg.total_price),
                         markup_percentage: pkg.markup_percentage,

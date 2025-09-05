@@ -17,6 +17,8 @@ interface FormData {
     includePartition: boolean;
     completionDays: number;
     isProgressivePayment: boolean;
+    isRnpl: boolean;
+    rnpl_base_price: number;
     isDraftMode: boolean;
     isBePowered: boolean;
     tenure: number;
@@ -39,6 +41,8 @@ interface PackagesStepProps {
     onPaymentMethodChange: (packageId: number, paymentMethod: string, customMonthlyAmount?: number) => void;
     onCustomMonthlyAmountChange: (packageId: number, customMonthlyAmount: number) => void;
     onTenureChange: (newTenuew: number) => void;
+    onRnplToggle: (isIncluded: boolean) => void;
+    onRnplMethodChange: (packageId: number, method: string) => void;
 }
 
 export default function PackagesStep({
@@ -54,6 +58,8 @@ export default function PackagesStep({
     onPaymentMethodChange,
     onCustomMonthlyAmountChange,
     onTenureChange,
+    onRnplToggle,
+    onRnplMethodChange,
 }: PackagesStepProps) {
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; cogs: number; quantity: number }[]>([]);
 
@@ -200,6 +206,14 @@ export default function PackagesStep({
         );
     };
 
+    const handleRnplToggle = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onRnplToggle) {
+            const newIncludedState = !formData.isRnpl;
+            onRnplToggle(newIncludedState);
+        }
+    };
+
     const calculateSummaryTotals = (totalAmount: number) => {
         const totalCogs = packageCategories.reduce((sum, cat) => sum + cat.cogs, 0);
         const marginInAmount = totalAmount - totalCogs;
@@ -339,7 +353,7 @@ export default function PackagesStep({
                 )}
 
                 {selectedPackages.length > 0 && (
-                    <div className="p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-sm">
+                    <div className="p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-sm space-y-4">
                         <div className="flex gap-4 items-center">
                             <h2 className="text-lg font-semibold text-gray-900">Installment Configuration</h2>
                             <button
@@ -356,18 +370,31 @@ export default function PackagesStep({
                             </span>
                         </div>
                         {formData.isBePowered && (
-                            <div className="mt-4">
-                                <div className="flex items-center gap-2">
-                                    <span>Tenure (in month)</span>
-                                    <input
-                                        type="number"
-                                        value={formData.tenure}
-                                        onChange={handleTenureChange}
-                                        className="input w-20 px-2 py-1 border border-gray-300 rounded-md"
-                                    />
-                                </div>
+                            <div className="flex items-center gap-2">
+                                <span>Tenure (in month)</span>
+                                <input
+                                    type="number"
+                                    value={formData.tenure}
+                                    onChange={handleTenureChange}
+                                    className="input w-20 px-2 py-1 border border-gray-300 rounded-md"
+                                />
                             </div>
                         )}
+                        <div className="flex gap-4 items-center">
+                            <h2 className="text-lg font-semibold text-gray-900">RenoNow PayLater</h2>
+                            <button
+                                onClick={handleRnplToggle}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${formData.isRnpl ? 'bg-purple-500' : 'bg-gray-200'}`}
+                                aria-label={`${formData.isRnpl ? 'Active' : 'Inactive'} RenoNow PayLater`}
+                            >
+                                <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${formData.isRnpl ? 'translate-x-6' : 'translate-x-1'}`}
+                                />
+                            </button>
+                            <span className={`text-sm font-medium ${formData.isRnpl ? 'text-purple-700' : 'text-gray-500'}`}>
+                                {formData.isRnpl ? 'Active' : 'Inactive'}
+                            </span>
+                        </div>
                     </div>
                 )}
 
@@ -403,6 +430,7 @@ export default function PackagesStep({
                                         index={index}
                                         tenure={formData.tenure}
                                         quoBePowered={formData.isBePowered}
+                                        isRnpl={formData.isRnpl}
                                         onRemove={removePackage}
                                         onQuantityChange={updateQuantity}
                                         onProductsUpdate={onProductsUpdate}
@@ -411,6 +439,7 @@ export default function PackagesStep({
                                         onPaymentMethodChange={onPaymentMethodChange}
                                         onCustomMonthlyAmountChange={onCustomMonthlyAmountChange}
                                         onMarkupUpdate={handleMarkupUpdate}
+                                        onRnplMethodChange={onRnplMethodChange}
                                     />
                                 ))}
                             </SortableContext>

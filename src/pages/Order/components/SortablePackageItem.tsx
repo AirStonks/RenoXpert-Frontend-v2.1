@@ -14,6 +14,7 @@ interface SortablePackageItemProps {
     index: number;
     tenure?: number;
     quoBePowered?: boolean;
+    isRnpl?: boolean;
     onRemove: (id: number) => void;
     onQuantityChange: (id: number, quantity: number) => void;
     onProductsUpdate: (packageId: number, products: Product[]) => void;
@@ -22,6 +23,7 @@ interface SortablePackageItemProps {
     onPaymentMethodChange?: (packageId: number, paymentMethod: string, customMonthlyAmount?: number) => void;
     onCustomMonthlyAmountChange?: (packageId: number, customMonthlyAmount: number) => void;
     onMarkupUpdate?: (packageId: number, markupAmount: number, markupPercentage: number) => void;
+    onRnplMethodChange?: (packageId: number, method: string) => void;
 }
 
 export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
@@ -29,6 +31,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
     index,
     tenure,
     quoBePowered,
+    isRnpl,
     onRemove,
     onQuantityChange,
     onProductsUpdate,
@@ -37,6 +40,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
     onPaymentMethodChange,
     onCustomMonthlyAmountChange,
     onMarkupUpdate,
+    onRnplMethodChange,
 }) => {
     const [isExpanded, setIsExpanded] = useState(false)
     const [markupAmount, setMarkupAmount] = useState<number>(pkg.markup_amount || 0)
@@ -146,6 +150,12 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
             } else {
                 onPaymentMethodChange(pkg.id!, method)
             }
+        }
+    }
+
+    const handleRnplMethodChangeInternal = (method: string) => {
+        if (onRnplMethodChange) {
+            onRnplMethodChange(pkg.id!, method)
         }
     }
 
@@ -723,6 +733,48 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                                     <option value="base-price">Base Price</option>
                                                     <option value="fixed-installation">Fixed Installment</option>
                                                     <option value="dynamic-installation">Dynamic Installment</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            {/* RenoNow PayLater Section */}
+                            {isRnpl &&
+                                <div className="flex flex-col sm:flex-row justify-between gap-4 bg-white border rounded-xl p-4 mb-4 transition-all duration-300">
+                                    <div className="flex flex-col min-w-0">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <h2 className="text-lg font-semibold text-gray-800 mr-4">RenoNow PayLater Config</h2>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[200px] transition-all duration-200 hover:bg-gray-100">
+                                                <div className="flex items-center gap-1 mb-1">
+                                                    <svg
+                                                        className="w-4 h-4 text-blue-500"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3-.672 3-1.5S13.657 8 12 8zm0 0c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0 0V6m0 12v2"
+                                                        />
+                                                    </svg>
+                                                    <span className="text-xs font-semibold text-gray-700">Payment Method</span>
+                                                </div>
+                                                <select
+                                                    className="w-full text-sm font-semibold text-blue-700 bg-white border border-gray-300 rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                                                    value={pkg.rnpl_method || "pay-later"}
+                                                    onChange={(e) => {
+                                                        const method = e.target.value as "reno-now" | "pay-later"
+                                                        handleRnplMethodChangeInternal(method)
+                                                    }}
+                                                >
+                                                    <option value="reno-now">RenoNow</option>
+                                                    <option value="pay-later">PayLater</option>
                                                 </select>
                                             </div>
                                         </div>
