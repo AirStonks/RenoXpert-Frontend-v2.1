@@ -34,6 +34,8 @@ const concernLabels: { [key: string]: string } = {
     "income-no-manage": "Income without self-management",
     "maximize-roi": "Maximize rental ROI",
     "explore-coliving": "Explore CoLiving",
+    "interested-to-buy": "Haven't bought yet, interested to buy",
+    "just-exploring": "Haven't bought yet, just exploring",
 }
 
 const strategyLabels: { [key: string]: string } = {
