@@ -1633,7 +1633,7 @@ const OrderPreviewModal = ({
                                             </span>
                                         </div>
                                         <button
-                                            className="md:hidden italic underline text-blue-600 text-xs"
+                                            className="italic underline text-blue-600 text-xs"
                                             onClick={() => toggleAccordion("amount_breakdown")}
                                         >
                                             {openAccordions["amount_breakdown"] ? "Hide Details" : "See Details"}

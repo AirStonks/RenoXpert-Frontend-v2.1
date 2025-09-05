@@ -54,6 +54,7 @@ function OrderDetail() {
         { category: string; total_price: number; cogs: number; quantity: number }[]
     >([])
     const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0)
+    const [totalRenoNowPrice, setTotalRenoNowPrice] = useState<number>(0)
 
     const [isEditingInternalRemark, setIsEditingInternalRemark] = useState(false)
     const [isEditingBePowered, setIsEditingBePowered] = useState(false)
@@ -220,6 +221,17 @@ function OrderDetail() {
             console.log(totalRetailPrice);
 
             setTotalExcludedAddonAmount(totalRetailPrice)
+
+            const totalRenoNowPrice = orderDetail.latest_quotation.packages.reduce((total, pkg) => {
+
+                if (pkg.rnpl_method === 'reno-now') {
+                    return total + (pkg.total_price * (pkg.quantity || 1))
+                }
+
+                return total
+            }, 0)
+
+            setTotalRenoNowPrice(totalRenoNowPrice + (orderDetail.rnpl_base_price || 0))
 
             const clipboard = new ClipboardJS(".copy-link")
 
@@ -891,6 +903,48 @@ function OrderDetail() {
                                                 {orderDetail.tenure} months
                                             </span>
                                         </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* RenoNow PayLater Plan Card */}
+                        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 shadow-sm">
+                            <div className="px-6 py-4 border-b border-gray-200/50 flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-gray-900">RenoNow PayLater Plan</h3>
+                            </div>
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-600">Status:</span>
+                                        <span
+                                            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${orderDetail.is_rnpl ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                                }`}
+                                        >
+                                            {orderDetail.is_rnpl ? "Active" : "Inactive"}
+                                        </span>
+                                    </div>
+                                    {orderDetail.is_rnpl &&
+                                        <>
+                                            <div className="flex justify-between">
+                                                <span className="text-sm text-gray-600">RenoNow Price:</span>
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    RM {totalRenoNowPrice.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 0
+                                                    })}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-sm text-gray-600">PayLater Price:</span>
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    RM {(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 0
+                                                    })}
+                                                </span>
+                                            </div>
+                                        </>
                                     }
                                 </div>
                             </div>
@@ -1888,7 +1942,7 @@ function OrderDetail() {
                         )}
                     </div>
                 </div>
-            </div>
+            </div >
 
             <OrderPreviewModal
                 orderDetail={orderDetail}

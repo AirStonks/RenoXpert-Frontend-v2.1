@@ -34,6 +34,8 @@ interface FormData {
     isProgressivePayment: boolean;
     isDraftMode: boolean;
     isBePowered: boolean;
+    isRnpl: boolean;
+    rnpl_base_price: number;
     finalAmount: number;
     tenure: number;
     bonusDescription: string;
@@ -82,6 +84,8 @@ export default function EditOrder() {
         includePartition: false,
         completionDays: 30,
         isProgressivePayment: true,
+        isRnpl: false,
+        rnpl_base_price: 0,
         isDraftMode: false,
         isBePowered: false,
         finalAmount: 0,
@@ -127,6 +131,8 @@ export default function EditOrder() {
                     includePartition: !!orderDetail.include_partition,
                     isProgressivePayment: !!orderDetail.is_progressive_payment,
                     isBePowered: !!orderDetail.is_be_powered,
+                    isRnpl: !!orderDetail.is_rnpl,
+                    rnpl_base_price: orderDetail.rnpl_base_price || 0,
                     tenure: orderDetail.tenure || 0,
                     installment_method: orderDetail.installment_method || 'dynamic',
                     installment_amount: orderDetail.installment_amount || 0,
@@ -168,7 +174,8 @@ export default function EditOrder() {
     const handleQuoBePoweredToggle = () => {
         setFormData(prevFormData => ({
             ...prevFormData,
-            isBePowered: !prevFormData.isBePowered
+            isBePowered: !prevFormData.isBePowered,
+            isRnpl: false,
         }));
 
         if (!formData.isBePowered) {
@@ -190,6 +197,14 @@ export default function EditOrder() {
             })
         }
     };
+
+    const handleRnplToggle = () => {
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            isRnpl: !prevFormData.isRnpl,
+            isBePowered: false,
+        }));
+    }
 
     const handleAddonPackageToggle = (packageId: number, isIncluded: boolean): void => {
         setSelectedPackages(prevPackages =>
@@ -218,6 +233,21 @@ export default function EditOrder() {
                             : paymentMethod === 'dynamic-installation'
                                 ? Math.ceil(pkg.markup_amount / formData.tenure)
                                 : 0)
+                    };
+                    return updatedPackage;
+                }
+                return pkg;
+            })
+        );
+    };
+
+    const handleRnplMethodChange = (packageId: number, method: string) => {
+        setSelectedPackages(prevPackages =>
+            prevPackages.map(pkg => {
+                if (pkg.id === packageId) {
+                    const updatedPackage: Package = {
+                        ...pkg,
+                        rnpl_method: method
                     };
                     return updatedPackage;
                 }
@@ -502,6 +532,8 @@ export default function EditOrder() {
             include_partition: formData.includePartition,
             is_progressive_payment: formData.isProgressivePayment,
             is_be_powered: formData.isBePowered,
+            is_rnpl: formData.isRnpl,
+            rnpl_base_price: formData.rnpl_base_price,
             description: "",
             internal_remark: formData.internalRemark,
             completion_day: formData.completionDays,
@@ -671,6 +703,8 @@ export default function EditOrder() {
                                         onPaymentMethodChange={handlePaymentMethodChange}
                                         onCustomMonthlyAmountChange={handleCustomMonthlyAmountChange}
                                         onTenureChange={handleTenureChange}
+                                        onRnplToggle={handleRnplToggle}
+                                        onRnplMethodChange={handleRnplMethodChange}
                                     />
                                 )}
 
@@ -683,6 +717,7 @@ export default function EditOrder() {
                                         selectedPackages={selectedPackages}
                                         addonPackages={getAddonPackages()}
                                         onToggleQuoBePowered={handleQuoBePoweredToggle}
+                                        onToggleRnpl={handleRnplToggle}
                                         includedAddonPackages={getIncludedAddonPackages()}
                                     />
                                 )}
