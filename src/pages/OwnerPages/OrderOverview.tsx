@@ -149,7 +149,7 @@ function OrderOverview() {
                     category = quotationPackage.category
                 }
 
-                const categoryTotal =
+                const calculatedTotal =
                     quotationPackage.products.reduce((total, product) => {
                         let supplyPrice = 0
                         if (product.pivot.includeSupply) {
@@ -168,6 +168,9 @@ function OrderOverview() {
 
                         return total + supplyPrice + installPrice
                     }, 0) * (quotationPackage.quantity || 1)
+
+                // Use markup_amount if is_rnpl is true, otherwise use calculated total
+                const categoryTotal = (orderDetail.is_rnpl) ? (quotationPackage.markup_amount * (quotationPackage.quantity || 1)) : calculatedTotal
 
                 if (!(quotationPackage.is_addon === true && quotationPackage.is_addon_included === false)) {
                     if (!acc[category]) {
@@ -205,7 +208,7 @@ function OrderOverview() {
             ...prev,
             total_amount: orderDetail.f_1 ? orderDetail.total_amount : filteredTotalAmount,
         }))
-    }, [orderDetail?.latest_quotation, orderDetail?.total_amount, orderDetail?.f_1])
+    }, [orderDetail?.latest_quotation, orderDetail?.total_amount, orderDetail?.f_1, orderDetail?.is_rnpl])
 
     useEffect(() => {
         if (orderDetail) {
@@ -219,7 +222,7 @@ function OrderOverview() {
                         return total
                     }
 
-                    const packageRetail = pkg.products.reduce((pkgTotal, product) => {
+                    const calculatedPackageRetail = pkg.products.reduce((pkgTotal, product) => {
                         let supplyPrice = 0
                         if (product.pivot.includeSupply) {
                             supplyPrice = product.provisioning.supply.retail_price * product.pivot.quantity || 0
@@ -237,6 +240,9 @@ function OrderOverview() {
                         return pkgTotal + (supplyPrice + installPrice)
                     }, 0)
 
+                    // Use markup_amount if is_rnpl is true, otherwise use calculated retail
+                    const packageRetail = (orderDetail.is_rnpl) ? pkg.markup_amount : calculatedPackageRetail
+
                     return total + packageRetail * (pkg.quantity || 1)
                 }, 0)
 
@@ -244,7 +250,7 @@ function OrderOverview() {
 
             const totalRenoNowPrice = packages.reduce((total, pkg) => {
                 if (pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true)) {
-                    return total + (pkg.total_price * (pkg.quantity || 1))
+                    return total + (pkg.markup_amount * (pkg.quantity || 1))
                 }
 
                 return total
@@ -417,6 +423,16 @@ function OrderOverview() {
         const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(orderDetail.latest_quotation.metadata)))
         return packages.filter((pkg) => pkg.is_be_powered === true)
     }
+
+    const getTotalMarkupAmount = () => {
+        return packages.reduce((sum, pkg) => {
+            if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                return sum;
+            }
+            return sum + ((pkg.markup_amount || 0) * (pkg.quantity || 1));
+        }, 0)
+    }
+
 
     if (loading) return <Loading />
     if (error)
@@ -1280,9 +1296,9 @@ function OrderOverview() {
                                                                     className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
                                                                     id="payment_plan"
                                                                     value={selectedPlan}
-                                                                    // onChange={handlePlanChange}
+                                                                    onChange={handlePlanChange}
                                                                     name="payment_plan"
-                                                                    disabled
+                                                                    disabled={selectedProgram === "rnpl" || selectedProgram === "bePowered"}
                                                                 >
                                                                     {selectedProgram !== "bePowered" && (
                                                                         <option value="36">36 months</option>
@@ -1407,7 +1423,7 @@ function OrderOverview() {
                                                                 <div className="flex flex-col">
                                                                     <span className="text-xs text-gray-600">
                                                                         Remaining RM{" "}
-                                                                        {(totalExcludedAddonAmount - (bonus?.value || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                                        {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
                                                                             minimumFractionDigits: 2,
                                                                             maximumFractionDigits: 2,
                                                                         })} covered by tenants
@@ -1622,7 +1638,7 @@ function OrderOverview() {
                                                             )} */}
                                                                                     </div>
                                                                                     <span>
-                                                                                        RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                                                        RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                                                     </span>
                                                                                 </div>
                                                                             ))}
@@ -1630,7 +1646,7 @@ function OrderOverview() {
                                                                             <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
                                                                                 <span>PayLater Price</span>
                                                                                 <span>
-                                                                                    RM {(totalExcludedAddonAmount - (bonus?.value || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                                                    RM {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
                                                                                         minimumFractionDigits: 0,
                                                                                         maximumFractionDigits: 0
                                                                                     })}
@@ -1736,9 +1752,9 @@ function OrderOverview() {
                                                                     className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
                                                                     id="payment_plan"
                                                                     value={selectedPlan}
-                                                                    // onChange={handlePlanChange}
+                                                                    onChange={handlePlanChange}
                                                                     name="payment_plan"
-                                                                    disabled
+                                                                    disabled={selectedProgram === "rnpl" || selectedProgram === "bePowered"}
                                                                 >
                                                                     {selectedProgram !== "bePowered" && (
                                                                         <option value="36">36 months</option>
@@ -1863,7 +1879,7 @@ function OrderOverview() {
                                                                 <div className="flex flex-col">
                                                                     <span className="text-xs text-gray-600">
                                                                         Remaining RM{" "}
-                                                                        {(totalExcludedAddonAmount - (bonus?.value || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                                        {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
                                                                             minimumFractionDigits: 2,
                                                                             maximumFractionDigits: 2,
                                                                         })} covered by tenants
@@ -2078,7 +2094,7 @@ function OrderOverview() {
                                                             )} */}
                                                                                     </div>
                                                                                     <span>
-                                                                                        RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                                                        RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                                                     </span>
                                                                                 </div>
                                                                             ))}
@@ -2086,7 +2102,7 @@ function OrderOverview() {
                                                                             <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
                                                                                 <span>PayLater Price</span>
                                                                                 <span>
-                                                                                    RM {(totalExcludedAddonAmount - (bonus?.value || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                                                    RM {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
                                                                                         minimumFractionDigits: 0,
                                                                                         maximumFractionDigits: 0
                                                                                     })}
@@ -3079,7 +3095,7 @@ function OrderOverview() {
                                                             )} */}
                                                         </div>
                                                         <span>
-                                                            RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                            RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                         </span>
                                                     </div>
                                                 ))}
@@ -3087,7 +3103,7 @@ function OrderOverview() {
                                                 <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
                                                     <span>PayLater Price</span>
                                                     <span>
-                                                        RM {(totalExcludedAddonAmount - (bonus?.value || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                        RM {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
                                                             minimumFractionDigits: 0,
                                                             maximumFractionDigits: 0
                                                         })}
@@ -3190,9 +3206,9 @@ function OrderOverview() {
                                         className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
                                         id="payment_plan"
                                         value={selectedPlan}
-                                        // onChange={handlePlanChange}
+                                        onChange={handlePlanChange}
                                         name="payment_plan"
-                                        disabled
+                                        disabled={selectedProgram === "rnpl" || selectedProgram === "bePowered"}
                                     >
                                         {selectedProgram !== "bePowered" && (
                                             <option value="36">36 months</option>
@@ -3317,7 +3333,7 @@ function OrderOverview() {
                                     <div className="flex flex-col">
                                         <span className="text-xs text-gray-600">
                                             Remaining RM{" "}
-                                            {(totalExcludedAddonAmount - (bonus?.value || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                            {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,
                                             })} covered by tenants
@@ -3532,7 +3548,7 @@ function OrderOverview() {
                                                             )} */}
                                                         </div>
                                                         <span>
-                                                            RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                            RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                         </span>
                                                     </div>
                                                 ))}
@@ -3540,7 +3556,7 @@ function OrderOverview() {
                                                 <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
                                                     <span>PayLater Price</span>
                                                     <span>
-                                                        RM {(totalExcludedAddonAmount - (bonus?.value || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                        RM {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
                                                             minimumFractionDigits: 0,
                                                             maximumFractionDigits: 0
                                                         })}
@@ -3642,9 +3658,9 @@ function OrderOverview() {
                                         className="flex select select-sm w-fit pr-8 border border-gray-300 rounded-md bg-white py-0 px-2 text-2xs h-6 appearance-none"
                                         id="payment_plan"
                                         value={selectedPlan}
-                                        // onChange={handlePlanChange}
+                                        onChange={handlePlanChange}
                                         name="payment_plan"
-                                        disabled
+                                        disabled={selectedProgram === "rnpl" || selectedProgram === "bePowered"}
                                     >
                                         {selectedProgram !== "bePowered" && (
                                             <option value="36">36 months</option>
@@ -3769,7 +3785,7 @@ function OrderOverview() {
                                     <div className="flex flex-col">
                                         <span className="text-xs text-gray-600">
                                             Remaining RM{" "}
-                                            {(totalExcludedAddonAmount - (bonus?.value || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                            {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,
                                             })} covered by tenants

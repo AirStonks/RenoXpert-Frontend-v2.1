@@ -114,7 +114,7 @@ function QuotationContent({ orders, abort }: { orders: Order[]; abort: () => voi
                                         <p className="text-xs text-gray-500">Unit</p>
                                         <p className="text-sm font-medium text-gray-900">{`${order.block}-${order.floor}-${order.unit_no}`}</p>
                                     </div>
-                                    {order.is_be_powered ?
+                                    {order.is_be_powered || order.is_rnpl ?
                                         <div>
                                             <p className="text-xs text-gray-500">Amount</p>
                                             <p className="text-sm font-medium text-gray-700 italic">

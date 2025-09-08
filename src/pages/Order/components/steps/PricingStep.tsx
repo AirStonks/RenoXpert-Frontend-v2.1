@@ -109,6 +109,13 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
         onToggleQuoBePowered(!formData.isBePowered);
     };
 
+    const totalMarkupAmount = selectedPackages.reduce((sum, pkg) => {
+        if (pkg.is_addon === true && pkg.is_addon_included === false) {
+            return sum;
+        }
+        return sum + ((pkg.markup_amount || 0) * (pkg.quantity || 1));
+    }, 0);
+
     return (
         <div className="space-y-8">
             <div className="p-8 backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl rounded-3xl">
@@ -447,11 +454,16 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                         <div>
                             <div className="flex justify-between items-center">
                                 <span className="font-medium text-gray-900">Packages</span>
-                                <span className="font-medium">RM {totalAmount.toLocaleString(undefined, {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                })}</span>
+                                {totalMarkupAmount > 0 ? (
+                                    <span className="font-medium">RM {totalMarkupAmount.toLocaleString(undefined, {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0
+                                    })}</span>
+                                ) : null
+                                }
                             </div>
+
+
 
                             {selectedPackages.map((pkg: Package, index: number) => {
                                 if (pkg.is_addon === true && pkg.is_addon_included === false) {
@@ -471,7 +483,9 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                                 </span>
                                             )}
                                         </div>
-                                        <span>RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                                        <div className="text-right">
+                                            <span>RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -509,7 +523,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                         <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
                             <div className="flex justify-between items-center text-xl font-bold text-gray-900">
                                 <span>Subtotal</span>
-                                <span className="font-medium text-lg">RM {(totalAmount - formData.bonusValue).toLocaleString(undefined, {
+                                <span className="font-medium text-lg">RM {(totalMarkupAmount - formData.bonusValue).toLocaleString(undefined, {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 0
                                 })}</span>
@@ -521,7 +535,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                             const renoNowPackages = selectedPackages.filter((pkg: Package) => pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true));
                             // Calculate the sum of total_price for these packages
                             const renoNowPackagesTotal = renoNowPackages.reduce(
-                                (sum, pkg) => sum + ((pkg.total_price || 0) * (pkg.quantity || 1)),
+                                (sum, pkg) => sum + ((pkg.markup_amount || 0) * (pkg.quantity || 1)),
                                 0
                             );
                             // The RenoNow Price is the base price plus the sum of the returned packages' total_price
@@ -564,7 +578,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                                 )}
                                             </div>
                                             <span>
-                                                RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                             </span>
                                         </div>
                                     ))}
@@ -572,7 +586,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                     <div className="flex justify-between items-center text-xl font-bold text-gray-900 mt-4">
                                         <span>PayLater Price</span>
                                         <span className="font-medium text-lg">
-                                            RM {((totalAmount - renoNowPrice) - formData.bonusValue).toLocaleString(undefined, {
+                                            RM {((totalMarkupAmount - renoNowPrice) - formData.bonusValue).toLocaleString(undefined, {
                                                 minimumFractionDigits: 0,
                                                 maximumFractionDigits: 0
                                             })}

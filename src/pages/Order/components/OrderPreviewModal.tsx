@@ -264,7 +264,7 @@ const OrderPreviewModal = ({
         </ol>
     );
 
-    const renoAgreement = !orderDetail.is_be_powered ? (
+    const renoAgreement = !orderDetail.is_be_powered && !orderDetail.is_rnpl ? (
         <div className='flex flex-col w-full text-sm text-justify'>
             <div className="flex flex-col items-center justify-center gap-6 text-center mb-6">
                 <span>THIS AGREEMENT is made this day of <strong>{orderDetail.status === 'confirmed' ? formatDate(orderDetail.confirmed_at) : getCurrentDate()}</strong></span>
@@ -932,7 +932,7 @@ const OrderPreviewModal = ({
                                         : null}
                                     <hr className="my-4" />
 
-                                    {!orderDetail.is_be_powered && (
+                                    {!orderDetail.is_be_powered && !orderDetail.is_rnpl && (
                                         <div className="card mb-4 shadow-sm rounded-md">
                                             <div className="card-body p-4">
                                                 <div className="flex flex-col mb-2">
@@ -1025,7 +1025,7 @@ const OrderPreviewModal = ({
                                         onChange: handleAgreeTncChange,
                                         tab: "tab_1_2",
                                     },
-                                    ...(orderDetail.is_be_powered
+                                    ...(orderDetail.is_be_powered || orderDetail.is_rnpl
                                         ? []
                                         : [
                                             {
@@ -1273,7 +1273,7 @@ const OrderPreviewModal = ({
                                         : null}
                                     <hr className="my-4" />
 
-                                    {!orderDetail.is_be_powered && (
+                                    {!orderDetail.is_be_powered && !orderDetail.is_rnpl && (
                                         <div className="card mb-4 shadow-sm rounded-md">
                                             <div className="card-body p-4">
                                                 <div className="flex flex-col mb-2">
@@ -1435,7 +1435,7 @@ const OrderPreviewModal = ({
                                                     <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
                                                     <p className="text-md text-teal-600 font-bold">
                                                         RM{" "}
-                                                        {Number(orderDetail?.latest_quotation?.bonus.value).toLocaleString(undefined, {
+                                                        {Number(orderDetail?.latest_quotation?.bonus?.value).toLocaleString(undefined, {
                                                             minimumFractionDigits: 2,
                                                             maximumFractionDigits: 2,
                                                         })}
@@ -1563,7 +1563,7 @@ const OrderPreviewModal = ({
                                                     <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
                                                         <span>PayLater Price</span>
                                                         <span>
-                                                            RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus.value) || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                            RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
                                                                 minimumFractionDigits: 0,
                                                                 maximumFractionDigits: 0
                                                             })}
@@ -1877,7 +1877,7 @@ const OrderPreviewModal = ({
                                                     <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
                                                     <p className="text-md text-teal-600 font-bold">
                                                         RM{" "}
-                                                        {Number(orderDetail?.latest_quotation?.bonus.value).toLocaleString(undefined, {
+                                                        {Number(orderDetail?.latest_quotation?.bonus?.value).toLocaleString(undefined, {
                                                             minimumFractionDigits: 2,
                                                             maximumFractionDigits: 2,
                                                         })}
@@ -2005,7 +2005,7 @@ const OrderPreviewModal = ({
                                                     <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
                                                         <span>PayLater Price</span>
                                                         <span>
-                                                            RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus.value) || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                            RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
                                                                 minimumFractionDigits: 0,
                                                                 maximumFractionDigits: 0
                                                             })}

@@ -333,6 +333,7 @@ export default function EditOrder() {
                     ...pkg,
                     products: updatedProducts,
                     total_price: newTotalPrice,
+                    markup_amount: Math.round(newTotalPrice * (1 + pkg.markup_percentage || 0)),
                 };
             });
         });
@@ -447,12 +448,48 @@ export default function EditOrder() {
     };
 
     const handleProductsUpdate = (packageId: number, products: Product[]) => {
+        // Calculate products total price
+        const productsTotalPrice = products.reduce((prodSum, product) => {
+            let supplyPrice = 0;
+            let installPrice = 0;
+
+            // Calculate supply price
+            if (product.provisioning?.supply) {
+                if (product.pivot?.includeSupply) {
+                    supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1);
+                } else {
+                    supplyPrice = Math.max(0,
+                        (product.provisioning.supply.retail_price || 0) -
+                        (product.provisioning.supply.excluded_price || 0)
+                    ) * (product.pivot?.quantity || 1);
+                }
+            }
+
+            // Calculate install price
+            if (product.provisioning?.install) {
+                if (product.pivot?.includeInstall) {
+                    installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1);
+                } else {
+                    installPrice = Math.max(0,
+                        (product.provisioning.install.retail_price || 0) -
+                        (product.provisioning.install.excluded_price || 0)
+                    ) * (product.pivot?.quantity || 1);
+                }
+            }
+
+            return prodSum + supplyPrice + installPrice;
+        }, 0);
+
+        // Also update markup amount with (products total price * markup percentage)
         setSelectedPackages(prev =>
-            prev.map(pkg =>
-                pkg.id === packageId
-                    ? { ...pkg, products }
-                    : pkg
-            )
+            prev.map(pkg => {
+                if (pkg.id === packageId) {
+                    const markupPercentage = pkg.markup_percentage || 0;
+                    const newMarkupAmount = productsTotalPrice * (1 + markupPercentage);
+                    return { ...pkg, products, markup_amount: Math.round(newMarkupAmount) };
+                }
+                return pkg;
+            })
         );
     };
 

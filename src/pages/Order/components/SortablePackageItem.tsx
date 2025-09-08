@@ -401,7 +401,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                             <div className="flex flex-col items-end">
                                 <div className="flex gap-6 items-center mb-2">
                                     <div className="flex items-center gap-6">
-                                        {quoBePowered ? (
+                                        {quoBePowered || isRnpl ? (
                                             <div className="flex items-center gap-2 text-sm text-gray-600">
                                                 <span>
                                                     RM{" "}
@@ -431,7 +431,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                             </div>
                                         )}
                                     </div>
-                                    {quoBePowered ? (
+                                    {quoBePowered || isRnpl ? (
                                         <div
                                             className={`text-lg font-semibold ${pkg.is_addon && !isAddonIncluded ? "text-gray-400 line-through" : "text-gray-900"}`}
                                         >
@@ -776,6 +776,44 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                                     <option value="reno-now">RenoNow</option>
                                                     <option value="pay-later">PayLater</option>
                                                 </select>
+                                            </div>
+
+                                            <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                <div className="flex items-center gap-1 mb-1">
+                                                    <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                    </svg>
+                                                    <span className="text-xs font-semibold text-gray-700">Markup Amount</span>
+                                                </div>
+                                                <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
+                                                    <span className="text-sm font-bold text-orange-700 mr-1">RM</span>
+                                                    <input
+                                                        type="number"
+                                                        value={markupAmount}
+                                                        onChange={(e) => handleMarkupAmountChange(Number(e.target.value))}
+                                                        className="w-full text-sm font-bold text-orange-700 bg-transparent border-none outline-none"
+                                                        placeholder="0"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-gray-50 rounded-lg p-3 flex-1 min-w-[140px] transition-all duration-200 hover:bg-gray-100">
+                                                <div className="flex items-center gap-1 mb-1">
+                                                    <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                    </svg>
+                                                    <span className="text-xs font-semibold text-gray-700">Markup %</span>
+                                                </div>
+                                                <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
+                                                    <input
+                                                        type="number"
+                                                        value={markupPercentage}
+                                                        onChange={(e) => handleMarkupPercentageChange(Number(e.target.value))}
+                                                        className="w-full text-sm font-bold text-purple-700 bg-transparent border-none outline-none"
+                                                        placeholder="0"
+                                                        step="0.01"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

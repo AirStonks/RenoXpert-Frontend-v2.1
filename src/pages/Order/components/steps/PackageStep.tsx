@@ -132,7 +132,7 @@ export default function PackagesStep({
                 { total_price: 0, cogs: 0 }
             ) || { total_price: pkg.total_price || 0, cogs: 0 };
 
-            const categoryTotalPrice = formData.isBePowered ? (pkg.markup_amount * (pkg.quantity || 1)) : (categoryData.total_price * (pkg.quantity || 1));
+            const categoryTotalPrice = (formData.isBePowered || formData.isRnpl) ? (pkg.markup_amount * (pkg.quantity || 1)) : (categoryData.total_price * (pkg.quantity || 1));
             const categoryCogs = categoryData.cogs * (pkg.quantity || 1);
 
             if (!acc[category]) {
