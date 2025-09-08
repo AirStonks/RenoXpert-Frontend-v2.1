@@ -154,7 +154,7 @@ function OrderDetail() {
                 { total_price: 0, cogs: 0 }
             ) || { total_price: pkg.total_price || 0, cogs: 0 };
 
-            const categoryTotalPrice = orderDetail.is_be_powered ? (pkg.markup_amount * (pkg.quantity || 1)) : (categoryData.total_price * (pkg.quantity || 1));
+            const categoryTotalPrice = (orderDetail.is_be_powered || orderDetail.is_rnpl) ? (pkg.markup_amount * (pkg.quantity || 1)) : (categoryData.total_price * (pkg.quantity || 1));
             const categoryCogs = categoryData.cogs * (pkg.quantity || 1);
 
             if (!acc[category]) {
@@ -776,7 +776,7 @@ function OrderDetail() {
                                         <span className="text-sm text-gray-600">Original Amount:</span>
                                         <span className="text-sm font-medium text-gray-900">
                                             RM{" "}
-                                            {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                            {calculatedTotalAmount.toLocaleString(undefined, {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,
                                             })}
