@@ -218,8 +218,6 @@ function OrderDetail() {
                     return total + packageRetail * (pkg.quantity || 1)
                 }, 0)
 
-            console.log(totalRetailPrice);
-
             setTotalExcludedAddonAmount(totalRetailPrice)
 
             const totalRenoNowPrice = orderDetail.latest_quotation.packages.reduce((total, pkg) => {
@@ -1637,7 +1635,7 @@ function OrderDetail() {
                                                                             </span>
                                                                         </div>
                                                                         <div className="flex items-center justify-end gap-2 text-sm text-gray-600">
-                                                                            {orderDetail.is_be_powered ? (
+                                                                            {orderDetail.is_be_powered || orderDetail.is_rnpl ? (
                                                                                 <span>
                                                                                     RM{" "}
                                                                                     {prodPackage.markup_amount.toLocaleString(undefined, {
@@ -1659,7 +1657,7 @@ function OrderDetail() {
                                                                             <span>x</span>
                                                                             <span>{prodPackage.quantity || 1} (Qty)</span>
                                                                             <span>=</span>
-                                                                            {orderDetail.is_be_powered ? (
+                                                                            {orderDetail.is_be_powered || orderDetail.is_rnpl ? (
                                                                                 <span className="font-semibold text-lg text-gray-800">
                                                                                     RM{" "}
                                                                                     {(prodPackage.markup_amount * (prodPackage.quantity || 1)).toLocaleString(undefined, {
