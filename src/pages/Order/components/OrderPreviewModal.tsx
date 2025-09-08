@@ -485,7 +485,7 @@ const OrderPreviewModal = ({
 
     const totalRenoNowPrice = packages.reduce((total, pkg) => {
         if (pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true)) {
-            return total + (pkg.total_price * (pkg.quantity || 1))
+            return total + (pkg.markup_amount * (pkg.quantity || 1))
         }
 
         return total
@@ -1515,8 +1515,8 @@ const OrderPreviewModal = ({
                                             const renoNowPackages: Package[] = packages.filter((pkg: Package) => pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true));
 
                                             const totalRenoNowPrice = renoNowPackages.reduce((total, pkg) => {
-                                                return total + (pkg.total_price * (pkg.quantity || 1))
-                                            }, 0)
+                                                return total + (pkg.markup_amount * (pkg.quantity || 1))
+                                            }, orderDetail.rnpl_base_price || 0)
 
                                             return (
                                                 <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
@@ -1555,7 +1555,7 @@ const OrderPreviewModal = ({
                                                                 )} */}
                                                             </div>
                                                             <span>
-                                                                RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                                RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                             </span>
                                                         </div>
                                                     ))}
@@ -1563,7 +1563,7 @@ const OrderPreviewModal = ({
                                                     <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
                                                         <span>PayLater Price</span>
                                                         <span>
-                                                            RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                            RM {((totalExcludedAddonAmount - totalRenoNowPrice) - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
                                                                 minimumFractionDigits: 0,
                                                                 maximumFractionDigits: 0
                                                             })}
@@ -1792,7 +1792,7 @@ const OrderPreviewModal = ({
                                         <div className="flex flex-col">
                                             <span className="text-xs text-gray-600">
                                                 Remaining RM{" "}
-                                                {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                {((totalExcludedAddonAmount - totalRenoNowPrice) - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
                                                     minimumFractionDigits: 2,
                                                     maximumFractionDigits: 2,
                                                 })} covered by tenants
@@ -1997,7 +1997,7 @@ const OrderPreviewModal = ({
                                                                 )} */}
                                                             </div>
                                                             <span>
-                                                                RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                                RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                                             </span>
                                                         </div>
                                                     ))}
@@ -2005,7 +2005,7 @@ const OrderPreviewModal = ({
                                                     <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
                                                         <span>PayLater Price</span>
                                                         <span>
-                                                            RM {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                            RM {((totalExcludedAddonAmount - totalRenoNowPrice) - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
                                                                 minimumFractionDigits: 0,
                                                                 maximumFractionDigits: 0
                                                             })}
@@ -2234,7 +2234,7 @@ const OrderPreviewModal = ({
                                         <div className="flex flex-col">
                                             <span className="text-xs text-gray-600">
                                                 Remaining RM{" "}
-                                                {(totalExcludedAddonAmount - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
+                                                {((totalExcludedAddonAmount - totalRenoNowPrice) - (Number(orderDetail?.latest_quotation?.bonus?.value) || 0)).toLocaleString(undefined, {
                                                     minimumFractionDigits: 2,
                                                     maximumFractionDigits: 2,
                                                 })} covered by tenants
