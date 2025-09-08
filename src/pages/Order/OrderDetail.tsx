@@ -223,7 +223,7 @@ function OrderDetail() {
             const totalRenoNowPrice = orderDetail.latest_quotation.packages.reduce((total, pkg) => {
 
                 if (pkg.rnpl_method === 'reno-now') {
-                    return total + (pkg.total_price * (pkg.quantity || 1))
+                    return total + (pkg.markup_amount * (pkg.quantity || 1))
                 }
 
                 return total
@@ -924,24 +924,65 @@ function OrderDetail() {
                                     </div>
                                     {orderDetail.is_rnpl &&
                                         <>
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-gray-600">RenoNow Price:</span>
-                                                <span className="text-sm font-medium text-gray-900">
-                                                    RM {totalRenoNowPrice.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 0,
-                                                        maximumFractionDigits: 0
-                                                    })}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-gray-600">PayLater Price:</span>
-                                                <span className="text-sm font-medium text-gray-900">
-                                                    RM {(totalExcludedAddonAmount - (Number(selectedQuotation.bonus?.value) || 0) - orderDetail.rnpl_base_price).toLocaleString(undefined, {
-                                                        minimumFractionDigits: 0,
-                                                        maximumFractionDigits: 0
-                                                    })}
-                                                </span>
-                                            </div>
+                                            {(() => {
+                                                // Find all packages with rnpl_method === 'reno-now'
+                                                const packages: Package[] = orderDetail?.latest_quotation?.packages
+                                                const renoNowPackages: Package[] = packages.filter((pkg: Package) => pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true));
+
+                                                return (
+                                                    <div className="flex flex-col">
+                                                        <div className="flex justify-between items-center text-sm font-bold text-gray-900">
+                                                            <span>RenoNow Price</span>
+                                                            <span>
+                                                                RM {totalRenoNowPrice.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 0,
+                                                                    maximumFractionDigits: 0
+                                                                })}
+                                                            </span>
+                                                        </div>
+
+                                                        {renoNowPackages &&
+                                                            <div className="flex justify-between items-center text-gray-600 mt-2 text-xs">
+                                                                <div className="flex items-center">
+                                                                    <span>RenoNow Base Price</span>
+                                                                </div>
+                                                                <span>
+                                                                    RM {((orderDetail.rnpl_base_price || 0)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                                </span>
+                                                            </div>
+                                                        }
+
+                                                        {renoNowPackages.map((pkg: Package, index: number) => (
+                                                            <div
+                                                                key={index}
+                                                                className="flex justify-between items-center text-gray-600 mt-2 text-xs"
+                                                            >
+                                                                <div className="flex items-center">
+                                                                    <span>{pkg.name} x{(pkg.quantity || 1)}</span>
+                                                                    {/* {pkg.is_addon && (
+                                                                    <span className="ml-2 px-2 py-1 text-2xs bg-blue-100 text-blue-700 rounded-full text-nowrap">
+                                                                        Add-On
+                                                                    </span>
+                                                                )} */}
+                                                                </div>
+                                                                <span>
+                                                                    RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+
+                                                        <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
+                                                            <span>PayLater Price</span>
+                                                            <span>
+                                                                RM {((calculatedTotalAmount - totalRenoNowPrice) - (Number(selectedQuotation.bonus?.value) || 0)).toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 0,
+                                                                    maximumFractionDigits: 0
+                                                                })}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
                                         </>
                                     }
                                 </div>
@@ -1947,7 +1988,7 @@ function OrderDetail() {
                 selectedQuotation={selectedQuotation}
                 packageCategories={packageCategories}
                 formatDate={formatDate}
-                totalExcludedAddonAmount={totalExcludedAddonAmount}
+                totalExcludedAddonAmount={calculatedTotalAmount}
             />
 
             <ConfirmOrderModal order={{ id: orderDetail.id, name: orderDetail.order_no }} onSubmit={refetch} />
