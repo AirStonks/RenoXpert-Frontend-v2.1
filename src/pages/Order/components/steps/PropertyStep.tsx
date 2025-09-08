@@ -212,7 +212,7 @@ export default function PropertyStep({ selectedProperty, setSelectedProperty, fo
                                 { key: "queenBedrooms", label: "Queen Bedrooms", max: 5 },
                                 { key: "singleBedrooms", label: "Single Bedrooms", max: 5 },
                                 { key: "studios", label: "Studios", max: 3 },
-                                { key: "bathrooms", label: "Bathrooms", max: 3 },
+                                { key: "bathrooms", label: "Bathrooms", max: 5 },
                             ] as const).map(({ key, label, max }) => (
                                 <div key={key}>
                                     <label className="text-sm font-medium text-gray-700 mb-2 block">{label}</label>

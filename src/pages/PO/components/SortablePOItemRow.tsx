@@ -1,143 +1,240 @@
 import React from "react";
-import { useSortable } from "@dnd-kit/sortable";
 import { POItem } from "../../../types";
+import { Trash2 } from "lucide-react";
 
 interface SortablePOItemRowProps {
     poItem: POItem;
     packId: number;
-    adjustProductQty: (prodId: number, packId: number, action: "increase" | "decrease") => void;
-    handleRemovePOProduct: (packId: number, prodId: number) => void;
-    toggleProperty: (id: number, packId: number, property: "supply" | "install") => void;
-    handleChangeQty: (e: React.ChangeEvent<HTMLInputElement>, packId: number, prodId: string) => void;
+    updateProductSupplyQuantity: (productId: number, packageId: number, newSupplyQuantity: number) => void;
+    updateProductInstallQuantity: (productId: number, packageId: number, newInstallQuantity: number) => void;
+    removeProduct?: (productId: number, packageId: number) => void;
+    getDeductionPONumbers?: (packageId: number, productId: number, deductionType: 'supply' | 'install') => { po_no: string; qty: number }[];
+    getMaxSupplyQuantity?: (productId: number, packageId: number) => number;
+    getMaxInstallQuantity?: (productId: number, packageId: number) => number;
+    isDisabled?: boolean;
+    isFilteredItem?: boolean;
 }
 
 export const SortablePOItemRow: React.FC<SortablePOItemRowProps> = ({
     poItem,
     packId,
-    adjustProductQty,
-    handleRemovePOProduct,
-    toggleProperty,
-    handleChangeQty,
+    updateProductSupplyQuantity,
+    updateProductInstallQuantity,
+    removeProduct,
+    getDeductionPONumbers,
+    getMaxSupplyQuantity,
+    getMaxInstallQuantity,
+    isDisabled = false,
+    isFilteredItem = false,
 }) => {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id: `item-${poItem.product_id}-${packId}`, // Unique ID for each item
-    });
-
-    const style = {
-        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-        transition: isDragging ? "none" : transition, // Disable transition during drag for smoothness
-        opacity: isDragging ? 0.7 : 1, // Slightly higher opacity for visibility
-        border: isDragging ? "2px dashed #ccc" : "none", // Visual feedback during drag
-    };
-
-    // Stop event propagation for interactive elements
-    const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
     return (
-        <tr
-            ref={setNodeRef}
-            style={style}
-            {...attributes}
-            className={`${!poItem.supply && !poItem.install ? "bg-orange-50" : ""}`}
-        >
-            <td className="p-3" onClick={stopPropagation}>
-                <span {...listeners} style={{ cursor: "move", padding: "8px" }}>
-                    ☰
-                </span>
-            </td>
-            <td className="p-3">{poItem.product_name}</td>
-            <td className="p-3 text-gray-600">{poItem.product_desc || "-"}</td>
-            <td className="p-3 text-center">RM {poItem.supply_price.toFixed(2)}</td>
-            <td className="p-3 text-center">RM {poItem.install_price.toFixed(2)}</td>
-            <td className="p-3 text-center">
-                <div className="flex items-center justify-center gap-2" onClick={stopPropagation}>
-                    <button
-                        className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
-                        onClick={(e) => {
-                            stopPropagation(e);
-                            adjustProductQty(Number(poItem.product_id), packId, "decrease");
-                        }}
-                    >
-                        <i className="ki-solid ki-minus-squared text-gray-600"></i>
-                    </button>
-                    <input
-                        type="text"
-                        className="input input-sm text-center px-2 w-12 border-gray-200 focus:border-primary focus:ring focus:ring-primary/20 transition-all duration-200"
-                        value={poItem.qty}
-                        onChange={(e) => handleChangeQty(e, packId, poItem.product_id)}
-                        onClick={stopPropagation}
-                    />
-                    <button
-                        className="btn btn-icon btn-sm hover:bg-gray-200 rounded-full transition-colors duration-200"
-                        onClick={(e) => {
-                            stopPropagation(e);
-                            adjustProductQty(Number(poItem.product_id), packId, "increase");
-                        }}
-                    >
-                        <i className="ki-solid ki-plus-squared text-gray-600"></i>
-                    </button>
+        <div className={`grid grid-cols-11 gap-2 items-center rounded-xl p-3 border transition-all duration-200 ${
+            isFilteredItem 
+                ? 'bg-gray-50 border-gray-300' 
+                : 'bg-white border-gray-200/50 hover:shadow-sm'
+        }`}>
+            <div className="col-span-4">
+                <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                        Item
+                    </span>
+                    {isFilteredItem && (
+                        <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-700 rounded-full">
+                            Fully Issued
+                        </span>
+                    )}
                 </div>
-            </td>
-            <td className="p-3 text-center">{poItem.uom || "-"}</td>
-            <td className="p-3 text-center">
-                {poItem.supply ? (
-                    <span className="text-green-600">
-                        RM {(poItem.supply_price * poItem.qty).toFixed(2)}
-                    </span>
-                ) : (
-                    <span className="text-gray-400">-</span>
+                <h5 className="font-medium text-gray-900 text-sm mb-1 leading-tight">
+                    {poItem.product_name}
+                </h5>
+                <div className="space-y-0.5 text-xs text-gray-500">
+                    <span>{poItem.product_desc || "-"}</span>
+                </div>
+            </div>
+            <div className="col-span-1 flex items-center justify-center">
+                <span className="w-8 text-center text-sm font-medium">
+                    {poItem.qty || 0}
+                </span>
+            </div>
+            <div className="col-span-1 flex items-center justify-center">
+                <div className="flex flex-col items-center">
+                    {(() => {
+                        const deductions = getDeductionPONumbers ? getDeductionPONumbers(packId, Number(poItem.product_id), 'supply') : [];
+                        const maxAllowed = getMaxSupplyQuantity ? getMaxSupplyQuantity(Number(poItem.product_id), packId) : Infinity;
+                        const currentQty = poItem.supply_qty || 0;
+
+                        // If remaining quantity is 0, only show deduction info
+                        if (maxAllowed === 0) {
+                            return (
+                                <div className="text-xs text-orange-600 flex flex-col gap-1">
+                                    {deductions.map((d, index) => (
+                                        <span key={index}>
+                                            {d.qty} from {d.po_no}
+                                        </span>
+                                    ))}
+                                </div>
+                            );
+                        }
+
+                        // Otherwise show controls and deduction info
+                        return (
+                            <>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() =>
+                                            updateProductSupplyQuantity(Number(poItem.product_id), packId, currentQty - 1)
+                                        }
+                                        disabled={isDisabled || isFilteredItem}
+                                        className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-colors duration-200 ${
+                                            isDisabled || isFilteredItem
+                                                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600'
+                                        }`}
+                                    >
+                                        <i className="ki-solid ki-minus-squared text-gray-600"></i>
+                                    </button>
+                                    <span className={`w-8 text-center text-sm font-medium ${
+                                        isFilteredItem ? 'text-gray-500' : currentQty >= maxAllowed ? 'text-blue-600' : ''
+                                    }`}>
+                                        {currentQty}
+                                    </span>
+                                    <button
+                                        onClick={() =>
+                                            updateProductSupplyQuantity(Number(poItem.product_id), packId, currentQty + 1)
+                                        }
+                                        disabled={currentQty >= maxAllowed || isDisabled || isFilteredItem}
+                                        className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-colors duration-200 ${
+                                            currentQty >= maxAllowed || isDisabled || isFilteredItem
+                                                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600'
+                                        }`}
+                                    >
+                                        <i className="ki-solid ki-plus-squared text-gray-600"></i>
+                                    </button>
+                                </div>
+                                {/* Show deduction info if quantities were reduced */}
+                                {deductions.length > 0 && (
+                                    <div className="text-xs text-orange-600 flex flex-col gap-1">
+                                        {deductions.map((d, index) => (
+                                            <span key={index}>
+                                                {d.qty} from {d.po_no}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
+                </div>
+            </div>
+            <div className="col-span-1 flex items-center justify-center">
+                <div className="flex flex-col items-center">
+                    {(() => {
+                        const deductions = getDeductionPONumbers ? getDeductionPONumbers(packId, Number(poItem.product_id), 'install') : [];
+                        const maxAllowed = getMaxInstallQuantity ? getMaxInstallQuantity(Number(poItem.product_id), packId) : Infinity;
+                        const currentQty = poItem.install_qty || 0;
+
+                        // If remaining quantity is 0, only show deduction info
+                        if (maxAllowed === 0) {
+                            return (
+                                <div className="text-xs text-orange-600 flex flex-col gap-1">
+                                    {deductions.map((d, index) => (
+                                        <span key={index}>
+                                            {d.qty} from {d.po_no}
+                                        </span>
+                                    ))}
+                                </div>
+                            );
+                        }
+
+                        // Otherwise show controls and deduction info
+                        return (
+                            <>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() =>
+                                            updateProductInstallQuantity(Number(poItem.product_id), packId, currentQty - 1)
+                                        }
+                                        className="h-6 w-6 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-600 transition-colors duration-200"
+                                    >
+                                        <i className="ki-solid ki-minus-squared text-gray-600"></i>
+                                    </button>
+                                    <span className={`w-8 text-center text-sm font-medium ${currentQty >= maxAllowed ? 'text-blue-600' : ''}`}>
+                                        {currentQty}
+                                    </span>
+                                    <button
+                                        onClick={() =>
+                                            updateProductInstallQuantity(Number(poItem.product_id), packId, currentQty + 1)
+                                        }
+                                        disabled={currentQty >= maxAllowed}
+                                        className={`h-6 w-6 rounded-lg border flex items-center justify-center transition-colors duration-200 ${currentQty >= maxAllowed
+                                            ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600'
+                                            }`}
+                                    >
+                                        <i className="ki-solid ki-plus-squared text-gray-600"></i>
+                                    </button>
+                                </div>
+                                {/* Show deduction info if quantities were reduced */}
+                                {deductions.length > 0 && (
+                                    <div className="text-xs text-orange-600 flex flex-col gap-1">
+                                        {deductions.map((d, index) => (
+                                            <span key={index}>
+                                                {d.qty} from {d.po_no}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
+                </div>
+            </div>
+            <div className="col-span-1 text-right">
+                <div className="text-sm font-medium text-gray-900">
+                    RM{" "}
+                    {(
+                        (poItem.supply_price || 0) *
+                        (poItem.supply_qty || 0)
+                    ).toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500">
+                    {poItem.supply_qty || 0} × RM {(poItem.supply_price || 0).toLocaleString()}
+                </div>
+            </div>
+            <div className="col-span-1 text-right">
+                <div className="text-sm font-medium text-gray-900">
+                    RM{" "}
+                    {(
+                        (poItem.install_price || 0) *
+                        (poItem.install_qty || 0)
+                    ).toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500">
+                    {poItem.install_qty || 0} × RM {(poItem.install_price || 0).toLocaleString()}
+                </div>
+            </div>
+            <div className="col-span-1 text-right">
+                <div className="text-lg font-semibold text-blue-600">
+                    RM{" "}
+                    {(
+                        ((poItem.supply_price || 0) * (poItem.supply_qty || 0)) +
+                        ((poItem.install_price || 0) * (poItem.install_qty || 0))
+                    ).toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-500">Total</div>
+            </div>
+            <div className="col-span-1 flex justify-center">
+                {removeProduct && (
+                    <button
+                        onClick={() => removeProduct(Number(poItem.product_id), packId)}
+                        className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors duration-200"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </button>
                 )}
-            </td>
-            <td className="p-3 text-center">
-                {poItem.install ? (
-                    <span className="text-green-600">
-                        RM {(poItem.install_price * poItem.qty).toFixed(2)}
-                    </span>
-                ) : (
-                    <span className="text-gray-400">-</span>
-                )}
-            </td>
-            <td className="p-3 text-center font-semibold">
-                RM{" "}
-                {(
-                    ((poItem.supply ? poItem.supply_price : 0) +
-                        (poItem.install ? poItem.install_price : 0)) *
-                    poItem.qty
-                ).toFixed(2)}
-            </td>
-            <td className="p-3 text-center" onClick={stopPropagation}>
-                <input
-                    className="checkbox checkbox-sm rounded checked:bg-primary"
-                    type="checkbox"
-                    checked={!!poItem.supply}
-                    onChange={(e) => {
-                        stopPropagation(e);
-                        toggleProperty(Number(poItem.product_id), packId, "supply");
-                    }}
-                />
-            </td>
-            <td className="p-3 text-center" onClick={stopPropagation}>
-                <input
-                    className="checkbox checkbox-sm rounded checked:bg-primary"
-                    type="checkbox"
-                    checked={!!poItem.install}
-                    onChange={(e) => {
-                        stopPropagation(e);
-                        toggleProperty(Number(poItem.product_id), packId, "install");
-                    }}
-                />
-            </td>
-            <td className="p-3" onClick={stopPropagation}>
-                <button
-                    className="btn btn-icon btn-sm hover:bg-red-100 rounded-full transition-colors duration-200"
-                    onClick={(e) => {
-                        stopPropagation(e);
-                        handleRemovePOProduct(packId, Number(poItem.product_id));
-                    }}
-                >
-                    <i className="ki-filled ki-cross text-red-500"></i>
-                </button>
-            </td>
-        </tr>
+            </div>
+        </div>
     );
 };

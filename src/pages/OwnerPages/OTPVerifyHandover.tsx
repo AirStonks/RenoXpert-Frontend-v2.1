@@ -1,0 +1,254 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Slide, toast, ToastContainer } from "react-toastify";
+import { motion } from "framer-motion";
+import { submitOwnerHandover } from "../../services/api";
+
+const LOCAL_PATH_PREFIX = window.location.hostname === "localhost" ? "/owner/" : "/";
+
+const MEDIA_URL =
+    import.meta.env.VITE_APP_ENV === "local" ? "/public/media/" : "/media/";
+
+const API_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_API_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_API_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? import.meta.env.VITE_LOCAL_API_URL
+                : null;
+
+export default function OTPVerifyHandover() {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
+    const { state } = location as any;
+
+    const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+    const [error, setError] = useState<string | null>(null);
+    const [countdown, setCountdown] = useState(0);
+    const [canResend, setCanResend] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const notify = (type: "success" | "error", message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem("theme"),
+            transition: Slide,
+        });
+    };
+
+    useEffect(() => {
+        const handleRequestOTP = async () => {
+            await axios.post(`${API_URL}sms-otp/request/60/${state?.mobile}`);
+        };
+
+        const handleLocalOTP = () => {
+            setCountdown(5);
+            setCanResend(false);
+        };
+
+        import.meta.env.VITE_APP_ENV === "production" ? handleRequestOTP() : handleLocalOTP();
+
+        const timer = setInterval(() => {
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    setCanResend(true);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [state]);
+
+    const handleChange = (index: number, value: string) => {
+        const newOtp = [...otp];
+        if (/^[0-9]?$/.test(value)) {
+            newOtp[index] = value;
+            if (value && index < otp.length - 1) {
+                document.getElementById(`otp-input-${index + 1}`)?.focus();
+            }
+        } else if (value === "") {
+            newOtp[index] = "";
+            if (index > 0) {
+                document.getElementById(`otp-input-${index - 1}`)?.focus();
+            }
+        }
+        setOtp(newOtp);
+    };
+
+    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Backspace" && otp[index] === "") {
+            if (index > 0) {
+                document.getElementById(`otp-input-${index - 1}`)?.focus();
+            }
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        if (otp.some((d) => d === "")) {
+            setError("Please fill in all the digits.");
+            setIsLoading(false);
+            return;
+        } else {
+            setError(null);
+        }
+
+        const code = otp.join("");
+        try {
+            const requestBody = {
+                country_code: state?.countryCode,
+                mobile: state?.mobile,
+                otp_code: code,
+            };
+            const response = await axios.post(`${API_URL}sms-otp/verify`, requestBody);
+
+            if (response.data.status === "verified") {
+                try {
+                    const res = await submitOwnerHandover(Number(state?.handoverRenoProgressId || id));
+                    if (res?.success) {
+                        notify("success", "Owner handover agreement submitted successfully.");
+                        navigate(state?.returnUrl || `${LOCAL_PATH_PREFIX}reno/progress/${state?.handoverRenoProgressId || id}/handover-agreement`);
+                        return;
+                    }
+                    notify("error", "Failed to submit agreement after verification.");
+                } catch (err) {
+                    notify("error", "Failed to submit agreement after verification.");
+                }
+            } else {
+                notify("error", "Invalid OTP code. Please try again.");
+            }
+        } catch (err) {
+            notify("error", "Error verifying OTP. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResend = async () => {
+        try {
+            const response = await axios.post(`${API_URL}sms-otp/request/60/${state?.mobile}`);
+            if (response.data.status === "success") {
+                notify("success", "OTP has been sent to the mobile no.");
+                setCountdown(60);
+                setCanResend(false);
+                setTimeout(() => {
+                    const timer = setInterval(() => {
+                        setCountdown((prev) => {
+                            if (prev <= 1) {
+                                clearInterval(timer);
+                                setCanResend(true);
+                                return 0;
+                            }
+                            return prev - 1;
+                        });
+                    }, 1000);
+                }, 500);
+            } else {
+                notify("error", "Error while sending the OTP");
+            }
+        } catch (error) {
+            notify("error", "Error while sending the OTP");
+        }
+    };
+
+    return (
+        <>
+            {isLoading && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-white/70 backdrop-blur-md"
+                >
+                    <motion.div
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex flex-col items-center gap-4"
+                    >
+                        <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0v4a8 8 0 018 8h-4l3.5 3.5L24 12h-4a8 8 0 01-8 8v-4l-3.5 3.5L12 24v-4a8 8 0 01-8-8z" />
+                        </svg>
+                        <p className="text-gray-700 font-medium text-sm">Processing...</p>
+                    </motion.div>
+                </motion.div>
+            )}
+
+            <div className="absolute top-5 right-5">
+                <button className="btn btn-icon btn-light dark:hidden" data-theme-toggle="true" data-tooltip="#theme_mode_dark">
+                    <i className="ki-outline ki-sun"></i>
+                </button>
+                <button className="btn btn-icon btn-light hidden dark:flex" data-theme-toggle="true" data-tooltip="#theme_mode_light">
+                    <i className="ki-outline ki-moon"></i>
+                </button>
+                <div className="tooltip" id="theme_mode_light">Switch to Light mode</div>
+                <div className="tooltip" id="theme_mode_dark">Switch to Dark mode</div>
+            </div>
+            <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
+                <div className="card max-w-[380px] w-full">
+                    <form className="card-body flex flex-col gap-5 p-10" onSubmit={handleSubmit}>
+                        <img src={`${MEDIA_URL}illustrations/34.svg`} className="dark:hidden h-20 mb-2" alt="" />
+                        <img src={`${MEDIA_URL}/illustrations/34-dark.svg`} className="light:hidden h-20 mb-2" alt="" />
+
+                        <div className="text-center mb-1">
+                            <h3 className="text-lg font-medium text-gray-900 mb-5">Verify your phone</h3>
+                            <div className="flex flex-col">
+                                <span className="text-2sm text-gray-700 mb-1.5">Enter the verification code sent to your phone</span>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap justify-center gap-2.5">
+                            {otp.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    id={`otp-input-${index}`}
+                                    type="text"
+                                    className="input focus:border-primary-clarity focus:ring focus:ring-primary-clarity size-10 shrink-0 px-0 text-center"
+                                    value={digit}
+                                    onChange={(e) => handleChange(index, e.target.value)}
+                                    onKeyDown={(e) => handleKeyDown(index, e)}
+                                    maxLength={1}
+                                />
+                            ))}
+                        </div>
+
+                        {error && <div className="text-red-600 text-center">{error}</div>}
+
+                        <div className="flex items-center justify-center mb-1.5">
+                            {canResend && (
+                                <button type="button" onClick={handleResend} className="btn btn-primary btn-outline text-sm">
+                                    Request OTP
+                                </button>
+                            )}
+                            {countdown > 0 && (
+                                <span className="text-xs text-gray-700 me-1.5">Didn’t receive a code? ({countdown}s)</span>
+                            )}
+                        </div>
+
+                        <button className="btn btn-primary flex justify-center grow" type="submit">
+                            Continue
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <ToastContainer />
+        </>
+    );
+}
+
+

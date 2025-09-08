@@ -1,6 +1,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { HammerIcon, HomeIcon, MessageCircle, ScrollTextIcon, UserIcon } from "lucide-react"
+import { RenoProgress } from "../../../types"
 
 type NavItem = {
     icon: React.ReactNode
@@ -39,9 +40,10 @@ const navItems: NavItem[] = [
 interface BottomNavProps {
     activeItem: string
     setActiveItem: React.Dispatch<React.SetStateAction<string>>
+    renoProgresses?: RenoProgress[]
 }
 
-export function HomeBottomNav({ activeItem, setActiveItem }: BottomNavProps) {
+export function HomeBottomNav({ activeItem, setActiveItem, renoProgresses }: BottomNavProps) {
     const [isVisible, setIsVisible] = useState(true)
     const [lastScrollY, setLastScrollY] = useState(0)
     const [isSmallScreen, setIsSmallScreen] = useState(false)
@@ -84,6 +86,11 @@ export function HomeBottomNav({ activeItem, setActiveItem }: BottomNavProps) {
         }
     }, [lastScrollY, isSmallScreen])
 
+    // Check if there are any pending handover agreements
+    const hasPendingHandover = renoProgresses?.some(progress => 
+        progress.owner_handover_released_at && !progress.owner_handover_submitted_at
+    ) || false
+
     return (
         <nav
             className={`
@@ -98,7 +105,7 @@ export function HomeBottomNav({ activeItem, setActiveItem }: BottomNavProps) {
                     {navItems.map((item) => (
                         <button
                             key={item.category}
-                            className={`flex flex-col items-center justify-center px-2 py-1 rounded-lg transition-colors duration-200 ${activeItem === item.category
+                            className={`flex flex-col items-center justify-center px-2 py-1 rounded-lg transition-colors duration-200 relative ${activeItem === item.category
                                 ? "text-[#D71E42] bg-[#d71e430f]"
                                 : "text-gray-500 hover:text-[#D71E42] hover:bg-[#d71e430f]"
                                 }`}
@@ -113,7 +120,13 @@ export function HomeBottomNav({ activeItem, setActiveItem }: BottomNavProps) {
                                 }
                             }}
                         >
-                            <div className="mb-0.5">{item.icon}</div>
+                            <div className="mb-0.5 relative">
+                                {item.icon}
+                                {/* Red dot badge for pending handover agreements */}
+                                {item.category === "reno-progress" && hasPendingHandover && (
+                                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                                )}
+                            </div>
                             <span className="text-2xs md:text-xs font-medium leading-none">{item.label}</span>
                         </button>
                     ))}

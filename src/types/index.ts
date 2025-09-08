@@ -54,6 +54,8 @@ export type TaskQCStatus =
     | "rejected"
     | "not-applicable";
 
+export type RenoSaleStatus = "pending" | "approved" | "active" | "cancelled";
+
 export interface FormValues {
     email: string;
     password: string;
@@ -162,6 +164,8 @@ export interface Product {
         internal_note?: string;
         includeSupply?: boolean;
         includeInstall?: boolean;
+        supply_qty?: number;
+        install_qty?: number;
     }
     provisioning?: {
         supply?: {
@@ -377,10 +381,32 @@ export interface OrderQuotation {
     updated_at?: string,
 }
 
+export interface RenoXSale {
+    id?: string,
+    reno_sale_no?: string,
+    sales?: Sale[],
+    purchase_orders?: PurchaseOrder[],
+    sale_total_amount?: number,
+    sale_paid_amount?: number,
+    sale_remaining_percentage?: number,
+    sale_paid_percentage?: number,
+    po_total_amount?: number,
+    po_paid_amount?: number,
+    po_remaining_percentage?: number,
+    po_paid_percentage?: number,
+    status?: RenoSaleStatus,
+    created_by?: User;
+    updated_by?: User;
+    created_at?: string,
+    updated_at?: string,
+}
+
 export interface Sale {
     id?: string,
     sales_no?: string,
     order_id?: string,
+    reno_sale_id?: string,
+    reno_sale?: RenoXSale,
     order?: Order,
     invoices?: Invoice[],
     reno_progress_id?: string,
@@ -1224,6 +1250,8 @@ export interface RenoProgress {
     permissions?: User[],
     defect_updated_at?: string,
     permit_updated_at?: string,
+    owner_handover_released_at?: string,
+    owner_handover_submitted_at?: string,
     completed_at?: string,
     rpm_version?: number,
     sent_to_lark_date?: string,
@@ -1389,7 +1417,7 @@ export interface PurchaseOrder {
     id?: string,
     po_no?: string,
     sale_id?: string,
-    sale?: Sale,
+    reno_sale_id?: string,
     vendor_id?: string,
     vendor?: User,
     items?: POItem[],
@@ -1409,6 +1437,17 @@ export interface PurchaseOrder {
     internal_note?: string,
     created_by?: string,
     updated_by?: string,
+    created_at?: string,
+    updated_at?: string,
+}
+
+export interface POSale {
+    id?: string,
+    po_id?: string,
+    sale_id?: string,
+    is_main?: boolean,
+    created_by?: User,
+    updated_by?: User,
     created_at?: string,
     updated_at?: string,
 }
@@ -1440,8 +1479,8 @@ export interface POItem {
     product_desc?: string,
     qty?: number,
     uom?: string,
-    supply?: boolean,
-    install?: boolean,
+    supply_qty?: number,
+    install_qty?: number,
     unit_price?: number,
     supply_price?: number,
     install_price?: number,
@@ -1489,4 +1528,28 @@ export interface OTPRequest {
     expires_at?: number,
     created_at?: number,
     updated_at?: number,
+}
+
+export interface ApiKey {
+    id?: string;
+    name?: string;
+    key?: string;
+    prefix?: string;
+    last_used_at?: string;
+    expires_at?: string;
+    created_at?: string;
+    updated_at?: string;
+    created_by?: User;
+    updated_by?: User;
+    is_active?: boolean;
+}
+
+export interface ApiKeyCreateRequest {
+    name: string;
+    expires_at?: string;
+}
+
+export interface ApiKeyUpdateRequest {
+    name?: string;
+    expires_at?: string;
 }

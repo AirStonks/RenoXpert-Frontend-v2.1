@@ -1,7 +1,7 @@
 // src/hooks/useFetchProduct.ts
 
 import { useState, useEffect, useCallback } from 'react';
-import { fetchPO } from '../services/api';
+import { fetchPo } from '../services/api';
 import { PurchaseOrder } from '../types';
 
 const useFetchPO = (poId: number | null) => {
@@ -14,7 +14,7 @@ const useFetchPO = (poId: number | null) => {
         if (poId) {
             setLoading(true);
             setError(null); // Reset error before fetching
-            fetchPO(poId)
+            fetchPo(poId)
                 .then((data) => {
                     setPo(data.data);
                     setLoading(false);

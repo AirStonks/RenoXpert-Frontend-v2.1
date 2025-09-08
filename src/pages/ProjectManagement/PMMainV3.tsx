@@ -141,6 +141,7 @@ function App() {
     }, [page, size, searchTerm, sortField, sortOrder, filterStatus, viewMode]);
 
     useEffect(() => {
+        document.title = "Project Tracker V3 | RenoXpert"
         fetchProjects(1, size, searchTerm, sortOrder, sortField, filterStatus);
 
         const getProperties = async () => {

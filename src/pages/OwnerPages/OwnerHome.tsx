@@ -10,6 +10,7 @@ import HomePage from "./components/home/HomePage";
 import QuotationPage from "./components/home/QuotationPage";
 import ProfilePage from "./components/home/ProfilePage";
 import RenoProgressPage from "./components/home/RenoProgressPage";
+import useFetchOwnerRenoProgresses from "../../hook/useFetchOwnerRenoProgresses";
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
@@ -17,6 +18,7 @@ function OwnerHome() {
     const navigate = useNavigate();
     const location = useLocation();
     const { forms, loading: formsLoading, error: formsError } = useFetchOwnerRegistrationForms();
+    const { renoProgresses } = useFetchOwnerRenoProgresses();
     const [owner, setOwner] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [userError, setUserError] = useState<string | null>(null);
@@ -82,6 +84,7 @@ function OwnerHome() {
             <HomeBottomNav
                 activeItem={activeItem}
                 setActiveItem={setActiveItem}
+                renoProgresses={renoProgresses}
             />
         </>
     )
