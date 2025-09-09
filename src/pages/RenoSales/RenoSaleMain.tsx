@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
     Eye,
     Clock,
@@ -38,6 +38,7 @@ const statusConfig: Record<RenoSaleStatus, StatusConfig> = {
 
 
 export default function RenoSalesMain() {
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
     const navigate = useNavigate();
     const [renoSales, setRenoSales] = useState<RenoXSale[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -100,9 +101,20 @@ export default function RenoSalesMain() {
     }
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
         setSearchTerm(e.target.value)
         // Implement search logic here
+
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+            fetchRenoSales(1, size, value, sortOrder, sortField);
+        }, 500);
     }
+
 
     const handlePageChange = (newPage: number) => {
         if (newPage < 1 || newPage > Math.ceil(totalItems / size)) return;
@@ -178,7 +190,7 @@ export default function RenoSalesMain() {
                     <div className="flex gap-3 flex-wrap">
                         <input
                             type="text"
-                            placeholder="Search reno sales..."
+                            placeholder="Search by Owner/Unit"
                             value={searchTerm}
                             onChange={handleSearch}
                             className="w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
