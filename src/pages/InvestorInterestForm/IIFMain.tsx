@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Eye,
     Clock,
@@ -10,6 +10,7 @@ import { investorInterestIndex } from '../../services/api';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import ClipboardJS from 'clipboard';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 
 type SortOrder = 'asc' | 'desc';
 type SortField = 'id' | 'name' | 'address';
@@ -67,6 +68,7 @@ const getInitialState = (): StoredConfig => {
 };
 
 function IIFMain() {
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
     const navigate = useNavigate();
     const [investorInterests, setInvestorInterests] = useState<InvestorInterest[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -141,6 +143,20 @@ function IIFMain() {
         });
     };
 
+    const handleSearch = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        setSearchTerm(value);
+
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setPage(1);
+            fetchInvestorInterests(1, size, value, sortOrder, sortField);
+        }, 500);
+    };
+
     const toggleRowExpansion = (id: number) => {
         setExpandedRows((prev) =>
             prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
@@ -182,7 +198,17 @@ function IIFMain() {
             <div className="sticky top-0 bg-white shadow-md rounded-lg p-4 mb-6 z-10">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <h1 className="text-2xl font-bold text-gray-800">Investor Interest Forms</h1>
-                    <div className="flex gap-3 flex-wrap">
+                    <div className="flex items-center gap-4 w-full lg:w-auto">
+                        <div className="relative flex-1 lg:flex-none">
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search by Property"
+                                value={searchTerm}
+                                onChange={handleSearch}
+                                className="pl-10 pr-4 py-2 w-full lg:w-64 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
                         <button
                             className="btn btn-sm btn-outline btn-info copy-link flex justify-center gap-2"
                             data-clipboard-text={`${FORM_URL}investor-interest-form`}
