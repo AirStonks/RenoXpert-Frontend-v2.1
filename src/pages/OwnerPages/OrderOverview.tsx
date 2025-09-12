@@ -1062,7 +1062,7 @@ function OrderOverview() {
                             </button>
 
                             {/*  Remove this tab if the orderDetail.is_be_powered is true */}
-                            {!orderDetail.is_be_powered && (
+                            {!orderDetail.is_be_powered && !orderDetail.is_rnpl && (
                                 <button
                                     className={`py-2 px-2 text-xs rounded-md transition-all ${activeTab === "tab_1_3" ? "active bg-blue-500 text-white" : "hover:bg-gray-100"
                                         }`}

@@ -539,7 +539,7 @@ const OrderPreviewModal = ({
                             T&C
                         </button>
 
-                        {!orderDetail.is_be_powered && (
+                        {!orderDetail.is_be_powered && !orderDetail.is_rnpl && (
                             <button
                                 className={`tab ${activeTab === 'tab_1_3' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('tab_1_3')}
