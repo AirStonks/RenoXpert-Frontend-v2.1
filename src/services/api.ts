@@ -2762,3 +2762,110 @@ export const submitOwnerHandover = async (renoProgressId: number) => {
         throw error;
     }
 };
+
+export const campaignIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'campaigns', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const campaignDetail = async (id: string | number) => {
+    try {
+        const response = await axios.get(API_URL + `campaigns/${id}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const createCampaign = async (campaignData: any) => {
+    try {
+        const response = await axios.post(API_URL + 'campaigns', campaignData, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const updateCampaign = async (id: string | number, campaignData: any) => {
+    try {
+        const response = await axios.put(API_URL + `campaigns/${id}`, campaignData, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const deleteCampaign = async (id: string | number) => {
+    try {
+        const response = await axios.delete(API_URL + `campaigns/${id}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+// Booking API functions
+export const createBooking = async (bookingData: any) => {
+    try {
+        const response = await axios.post(API_URL + 'bookings', bookingData, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const getCampaignBookings = async (campaignId: string | number) => {
+    try {
+        const response = await axios.get(API_URL + `campaigns/${campaignId}/bookings`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const updateBooking = async (id: string | number, bookingData: any) => {
+    try {
+        const response = await axios.put(API_URL + `bookings/${id}`, bookingData, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const deleteBooking = async (id: string | number) => {
+    try {
+        const response = await axios.delete(API_URL + `bookings/${id}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};

@@ -1553,3 +1553,41 @@ export interface ApiKeyUpdateRequest {
     name?: string;
     expires_at?: string;
 }
+
+export interface Campaign {
+    id?: string;
+    title?: string;
+    description?: string;
+    internal_description?: string;
+    base_amount?: number;
+    start_date?: string;
+    end_date?: string;
+    published_at?: string;
+    published_by?: User;
+    slot_total?: number;
+    slot_used?: number;
+    slot_remaining?: number;
+    status?: string;
+    metadata?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface Booking {
+    id?: string;
+    campaign_id?: string;
+    campaign?: Campaign;
+    user_id?: string;
+    user?: User;
+    amount?: number;
+    payment_url?: string;
+    booked_at?: string;
+    expired_at?: string;
+    internal_remark?: string;
+    status?: string;
+    metadata?: string;
+    created_at?: string;
+    updated_at?: string;
+    created_by?: User;
+    updated_by?: User;
+}

@@ -113,6 +113,10 @@ import RenoSalesMain from './pages/RenoSales/RenoSaleMain';
 import RenoSaleDetail from './pages/RenoSales/RenoSaleDetail';
 import EditUser from './pages/User/EditUser';
 import ApiKeys from './pages/ApiKeys';
+import CampaignMain from './pages/Campaign/CampaignMain';
+import AddCampaign from './pages/Campaign/AddCampaign';
+import EditCampaign from './pages/Campaign/EditCampaign';
+import CampaignDetail from './pages/Campaign/CampaignDetail';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -218,6 +222,10 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/otp-requests', element: <OTPRequestList />, layout: ProtectedLayout },
         { path: '/developer-tools', element: <DeveloperTool />, layout: ProtectedLayout },
         { path: '/api-keys', element: <ApiKeys />, layout: ProtectedLayout },
+        { path: '/campaigns', element: <CampaignMain />, layout: ProtectedLayout },
+        { path: '/campaigns/add', element: <AddCampaign />, layout: ProtectedLayout },
+        { path: '/campaigns/:id', element: <CampaignDetail />, layout: ProtectedLayout },
+        { path: '/campaigns/:id/edit', element: <EditCampaign />, layout: ProtectedLayout },
     ],
     // Owner
     [
@@ -263,6 +271,10 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
     // Form
     [
         { path: '/investor-interest-form', element: <InvestorInterestForm />, layout: null },
+    ],
+    // Campaign
+    [
+        // { path: '/campaign/login', element: <CampaignLogin />, layout: null },
     ],
     // General
     [
@@ -348,6 +360,10 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/otp-requests', element: <OTPRequestList />, layout: ProtectedLayout },
         { path: '/staff/developer-tools', element: <DeveloperTool />, layout: ProtectedLayout },
         { path: '/staff/api-keys', element: <ApiKeys />, layout: ProtectedLayout },
+        { path: '/staff/campaigns', element: <CampaignMain />, layout: ProtectedLayout },
+        { path: '/staff/campaigns/add', element: <AddCampaign />, layout: ProtectedLayout },
+        { path: '/staff/campaigns/:id', element: <CampaignDetail />, layout: ProtectedLayout },
+        { path: '/staff/campaigns/:id/edit', element: <EditCampaign />, layout: ProtectedLayout },
     ],
     // Owner
     [
@@ -394,6 +410,10 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
     [
         { path: '/form/investor-interest-form', element: <InvestorInterestForm />, layout: null },
     ],
+    // Campaign
+    [
+        // { path: '/campaign/login', element: <CampaignLogin />, layout: null },
+    ],
     // General
     [
         { path: '/', element: <OwnerHome />, layout: OwnerProtectedLayout },
@@ -415,6 +435,7 @@ function App() {
     const isVendorDomain = hostname === 'ven.renoxpert.my' || hostname === 'sven.renoxpert.my' || hostname === 'localhost';
     const isPublicDomain = hostname === 'public.renoxpert.my' || hostname === 'staging.renoxpert.my' || hostname === 'localhost';
     const isFormDomain = hostname === 'form.renoxpert.my' || hostname === 'sform.renoxpert.my' || hostname === 'localhost';
+    const isCampaignDomain = hostname === 'campaign.renoxpert.my' || hostname === 's-campaign.renoxpert.my' || hostname === 'localhost';
 
     useEffect(() => {
         KTComponent.init();
@@ -433,7 +454,7 @@ function App() {
 
     if (hostname === 'localhost') {
         // All routes in routeCatLocal
-        filteredRoutes = [...routeCatLocal[0], ...routeCatLocal[1], ...routeCatLocal[2], ...routeCatLocal[3], ...routeCatLocal[4], ...routeCatLocal[5]];
+        filteredRoutes = [...routeCatLocal[0], ...routeCatLocal[1], ...routeCatLocal[2], ...routeCatLocal[3], ...routeCatLocal[4], ...routeCatLocal[5], ...routeCatLocal[6]];
     } else {
         if (isMainDomain) {
             // Main domain: Owner, Vendor, and General routes
@@ -456,6 +477,9 @@ function App() {
         } else if (isFormDomain) {
             // Form domain: Form routes
             filteredRoutes = routeCat[5];
+        } else if (isCampaignDomain) {
+            // Campaign domain: Campaign routes
+            filteredRoutes = routeCat[6];
         } else {
             // Fallback for invalid domains
             // filteredRoutes = [{ path: '*', element: <NotFound />, layout: null }];
