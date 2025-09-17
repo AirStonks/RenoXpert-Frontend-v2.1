@@ -3,7 +3,7 @@ import axios from "axios";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Slide, toast, ToastContainer } from "react-toastify";
 import { motion } from "framer-motion";
-import { submitOwnerHandover } from "../../services/api";
+import { submitOwnerHandover } from "../../services/ownerApi";
 
 const LOCAL_PATH_PREFIX = window.location.hostname === "localhost" ? "/owner/" : "/";
 

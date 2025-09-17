@@ -2750,15 +2750,3 @@ export const releaseOwnerHandover = async (renoProgressId: number) => {
         throw error;
     }
 };
-
-export const submitOwnerHandover = async (renoProgressId: number) => {
-    try {
-        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/owner-handover/submit`, {
-            headers: getAuthHeaders()
-        });
-        return response.data;
-    } catch (error) {
-        handle401Error(error as AxiosError);
-        throw error;
-    }
-};

@@ -1,7 +1,7 @@
 // src\services\ownerApi.ts
 
 import axios, { AxiosError } from 'axios';
-import { handleOwner401Error } from '../utils/error401';
+import { handle401Error, handleOwner401Error } from '../utils/error401';
 import { Order } from '../types';
 
 const API_URL =
@@ -225,5 +225,17 @@ export const fetchProperty = async (propertyId: number, signal?: AbortSignal) =>
     } catch (error) {
         handleOwner401Error(error as AxiosError);
         throw error; // Ensure to throw the error if needed
+    }
+};
+
+export const submitOwnerHandover = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/owner-handover/submit`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handleOwner401Error(error as AxiosError);
+        throw error;
     }
 };
