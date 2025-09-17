@@ -1515,7 +1515,10 @@ const OrderPreviewModal = ({
                                             const renoNowPackages: Package[] = packages.filter((pkg: Package) => pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true));
 
                                             const totalRenoNowPrice = renoNowPackages.reduce((total, pkg) => {
-                                                return total + (pkg.markup_amount * (pkg.quantity || 1))
+                                                if (pkg.rnpl_method === 'reno-now' && pkg.is_addon_included === true) {
+                                                    return total + (pkg.markup_amount * (pkg.quantity || 1))
+                                                }
+                                                return total;
                                             }, orderDetail.rnpl_base_price || 0)
 
                                             return (
@@ -1957,8 +1960,11 @@ const OrderPreviewModal = ({
                                             const renoNowPackages: Package[] = packages.filter((pkg: Package) => pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true));
 
                                             const totalRenoNowPrice = renoNowPackages.reduce((total, pkg) => {
-                                                return total + (pkg.total_price * (pkg.quantity || 1))
-                                            }, 0)
+                                                if (pkg.rnpl_method === 'reno-now' && pkg.is_addon_included === true) {
+                                                    return total + (pkg.markup_amount * (pkg.quantity || 1))
+                                                }
+                                                return total;
+                                            }, orderDetail.rnpl_base_price || 0)
 
                                             return (
                                                 <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">

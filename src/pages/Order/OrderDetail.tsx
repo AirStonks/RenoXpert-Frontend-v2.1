@@ -222,7 +222,7 @@ function OrderDetail() {
 
             const totalRenoNowPrice = orderDetail.latest_quotation.packages.reduce((total, pkg) => {
 
-                if (pkg.rnpl_method === 'reno-now') {
+                if (pkg.rnpl_method === 'reno-now' && pkg.is_addon_included === true) {
                     return total + (pkg.markup_amount * (pkg.quantity || 1))
                 }
 
