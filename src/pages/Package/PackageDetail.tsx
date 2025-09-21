@@ -5,7 +5,6 @@ import Loading from "../../components/Loading";
 import { Link } from "react-router-dom";
 import { archivePackage, removePackage, restorePackage } from "../../services/api";
 import { Slide, toast } from "react-toastify";
-import { KTModal } from "../../metronic/core";
 import DeleteModal from "../../components/Modals/DeleteModal";
 import { ArrowLeft, Edit, Archive, MoreVertical, Copy, Trash2, RotateCcw, DollarSign, Calculator, Calendar, TrendingUp, PackageIcon, Clock } from 'lucide-react';
 
@@ -32,6 +31,8 @@ function PackageDetail() {
     const { packageDetail, loading, error, refetch } = useFetchPackage(packageId);
 
     const [selectedPackage, setSelectedPackage] = useState<{ id: number | string, name: string } | null>(null);
+    const [selectedArchivePackage, setSelectedArchivePackage] = useState<{ id: number | string, name: string } | null>(null);
+    const [selectedRestorePackage, setSelectedRestorePackage] = useState<{ id: number | string, name: string } | null>(null);
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -52,7 +53,6 @@ function PackageDetail() {
 
     useEffect(() => {
         document.title = "Package Detail | RenoXpert";
-        setSelectedPackage({ id: packageId, name: packageDetail?.name || '' });
     }, [packageId, packageDetail?.name]);
 
     // Toggle dropdown visibility
@@ -68,43 +68,39 @@ function PackageDetail() {
         }
     };
 
-    const handleArchiveItem = async () => {
+    const handleArchiveItem = async (pkgId: number) => {
         try {
-            const response = await archivePackage(packageId);
+            const response = await archivePackage(pkgId);
 
             if (response?.success) {
                 notify('success', 'Package archived successfully.');
-
-                const modalEl = document.querySelector('#archive_item_modal') as HTMLElement;
-                const modal = KTModal.getInstance(modalEl);
-
-                modal.hide();
+                setSelectedArchivePackage(null);
                 refetch();
 
-                navigate('/packages/' + packageId);
+                navigate(LOCAL_PATH_PREFIX + 'packages/' + pkgId);
             }
+            return { success: true };
         } catch (error) {
             console.log(error);
+            return { success: false, message: 'Package archiving failed' };
         }
     };
 
-    const handleRestoreItem = async () => {
+    const handleRestoreItem = async (pkgId: number) => {
         try {
-            const response = await restorePackage(packageId);
+            const response = await restorePackage(pkgId);
 
             if (response?.success) {
                 notify('success', 'Package restored successfully.');
-
-                const modalEl = document.querySelector('#restore_item_modal') as HTMLElement;
-                const modal = KTModal.getInstance(modalEl);
-
-                modal.hide();
+                setSelectedRestorePackage(null);
                 refetch();
 
-                navigate(LOCAL_PATH_PREFIX + 'packages/' + packageId);
+                navigate(LOCAL_PATH_PREFIX + 'packages/' + pkgId);
             }
+            return { success: true };
         } catch (error) {
             console.log(error);
+            return { success: false, message: 'Package restore failed' };
         }
     }
 
@@ -149,7 +145,7 @@ function PackageDetail() {
     const markupPercentage = packageDetail.markup_percentage ? (packageDetail.markup_percentage * 100) : 0;
     const tenure = packageDetail.tenure;
     const monthlyAmount = packageDetail.monthly_amount;
-    const totalPackageAmount = originalAmount + markupAmount;
+    // const totalPackageAmount = originalAmount + markupAmount;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -179,7 +175,7 @@ function PackageDetail() {
                         {packageDetail.status === 'archived' && (
                             <button
                                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200"
-                                data-modal-toggle="#restore_item_modal"
+                                onClick={() => setSelectedRestorePackage({ id: packageId, name: packageDetail?.name || '' })}
                             >
                                 <RotateCcw className="w-4 h-4" />
                                 Restore
@@ -210,8 +206,10 @@ function PackageDetail() {
                                     {packageDetail.status !== 'archived' && (
                                         <button
                                             className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200 w-full text-left"
-                                            data-modal-toggle="#archive_item_modal"
-                                            onClick={() => setIsDropdownOpen(false)}
+                                            onClick={() => {
+                                                setIsDropdownOpen(false);
+                                                setSelectedArchivePackage({ id: packageId, name: packageDetail?.name || '' });
+                                            }}
                                         >
                                             <Archive className="w-4 h-4 text-red-500" />
                                             <span className="text-red-500">Archive Package</span>
@@ -220,8 +218,10 @@ function PackageDetail() {
                                     {packageDetail.status === 'archived' && (
                                         <button
                                             className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200 w-full text-left"
-                                            data-modal-toggle="#delete_item_modal"
-                                            onClick={() => setIsDropdownOpen(false)}
+                                            onClick={() => {
+                                                setIsDropdownOpen(false);
+                                                setSelectedPackage({ id: packageId, name: packageDetail?.name || '' });
+                                            }}
                                         >
                                             <Trash2 className="w-4 h-4 text-red-500" />
                                             <span className="text-red-500">Remove Package</span>
@@ -706,63 +706,42 @@ function PackageDetail() {
                 </div>
             </div>
 
+
+
             {/* Archive Modal */}
-            <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="archive_item_modal">
-                <div className="modal-content modal-center-y max-w-[500px]">
-                    <div className="modal-body overflow-y-auto scrollable-y flex flex-col gap-6 justify-center items-center my-4">
-                        <div className="modal-title text-lg">Archive Package</div>
-                        <div className="text-gray-800">Are you sure you want to archive this package?</div>
-                        <blockquote className="p-4 border-s-4 border-warning bg-warning-clarity rounded-md">
-                            <div className="flex gap-4">
-                                <div className="flex">
-                                    <i className="ki-filled ki-information-4 text-xl text-warning"></i>
-                                </div>
-                                <div className="flex flex-col gap-6">
-                                    <div className="flex flex-col gap-2">
-                                        <span className="text-warning-active font-semibold">Restore Package</span>
-                                        <span className="text-sm text-gray-800">
-                                            You can unarchive and restore packages from the package <strong>Archive Zone</strong>.
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <span className="text-warning-active font-semibold">Manual Removal from Associated Entities</span>
-                                        <span className="text-sm text-gray-800">
-                                            At this stage of system development, we are unable to automatically remove the item you are about to archive from the <strong>Package, Quotation Template and Quotation Orders</strong>. You will need to manually remove it from these sections.
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </blockquote>
-                        <div className="flex gap-4">
-                            <button className="btn btn-secondary btn-sm" data-modal-dismiss="true">Cancel</button>
-                            <button className="btn btn-success btn-sm" onClick={handleArchiveItem}>Archive</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DeleteModal
+                item={selectedArchivePackage}
+                modalTitle='Archive Package'
+                modalPrompt='Are you sure you want to archive this package? You can restore it later from the Archive Zone.'
+                notifySuccess='Package Archived Successfully!'
+                notifyError='Package archiving failed'
+                navigateUrl='/packages'
+                deleteFunction={handleArchiveItem}
+                onClose={() => setSelectedArchivePackage(null)}
+                buttonText='Archive'
+            />
 
             {/* Restore Modal */}
-            <div className="modal p-14" data-modal="true" data-modal-backdrop-static="true" id="restore_item_modal">
-                <div className="modal-content modal-center-y max-w-[500px]">
-                    <div className="modal-body overflow-y-auto scrollable-y flex flex-col gap-6 justify-center items-center my-4">
-                        <div className="modal-title text-lg">Restore Package</div>
-                        <div className="text-gray-800">Are you sure you want to restore this package?</div>
-                        <div className="flex gap-4">
-                            <button className="btn btn-secondary btn-sm" data-modal-dismiss="true">Cancel</button>
-                            <button className="btn btn-success btn-sm" onClick={handleRestoreItem}>Restore</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DeleteModal
+                item={selectedRestorePackage}
+                modalTitle='Restore Package'
+                modalPrompt='Are you sure you want to restore this package?'
+                notifySuccess='Package Restored Successfully!'
+                notifyError='Package restore failed'
+                deleteFunction={handleRestoreItem}
+                onClose={() => setSelectedRestorePackage(null)}
+                buttonText='Restore'
+            />
 
+            {/* Remove Modal */}
             <DeleteModal
                 item={selectedPackage}
                 modalTitle='Remove Package'
                 modalPrompt='Are you sure to permanently remove this package:'
                 notifySuccess='Package Removed Successfully!'
                 notifyError='Package remove failed'
-                navigateUrl='/packages'
                 deleteFunction={handleRemovePackage}
+                onClose={() => setSelectedPackage(null)}
             />
         </div>
     );
