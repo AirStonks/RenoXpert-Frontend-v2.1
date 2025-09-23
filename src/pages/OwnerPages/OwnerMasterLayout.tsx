@@ -18,7 +18,7 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
         
     //     // Chatwoot integration
     //     const loadChatwoot = () => {
-    //         const BASE_URL = "https://staging-aichat.spacify.asia";
+    //         const BASE_URL = "https://staging.belive.chat";
 
     //         // Check if script is already loaded
     //         if (document.querySelector('script[src*="sdk.js"]')) {
@@ -46,7 +46,7 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
     //                     };
                         
     //                     window.chatwootSDK.run({
-    //                         websiteToken: 'fmJB6isRgjvZ3XCJGy3cQjCh',
+    //                         websiteToken: 'tKnChNphJptwhfTBH3qki6Wy',
     //                         baseUrl: BASE_URL
     //                     });
                         
@@ -61,7 +61,7 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
     //                         window.$chatwoot.setUser(userData.id || "testing-user-uuid", {
     //                             name: userData.name || "Test User",
     //                             email: userData.email || "test@test.com",
-    //                             phone: userData.phone_no || "",
+    //                             phone_number: userData.phone_no || "",
     //                             avatar_url: "", // You can add avatar URL if available
     //                         });
 
@@ -124,15 +124,15 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
     //     };
     // }, [owner]);
 
-    // // Function to handle custom chat button click
-    // const handleChatButtonClick = () => {
-    //     if (window.$chatwoot) {
-    //         window.$chatwoot.toggle(); // Opens or closes the chat widget
-    //     }
-    // };
+    // Function to handle custom chat button click
+    const handleChatButtonClick = () => {
+        if (window.$chatwoot) {
+            window.$chatwoot.toggle(); // Opens or closes the chat widget
+        }
+    };
 
-    // // Expose the chat handler globally so it can be used by other components
-    // window.handleChatwootToggle = handleChatButtonClick;
+    // Expose the chat handler globally so it can be used by other components
+    window.handleChatwootToggle = handleChatButtonClick;
 
 
     return (

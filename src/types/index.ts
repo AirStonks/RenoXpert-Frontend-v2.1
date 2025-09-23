@@ -13,7 +13,7 @@ declare global {
             setUser: (uuid: string, user: {
                 name: string;
                 email: string;
-                phone?: string;
+                phone_number?: string;
                 avatar_url?: string;
             }) => void;
             toggle: () => void;
