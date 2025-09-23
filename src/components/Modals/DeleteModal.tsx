@@ -4,9 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, AlertTriangle, Shield } from 'lucide-react';
 import { Slide, toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-
-const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
 interface DeleteModalProps {
     item: { id: number | string, name: string } | null;
@@ -16,6 +13,8 @@ interface DeleteModalProps {
     notifyError?: string;
     navigateUrl?: string;
     deleteFunction: (id: number) => Promise<{ success: boolean; message?: string }>;
+    onClose?: () => void;
+    buttonText?: string;
 }
 
 function DeleteModal({
@@ -24,10 +23,10 @@ function DeleteModal({
     modalPrompt = "Are you sure you want to delete this item? This action cannot be undone.",
     notifySuccess = "Item deleted successfully.",
     notifyError = "Failed to delete item.",
-    navigateUrl,
     deleteFunction,
+    onClose,
+    buttonText = "Delete",
 }: DeleteModalProps) {
-    const navigate = useNavigate();
     const [isVisible, setIsVisible] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -73,12 +72,6 @@ function DeleteModal({
             if (response?.success) {
                 notify('success', notifySuccess);
                 handleClose();
-
-                if (navigateUrl) {
-                    navigate(LOCAL_PATH_PREFIX + navigateUrl);
-                } else {
-                    navigate(0);
-                }
             } else {
                 notify('error', notifyError);
             }
@@ -94,6 +87,7 @@ function DeleteModal({
         setIsVisible(false);
         setTimeout(() => {
             setIsDeleting(false);
+            onClose?.();
         }, 300);
     };
 
@@ -205,10 +199,10 @@ function DeleteModal({
                                     {isDeleting ? (
                                         <div className="flex items-center justify-center gap-2">
                                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Deleting...
+                                            {buttonText === 'Delete' ? 'Deleting...' : `${buttonText}ing...`}
                                         </div>
                                     ) : (
-                                        'Delete'
+                                        buttonText
                                     )}
                                 </button>
                             </div>
