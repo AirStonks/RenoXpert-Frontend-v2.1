@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useLocation, Link, useNavigate } from 'react-router-dom';
 import { CheckCircleIcon, AlertCircleIcon } from 'lucide-react';
-import useFetchOwnerRenoProgress from '../../../../hook/useFetchOwnerRenoProgress';
+import useFetchOwnerRenoProgress from '../../hook/useFetchOwnerRenoProgress';
 import { Slide, toast } from 'react-toastify';
 import { DocumentCheckIcon } from '@heroicons/react/24/outline';
 

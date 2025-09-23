@@ -9,13 +9,13 @@ export default function useFetchCampaignBookings(campaignId: number | null) {
 
     const fetchBookings = async () => {
         if (!campaignId) return;
-        
+
         setLoading(true);
         setError(null);
-        
+
         try {
-            const data = await getCampaignBookings(campaignId);
-            setBookings(data || []);
+            const response = await getCampaignBookings(campaignId);
+            setBookings(response.data || []);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to fetch bookings');
             setBookings([]);

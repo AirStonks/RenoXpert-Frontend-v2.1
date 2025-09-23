@@ -1559,6 +1559,28 @@ export interface Campaign {
     title?: string;
     description?: string;
     internal_description?: string;
+    packages?: CampaignPackage[];
+    base_amount?: number;
+    start_date?: string;
+    end_date?: string;
+    published_at?: string;
+    published_by?: User;
+    slot_total?: number;
+    slot_used?: number;
+    slot_remaining?: number;
+    status?: string;
+    metadata?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface CampaignPackage {
+    id?: string;
+    campaign_id?: string;
+    campaign?: Campaign;
+    name?: string;
+    description?: string;
+    internal_description?: string;
     base_amount?: number;
     start_date?: string;
     end_date?: string;
@@ -1576,9 +1598,12 @@ export interface Campaign {
 export interface Booking {
     id?: string;
     campaign_id?: string;
+    campaign_package_id?: string;
     campaign?: Campaign;
     user_id?: string;
     user?: User;
+    booking_no?: string;
+    booking_hash?: string;
     amount?: number;
     payment_url?: string;
     booked_at?: string;

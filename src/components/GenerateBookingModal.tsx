@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
-import { Campaign, Booking } from "../types"
+import { useEffect, useState } from "react"
+import { Campaign, Booking, CampaignPackage } from "../types"
 import { createBooking } from "../services/api"
 import { Slide, toast } from "react-toastify"
 import Loading from "./Loading"
@@ -12,6 +12,8 @@ import {
     Calendar,
     FileText,
     Plus,
+    Check,
+    Package,
 } from "lucide-react"
 
 interface GenerateBookingModalProps {
@@ -31,6 +33,8 @@ function GenerateBookingModal({ campaign, isOpen, onClose, onGenerate }: Generat
         internal_remark: '',
         expired_at: ''
     })
+
+    const [selectedPackage, setSelectedPackage] = useState<CampaignPackage | null>(null)
 
     // Handle animation state
     useEffect(() => {
@@ -85,6 +89,14 @@ function GenerateBookingModal({ campaign, isOpen, onClose, onGenerate }: Generat
         }))
     }
 
+    const handlePackageSelect = (pkg: CampaignPackage) => {
+        setSelectedPackage(pkg)
+        setFormData((prev) => ({
+            ...prev,
+            amount: pkg.base_amount || 0
+        }))
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!campaign) return
@@ -110,6 +122,7 @@ function GenerateBookingModal({ campaign, isOpen, onClose, onGenerate }: Generat
                     internal_remark: '',
                     expired_at: ''
                 })
+                setSelectedPackage(null)
 
                 onClose()
                 notify('success', "Booking Generated Successfully!")
@@ -117,8 +130,8 @@ function GenerateBookingModal({ campaign, isOpen, onClose, onGenerate }: Generat
                 notify('error', response.message || 'Failed to generate booking')
                 setIsLoading(false)
             }
-        } catch (error: any) {
-            console.log(error.message)
+        } catch (error: unknown) {
+            console.log(error instanceof Error ? error.message : 'Unknown error')
             notify('error', 'Error occurred during booking generation.')
         } finally {
             setIsLoading(false)
@@ -277,6 +290,58 @@ function GenerateBookingModal({ campaign, isOpen, onClose, onGenerate }: Generat
 
                             {/* Right Column - Booking Form */}
                             <div className="lg:col-span-3 space-y-6">
+                                {/* Package Selection Section */}
+                                {campaign.packages && campaign.packages.length > 0 && (
+                                    <div className="bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-2xl p-6 border border-purple-100/50">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="p-2 bg-purple-100 rounded-full">
+                                                <Package className="h-5 w-5 text-purple-600" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-gray-900">Select Package</h3>
+                                        </div>
+                                        
+                                        <div className="space-y-3">
+                                            {campaign.packages.map((pkg, index) => (
+                                                <div
+                                                    key={pkg.id || index}
+                                                    onClick={() => handlePackageSelect(pkg)}
+                                                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                                                        selectedPackage?.id === pkg.id
+                                                            ? 'border-purple-300 bg-purple-50/50 shadow-md'
+                                                            : 'border-gray-200 bg-white/60 hover:border-purple-200 hover:bg-purple-25/50'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <h4 className="font-semibold text-gray-900">{pkg.name || `Package ${index + 1}`}</h4>
+                                                                {selectedPackage?.id === pkg.id && (
+                                                                    <div className="p-1 bg-green-100 rounded-full">
+                                                                        <Check className="h-3 w-3 text-green-600" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            {pkg.description && (
+                                                                <p className="text-sm text-gray-600 mt-1">{pkg.description}</p>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-lg font-bold text-gray-900">
+                                                                {formatCurrency(pkg.base_amount || 0)}
+                                                            </div>
+                                                            {pkg.slot_total && (
+                                                                <div className="text-xs text-gray-500">
+                                                                    {pkg.slot_used || 0}/{pkg.slot_total} slots used
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-2xl p-6 border border-blue-100/50">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="p-2 bg-blue-100 rounded-full">

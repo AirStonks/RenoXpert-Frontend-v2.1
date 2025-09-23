@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
-import { 
-    ArrowLeft, 
-    Edit, 
-    Calendar, 
-    TrendingUp, 
-    Eye, 
+import {
+    ArrowLeft,
+    Edit,
+    Calendar,
+    TrendingUp,
+    Eye,
     EyeOff,
     BarChart3,
     Target,
@@ -13,15 +13,32 @@ import {
     DollarSign,
     CreditCard,
     Trash2,
-    Plus
+    Plus,
+    Copy,
+    Package,
+    ChevronDown,
+    ChevronUp,
+    Users,
 } from 'lucide-react';
-import { Booking } from '../../types';
+import { Booking, CampaignPackage } from '../../types';
 import useFetchCampaign from '../../hook/useFetchCampaign';
 import GenerateBookingModal from '../../components/GenerateBookingModal';
 import useFetchCampaignBookings from '../../hook/useFetchCampaignBookings';
 import { deleteBooking } from '../../services/api';
+import { Slide, toast } from 'react-toastify';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
+
+const CAMPAIGN_URL =
+    import.meta.env.VITE_APP_ENV === "production"
+        ? import.meta.env.VITE_CLIENT_URL
+        : import.meta.env.VITE_APP_ENV === "staging"
+            ? import.meta.env.VITE_STAGING_CLIENT_URL
+            : import.meta.env.VITE_APP_ENV === "local"
+                ? 'localhost:5173/campaign/'
+                : null;
+
+
 
 // Reusable: Bookings list view
 const BookingsListView = ({
@@ -30,12 +47,14 @@ const BookingsListView = ({
     onGenerateBooking,
     showGenerateButton = true,
     generateLabel = "Generate New Booking",
+    campaignId,
 }: {
     bookings: Booking[]
     onDeleteBooking: (bookingId: string) => void
     onGenerateBooking?: () => void
     showGenerateButton?: boolean
     generateLabel?: string
+    campaignId: string
 }) => {
     const currency = (v: number) => new Intl.NumberFormat("en-MY", { style: "currency", currency: "MYR", minimumFractionDigits: 2 }).format(v || 0)
     const format = (d?: string) => (d ? new Date(d).toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" }) : "-")
@@ -53,7 +72,36 @@ const BookingsListView = ({
                 return "bg-gray-50 text-gray-700 border-gray-200"
         }
     }
-    
+
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
+
+    const handleCopyLink = async (bookingHash: string, campaignId: string) => {
+        const bookingUrl = `${CAMPAIGN_URL}${campaignId}/booking?ref=${bookingHash}`;
+        try {
+            await navigator.clipboard.writeText(bookingUrl);
+            notify('success', 'Booking link copied to clipboard.');
+        } catch (err) {
+            const textArea = document.createElement('textarea');
+            textArea.value = bookingUrl;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            notify('error', 'Failed to copy link.');
+        }
+    }
+
     return (
         <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
             <div className="rounded-2xl border-2 border-green-100/60 overflow-hidden shadow-lg">
@@ -110,6 +158,16 @@ const BookingsListView = ({
                                     </span>
                                 </div>
                                 <div className="flex gap-2 justify-end">
+                                    {booking.booking_hash && (
+                                        <button
+                                            onClick={() => handleCopyLink(booking.booking_hash, campaignId)}
+                                            className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-all duration-200 flex items-center gap-1.5 shadow-sm"
+                                            title="Copy booking link"
+                                        >
+                                            <Copy className="h-3 w-3" />
+                                            Copy Link
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => booking.id && onDeleteBooking(booking.id)}
                                         disabled={!booking.id}
@@ -138,6 +196,163 @@ const BookingsListView = ({
                         </button>
                     </div>
                 )}
+            </div>
+        </div>
+    )
+}
+
+// Reusable: Campaign Packages List View
+const CampaignPackagesListView = ({
+    packages,
+    collapsedPackages,
+    onToggleCollapse,
+}: {
+    packages: CampaignPackage[]
+    collapsedPackages: Record<number, boolean>
+    onToggleCollapse: (index: number) => void
+}) => {
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    const currency = (v: number) => new Intl.NumberFormat("en-MY", { style: "currency", currency: "MYR", minimumFractionDigits: 2 }).format(v || 0);
+
+    const getStatusBadgeClass = (status?: string) => {
+        switch (status?.toLowerCase()) {
+            case 'active':
+                return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            case 'inactive':
+                return 'bg-red-50 text-red-700 border-red-200';
+            case 'draft':
+                return 'bg-amber-50 text-amber-700 border-amber-200';
+            case 'completed':
+                return 'bg-blue-50 text-blue-700 border-blue-200';
+            default:
+                return 'bg-gray-50 text-gray-700 border-gray-200';
+        }
+    };
+
+    return (
+        <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
+            <div className="rounded-2xl border-2 border-blue-100/60 overflow-hidden shadow-lg">
+                {/* Header */}
+                <div className="px-6 py-4 bg-gradient-to-r from-blue-500/8 to-indigo-500/8 border-b border-blue-200/50">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
+                            <Package className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-semibold text-gray-900">Campaign Packages</h4>
+                            <p className="text-sm text-gray-600">Manage and view all campaign packages</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Package Rows */}
+                <div className="divide-y divide-blue-100/50">
+                    {packages.length === 0 ? (
+                        <div className="p-8 text-center">
+                            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Packages Available</h4>
+                            <p className="text-gray-600">This campaign doesn't have any packages configured.</p>
+                        </div>
+                    ) : (
+                        packages.map((pkg, index) => (
+                            <div key={pkg.id || index} className="border border-gray-200 rounded-xl bg-white/50 overflow-hidden m-4">
+                                <div className="flex items-center justify-between p-4 bg-gray-50/50 border-b border-gray-200">
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => onToggleCollapse(index)}
+                                            className="p-1 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+                                        >
+                                            {collapsedPackages[index] ? (
+                                                <ChevronDown className="h-4 w-4 text-gray-600" />
+                                            ) : (
+                                                <ChevronUp className="h-4 w-4 text-gray-600" />
+                                            )}
+                                        </button>
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl shadow-sm">
+                                                <Package className="h-4 w-4 text-white" />
+                                            </div>
+                                            <div>
+                                                <h6 className="font-semibold text-gray-900 text-sm">{pkg.name || `Package ${index + 1}`}</h6>
+                                                <p className="text-xs text-gray-600">ID: {pkg.id || 'N/A'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(pkg.status)}`}>
+                                            {pkg.status || 'Unknown'}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                {!collapsedPackages[index] && (
+                                    <div className="p-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {/* Package Description */}
+                                            {pkg.description && (
+                                                <div className="md:col-span-2 lg:col-span-3">
+                                                    <h6 className="text-sm font-medium text-gray-700 mb-2">Description</h6>
+                                                    <p className="text-sm text-gray-600 bg-gray-50/50 p-3 rounded-lg">{pkg.description}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Internal Description */}
+                                            {pkg.internal_description && (
+                                                <div className="md:col-span-2 lg:col-span-3">
+                                                    <h6 className="text-sm font-medium text-gray-700 mb-2">Internal Description</h6>
+                                                    <p className="text-sm text-gray-600 bg-blue-50/50 p-3 rounded-lg">{pkg.internal_description}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Base Amount */}
+                                            <div className="p-4 bg-gradient-to-r from-green-50/50 to-emerald-50/50 rounded-xl">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <DollarSign className="h-4 w-4 text-green-600" />
+                                                    <span className="text-sm font-medium text-gray-700">Base Amount</span>
+                                                </div>
+                                                <p className="font-semibold text-gray-900">{currency(pkg.base_amount || 0)}</p>
+                                            </div>
+
+                                            {/* Slot Information */}
+                                            <div className="p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-xl">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Users className="h-4 w-4 text-blue-600" />
+                                                    <span className="text-sm font-medium text-gray-700">Slots</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-gray-600">Total: <span className="font-semibold text-gray-900">{pkg.slot_total || 0}</span></p>
+                                                    <p className="text-sm text-gray-600">Used: <span className="font-semibold text-blue-600">{pkg.slot_used || 0}</span></p>
+                                                    <p className="text-sm text-gray-600">Remaining: <span className="font-semibold text-green-600">{(pkg.slot_total || 0) - (pkg.slot_used || 0)}</span></p>
+                                                </div>
+                                            </div>
+
+                                            {/* Date Range */}
+                                            <div className="p-4 bg-gradient-to-r from-amber-50/50 to-orange-50/50 rounded-xl">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Calendar className="h-4 w-4 text-amber-600" />
+                                                    <span className="text-sm font-medium text-gray-700">Date Range</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm text-gray-600">Start: <span className="font-semibold text-gray-900">{formatDate(pkg.start_date)}</span></p>
+                                                    <p className="text-sm text-gray-600">End: <span className="font-semibold text-gray-900">{formatDate(pkg.end_date)}</span></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
         </div>
     )
@@ -209,10 +424,24 @@ export default function CampaignDetail() {
     const [showInternalDescription, setShowInternalDescription] = useState<boolean>(false);
     const [activeTab, setActiveTab] = useState<string>("bookings");
     const [showGenerateBookingModal, setShowGenerateBookingModal] = useState<boolean>(false);
+    const [collapsedPackages, setCollapsedPackages] = useState<Record<number, boolean>>({});
 
     const campaignId = id ? parseInt(id, 10) : null;
     const { campaign, loading, error } = useFetchCampaign(campaignId);
     const { bookings, loading: bookingsLoading, refetch: refetchBookings } = useFetchCampaignBookings(campaignId);
+
+    const notify = (type: 'success' | 'error', message: string) => {
+        (toast[type] as (message: string, options?: object) => void)(message, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            theme: localStorage.getItem('theme'),
+            transition: Slide,
+        });
+    };
 
     const handleBackClick = () => {
         if (state?.fromUrl) {
@@ -240,10 +469,19 @@ export default function CampaignDetail() {
             try {
                 await deleteBooking(bookingId);
                 refetchBookings();
+                notify('success', 'Booking deleted successfully.');
             } catch (error) {
+                notify('error', 'Failed to delete booking.');
                 console.error('Error deleting booking:', error);
             }
         }
+    };
+
+    const togglePackageCollapse = (index: number) => {
+        setCollapsedPackages(prev => ({
+            ...prev,
+            [index]: !prev[index]
+        }));
     };
 
 
@@ -422,14 +660,14 @@ export default function CampaignDetail() {
                             <span className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusBadgeClass(campaign.status)}`}>
                                 {campaign.status?.charAt(0).toUpperCase() + campaign.status?.slice(1)}
                             </span>
-                            <button 
+                            <button
                                 onClick={handleGenerateBooking}
                                 className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors duration-200 flex items-center gap-2"
                             >
                                 <CreditCard className="h-4 w-4" />
                                 Generate Booking
                             </button>
-                            <button 
+                            <button
                                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2"
                                 onClick={handleEditClick}
                             >
@@ -576,7 +814,7 @@ export default function CampaignDetail() {
                     </div>
                     <div className="px-6 pb-6">
                         {/* Custom Tab Navigation */}
-                        <div className="grid grid-cols-3 bg-gray-100 rounded-2xl p-1 mb-6">
+                        <div className="grid grid-cols-4 bg-gray-100 rounded-2xl p-1 mb-6">
                             <button
                                 onClick={() => setActiveTab("bookings")}
                                 className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${activeTab === "bookings"
@@ -585,6 +823,15 @@ export default function CampaignDetail() {
                                     }`}
                             >
                                 Bookings
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("packages")}
+                                className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${activeTab === "packages"
+                                    ? "bg-white shadow-sm text-gray-900"
+                                    : "text-gray-600 hover:text-gray-900"
+                                    }`}
+                            >
+                                Packages
                             </button>
                             <button
                                 onClick={() => setActiveTab("configuration")}
@@ -627,6 +874,7 @@ export default function CampaignDetail() {
                                             onGenerateBooking={handleGenerateBooking}
                                             showGenerateButton={true}
                                             generateLabel="Generate New Booking"
+                                            campaignId={campaign.id}
                                         />
                                     ) : (
                                         <div className="p-8 bg-gray-50/50 rounded-xl text-center">
@@ -640,6 +888,31 @@ export default function CampaignDetail() {
                                                 <Plus className="h-4 w-4" />
                                                 Generate First Booking
                                             </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === "packages" && (
+                            <div className="space-y-6">
+                                {/* Campaign Packages Section */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-semibold">Campaign Packages</h3>
+                                        <span className="text-sm text-gray-500">{campaign.packages?.length || 0} package(s)</span>
+                                    </div>
+                                    {campaign.packages && campaign.packages.length > 0 ? (
+                                        <CampaignPackagesListView
+                                            packages={campaign.packages}
+                                            collapsedPackages={collapsedPackages}
+                                            onToggleCollapse={togglePackageCollapse}
+                                        />
+                                    ) : (
+                                        <div className="p-8 bg-gray-50/50 rounded-xl text-center">
+                                            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Packages Available</h4>
+                                            <p className="text-gray-600 mb-4">This campaign doesn't have any packages configured.</p>
                                         </div>
                                     )}
                                 </div>

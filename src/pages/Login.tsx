@@ -131,6 +131,8 @@ const Login: React.FC = () => {
                         {loading ? 'Signing In...' : 'Sign In'}
                     </button>
                 </form>
+
+                {/* Social Login */}
             </div>
 
             <ToastContainer />

@@ -27,8 +27,8 @@ import DiscountFeeMain from './pages/DiscountFee/DiscountFeeMain';
 import EditPackage from './pages/Package/EditPackage';
 import ViewQuotation from './pages/OwnerPages/ViewQuotation';
 import Test from './pages/Test';
-import PaymentSuccess from './pages/OwnerPages/PaymentSuccess';
-import PaymentError from './pages/OwnerPages/PaymentError';
+import PaymentSuccess from './pages/CampaignPages/PaymentSuccess';
+import PaymentError from './pages/CampaignPages/PaymentError';
 import OrderDetail from './pages/Order/OrderDetail';
 import OrderOverview from './pages/OwnerPages/OrderOverview';
 // import OTPVerifyPage from './pages/OTPVerifyPage';
@@ -98,7 +98,7 @@ import POInvoicePrint from './pages/PO/components/POInvoicePrint';
 import DIFormMain from './pages/ProjectManagement/DIFormMain';
 import PublicDIReport from './pages/ProjectManagement/PublicDIReport';
 import CustomAddonPackage from './pages/OwnerPages/CustomAddonPackage';
-import OwnerHandoverAgreementPage from './pages/OwnerPages/components/home/OwnerHandoverAgreementPage';
+import OwnerHandoverAgreementPage from './pages/OwnerPages/OwnerHandoverAgreementPage';
 import OTPVerifyHandover from './pages/OwnerPages/OTPVerifyHandover';
 import DetailedOrderPrint from './pages/Order/components/DetailedOrderPrint';
 import PMMainV3 from './pages/ProjectManagement/PMMainV3';
@@ -117,6 +117,7 @@ import CampaignMain from './pages/Campaign/CampaignMain';
 import AddCampaign from './pages/Campaign/AddCampaign';
 import EditCampaign from './pages/Campaign/EditCampaign';
 import CampaignDetail from './pages/Campaign/CampaignDetail';
+import CampaignBookingPage from './pages/CampaignPages/CampaignBookingPage';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -412,7 +413,9 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
     ],
     // Campaign
     [
-        // { path: '/campaign/login', element: <CampaignLogin />, layout: null },
+        { path: '/campaign/:campaignId/booking', element: <CampaignBookingPage />, layout: null },
+        { path: '/campaign/:campaignId/booking/payment/success', element: <PaymentSuccess />, layout: null },
+        { path: '/campaign/:campaignId/booking/payment/declined', element: <PaymentError />, layout: null },
     ],
     // General
     [

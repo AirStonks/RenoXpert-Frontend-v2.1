@@ -227,3 +227,15 @@ export const fetchProperty = async (propertyId: number, signal?: AbortSignal) =>
         throw error; // Ensure to throw the error if needed
     }
 };
+
+export const submitOwnerHandover = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/owner-handover/submit`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handleOwner401Error(error as AxiosError);
+        throw error;
+    }
+};
