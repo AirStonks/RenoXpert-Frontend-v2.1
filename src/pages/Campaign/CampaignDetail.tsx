@@ -12,19 +12,12 @@ import {
     Download,
     DollarSign,
     CreditCard,
-    Trash2,
-    Plus,
-    Copy,
     Package,
-    ChevronDown,
-    ChevronUp,
     Users,
 } from 'lucide-react';
-import { Booking, CampaignPackage } from '../../types';
+import { Booking, CampaignPackage, Campaign } from '../../types';
 import useFetchCampaign from '../../hook/useFetchCampaign';
-import GenerateBookingModal from '../../components/GenerateBookingModal';
 import useFetchCampaignBookings from '../../hook/useFetchCampaignBookings';
-import { deleteBooking } from '../../services/api';
 import { Slide, toast } from 'react-toastify';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
@@ -43,18 +36,10 @@ const CAMPAIGN_URL =
 // Reusable: Bookings list view
 const BookingsListView = ({
     bookings,
-    onDeleteBooking,
-    onGenerateBooking,
-    showGenerateButton = true,
-    generateLabel = "Generate New Booking",
-    campaignId,
+    campaign,
 }: {
     bookings: Booking[]
-    onDeleteBooking: (bookingId: string) => void
-    onGenerateBooking?: () => void
-    showGenerateButton?: boolean
-    generateLabel?: string
-    campaignId: string
+    campaign?: Campaign
 }) => {
     const currency = (v: number) => new Intl.NumberFormat("en-MY", { style: "currency", currency: "MYR", minimumFractionDigits: 2 }).format(v || 0)
     const format = (d?: string) => (d ? new Date(d).toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" }) : "-")
@@ -70,35 +55,6 @@ const BookingsListView = ({
                 return "bg-red-50 text-red-700 border-red-200"
             default:
                 return "bg-gray-50 text-gray-700 border-gray-200"
-        }
-    }
-
-    const notify = (type: 'success' | 'error', message: string) => {
-        (toast[type] as (message: string, options?: object) => void)(message, {
-            position: "top-center",
-            autoClose: 3000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            theme: localStorage.getItem('theme'),
-            transition: Slide,
-        });
-    };
-
-    const handleCopyLink = async (bookingHash: string, campaignId: string) => {
-        const bookingUrl = `${CAMPAIGN_URL}${campaignId}/booking?ref=${bookingHash}`;
-        try {
-            await navigator.clipboard.writeText(bookingUrl);
-            notify('success', 'Booking link copied to clipboard.');
-        } catch (err) {
-            const textArea = document.createElement('textarea');
-            textArea.value = bookingUrl;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            notify('error', 'Failed to copy link.');
         }
     }
 
@@ -121,7 +77,7 @@ const BookingsListView = ({
                         <div>Booked Date</div>
                         <div>Amount</div>
                         <div>Status</div>
-                        <div className="text-right">Actions</div>
+                        <div>Campaign Package</div>
                     </div>
                 </div>
 
@@ -157,65 +113,41 @@ const BookingsListView = ({
                                         {booking.status || 'Unknown'}
                                     </span>
                                 </div>
-                                <div className="flex gap-2 justify-end">
-                                    {booking.booking_hash && (
-                                        <button
-                                            onClick={() => handleCopyLink(booking.booking_hash, campaignId)}
-                                            className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-all duration-200 flex items-center gap-1.5 shadow-sm"
-                                            title="Copy booking link"
-                                        >
-                                            <Copy className="h-3 w-3" />
-                                            Copy Link
-                                        </button>
+                                <div>
+                                    {booking.campaign_package_id ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="p-1 bg-blue-100 rounded-lg">
+                                                <Package className="h-3 w-3 text-blue-600" />
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-900">
+                                                {campaign?.packages?.find(pkg => pkg.id === booking.campaign_package_id)?.name || `Package ${booking.campaign_package_id}`}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-sm text-gray-500">-</span>
                                     )}
-                                    <button
-                                        onClick={() => booking.id && onDeleteBooking(booking.id)}
-                                        disabled={!booking.id}
-                                        className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-all duration-200 flex items-center gap-1.5 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <Trash2 className="h-3 w-3" />
-                                        Delete
-                                    </button>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Generate Button */}
-                {showGenerateButton && (
-                    <div className="px-6 py-4 bg-gradient-to-r from-green-50/50 to-emerald-50/50 border-t border-green-200/50">
-                        <button
-                            onClick={onGenerateBooking}
-                            className="w-full px-4 py-3 text-sm font-medium text-green-700 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border-2 border-dashed border-green-300 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md group"
-                        >
-                            <div className="p-1 bg-green-500 rounded-lg group-hover:bg-green-600 transition-colors">
-                                <Plus className="h-4 w-4 text-white" />
-                            </div>
-                            {generateLabel}
-                        </button>
-                    </div>
-                )}
             </div>
         </div>
     )
 }
 
-// Reusable: Campaign Packages List View
+// Reusable: Campaign Packages Table View
 const CampaignPackagesListView = ({
     packages,
-    collapsedPackages,
-    onToggleCollapse,
 }: {
     packages: CampaignPackage[]
-    collapsedPackages: Record<number, boolean>
-    onToggleCollapse: (index: number) => void
 }) => {
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A';
         return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
-            month: 'long',
+            month: 'short',
             day: 'numeric'
         });
     };
@@ -253,106 +185,99 @@ const CampaignPackagesListView = ({
                     </div>
                 </div>
 
-                {/* Package Rows */}
-                <div className="divide-y divide-blue-100/50">
-                    {packages.length === 0 ? (
-                        <div className="p-8 text-center">
-                            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Packages Available</h4>
-                            <p className="text-gray-600">This campaign doesn't have any packages configured.</p>
-                        </div>
-                    ) : (
-                        packages.map((pkg, index) => (
-                            <div key={pkg.id || index} className="border border-gray-200 rounded-xl bg-white/50 overflow-hidden m-4">
-                                <div className="flex items-center justify-between p-4 bg-gray-50/50 border-b border-gray-200">
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => onToggleCollapse(index)}
-                                            className="p-1 hover:bg-gray-200 rounded-lg transition-colors duration-200"
-                                        >
-                                            {collapsedPackages[index] ? (
-                                                <ChevronDown className="h-4 w-4 text-gray-600" />
-                                            ) : (
-                                                <ChevronUp className="h-4 w-4 text-gray-600" />
-                                            )}
-                                        </button>
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl shadow-sm">
-                                                <Package className="h-4 w-4 text-white" />
-                                            </div>
-                                            <div>
-                                                <h6 className="font-semibold text-gray-900 text-sm">{pkg.name || `Package ${index + 1}`}</h6>
-                                                <p className="text-xs text-gray-600">ID: {pkg.id || 'N/A'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(pkg.status)}`}>
-                                            {pkg.status || 'Unknown'}
-                                        </span>
-                                    </div>
-                                </div>
-                                
-                                {!collapsedPackages[index] && (
-                                    <div className="p-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {/* Package Description */}
-                                            {pkg.description && (
-                                                <div className="md:col-span-2 lg:col-span-3">
-                                                    <h6 className="text-sm font-medium text-gray-700 mb-2">Description</h6>
-                                                    <p className="text-sm text-gray-600 bg-gray-50/50 p-3 rounded-lg">{pkg.description}</p>
+                {/* Table */}
+                {packages.length === 0 ? (
+                    <div className="p-8 text-center">
+                        <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <h4 className="text-lg font-semibold text-gray-900 mb-2">No Packages Available</h4>
+                        <p className="text-gray-600">This campaign doesn't have any packages configured.</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50/50 border-b border-gray-200">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        Package Details
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        Amount
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        Slots
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                        Date Range
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {packages.map((pkg, index) => (
+                                    <tr key={pkg.id || index} className="hover:bg-gray-50/50 transition-colors duration-200">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl shadow-sm">
+                                                    <Package className="h-4 w-4 text-white" />
                                                 </div>
-                                            )}
-
-                                            {/* Internal Description */}
-                                            {pkg.internal_description && (
-                                                <div className="md:col-span-2 lg:col-span-3">
-                                                    <h6 className="text-sm font-medium text-gray-700 mb-2">Internal Description</h6>
-                                                    <p className="text-sm text-gray-600 bg-blue-50/50 p-3 rounded-lg">{pkg.internal_description}</p>
-                                                </div>
-                                            )}
-
-                                            {/* Base Amount */}
-                                            <div className="p-4 bg-gradient-to-r from-green-50/50 to-emerald-50/50 rounded-xl">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <DollarSign className="h-4 w-4 text-green-600" />
-                                                    <span className="text-sm font-medium text-gray-700">Base Amount</span>
-                                                </div>
-                                                <p className="font-semibold text-gray-900">{currency(pkg.base_amount || 0)}</p>
-                                            </div>
-
-                                            {/* Slot Information */}
-                                            <div className="p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-xl">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <Users className="h-4 w-4 text-blue-600" />
-                                                    <span className="text-sm font-medium text-gray-700">Slots</span>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-gray-600">Total: <span className="font-semibold text-gray-900">{pkg.slot_total || 0}</span></p>
-                                                    <p className="text-sm text-gray-600">Used: <span className="font-semibold text-blue-600">{pkg.slot_used || 0}</span></p>
-                                                    <p className="text-sm text-gray-600">Remaining: <span className="font-semibold text-green-600">{(pkg.slot_total || 0) - (pkg.slot_used || 0)}</span></p>
+                                                <div>
+                                                    <h6 className="font-semibold text-gray-900 text-sm">{pkg.name || `Package ${index + 1}`}</h6>
+                                                    <p className="text-xs text-gray-600">ID: {pkg.id || 'N/A'}</p>
+                                                    {pkg.description && (
+                                                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{pkg.description}</p>
+                                                    )}
                                                 </div>
                                             </div>
-
-                                            {/* Date Range */}
-                                            <div className="p-4 bg-gradient-to-r from-amber-50/50 to-orange-50/50 rounded-xl">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <Calendar className="h-4 w-4 text-amber-600" />
-                                                    <span className="text-sm font-medium text-gray-700">Date Range</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(pkg.status)}`}>
+                                                {pkg.status || 'Unknown'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-semibold text-gray-900">{currency(pkg.base_amount || 0)}</p>
+                                                {pkg.booking_amount && pkg.booking_amount !== pkg.base_amount && (
+                                                    <p className="text-xs text-gray-600">Booking: {currency(pkg.booking_amount)}</p>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="h-3 w-3 text-blue-600" />
+                                                    <span className="text-xs text-gray-600">Total: {pkg.slot_total || 0}</span>
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-sm text-gray-600">Start: <span className="font-semibold text-gray-900">{formatDate(pkg.start_date)}</span></p>
-                                                    <p className="text-sm text-gray-600">End: <span className="font-semibold text-gray-900">{formatDate(pkg.end_date)}</span></p>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                    <span className="text-xs text-gray-600">Used: {pkg.slot_used || 0}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                    <span className="text-xs text-gray-600">Remaining: {(pkg.slot_total || 0) - (pkg.slot_used || 0)}</span>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))
-                    )}
-                </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <Calendar className="h-3 w-3 text-amber-600" />
+                                                    <span className="text-xs text-gray-600">Start: {formatDate(pkg.start_date)}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Calendar className="h-3 w-3 text-amber-600" />
+                                                    <span className="text-xs text-gray-600">End: {formatDate(pkg.end_date)}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </div>
     )
@@ -423,12 +348,10 @@ export default function CampaignDetail() {
     const { state } = useLocation();
     const [showInternalDescription, setShowInternalDescription] = useState<boolean>(false);
     const [activeTab, setActiveTab] = useState<string>("bookings");
-    const [showGenerateBookingModal, setShowGenerateBookingModal] = useState<boolean>(false);
-    const [collapsedPackages, setCollapsedPackages] = useState<Record<number, boolean>>({});
 
     const campaignId = id ? parseInt(id, 10) : null;
     const { campaign, loading, error } = useFetchCampaign(campaignId);
-    const { bookings, loading: bookingsLoading, refetch: refetchBookings } = useFetchCampaignBookings(campaignId);
+    const { bookings, loading: bookingsLoading } = useFetchCampaignBookings(campaignId);
 
     const notify = (type: 'success' | 'error', message: string) => {
         (toast[type] as (message: string, options?: object) => void)(message, {
@@ -455,34 +378,30 @@ export default function CampaignDetail() {
         navigate(`${LOCAL_PATH_PREFIX}campaigns/${id}/edit`);
     };
 
-    const handleGenerateBooking = () => {
-        setShowGenerateBookingModal(true);
-    };
+    const handleCopyCampaignUrl = async () => {
+        if (!campaign?.slug) {
+            notify('error', 'Campaign slug not available');
+            return;
+        }
 
-    const handleBookingGenerated = () => {
-        setShowGenerateBookingModal(false);
-        refetchBookings();
-    };
-
-    const handleDeleteBooking = async (bookingId: string) => {
-        if (window.confirm('Are you sure you want to delete this booking?')) {
-            try {
-                await deleteBooking(bookingId);
-                refetchBookings();
-                notify('success', 'Booking deleted successfully.');
-            } catch (error) {
-                notify('error', 'Failed to delete booking.');
-                console.error('Error deleting booking:', error);
-            }
+        const campaignUrl = `${CAMPAIGN_URL}campaigns/${campaign.slug}`;
+        try {
+            await navigator.clipboard.writeText(campaignUrl);
+            notify('success', 'Campaign URL copied to clipboard!');
+        } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = campaignUrl;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            notify('success', 'Campaign URL copied to clipboard!');
         }
     };
 
-    const togglePackageCollapse = (index: number) => {
-        setCollapsedPackages(prev => ({
-            ...prev,
-            [index]: !prev[index]
-        }));
-    };
+
+
 
 
     const formatDate = (dateString?: string) => {
@@ -521,8 +440,40 @@ export default function CampaignDetail() {
     };
 
     const calculateProgress = () => {
-        if (!campaign?.slot_total || !campaign?.slot_used) return 0;
+        if (!campaign) return 0;
+        
+        // If campaign has packages, calculate aggregated metrics from packages
+        if (campaign.packages && campaign.packages.length > 0) {
+            const totalSlots = campaign.packages.reduce((sum, pkg) => sum + (pkg.slot_total || 0), 0);
+            const usedSlots = campaign.packages.reduce((sum, pkg) => sum + (pkg.slot_used || 0), 0);
+            
+            if (totalSlots === 0) return 0;
+            return usedSlots / totalSlots;
+        }
+        
+        // Fallback to campaign-level metrics
+        if (!campaign.slot_total || !campaign.slot_used) return 0;
         return (campaign.slot_used / campaign.slot_total);
+    };
+
+    const getAggregatedSlotMetrics = () => {
+        if (!campaign) return { totalSlots: 0, usedSlots: 0, remainingSlots: 0 };
+        
+        // If campaign has packages, calculate aggregated metrics from packages
+        if (campaign.packages && campaign.packages.length > 0) {
+            const totalSlots = campaign.packages.reduce((sum, pkg) => sum + (pkg.slot_total || 0), 0);
+            const usedSlots = campaign.packages.reduce((sum, pkg) => sum + (pkg.slot_used || 0), 0);
+            const remainingSlots = totalSlots - usedSlots;
+            
+            return { totalSlots, usedSlots, remainingSlots };
+        }
+        
+        // Fallback to campaign-level metrics
+        const totalSlots = campaign.slot_total || 0;
+        const usedSlots = campaign.slot_used || 0;
+        const remainingSlots = totalSlots - usedSlots;
+        
+        return { totalSlots, usedSlots, remainingSlots };
     };
 
     const getDaysRemaining = () => {
@@ -636,6 +587,7 @@ export default function CampaignDetail() {
 
     const metadata = parseMetadata(campaign.metadata);
     const progress = calculateProgress();
+    const slotMetrics = getAggregatedSlotMetrics();
     const daysRemaining = getDaysRemaining();
 
     return (
@@ -661,11 +613,10 @@ export default function CampaignDetail() {
                                 {campaign.status?.charAt(0).toUpperCase() + campaign.status?.slice(1)}
                             </span>
                             <button
-                                onClick={handleGenerateBooking}
-                                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors duration-200 flex items-center gap-2"
+                                onClick={handleCopyCampaignUrl}
+                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
                             >
-                                <CreditCard className="h-4 w-4" />
-                                Generate Booking
+                                Copy Campaign URL
                             </button>
                             <button
                                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2"
@@ -709,6 +660,21 @@ export default function CampaignDetail() {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Thumbnail */}
+                                {campaign.thumbnail && (
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-medium text-gray-700">Campaign Thumbnail</h3>
+                                        <div className="relative">
+                                            <img 
+                                                src={typeof campaign.thumbnail === 'string' ? campaign.thumbnail : (campaign.thumbnail as { file_url?: string }).file_url || String(campaign.thumbnail)} 
+                                                alt={campaign.title || 'Campaign thumbnail'} 
+                                                className="w-full h-48 object-cover rounded-xl border border-gray-200 shadow-sm"
+                                            />
+                                            <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 rounded-xl"></div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Timeline */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -772,38 +738,57 @@ export default function CampaignDetail() {
                     {/* Progress Tracker */}
                     <div className="backdrop-blur-sm flex bg-white/90 border-0 shadow-lg rounded-3xl overflow-hidden lg:col-span-2 min-h-[400px]">
                         <CampaignProgressPanel
-                            title="Slot Usage Progress"
+                            title={campaign.packages && campaign.packages.length > 0 ? "Package Slot Usage Progress" : "Slot Usage Progress"}
                             percentage={progress}
-                            usedSlots={campaign.slot_used || 0}
-                            totalSlots={campaign.slot_total || 0}
+                            usedSlots={slotMetrics.usedSlots}
+                            totalSlots={slotMetrics.totalSlots}
                         />
                         <div className="w-px bg-gray-200"></div>
-                        {/* <div className="flex flex-col w-full">
+                        <div className="flex flex-col w-full">
                             <div className="p-6 pb-4">
                                 <div className="flex items-center gap-3 text-lg font-semibold mb-6">
                                     <div className="p-2 bg-green-50 rounded-full">
                                         <BarChart3 className="h-5 w-5 text-green-600" />
                                     </div>
-                                    Campaign Stats
+                                    {campaign.packages && campaign.packages.length > 0 ? "Package Breakdown" : "Campaign Stats"}
                                 </div>
                             </div>
                             <div className="px-6 pb-6 space-y-6">
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center p-3 bg-blue-50/50 rounded-xl">
-                                        <span className="text-sm font-medium text-gray-700">Engagement Rate</span>
-                                        <span className="font-bold text-blue-600">78.5%</span>
+                                {campaign.packages && campaign.packages.length > 0 ? (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center p-3 bg-blue-50/50 rounded-xl">
+                                            <span className="text-sm font-medium text-gray-700">Total Packages</span>
+                                            <span className="font-bold text-blue-600">{campaign.packages.length}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center p-3 bg-green-50/50 rounded-xl">
+                                            <span className="text-sm font-medium text-gray-700">Active Packages</span>
+                                            <span className="font-bold text-green-600">
+                                                {campaign.packages.filter(pkg => pkg.status === 'active').length}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center p-3 bg-purple-50/50 rounded-xl">
+                                            <span className="text-sm font-medium text-gray-700">Remaining Slots</span>
+                                            <span className="font-bold text-purple-600">{slotMetrics.remainingSlots}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between items-center p-3 bg-green-50/50 rounded-xl">
-                                        <span className="text-sm font-medium text-gray-700">Conversion Rate</span>
-                                        <span className="font-bold text-green-600">12.3%</span>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center p-3 bg-blue-50/50 rounded-xl">
+                                            <span className="text-sm font-medium text-gray-700">Engagement Rate</span>
+                                            <span className="font-bold text-blue-600">78.5%</span>
+                                        </div>
+                                        <div className="flex justify-between items-center p-3 bg-green-50/50 rounded-xl">
+                                            <span className="text-sm font-medium text-gray-700">Conversion Rate</span>
+                                            <span className="font-bold text-green-600">12.3%</span>
+                                        </div>
+                                        <div className="flex justify-between items-center p-3 bg-purple-50/50 rounded-xl">
+                                            <span className="text-sm font-medium text-gray-700">ROI</span>
+                                            <span className="font-bold text-purple-600">245%</span>
+                                        </div>
                                     </div>
-                                    <div className="flex justify-between items-center p-3 bg-purple-50/50 rounded-xl">
-                                        <span className="text-sm font-medium text-gray-700">ROI</span>
-                                        <span className="font-bold text-purple-600">245%</span>
-                                    </div>
-                                </div>
+                                )}
                             </div>
-                        </div> */}
+                        </div>
                     </div>
                 </div>
 
@@ -870,24 +855,13 @@ export default function CampaignDetail() {
                                     ) : bookings.length > 0 ? (
                                         <BookingsListView
                                             bookings={bookings}
-                                            onDeleteBooking={handleDeleteBooking}
-                                            onGenerateBooking={handleGenerateBooking}
-                                            showGenerateButton={true}
-                                            generateLabel="Generate New Booking"
-                                            campaignId={campaign.id}
+                                            campaign={campaign}
                                         />
                                     ) : (
                                         <div className="p-8 bg-gray-50/50 rounded-xl text-center">
                                             <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                                             <h4 className="text-lg font-semibold text-gray-900 mb-2">No Bookings Generated</h4>
-                                            <p className="text-gray-600 mb-4">No bookings have been created for this campaign yet.</p>
-                                            <button
-                                                onClick={handleGenerateBooking}
-                                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2 mx-auto"
-                                            >
-                                                <Plus className="h-4 w-4" />
-                                                Generate First Booking
-                                            </button>
+                                            <p className="text-gray-600">No bookings have been created for this campaign yet.</p>
                                         </div>
                                     )}
                                 </div>
@@ -905,8 +879,6 @@ export default function CampaignDetail() {
                                     {campaign.packages && campaign.packages.length > 0 ? (
                                         <CampaignPackagesListView
                                             packages={campaign.packages}
-                                            collapsedPackages={collapsedPackages}
-                                            onToggleCollapse={togglePackageCollapse}
                                         />
                                     ) : (
                                         <div className="p-8 bg-gray-50/50 rounded-xl text-center">
@@ -979,13 +951,6 @@ export default function CampaignDetail() {
                 </div>
             </div>
 
-            {/* Generate Booking Modal */}
-            <GenerateBookingModal
-                campaign={campaign}
-                isOpen={showGenerateBookingModal}
-                onClose={() => setShowGenerateBookingModal(false)}
-                onGenerate={handleBookingGenerated}
-            />
         </div>
     );
 }

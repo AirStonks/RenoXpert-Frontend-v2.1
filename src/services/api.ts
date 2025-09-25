@@ -2794,8 +2794,30 @@ export const campaignDetail = async (id: string | number) => {
 
 export const createCampaign = async (campaignData: any) => {
     try {
-        const response = await axios.post(API_URL + 'campaigns', campaignData, {
-            headers: getAuthHeaders()
+        const formData = new FormData();
+        
+        // Add all campaign data to FormData
+        Object.keys(campaignData).forEach(key => {
+            if (key === 'packages' && campaignData[key]) {
+                // Handle packages array
+                campaignData[key].forEach((pkg: any, index: number) => {
+                    Object.keys(pkg).forEach(pkgKey => {
+                        formData.append(`packages[${index}][${pkgKey}]`, pkg[pkgKey]);
+                    });
+                });
+            } else if (key === 'thumbnail' && campaignData[key] instanceof File) {
+                // Handle thumbnail file
+                formData.append('thumbnail', campaignData[key]);
+            } else if (campaignData[key] !== null && campaignData[key] !== undefined) {
+                formData.append(key, campaignData[key]);
+            }
+        });
+
+        const response = await axios.post(API_URL + 'campaigns', formData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'multipart/form-data',
+            }
         });
         return response.data;
     } catch (error) {
@@ -2805,8 +2827,30 @@ export const createCampaign = async (campaignData: any) => {
 
 export const updateCampaign = async (id: string | number, campaignData: any) => {
     try {
-        const response = await axios.put(API_URL + `campaigns/${id}`, campaignData, {
-            headers: getAuthHeaders()
+        const formData = new FormData();
+        
+        // Add all campaign data to FormData
+        Object.keys(campaignData).forEach(key => {
+            if (key === 'packages' && campaignData[key]) {
+                // Handle packages array
+                campaignData[key].forEach((pkg: any, index: number) => {
+                    Object.keys(pkg).forEach(pkgKey => {
+                        formData.append(`packages[${index}][${pkgKey}]`, pkg[pkgKey]);
+                    });
+                });
+            } else if (key === 'thumbnail' && campaignData[key] instanceof File) {
+                // Handle thumbnail file
+                formData.append('thumbnail', campaignData[key]);
+            } else if (campaignData[key] !== null && campaignData[key] !== undefined) {
+                formData.append(key, campaignData[key]);
+            }
+        });
+
+        const response = await axios.post(API_URL + `campaigns/${id}/update`, formData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'multipart/form-data',
+            }
         });
         return response.data;
     } catch (error) {

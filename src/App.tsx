@@ -118,6 +118,7 @@ import AddCampaign from './pages/Campaign/AddCampaign';
 import EditCampaign from './pages/Campaign/EditCampaign';
 import CampaignDetail from './pages/Campaign/CampaignDetail';
 import CampaignBookingPage from './pages/CampaignPages/CampaignBookingPage';
+import CampaignDetailPage from './pages/CampaignPages/CampaignDetailPage';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -413,9 +414,9 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
     ],
     // Campaign
     [
-        { path: '/campaign/:campaignId/booking', element: <CampaignBookingPage />, layout: null },
-        { path: '/campaign/:campaignId/booking/payment/success', element: <PaymentSuccess />, layout: null },
-        { path: '/campaign/:campaignId/booking/payment/declined', element: <PaymentError />, layout: null },
+        { path: '/campaign/campaigns/:campaignSlug', element: <CampaignDetailPage />, layout: null },
+        { path: '/campaign/campaigns/:campaignSlug/booking/payment/success', element: <PaymentSuccess />, layout: null },
+        { path: '/campaign/campaigns/:campaignSlug/booking/payment/error', element: <PaymentError />, layout: null },
     ],
     // General
     [
@@ -474,15 +475,15 @@ function App() {
         } else if (isVendorDomain) {
             // Vendor domain: Vendor routes
             filteredRoutes = routeCat[3]; // Vendor
-        } else if (isPublicDomain) {
-            // Vendor domain: Vendor routes
-            filteredRoutes = routeCat[4]; // Vendor
         } else if (isFormDomain) {
-            // Form domain: Form routes
-            filteredRoutes = routeCat[5];
+            // Vendor domain: Vendor routes
+            filteredRoutes = routeCat[4]; // Form
         } else if (isCampaignDomain) {
+            // Form domain: Form routes
+            filteredRoutes = routeCat[5]; // Campaign
+        } else if (isPublicDomain) {
             // Campaign domain: Campaign routes
-            filteredRoutes = routeCat[6];
+            filteredRoutes = routeCat[6]; // Public
         } else {
             // Fallback for invalid domains
             // filteredRoutes = [{ path: '*', element: <NotFound />, layout: null }];

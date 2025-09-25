@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
@@ -28,12 +28,15 @@ export default function AddCampaign() {
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         title: '',
+        slug: '',
         description: '',
         internal_description: '',
         start_date: '',
         end_date: '',
         slot_total: 0,
-        base_amount: 0
+        base_amount: 0,
+        booking_amount: 0,
+        thumbnail: null as File | null
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,21 +46,65 @@ export default function AddCampaign() {
     const [packageValueSources, setPackageValueSources] = useState<Record<string, {
         slot_total: 'fixed' | 'custom';
         base_amount: 'fixed' | 'custom';
+        booking_amount: 'fixed' | 'custom';
     }>>({});
     const [collapsedPackages, setCollapsedPackages] = useState<Record<number, boolean>>({});
+    const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+
+    // Handle thumbnail preview URL
+    useEffect(() => {
+        if (formData.thumbnail) {
+            const url = URL.createObjectURL(formData.thumbnail);
+            setThumbnailPreview(url);
+            
+            return () => {
+                URL.revokeObjectURL(url);
+            };
+        } else {
+            setThumbnailPreview(null);
+        }
+    }, [formData.thumbnail]);
+
+    const generateSlug = (title: string) => {
+        return title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: (name === 'slot_total' || name === 'base_amount') ? Number(value) : value
-        }));
+        setFormData(prev => {
+            const newData = {
+                ...prev,
+                [name]: (name === 'slot_total' || name === 'base_amount' || name === 'booking_amount') ? Number(value) : value
+            };
+            
+            // Auto-generate slug when title changes
+            if (name === 'title') {
+                newData.slug = generateSlug(value);
+            }
+            
+            return newData;
+        });
 
         // Clear error when user starts typing
         if (errors[name]) {
             setErrors(prev => ({
                 ...prev,
                 [name]: ''
+            }));
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setFormData(prev => ({
+                ...prev,
+                thumbnail: file
             }));
         }
     };
@@ -69,6 +116,7 @@ export default function AddCampaign() {
             description: '',
             internal_description: '',
             base_amount: 0,
+            booking_amount: 0,
             slot_total: 0,
             start_date: '',
             end_date: '',
@@ -82,7 +130,8 @@ export default function AddCampaign() {
             ...prev,
             [packageIndex.toString()]: {
                 slot_total: 'fixed',
-                base_amount: 'fixed'
+                base_amount: 'fixed',
+                booking_amount: 'fixed'
             }
         }));
 
@@ -142,7 +191,7 @@ export default function AddCampaign() {
         }
     };
 
-    const handleValueSourceChange = (packageIndex: number, field: 'slot_total' | 'base_amount', source: 'fixed' | 'custom') => {
+    const handleValueSourceChange = (packageIndex: number, field: 'slot_total' | 'base_amount' | 'booking_amount', source: 'fixed' | 'custom') => {
         setPackageValueSources(prev => ({
             ...prev,
             [packageIndex.toString()]: {
@@ -153,7 +202,9 @@ export default function AddCampaign() {
 
         // If switching to fixed, set the value from campaign
         if (source === 'fixed') {
-            const value = field === 'slot_total' ? formData.slot_total : formData.base_amount;
+            const value = field === 'slot_total' ? formData.slot_total : 
+                         field === 'base_amount' ? formData.base_amount : 
+                         formData.booking_amount;
             updatePackage(packageIndex, field, value);
         }
     };
@@ -171,6 +222,10 @@ export default function AddCampaign() {
 
         if (!formData.title.trim()) {
             newErrors.title = 'Campaign Title is required';
+        }
+
+        if (!formData.slug.trim()) {
+            newErrors.slug = 'Slug is required';
         }
 
         // If either date is filled, both are required
@@ -196,8 +251,16 @@ export default function AddCampaign() {
             newErrors.base_amount = 'Base amount cannot be negative';
         }
 
+        if (formData.booking_amount < 0) {
+            newErrors.booking_amount = 'Booking amount cannot be negative';
+        }
+
         // Validate packages only if packages mode is enabled
         if (campaignMode === 'packages') {
+            if (packages.length === 0) {
+                newErrors.packages = 'At least one package is required when using packages mode';
+            }
+            
             packages.forEach((pkg, index) => {
                 const packageError: Record<string, string> = {};
 
@@ -221,6 +284,15 @@ export default function AddCampaign() {
 
                 if (baseValue && baseValue < 0) {
                     packageError.base_amount = 'Base amount cannot be negative';
+                }
+
+                // Validate booking_amount based on value source
+                const bookingValue = packageValueSources[index.toString()]?.booking_amount === 'fixed'
+                    ? formData.booking_amount
+                    : pkg.booking_amount;
+
+                if (bookingValue && bookingValue < 0) {
+                    packageError.booking_amount = 'Booking amount cannot be negative';
                 }
 
                 // If either date is filled, both are required
@@ -267,13 +339,14 @@ export default function AddCampaign() {
                 return {
                     ...pkg,
                     slot_total: valueSource?.slot_total === 'fixed' ? formData.slot_total : pkg.slot_total,
-                    base_amount: valueSource?.base_amount === 'fixed' ? formData.base_amount : pkg.base_amount
+                    base_amount: valueSource?.base_amount === 'fixed' ? formData.base_amount : pkg.base_amount,
+                    booking_amount: valueSource?.booking_amount === 'fixed' ? formData.booking_amount : pkg.booking_amount
                 };
             }) : undefined;
 
             const campaignData = {
                 ...formData,
-                packages: processedPackages,
+                packages: campaignMode === 'packages' ? processedPackages : undefined,
                 status: 'draft' // Default status for new campaigns
             };
 
@@ -366,6 +439,22 @@ export default function AddCampaign() {
                                 </div>
                             )}
 
+                            {errors.packages && (
+                                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                                    <div className="flex">
+                                        <div className="flex-shrink-0">
+                                            <AlertCircle className="h-5 w-5 text-red-400" />
+                                        </div>
+                                        <div className="ml-3">
+                                            <h3 className="text-sm font-medium text-red-800">Validation Error</h3>
+                                            <div className="mt-2 text-sm text-red-700">
+                                                <p>{errors.packages}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="space-y-6">
                                 {/* Campaign Title */}
                                 <div>
@@ -391,6 +480,33 @@ export default function AddCampaign() {
                                     )}
                                 </div>
 
+                                {/* Campaign Slug */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Campaign Slug *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="slug"
+                                        value={formData.slug}
+                                        onChange={handleInputChange}
+                                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${errors.slug
+                                            ? 'border-red-300 bg-red-50 focus:border-red-500'
+                                            : 'border-gray-200 bg-white/70 focus:border-blue-500'
+                                            }`}
+                                        placeholder="campaign-slug"
+                                    />
+                                    {errors.slug && (
+                                        <p className="mt-1 text-sm text-red-600 flex items-center">
+                                            <AlertCircle className="h-4 w-4 mr-1" />
+                                            {errors.slug}
+                                        </p>
+                                    )}
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        URL-friendly version of the title. Auto-generated from title.
+                                    </p>
+                                </div>
+
                                 {/* Campaign Description */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -404,6 +520,87 @@ export default function AddCampaign() {
                                         className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white/70 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
                                         placeholder="Enter campaign description"
                                     />
+                                </div>
+
+                                {/* Campaign Thumbnail */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Campaign Thumbnail (Optional)
+                                    </label>
+                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-gray-400 transition-colors duration-200">
+                                        <div className="space-y-1 text-center">
+                                            <svg
+                                                className="mx-auto h-12 w-12 text-gray-400"
+                                                stroke="currentColor"
+                                                fill="none"
+                                                viewBox="0 0 48 48"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                                    strokeWidth={2}
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                            <div className="flex text-sm text-gray-600">
+                                                <label
+                                                    htmlFor="thumbnail-upload"
+                                                    className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                                                >
+                                                    <span>Upload a file</span>
+                                                    <input
+                                                        id="thumbnail-upload"
+                                                        name="thumbnail"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleFileChange}
+                                                        className="sr-only"
+                                                    />
+                                                </label>
+                                                <p className="pl-1">or drag and drop</p>
+                                            </div>
+                                            <p className="text-xs text-gray-500">
+                                                PNG, JPG, GIF up to 10MB
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {formData.thumbnail && (
+                                        <div className="mt-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center text-sm text-gray-600">
+                                                    <svg className="flex-shrink-0 mr-1.5 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                    {formData.thumbnail.name}
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, thumbnail: null }));
+                                                        setThumbnailPreview(null);
+                                                    }}
+                                                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                            <div className="relative">
+                                                <img
+                                                    src={thumbnailPreview || ''}
+                                                    alt="Thumbnail preview"
+                                                    className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                                                />
+                                                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                                                    <div className="opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                                        <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Date Range */}
@@ -720,6 +917,70 @@ export default function AddCampaign() {
                                                             )}
                                                         </div>
 
+                                                        {/* Booking Amount */}
+                                                        <div>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <label className="block text-sm font-medium text-gray-700">
+                                                                    Booking Amount (RM)
+                                                                </label>
+                                                                <div className="flex items-center space-x-2">
+                                                                    <label className="flex items-center text-xs cursor-pointer">
+                                                                        <input
+                                                                            type="radio"
+                                                                            name={`booking_source_${index}`}
+                                                                            checked={packageValueSources[index.toString()]?.booking_amount === 'fixed'}
+                                                                            onChange={() => handleValueSourceChange(index, 'booking_amount', 'fixed')}
+                                                                            className="w-3 h-3 text-blue-600"
+                                                                            disabled={campaignMode !== 'packages'}
+                                                                        />
+                                                                        <Link className="ml-1 h-3 w-3 text-blue-600" />
+                                                                        <span className="ml-1 text-gray-600">Fixed</span>
+                                                                    </label>
+                                                                    <label className="flex items-center text-xs cursor-pointer">
+                                                                        <input
+                                                                            type="radio"
+                                                                            name={`booking_source_${index}`}
+                                                                            checked={packageValueSources[index.toString()]?.booking_amount === 'custom'}
+                                                                            onChange={() => handleValueSourceChange(index, 'booking_amount', 'custom')}
+                                                                            className="w-3 h-3 text-blue-600"
+                                                                            disabled={campaignMode !== 'packages'}
+                                                                        />
+                                                                        <Edit3 className="ml-1 h-3 w-3 text-green-600" />
+                                                                        <span className="ml-1 text-gray-600">Custom</span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <div className="relative">
+                                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                    <span className="text-gray-500 sm:text-sm">RM</span>
+                                                                </div>
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    step="0.01"
+                                                                    value={packageValueSources[index.toString()]?.booking_amount === 'fixed' ? formData.booking_amount : (pkg.booking_amount || '')}
+                                                                    onChange={(e) => updatePackage(index, 'booking_amount', Number(e.target.value))}
+                                                                    className={`w-full pl-10 pr-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${packageErrors[index.toString()]?.booking_amount
+                                                                        ? 'border-red-300 bg-red-50 focus:border-red-500'
+                                                                        : 'border-gray-200 bg-white/70 focus:border-blue-500'
+                                                                        }`}
+                                                                    placeholder="0.00"
+                                                                    disabled={campaignMode !== 'packages' || packageValueSources[index.toString()]?.booking_amount === 'fixed'}
+                                                                />
+                                                            </div>
+                                                            {packageValueSources[index.toString()]?.booking_amount === 'fixed' && (
+                                                                <p className="mt-1 text-xs text-blue-600">
+                                                                    Using campaign value: RM {formData.booking_amount}
+                                                                </p>
+                                                            )}
+                                                            {packageErrors[index.toString()]?.booking_amount && (
+                                                                <p className="mt-1 text-sm text-red-600 flex items-center">
+                                                                    <AlertCircle className="h-4 w-4 mr-1" />
+                                                                    {packageErrors[index.toString()].booking_amount}
+                                                                </p>
+                                                            )}
+                                                        </div>
+
                                                         {/* Start Date */}
                                                         {/* <div>
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -953,6 +1214,39 @@ export default function AddCampaign() {
                                     )}
                                     <p className="mt-1 text-sm text-gray-500">
                                         Base amount for this campaign in Malaysian Ringgit (optional).
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Booking Amount (RM)
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span className="text-gray-500 sm:text-sm">RM</span>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            name="booking_amount"
+                                            min="0"
+                                            step="0.01"
+                                            value={formData.booking_amount}
+                                            onChange={handleInputChange}
+                                            className={`w-full pl-10 pr-3 py-2 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-0 ${errors.booking_amount
+                                                ? 'border-red-300 bg-red-50 focus:border-red-500'
+                                                : 'border-gray-200 bg-white/70 focus:border-green-500'
+                                                }`}
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                    {errors.booking_amount && (
+                                        <p className="mt-1 text-sm text-red-600 flex items-center">
+                                            <AlertCircle className="h-4 w-4 mr-1" />
+                                            {errors.booking_amount}
+                                        </p>
+                                    )}
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        Booking amount for this campaign in Malaysian Ringgit (optional).
                                     </p>
                                 </div>
                             </div>

@@ -24,15 +24,11 @@ function PaymentError() {
         
         // Extract parameters from backend return URL format:
         // /campaign/{campaignId}/booking/payment/declined?ref={bookingHash}?originateUrl={originateUrl}?amount={amount}
-        const ref = queryParams.get('ref');
         const originateUrl = queryParams.get('originateUrl');
-        const code = queryParams.get('code');
 
-        if (ref || originateUrl) {
+        if (originateUrl) {
             setErrorData({
-                ref: ref,
                 originateUrl: originateUrl,
-                code: code
             });
         }
 

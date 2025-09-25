@@ -1557,10 +1557,13 @@ export interface ApiKeyUpdateRequest {
 export interface Campaign {
     id?: string;
     title?: string;
+    slug?: string;
     description?: string;
     internal_description?: string;
+    thumbnail?: Attachment | File;
     packages?: CampaignPackage[];
     base_amount?: number;
+    booking_amount?: number;
     start_date?: string;
     end_date?: string;
     published_at?: string;
@@ -1582,6 +1585,7 @@ export interface CampaignPackage {
     description?: string;
     internal_description?: string;
     base_amount?: number;
+    booking_amount?: number;
     start_date?: string;
     end_date?: string;
     published_at?: string;

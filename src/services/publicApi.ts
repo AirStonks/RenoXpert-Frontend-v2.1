@@ -82,9 +82,9 @@ export const validateBookingReference = async (campaignId: string, bookingRefere
     }
 }
 
-export const bookingPaymentIntent = async (bookingId: string, name: string, phone: string, amount: number, packageId?: string) => {
+export const bookingPaymentIntent = async (campaignSlug: string, name: string, phone: string, email: string, packageId?: string) => {
     try {
-        const response = await axios.post(API_URL + `public/bookings/${bookingId}/payment/intent`, { name, phone, amount, packageId });
+        const response = await axios.post(API_URL + `public/campaigns/${campaignSlug}/booking/payment/intent`, { name, phone, email, packageId });
         return response.data;
     } catch (error) {
         console.error('Error creating booking payment intent:', error);
