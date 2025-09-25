@@ -2750,3 +2750,166 @@ export const releaseOwnerHandover = async (renoProgressId: number) => {
         throw error;
     }
 };
+
+export const submitOwnerHandover = async (renoProgressId: number) => {
+    try {
+        const response = await axios.get(API_URL + `reno-progress/${renoProgressId}/owner-handover/submit`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
+export const campaignIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string) => {
+    try {
+        const response = await axios.get(API_URL + 'campaigns', {
+            headers: getAuthHeaders(),
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const campaignDetail = async (id: string | number) => {
+    try {
+        const response = await axios.get(API_URL + `campaigns/${id}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const createCampaign = async (campaignData: any) => {
+    try {
+        const formData = new FormData();
+        
+        // Add all campaign data to FormData
+        Object.keys(campaignData).forEach(key => {
+            if (key === 'packages' && campaignData[key]) {
+                // Handle packages array
+                campaignData[key].forEach((pkg: any, index: number) => {
+                    Object.keys(pkg).forEach(pkgKey => {
+                        formData.append(`packages[${index}][${pkgKey}]`, pkg[pkgKey]);
+                    });
+                });
+            } else if (key === 'thumbnail' && campaignData[key] instanceof File) {
+                // Handle thumbnail file
+                formData.append('thumbnail', campaignData[key]);
+            } else if (campaignData[key] !== null && campaignData[key] !== undefined) {
+                formData.append(key, campaignData[key]);
+            }
+        });
+
+        const response = await axios.post(API_URL + 'campaigns', formData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const updateCampaign = async (id: string | number, campaignData: any) => {
+    try {
+        const formData = new FormData();
+        
+        // Add all campaign data to FormData
+        Object.keys(campaignData).forEach(key => {
+            if (key === 'packages' && campaignData[key]) {
+                // Handle packages array
+                campaignData[key].forEach((pkg: any, index: number) => {
+                    Object.keys(pkg).forEach(pkgKey => {
+                        formData.append(`packages[${index}][${pkgKey}]`, pkg[pkgKey]);
+                    });
+                });
+            } else if (key === 'thumbnail' && campaignData[key] instanceof File) {
+                // Handle thumbnail file
+                formData.append('thumbnail', campaignData[key]);
+            } else if (campaignData[key] !== null && campaignData[key] !== undefined) {
+                formData.append(key, campaignData[key]);
+            }
+        });
+
+        const response = await axios.post(API_URL + `campaigns/${id}/update`, formData, {
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const deleteCampaign = async (id: string | number) => {
+    try {
+        const response = await axios.delete(API_URL + `campaigns/${id}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+// Booking API functions
+export const createBooking = async (bookingData: any) => {
+    try {
+        const response = await axios.post(API_URL + 'bookings', bookingData, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const getCampaignBookings = async (campaignId: string | number) => {
+    try {
+        const response = await axios.get(API_URL + `campaigns/${campaignId}/bookings`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const updateBooking = async (id: string | number, bookingData: any) => {
+    try {
+        const response = await axios.put(API_URL + `bookings/${id}`, bookingData, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};
+
+export const deleteBooking = async (id: string | number) => {
+    try {
+        const response = await axios.delete(API_URL + `bookings/${id}`, {
+            headers: getAuthHeaders()
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+};

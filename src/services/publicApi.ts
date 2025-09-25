@@ -61,3 +61,33 @@ export const submitInvestorInterestForm = async (data: any) => {
         throw error; // Ensure to throw the error if needed
     }
 }
+
+export const getCampaign = async (campaignId: string) => {
+    try {
+        const response = await axios.get(API_URL + `public/campaigns/${campaignId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching campaign:', error);
+        throw error;
+    }
+}
+
+export const validateBookingReference = async (campaignId: string, bookingReference: string) => {
+    try {
+        const response = await axios.get(API_URL + `public/bookings/validate?campaign_id=${campaignId}&booking_hash=${bookingReference}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error validating booking reference:', error);
+        throw error;
+    }
+}
+
+export const bookingPaymentIntent = async (campaignSlug: string, name: string, phone: string, email: string, packageId?: string) => {
+    try {
+        const response = await axios.post(API_URL + `public/campaigns/${campaignSlug}/booking/payment/intent`, { name, phone, email, packageId });
+        return response.data;
+    } catch (error) {
+        console.error('Error creating booking payment intent:', error);
+        throw error;
+    }
+}

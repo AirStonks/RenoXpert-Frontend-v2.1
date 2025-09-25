@@ -2454,7 +2454,7 @@ function OrderOverview() {
                                                 : null}
                                             <hr className="my-4" />
 
-                                            {!orderDetail.is_be_powered || !orderDetail.is_rnpl && (
+                                            {!orderDetail.is_be_powered && !orderDetail.is_rnpl && (
                                                 <div className="card mb-4 shadow-sm rounded-md">
                                                     <div className="card-body p-4">
                                                         <div className="flex flex-col mb-2">
@@ -2799,7 +2799,7 @@ function OrderOverview() {
                                         : null}
                                     <hr className="my-4" />
 
-                                    {!orderDetail.is_be_powered && (
+                                    {!orderDetail.is_be_powered && !orderDetail.is_rnpl && (
                                         <div className="card mb-4 shadow-sm rounded-md">
                                             <div className="card-body p-4">
                                                 <div className="flex flex-col mb-2">
