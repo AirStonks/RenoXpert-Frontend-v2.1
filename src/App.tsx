@@ -450,12 +450,12 @@ function App() {
         } else if (isVendorDomain) {
             // Vendor domain: Vendor routes
             filteredRoutes = routeCat[3]; // Vendor
-        } else if (isPublicDomain) {
-            // Vendor domain: Vendor routes
-            filteredRoutes = routeCat[4]; // Vendor
         } else if (isFormDomain) {
+            // Vendor domain: Vendor routes
+            filteredRoutes = routeCat[4]; // Form
+        } else if (isPublicDomain) {
             // Form domain: Form routes
-            filteredRoutes = routeCat[5];
+            filteredRoutes = routeCat[5]; // Public
         } else {
             // Fallback for invalid domains
             // filteredRoutes = [{ path: '*', element: <NotFound />, layout: null }];
