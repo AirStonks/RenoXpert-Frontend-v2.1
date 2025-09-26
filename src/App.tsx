@@ -117,7 +117,6 @@ import CampaignMain from './pages/Campaign/CampaignMain';
 import AddCampaign from './pages/Campaign/AddCampaign';
 import EditCampaign from './pages/Campaign/EditCampaign';
 import CampaignDetail from './pages/Campaign/CampaignDetail';
-import CampaignBookingPage from './pages/CampaignPages/CampaignBookingPage';
 import CampaignDetailPage from './pages/CampaignPages/CampaignDetailPage';
 
 interface ProtectedLayoutProps {
@@ -276,7 +275,9 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
     ],
     // Campaign
     [
-        // { path: '/campaign/login', element: <CampaignLogin />, layout: null },
+        { path: '/campaigns/:campaignSlug', element: <CampaignDetailPage />, layout: null },
+        { path: '/campaigns/:campaignSlug/booking/payment/success', element: <PaymentSuccess />, layout: null },
+        { path: '/campaigns/:campaignSlug/booking/payment/error', element: <PaymentError />, layout: null },
     ],
     // General
     [

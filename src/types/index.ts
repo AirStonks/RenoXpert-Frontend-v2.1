@@ -15,6 +15,7 @@ declare global {
                 email: string;
                 phone_number?: string;
                 avatar_url?: string;
+                uuid?: string;
             }) => void;
             toggle: () => void;
             setCustomAttributes: (attributes: Record<string, string | number | boolean>) => void;
@@ -109,6 +110,7 @@ export interface Contact {
 
 export interface User {
     id?: string;
+    uuid?: string;
     name?: string;
     name_first?: string;
     name_last?: string;
@@ -1614,7 +1616,7 @@ export interface Booking {
     expired_at?: string;
     internal_remark?: string;
     status?: string;
-    metadata?: string;
+    metadata?: JSON;
     created_at?: string;
     updated_at?: string;
     created_by?: User;

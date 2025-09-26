@@ -47,7 +47,7 @@ function PaymentSuccess() {
     }, [location]);
 
     // Function to format payment date from YYYYMMDDHHMMSS to readable format
-    const formatPaymentDate = (dateString) => {
+    const formatPaymentDate = (dateString: string) => {
         if (!dateString || dateString.length !== 14) {
             return 'N/A';
         }
@@ -93,7 +93,6 @@ RENOXPERT - PAYMENT RECEIPT
 ============================
 
 Booking Number: ${paymentData.bookingNumber || 'N/A'}
-Reference No: ${paymentData.ref || 'N/A'}
 Customer Name: ${paymentData.name || 'N/A'}
 Amount Paid: RM ${paymentData.amount ? Number(paymentData.amount).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -178,11 +177,6 @@ Generated on: ${new Date().toLocaleString()}
                         </div>
 
                         <div className="flex justify-between items-center py-1 border-b border-gray-100">
-                            <span className="text-xs text-gray-600 font-medium">Reference No</span>
-                            <span className="text-2xs text-gray-900 font-semibold">{paymentData.ref || 'N/A'}</span>
-                        </div>
-
-                        <div className="flex justify-between items-center py-1 border-b border-gray-100">
                             <span className="text-xs text-gray-600 font-medium">Customer Name</span>
                             <span className="text-2xs text-gray-900 font-semibold">{paymentData.name || 'N/A'}</span>
                         </div>
@@ -224,7 +218,7 @@ Generated on: ${new Date().toLocaleString()}
                         Need help? Contact our sales team
                     </p>
                     <div className="flex justify-center space-x-6 text-sm">
-                        <a href="mailto:sales@renoxpert.com" className="text-blue-600 hover:text-blue-800 flex items-center">
+                        <a href="mailto:sales@renoxpert.my" className="text-blue-600 hover:text-blue-800 flex items-center">
                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>

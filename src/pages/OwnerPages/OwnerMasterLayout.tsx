@@ -10,119 +10,122 @@ interface MasterLayoutProps {
 }
 
 function OwnerMasterLayout({ children }: MasterLayoutProps) {
-    // const { user: owner } = useUser();
+    const { user: owner } = useUser();
 
-    // useEffect(() => {
-    //     // Only initialize Chatwoot when user data is available
-    //     if (!owner) return;
-        
-    //     // Chatwoot integration
-    //     const loadChatwoot = () => {
-    //         const BASE_URL = "https://staging.belive.chat";
+    useEffect(() => {
+        // Only initialize Chatwoot when user data is available
+        if (!owner) return;
 
-    //         // Check if script is already loaded
-    //         if (document.querySelector('script[src*="sdk.js"]')) {
-    //             return;
-    //         }
+        // Chatwoot integration
+        const loadChatwoot = () => {
+            const BASE_URL = "https://staging.belive.chat";
 
-    //         // Check if Chatwoot is already initialized
-    //         if (window.chatwootSDK) {
-    //             return;
-    //         }
+            // Check if script is already loaded
+            if (document.querySelector('script[src*="sdk.js"]')) {
+                return;
+            }
 
-    //         const script = document.createElement('script');
-    //         script.src = BASE_URL + "/packs/js/sdk.js";
-    //         script.async = true;
+            // Check if Chatwoot is already initialized
+            if (window.chatwootSDK) {
+                return;
+            }
 
-    //         script.onload = function () {
-    //             try {
-    //                 if (window.chatwootSDK) {
-    //                     // Set settings before running Chatwoot to ensure they're applied
-    //                     window.chatwootSettings = {
-    //                         hideMessageBubble: true, // This hides the default Chatwoot button
-    //                         position: 'right',
-    //                         locale: 'en',
-    //                         type: 'expanded'
-    //                     };
-                        
-    //                     window.chatwootSDK.run({
-    //                         websiteToken: 'tKnChNphJptwhfTBH3qki6Wy',
-    //                         baseUrl: BASE_URL
-    //                     });
-                        
-    //                     window.addEventListener("chatwoot:ready", function () {
-    //                         // Use real user data if available, otherwise fallback to test data
-    //                         const userData = owner || {
-    //                             id: "testing-user-uuid",
-    //                             name: "Test User",
-    //                             email: "test@test.com"
-    //                         };
-                            
-    //                         window.$chatwoot.setUser(userData.id || "testing-user-uuid", {
-    //                             name: userData.name || "Test User",
-    //                             email: userData.email || "test@test.com",
-    //                             phone_number: userData.phone_no || "",
-    //                             avatar_url: "", // You can add avatar URL if available
-    //                         });
+            const script = document.createElement('script');
+            script.src = BASE_URL + "/packs/js/sdk.js";
+            script.async = true;
 
-    //                         // Set custom attributes for better user identification
-    //                         window.$chatwoot.setCustomAttributes({
-    //                             user_id: userData.id,
-    //                             user_type: userData.type || "owner",
-    //                             country_code: userData.country_code || "",
-    //                             created_at: userData.created_at || "",
-    //                         });
-                            
-    //                         // Additional safety measure: hide any existing chat bubbles
-    //                         const chatBubbles = document.querySelectorAll('[data-testid="chat-bubble"]');
-    //                         chatBubbles.forEach(bubble => {
-    //                             (bubble as HTMLElement).style.display = 'none';
-    //                         });
-    //                     });
-    //                 }
-    //             } catch (error) {
-    //                 console.error('Error initializing Chatwoot:', error);
-    //             }
-    //         };
+            script.onload = function () {
+                try {
+                    if (window.chatwootSDK) {
+                        // Set settings before running Chatwoot to ensure they're applied
+                        window.chatwootSettings = {
+                            hideMessageBubble: true, // This hides the default Chatwoot button
+                            position: 'right',
+                            locale: 'en',
+                            type: 'expanded'
+                        };
 
-    //         script.onerror = function () {
-    //             console.error('Failed to load Chatwoot SDK');
-    //         };
+                        window.chatwootSDK.run({
+                            websiteToken: 'tKnChNphJptwhfTBH3qki6Wy',
+                            baseUrl: BASE_URL
+                        });
 
-    //         document.head.appendChild(script);
-    //     };
+                        window.addEventListener("chatwoot:ready", function () {
+                            // Use real user data if available, otherwise fallback to test data
+                            const userData = owner || {
+                                id: "testing-user-uuid",
+                                name: "Test User",
+                                email: "test@test.com"
+                            };
 
-    //     loadChatwoot();
+                            // Set chatwoot user
+                            window.$chatwoot.setUser(userData.id || "testing-user-uuid", {
+                                name: userData.name || "Test User",
+                                email: userData.email || "test@test.com",
+                                uuid: userData.uuid || "",
+                                phone_number: "+" + userData.country_code + userData.phone_no || "",
+                                avatar_url: "",
+                            });
 
-    //     // Add CSS to hide Chatwoot bubble if it appears
-    //     const style = document.createElement('style');
-    //     style.textContent = `
-    //         /* Hide Chatwoot bubble completely */
-    //         [data-testid="chat-bubble"],
-    //         .cw--bubble-button,
-    //         .cw--widget-button,
-    //         .chatwoot--bubble-button,
-    //         .chatwoot--widget-button {
-    //             display: none !important;
-    //             visibility: hidden !important;
-    //             opacity: 0 !important;
-    //             pointer-events: none !important;
-    //         }
-    //     `;
-    //     document.head.appendChild(style);
+                            // Set custom attributes for better user identification
+                            window.$chatwoot.setCustomAttributes({
+                                user_id: userData.id,
+                                user_uuid: userData.uuid || "",
+                                user_type: userData.type || "owner",
+                                country_code: userData.country_code || "",
+                                created_at: userData.created_at || "",
+                            });
 
-    //     // Cleanup function
-    //     return () => {
-    //         const script = document.querySelector('script[src*="sdk.js"]');
-    //         if (script) {
-    //             script.remove();
-    //         }
-    //         // Remove the style element
-    //         if (style && style.parentNode) {
-    //             style.parentNode.removeChild(style);
-    //         }
-    //     };
-    // }, [owner]);
+                            // Additional safety measure: hide any existing chat bubbles
+                            const chatBubbles = document.querySelectorAll('[data-testid="chat-bubble"]');
+                            chatBubbles.forEach(bubble => {
+                                (bubble as HTMLElement).style.display = 'none';
+                            });
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error initializing Chatwoot:', error);
+                }
+            };
+
+            script.onerror = function () {
+                console.error('Failed to load Chatwoot SDK');
+            };
+
+            document.head.appendChild(script);
+        };
+
+        loadChatwoot();
+
+        // Add CSS to hide Chatwoot bubble if it appears
+        const style = document.createElement('style');
+        style.textContent = `
+            /* Hide Chatwoot bubble completely */
+            [data-testid="chat-bubble"],
+            .cw--bubble-button,
+            .cw--widget-button,
+            .chatwoot--bubble-button,
+            .chatwoot--widget-button {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Cleanup function
+        return () => {
+            const script = document.querySelector('script[src*="sdk.js"]');
+            if (script) {
+                script.remove();
+            }
+            // Remove the style element
+            if (style && style.parentNode) {
+                style.parentNode.removeChild(style);
+            }
+        };
+    }, [owner]);
 
     // Function to handle custom chat button click
     const handleChatButtonClick = () => {
