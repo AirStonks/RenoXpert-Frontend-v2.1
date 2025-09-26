@@ -79,19 +79,8 @@ const CampaignDetailPage = () => {
                         const campaignSlotRemaining = (response.data.slot_total || 0) - (response.data.slot_used || 0);
                         setIsFullyBooked(campaignSlotRemaining === 0);
 
-                        // For single campaigns, create a virtual package from the campaign data
-                        const virtualPackage: CampaignPackage = {
-                            id: response.data.id,
-                            name: response.data.title || 'Campaign',
-                            description: response.data.description,
-                            base_amount: response.data.base_amount || 0,
-                            booking_amount: response.data.booking_amount || 0,
-                            slot_remaining: campaignSlotRemaining,
-                            slot_total: response.data.slot_total || 0,
-                            slot_used: response.data.slot_used || 0,
-                            status: response.data.status
-                        };
-                        setSelectedPackage(virtualPackage);
+                        // For single campaigns, set selectedPackage to null
+                        setSelectedPackage(null);
                     }
                 } else {
                     setError('Campaign not found');
@@ -140,7 +129,9 @@ const CampaignDetailPage = () => {
 
         try {
             // Create payment intent for new booking
-            const packageId = selectedPackage?.id || campaign?.id;
+            const packageId = selectedPackage?.id || null;
+            console.log(selectedPackage);
+            
             const response = await bookingPaymentIntent(campaignSlug, formData.name, formData.phone, formData.email, packageId);
 
 
@@ -152,9 +143,48 @@ const CampaignDetailPage = () => {
             }
 
             // You can redirect to a success page or show success message
-        } catch (err) {
+        } catch (err: unknown) {
             console.error('Error submitting booking:', err);
-            notify('error', 'Failed to submit booking');
+
+            // Check if it's a 400 error with fully_redeemed code
+            if (err && typeof err === 'object' && 'response' in err &&
+                err.response && typeof err.response === 'object' &&
+                'status' in err.response && err.response.status === 400 &&
+                'data' in err.response && err.response.data &&
+                typeof err.response.data === 'object' &&
+                'data' in err.response.data && err.response.data.data &&
+                typeof err.response.data.data === 'object' &&
+                'code' in err.response.data.data && err.response.data.data.code === 'fully_redeemed') {
+                // If it's a package-specific redemption, update the package status
+                if (selectedPackage && campaign?.packages) {
+                    notify('error', `The "${selectedPackage.name}" package is fully redeemed. Please select another package.`);
+
+                    const updatedPackages = campaign.packages.map(pkg =>
+                        pkg.id === selectedPackage.id
+                            ? { ...pkg, slot_remaining: 0, slot_used: pkg.slot_total }
+                            : pkg
+                    );
+                    setCampaign({ ...campaign, packages: updatedPackages });
+
+                    // Check if all packages are now fully booked
+                    const allPackagesBooked = updatedPackages.every(pkg => pkg.slot_remaining === 0);
+                    if (allPackagesBooked) {
+                        setIsFullyBooked(true);
+                        notify('error', 'All packages are fully redeemed. No more slots are available.');
+                    } else {
+                        // Select the next available package
+                        const nextAvailablePackage = updatedPackages.find(pkg => pkg.slot_remaining > 0);
+                        setSelectedPackage(nextAvailablePackage || null);
+                    }
+                } else {
+                    // For single campaigns, mark as fully booked
+                    notify('error', 'This campaign is fully redeemed. No more slots are available.');
+                    setIsFullyBooked(true);
+                }
+            } else {
+                // Handle other errors
+                notify('error', 'Failed to submit booking');
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -536,7 +566,7 @@ const CampaignDetailPage = () => {
                                                                 Booking: RM {campaign.booking_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </div>
                                                         )}
-                                                        <div className="text-sm text-gray-600">Campaign Price</div>
+                                                        <p className="text-xs sm:text-sm text-gray-600">{campaign.slot_used}/{campaign.slot_total} available slots</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -560,7 +590,7 @@ const CampaignDetailPage = () => {
 
                                         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                                             {/* Selected Package Display */}
-                                            {selectedPackage && (
+                                            {selectedPackage ? (
                                                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-blue-200">
                                                     <div className="flex items-center justify-between">
                                                         <div>
@@ -570,6 +600,21 @@ const CampaignDetailPage = () => {
                                                         <div className="text-right">
                                                             <div className="text-lg sm:text-xl font-bold text-blue-600">
                                                                 RM {selectedPackage.base_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                /* Campaign Display for Single Campaigns */
+                                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-blue-200">
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <h3 className="text-sm sm:text-base font-semibold text-gray-900">{campaign.title}</h3>
+                                                            <p className="text-xs sm:text-sm text-gray-600">{campaign.slot_used}/{campaign.slot_total} available slots</p>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-lg sm:text-xl font-bold text-blue-600">
+                                                                RM {campaign.base_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -639,7 +684,8 @@ const CampaignDetailPage = () => {
                                             </div>
 
                                             {/* Booking Amount Display */}
-                                            {selectedPackage && selectedPackage.booking_amount && selectedPackage.booking_amount > 0 && (
+                                            {((selectedPackage && selectedPackage.booking_amount && selectedPackage.booking_amount > 0) || 
+                                              (!selectedPackage && campaign.booking_amount && campaign.booking_amount > 0)) && (
                                                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-green-200">
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center space-x-2">
@@ -653,7 +699,7 @@ const CampaignDetailPage = () => {
                                                         </div>
                                                         <div className="text-right">
                                                             <div className="text-lg sm:text-xl font-bold text-green-600">
-                                                                RM {selectedPackage.booking_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                RM {(selectedPackage?.booking_amount || campaign.booking_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -669,7 +715,7 @@ const CampaignDetailPage = () => {
                                             {/* Submit Button */}
                                             <button
                                                 type="submit"
-                                                disabled={isSubmitting || !selectedPackage}
+                                                disabled={isSubmitting}
                                                 className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl sm:rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3 font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl hover:scale-105 disabled:hover:scale-100"
                                             >
                                                 {isSubmitting ? (

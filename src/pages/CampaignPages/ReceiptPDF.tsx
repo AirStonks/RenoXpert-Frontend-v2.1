@@ -192,11 +192,6 @@ const ReceiptPDF: React.FC<ReceiptPDFProps> = ({ paymentData }) => {
           </View>
           
           <View style={styles.row}>
-            <Text style={styles.label}>Reference Number:</Text>
-            <Text style={styles.value}>{paymentData.ref || 'N/A'}</Text>
-          </View>
-          
-          <View style={styles.row}>
             <Text style={styles.label}>Customer Name:</Text>
             <Text style={styles.value}>{paymentData.name || 'N/A'}</Text>
           </View>
@@ -235,7 +230,6 @@ const ReceiptPDF: React.FC<ReceiptPDFProps> = ({ paymentData }) => {
           <Text style={styles.contactInfo}>
             For any inquiries, please contact us at:{'\n'}
             Email: sales@renoxpert.com{'\n'}
-            Phone: +60 123 456 789{'\n'}
             Website: https://renoxpert.my
           </Text>
           <Text style={styles.footerText}>

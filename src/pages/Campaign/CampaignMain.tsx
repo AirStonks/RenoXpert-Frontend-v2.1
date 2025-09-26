@@ -29,10 +29,11 @@ interface StatusConfig {
 }
 
 const statusConfig: Record<string, StatusConfig> = {
-    active: { label: "Active", color: "bg-green-50 border-green-300", textColor: "text-green-600" },
-    inactive: { label: "Inactive", color: "bg-red-50 border-red-300", textColor: "text-red-600" },
-    draft: { label: "Draft", color: "bg-yellow-50 border-yellow-300", textColor: "text-yellow-600" },
-    completed: { label: "Completed", color: "bg-blue-50 border-blue-300", textColor: "text-blue-600" },
+    unpublished: { label: "Unpublished", color: "bg-gray-50 border-gray-300", textColor: "text-gray-600" },
+    published: { label: "Published", color: "bg-green-50 border-green-300", textColor: "text-green-600" },
+    started: { label: "Started", color: "bg-blue-50 border-blue-300", textColor: "text-blue-600" },
+    "fully-redeemed": { label: "Fully Redeemed", color: "bg-yellow-50 border-yellow-300", textColor: "text-yellow-600" },
+    ended: { label: "Ended", color: "bg-red-50 border-red-300", textColor: "text-red-600" },
 };
 
 export default function CampaignMain() {

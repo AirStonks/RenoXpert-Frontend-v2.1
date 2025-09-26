@@ -14,6 +14,7 @@ import {
     CreditCard,
     Package,
     Users,
+    User,
 } from 'lucide-react';
 import { Booking, CampaignPackage, Campaign } from '../../types';
 import useFetchCampaign from '../../hook/useFetchCampaign';
@@ -24,9 +25,9 @@ const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' :
 
 const CAMPAIGN_URL =
     import.meta.env.VITE_APP_ENV === "production"
-        ? import.meta.env.VITE_CLIENT_URL
+        ? import.meta.env.VITE_CAMPAIGN_URL
         : import.meta.env.VITE_APP_ENV === "staging"
-            ? import.meta.env.VITE_STAGING_CLIENT_URL
+            ? import.meta.env.VITE_STAGING_CAMPAIGN_URL
             : import.meta.env.VITE_APP_ENV === "local"
                 ? 'localhost:5173/campaign/'
                 : null;
@@ -45,16 +46,16 @@ const BookingsListView = ({
     const format = (d?: string) => (d ? new Date(d).toLocaleDateString("en-MY", { year: "numeric", month: "short", day: "numeric" }) : "-")
     const statusClass = (status?: string) => {
         switch (status) {
-            case "completed":
-                return "bg-emerald-50 text-emerald-700 border-emerald-200"
             case "pending":
-                return "bg-amber-50 text-amber-700 border-amber-200"
-            case "expired":
-                return "bg-red-50 text-red-700 border-red-200"
-            case "cancelled":
-                return "bg-red-50 text-red-700 border-red-200"
+                return "bg-amber-50 text-amber-700 border-amber-200";
+            case "unpaid":
+                return "bg-red-50 text-red-700 border-red-200";
+            case "paid":
+                return "bg-emerald-50 text-emerald-700 border-emerald-200";
+            case "due":
+                return "bg-blue-50 text-blue-700 border-blue-200";
             default:
-                return "bg-gray-50 text-gray-700 border-gray-200"
+                return "bg-gray-50 text-gray-700 border-gray-200";
         }
     }
 
@@ -72,8 +73,9 @@ const BookingsListView = ({
                             <p className="text-sm text-gray-600">Manage and track all bookings</p>
                         </div>
                     </div>
-                    <div className="grid grid-cols-5 gap-4 text-xs font-semibold text-green-700 uppercase tracking-wider">
+                    <div className="grid grid-cols-6 gap-4 text-xs font-semibold text-green-700 uppercase tracking-wider">
                         <div>Booking Details</div>
+                        <div>User Detail</div>
                         <div>Booked Date</div>
                         <div>Amount</div>
                         <div>Status</div>
@@ -83,16 +85,31 @@ const BookingsListView = ({
 
                 {/* Booking Rows */}
                 <div className="divide-y divide-green-100/50">
-                    {bookings.map((booking, index) => (
+                    {bookings.map((booking) => (
                         <div key={booking.id} className="px-6 py-4 hover:bg-white/70 transition-all duration-200 group">
-                            <div className="grid grid-cols-5 gap-4 items-center">
+                            <div className="grid grid-cols-6 gap-4 items-center">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl shadow-sm">
                                         <CreditCard className="h-4 w-4 text-white" />
                                     </div>
                                     <div>
-                                        <h6 className="font-semibold text-gray-900 text-sm group-hover:text-green-700 transition-colors">Booking #{index + 1}</h6>
-                                        <p className="text-xs text-gray-600">ID: {booking.id || 'N/A'}</p>
+                                        <h6 className="font-semibold text-gray-900 text-sm group-hover:text-green-700 transition-colors">{booking.booking_no}</h6>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2 text-sm text-gray-900">
+                                        <div className="p-1 bg-green-100 rounded-lg">
+                                            <User className="h-3 w-3 text-green-600" />
+                                        </div>
+                                        {booking.metadata ? (
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">{booking.metadata ? JSON.parse(JSON.stringify(booking.metadata)).name : '-'}</span>
+                                                <span className="text-xs text-gray-600 mt-1">{booking.metadata ? JSON.parse(JSON.stringify(booking.metadata)).email : '-'}</span>
+                                                <span className="text-xs text-gray-600 mt-1">{booking.metadata ? JSON.parse(JSON.stringify(booking.metadata)).phone : '-'}</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-gray-600">-</span>
+                                        )}
                                     </div>
                                 </div>
                                 <div>
@@ -102,14 +119,13 @@ const BookingsListView = ({
                                         </div>
                                         <span className="font-medium">{format(booking.booked_at)}</span>
                                     </div>
-                                    <p className="text-xs text-gray-600 mt-1">Booked Date</p>
                                 </div>
                                 <div>
                                     <p className="text-lg font-bold text-gray-900 group-hover:text-green-700 transition-colors">{currency(booking.amount || 0)}</p>
                                     <p className="text-xs text-gray-600">Amount</p>
                                 </div>
                                 <div>
-                                    <span className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 ${statusClass(booking.status)} shadow-sm`}>
+                                    <span className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 capitalize ${statusClass(booking.status)} shadow-sm`}>
                                         {booking.status || 'Unknown'}
                                     </span>
                                 </div>
@@ -400,10 +416,6 @@ export default function CampaignDetail() {
         }
     };
 
-
-
-
-
     const formatDate = (dateString?: string) => {
         if (!dateString) return 'N/A';
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -416,14 +428,16 @@ export default function CampaignDetail() {
 
     const getStatusBadgeClass = (status?: string) => {
         switch (status?.toLowerCase()) {
-            case 'active':
-                return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            case 'inactive':
-                return 'bg-red-50 text-red-700 border-red-200';
-            case 'draft':
-                return 'bg-amber-50 text-amber-700 border-amber-200';
-            case 'completed':
-                return 'bg-blue-50 text-blue-700 border-blue-200';
+            case 'unpublished':
+                return 'bg-gray-50 text-gray-600 border-gray-300';
+            case 'published':
+                return 'bg-green-50 text-green-600 border-green-300';
+            case 'started':
+                return 'bg-blue-50 text-blue-600 border-blue-300';
+            case 'fully-redeemed':
+                return 'bg-yellow-50 text-yellow-600 border-yellow-300';
+            case 'ended':
+                return 'bg-red-50 text-red-600 border-red-300';
             default:
                 return 'bg-gray-50 text-gray-700 border-gray-200';
         }
@@ -441,16 +455,16 @@ export default function CampaignDetail() {
 
     const calculateProgress = () => {
         if (!campaign) return 0;
-        
+
         // If campaign has packages, calculate aggregated metrics from packages
         if (campaign.packages && campaign.packages.length > 0) {
             const totalSlots = campaign.packages.reduce((sum, pkg) => sum + (pkg.slot_total || 0), 0);
             const usedSlots = campaign.packages.reduce((sum, pkg) => sum + (pkg.slot_used || 0), 0);
-            
+
             if (totalSlots === 0) return 0;
             return usedSlots / totalSlots;
         }
-        
+
         // Fallback to campaign-level metrics
         if (!campaign.slot_total || !campaign.slot_used) return 0;
         return (campaign.slot_used / campaign.slot_total);
@@ -458,21 +472,21 @@ export default function CampaignDetail() {
 
     const getAggregatedSlotMetrics = () => {
         if (!campaign) return { totalSlots: 0, usedSlots: 0, remainingSlots: 0 };
-        
+
         // If campaign has packages, calculate aggregated metrics from packages
         if (campaign.packages && campaign.packages.length > 0) {
             const totalSlots = campaign.packages.reduce((sum, pkg) => sum + (pkg.slot_total || 0), 0);
             const usedSlots = campaign.packages.reduce((sum, pkg) => sum + (pkg.slot_used || 0), 0);
             const remainingSlots = totalSlots - usedSlots;
-            
+
             return { totalSlots, usedSlots, remainingSlots };
         }
-        
+
         // Fallback to campaign-level metrics
         const totalSlots = campaign.slot_total || 0;
         const usedSlots = campaign.slot_used || 0;
         const remainingSlots = totalSlots - usedSlots;
-        
+
         return { totalSlots, usedSlots, remainingSlots };
     };
 
@@ -652,7 +666,12 @@ export default function CampaignDetail() {
                                 <div className="space-y-4">
                                     <div className="p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-2xl">
                                         <h3 className="font-semibold text-gray-900 mb-2">{campaign.title}</h3>
-                                        <p className="text-sm text-gray-600 mb-4">{campaign.description || 'No description provided'}</p>
+                                        {campaign.description
+                                            ? campaign.description.split('\n').map((line, idx) => (
+                                                <p key={idx} className="text-sm text-gray-600 mb-1">{line}</p>
+                                            ))
+                                            : <p className="text-sm text-gray-600 mb-4">No description provided</p>
+                                        }
                                         <div className="flex items-center gap-2">
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(campaign.status)}`}>
                                                 {campaign.status || 'Unknown'}
@@ -666,9 +685,9 @@ export default function CampaignDetail() {
                                     <div className="space-y-3">
                                         <h3 className="text-sm font-medium text-gray-700">Campaign Thumbnail</h3>
                                         <div className="relative">
-                                            <img 
-                                                src={typeof campaign.thumbnail === 'string' ? campaign.thumbnail : (campaign.thumbnail as { file_url?: string }).file_url || String(campaign.thumbnail)} 
-                                                alt={campaign.title || 'Campaign thumbnail'} 
+                                            <img
+                                                src={typeof campaign.thumbnail === 'string' ? campaign.thumbnail : (campaign.thumbnail as { file_url?: string }).file_url || String(campaign.thumbnail)}
+                                                alt={campaign.title || 'Campaign thumbnail'}
                                                 className="w-full h-48 object-cover rounded-xl border border-gray-200 shadow-sm"
                                             />
                                             <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 rounded-xl"></div>
