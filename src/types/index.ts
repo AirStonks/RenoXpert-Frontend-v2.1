@@ -16,6 +16,7 @@ declare global {
                 phone_number?: string;
                 avatar_url?: string;
                 uuid?: string;
+                identifierHash?: string;
             }) => void;
             toggle: () => void;
             setCustomAttributes: (attributes: Record<string, string | number | boolean>) => void;

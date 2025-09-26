@@ -2,6 +2,7 @@ import { ReactNode, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { useUser } from '../../hook/useUser';
+import { generateHmac } from '../../utils/hmac';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
@@ -50,13 +51,15 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
                             baseUrl: BASE_URL
                         });
 
-                        window.addEventListener("chatwoot:ready", function () {
+                        window.addEventListener("chatwoot:ready", async function () {
                             // Use real user data if available, otherwise fallback to test data
                             const userData = owner || {
                                 id: "testing-user-uuid",
                                 name: "Test User",
                                 email: "test@test.com"
                             };
+                            const userId = userData.id || "testing-user-uuid";
+                            const identifierHash = await generateHmac(userId);
 
                             // Set chatwoot user
                             window.$chatwoot.setUser(userData.id || "testing-user-uuid", {
@@ -65,6 +68,7 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
                                 uuid: userData.uuid || "",
                                 phone_number: "+" + userData.country_code + userData.phone_no || "",
                                 avatar_url: "",
+                                identifierHash: identifierHash
                             });
 
                             // Set custom attributes for better user identification
