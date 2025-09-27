@@ -12,8 +12,10 @@ import {
     Shield,
     CheckCircle,
     ArrowRight,
-    Award,
-    XCircle
+    XCircle,
+    Hammer,
+    Store,
+    DollarSign
 } from 'lucide-react';
 import { Attachment, Campaign, CampaignPackage } from '../../types';
 import { bookingPaymentIntent, getCampaign } from '../../services/publicApi';
@@ -99,10 +101,20 @@ const CampaignDetailPage = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: name === 'amount' ? parseFloat(value) || 0 : value
-        }));
+        
+        // For phone field, only allow numeric characters
+        if (name === 'phone') {
+            const numericValue = value.replace(/[^0-9]/g, '');
+            setFormData(prev => ({
+                ...prev,
+                [name]: numericValue
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: name === 'amount' ? parseFloat(value) || 0 : value
+            }));
+        }
     };
 
     const handlePackageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -257,8 +269,66 @@ const CampaignDetailPage = () => {
 
                     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-                            {/* Left Content */}
-                            <div className="space-y-6 sm:space-y-8 order-2 lg:order-1">
+                            {/* Mobile Title - Only visible on mobile */}
+                            <div className="space-y-3 sm:space-y-4 lg:hidden order-1">
+                                {/* Badge */}
+                                <div className="inline-flex items-center px-3 sm:px-4 py-2 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                        <span className="text-xs sm:text-sm font-medium text-green-700">Limited Time Offer</span>
+                                    </div>
+                                </div>
+
+                                {/* Title */}
+                                <div className="space-y-3 sm:space-y-4">
+                                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                                        {campaign.title}
+                                    </h1>
+                                </div>
+                            </div>
+
+                            {/* Thumbnail */}
+                            <div className="relative order-2 lg:order-2">
+                                <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+                                    <div className="aspect-[4/3] bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 flex items-center justify-center">
+                                        {campaign.thumbnail ? (
+                                            <img
+                                                src={(campaign.thumbnail as Attachment).file_url}
+                                                alt={campaign.title}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="text-center text-white p-4 sm:p-8">
+                                                <Package className="h-16 w-16 sm:h-24 sm:w-24 mx-auto mb-3 sm:mb-4 opacity-80" />
+                                                <h3 className="text-lg sm:text-2xl font-semibold mb-2">{campaign.title}</h3>
+                                                <p className="text-sm sm:text-base text-blue-100">Professional Service</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {/* Overlay Gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                                </div>
+                            </div>
+
+                            {/* Mobile Description - Only visible on mobile, below thumbnail */}
+                            {campaign.description && (
+                                <div className="lg:hidden order-3">
+                                    <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+                                        {campaign.description
+                                            .split('\n')
+                                            .map((line, idx) => (
+                                                <span key={idx}>
+                                                    {line}
+                                                    <br />
+                                                </span>
+                                            ))
+                                        }
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Desktop Content - Only visible on large screens */}
+                            <div className="space-y-6 sm:space-y-8 order-3 lg:order-1 hidden lg:block">
                                 {/* Badge */}
                                 <div className="inline-flex items-center px-3 sm:px-4 py-2 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200">
                                     <div className="flex items-center space-x-2">
@@ -290,22 +360,22 @@ const CampaignDetailPage = () => {
                                 {/* Key Benefits */}
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                                     <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-1.5 sm:p-2 bg-blue-100 rounded-lg">
-                                            <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg ">
+                                            <Hammer className="h-4 w-4 sm:h-4 sm:w-4 text-red-600" />
                                         </div>
-                                        <span className="text-xs sm:text-sm font-medium text-gray-700">Secure Payment</span>
+                                        <span className="text-xs sm:text-sm font-medium text-gray-700">Renovate Smart</span>
                                     </div>
                                     <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-1.5 sm:p-2 bg-green-100 rounded-lg">
-                                            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
+                                            <Store className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
                                         </div>
-                                        <span className="text-xs sm:text-sm font-medium text-gray-700">Quick Booking</span>
+                                        <span className="text-xs sm:text-sm font-medium text-gray-700">Rent Out Fast</span>
                                     </div>
                                     <div className="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg">
-                                            <Award className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
+                                            <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
                                         </div>
-                                        <span className="text-xs sm:text-sm font-medium text-gray-700">Premium Service</span>
+                                        <span className="text-xs sm:text-sm font-medium text-gray-700">Enjoy Passive Income</span>
                                     </div>
                                 </div>
 
@@ -337,26 +407,55 @@ const CampaignDetailPage = () => {
                                 </div>
                             </div>
 
-                            {/* Right Content - Thumbnail */}
-                            <div className="relative order-1 lg:order-2">
-                                <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
-                                    <div className="aspect-[4/3] bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 flex items-center justify-center">
-                                        {campaign.thumbnail ? (
-                                            <img
-                                                src={(campaign.thumbnail as Attachment).file_url}
-                                                alt={campaign.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="text-center text-white p-4 sm:p-8">
-                                                <Package className="h-16 w-16 sm:h-24 sm:w-24 mx-auto mb-3 sm:mb-4 opacity-80" />
-                                                <h3 className="text-lg sm:text-2xl font-semibold mb-2">{campaign.title}</h3>
-                                                <p className="text-sm sm:text-base text-blue-100">Professional Service</p>
-                                            </div>
-                                        )}
+                            {/* Mobile Content - Only visible on mobile */}
+                            <div className="space-y-6 sm:space-y-8 order-4 lg:hidden">
+                                {/* Key Benefits */}
+                                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                                    <div className="flex flex-col items-center space-y-1 sm:space-y-2 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
+                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
+                                            <Hammer className="h-4 w-4 sm:h-4 sm:w-4 text-red-600" />
+                                        </div>
+                                        <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">Renovate Smart</span>
                                     </div>
-                                    {/* Overlay Gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                                    <div className="flex flex-col items-center space-y-1 sm:space-y-2 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
+                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
+                                            <Store className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+                                        </div>
+                                        <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">Rent Out Fast</span>
+                                    </div>
+                                    <div className="flex flex-col items-center space-y-1 sm:space-y-2 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
+                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
+                                            <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+                                        </div>
+                                        <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">Enjoy Passive Income</span>
+                                    </div>
+                                </div>
+
+                                {/* Book Now Button or Fully Booked Message */}
+                                <div className="flex justify-center">
+                                    {isFullyBooked ? (
+                                        <div className="px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl flex items-center gap-3 font-semibold text-lg shadow-lg">
+                                            <XCircle className="h-5 w-5" />
+                                            Fully Booked
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => {
+                                                if (campaign.packages && campaign.packages.length > 0) {
+                                                    const packagesSection = document.getElementById('packages-section');
+                                                    packagesSection?.scrollIntoView({ behavior: 'smooth' });
+                                                } else {
+                                                    const bookingSection = document.getElementById('booking-section');
+                                                    bookingSection?.scrollIntoView({ behavior: 'smooth' });
+                                                }
+                                            }}
+                                            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center gap-3 font-semibold text-lg shadow-lg hover:shadow-xl hover:scale-105"
+                                        >
+                                            <CreditCard className="h-5 w-5" />
+                                            Book Now
+                                            <ArrowRight className="h-5 w-5" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -535,23 +634,23 @@ const CampaignDetailPage = () => {
 
                                                 {/* Campaign Features */}
                                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                                    <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-xl">
-                                                        <div className="p-2 bg-blue-100 rounded-lg">
-                                                            <Shield className="h-5 w-5 text-blue-600" />
+                                                    <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-xl">
+                                                        <div className="p-2 bg-red-100 rounded-lg">
+                                                            <Hammer className="h-5 w-5 text-red-600" />
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700">Secure Payment</span>
+                                                        <span className="text-sm font-medium text-gray-700">Renovate Smart</span>
                                                     </div>
-                                                    <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-xl">
-                                                        <div className="p-2 bg-green-100 rounded-lg">
-                                                            <Clock className="h-5 w-5 text-green-600" />
+                                                    <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-xl">
+                                                        <div className="p-2 bg-red-100 rounded-lg">
+                                                            <Store className="h-5 w-5 text-red-600" />
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700">Quick Booking</span>
+                                                        <span className="text-sm font-medium text-gray-700">Rent Out Fast</span>
                                                     </div>
-                                                    <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-xl">
-                                                        <div className="p-2 bg-purple-100 rounded-lg">
-                                                            <Award className="h-5 w-5 text-purple-600" />
+                                                    <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-xl">
+                                                        <div className="p-2 bg-red-100 rounded-lg">
+                                                            <DollarSign className="h-5 w-5 text-red-600" />
                                                         </div>
-                                                        <span className="text-sm font-medium text-gray-700">Premium Service</span>
+                                                        <span className="text-sm font-medium text-gray-700">Enjoy Passive Income</span>
                                                     </div>
                                                 </div>
 
@@ -657,6 +756,9 @@ const CampaignDetailPage = () => {
                                                         value={formData.phone}
                                                         onChange={handleInputChange}
                                                         required
+                                                        pattern="[0-9]*"
+                                                        maxLength={15}
+                                                        inputMode="numeric"
                                                         className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-gray-50 border border-gray-200 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-500 text-sm sm:text-base"
                                                         placeholder="Enter your phone number"
                                                     />

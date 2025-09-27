@@ -4,9 +4,9 @@ import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 
 const MEDIA_URL =
-    import.meta.env.VITE_APP_ENV === "local"
-        ? '/public/'
-        : '/';
+  import.meta.env.VITE_APP_ENV === "local"
+    ? '/public/'
+    : '/';
 
 // Create styles for the PDF
 const styles = StyleSheet.create({
@@ -23,9 +23,10 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   logo: {
-    width: 120,
-    height: 60,
-    marginBottom: 15,
+    width: "140px", // Reduced from 100px
+    height: "80px",
+    objectFit: "contain",
+    borderRadius: 6, // Reduced from 8
   },
   companyName: {
     fontSize: 24,
@@ -149,20 +150,20 @@ const ReceiptPDF: React.FC<ReceiptPDFProps> = ({ paymentData }) => {
     if (!dateString || dateString.length !== 14) {
       return 'N/A';
     }
-    
+
     const year = dateString.substring(0, 4);
     const month = dateString.substring(4, 6);
     const day = dateString.substring(6, 8);
     const hour = dateString.substring(8, 10);
     const minute = dateString.substring(10, 12);
-    
+
     const monthNames = [
       'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    
+
     const monthName = monthNames[parseInt(month) - 1];
-    
+
     return `${day} ${monthName} ${year} - ${hour}:${minute}`;
   };
 
@@ -171,12 +172,10 @@ const ReceiptPDF: React.FC<ReceiptPDFProps> = ({ paymentData }) => {
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
-          <Image 
-            style={styles.logo} 
-            src={MEDIA_URL + "app/RenoExpert_logo-01.svg"}
+          <Image
+            style={styles.logo}
+            src={MEDIA_URL + "app/RenoExpert_logo-01.jpg"}
           />
-          <Text style={styles.companyName}>RENOXPERT</Text>
-          <Text style={styles.companyTagline}>Your Trusted Renovation Partner</Text>
         </View>
 
         {/* Title */}
@@ -185,17 +184,17 @@ const ReceiptPDF: React.FC<ReceiptPDFProps> = ({ paymentData }) => {
         {/* Payment Details Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Transaction Details</Text>
-          
+
           <View style={styles.row}>
             <Text style={styles.label}>Booking Number:</Text>
             <Text style={styles.value}>{paymentData.bookingNumber || 'N/A'}</Text>
           </View>
-          
+
           <View style={styles.row}>
             <Text style={styles.label}>Customer Name:</Text>
             <Text style={styles.value}>{paymentData.name || 'N/A'}</Text>
           </View>
-          
+
           <View style={styles.row}>
             <Text style={styles.label}>Payment Date:</Text>
             <Text style={styles.value}>{formatPaymentDate(paymentData.paymentDate)}</Text>
@@ -207,9 +206,9 @@ const ReceiptPDF: React.FC<ReceiptPDFProps> = ({ paymentData }) => {
           <View style={styles.amountRow}>
             <Text style={styles.amountLabel}>Amount Paid:</Text>
             <Text style={styles.amountValue}>
-              RM {paymentData.amount ? Number(paymentData.amount).toLocaleString(undefined, { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
+              RM {paymentData.amount ? Number(paymentData.amount).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
               }) : 'N/A'}
             </Text>
           </View>
