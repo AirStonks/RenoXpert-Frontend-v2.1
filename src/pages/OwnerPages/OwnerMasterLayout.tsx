@@ -52,12 +52,12 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
                         });
 
                         window.addEventListener("chatwoot:ready", async function () {
-                            // Use real user data if available, otherwise fallback to test data
                             const userData = owner || {
                                 id: "testing-user-uuid",
                                 name: "Test User",
                                 email: "test@test.com"
                             };
+                            
                             const userId = userData.id || "testing-user-uuid";
                             const identifierHash = await generateHmac(userId);
 
@@ -68,7 +68,7 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
                                 uuid: userData.uuid || "",
                                 phone_number: "+" + userData.country_code + userData.phone_no || "",
                                 avatar_url: "",
-                                identifierHash: identifierHash
+                                identifier_hash: identifierHash
                             });
 
                             // Set custom attributes for better user identification
