@@ -6,6 +6,9 @@ import { generateHmac } from '../../utils/hmac';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/owner/' : '/';
 
+// Webwidget HMAC token - get from environment variables or use default
+const WEBWIDGET_HMAC_TOKEN = import.meta.env.VITE_WEBWIDGET_HMAC_TOKEN || '<webwidget-hmac-token>';
+
 interface MasterLayoutProps {
     children: ReactNode;
 }
@@ -19,7 +22,7 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
 
         // Chatwoot integration
         const loadChatwoot = () => {
-            const BASE_URL = "https://staging.belive.chat";
+            const BASE_URL = import.meta.env.VITE_CHATWOOT_BASE_URL || "https://staging.belive.chat";
 
             // Check if script is already loaded
             if (document.querySelector('script[src*="sdk.js"]')) {
@@ -47,7 +50,7 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
                         };
 
                         window.chatwootSDK.run({
-                            websiteToken: 'tKnChNphJptwhfTBH3qki6Wy',
+                            websiteToken: import.meta.env.VITE_CHATWOOT_WEBSITE_TOKEN,
                             baseUrl: BASE_URL
                         });
 
@@ -57,12 +60,11 @@ function OwnerMasterLayout({ children }: MasterLayoutProps) {
                                 name: "Test User",
                                 email: "test@test.com"
                             };
-                            
-                            const userId = userData.id || "testing-user-uuid";
-                            const identifierHash = await generateHmac(userId);
+
+                            const identifierHash = await generateHmac(userData.uuid, import.meta.env.VITE_WEBWIDGET_HMAC_TOKEN);
 
                             // Set chatwoot user
-                            window.$chatwoot.setUser(userData.id || "testing-user-uuid", {
+                            window.$chatwoot.setUser(userData.uuid || "testing-user-uuid", {
                                 name: userData.name || "Test User",
                                 email: userData.email || "test@test.com",
                                 uuid: userData.uuid || "",

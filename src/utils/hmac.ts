@@ -70,3 +70,13 @@ export function generateHmacSync(message: string, secret: string = 'default-secr
 export async function generateUserHmac(userId: string, secret?: string): Promise<string> {
   return generateHmac(userId, secret);
 }
+
+/**
+ * Generate HMAC for webwidget integration using specific webwidget token
+ * @param identifier - The identifier to hash
+ * @param webwidgetToken - The webwidget HMAC token to use as the key
+ * @returns Promise<string> - The HMAC as a hex string
+ */
+export async function generateWebwidgetHmac(identifier: string, webwidgetToken: string): Promise<string> {
+  return generateHmac(identifier, webwidgetToken);
+}

@@ -74,6 +74,7 @@ const bankOptions = [
     { value: "Public Bank Berhad", label: "Public Bank Berhad" },
     { value: "RHB Bank Berhad", label: "RHB Bank Berhad" },
     { value: "RHB Islamic Berhad", label: "RHB Islamic Berhad" },
+    { value: "Ryt Bank (YTL Digital Bank Berhad)", label: "Ryt Bank (YTL Digital Bank Berhad)" },
     { value: "Standard Chartered Bank Malaysia Berhad", label: "Standard Chartered Bank Malaysia Berhad" },
     { value: "United Overseas Bank (Malaysia) Berhad", label: "United Overseas Bank (Malaysia) Berhad" },
 ]
