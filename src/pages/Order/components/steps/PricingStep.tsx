@@ -620,7 +620,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                             </span>
                                         )}
                                     </div>
-                                    <span className="font-medium">RM {((pkg.total_price || 0) * (pkg.quantity || 1)).toLocaleString(undefined, {
+                                    <span className="font-medium">RM {(calculatePackageTotal(pkg) * (pkg.quantity || 1)).toLocaleString(undefined, {
                                         minimumFractionDigits: 2,
                                         maximumFractionDigits: 2
                                     })}
