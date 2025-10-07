@@ -652,6 +652,26 @@ export interface InvestorInterest {
     updated_at?: string,
 }
 
+export interface KayanaHeightsInterest {
+    id?: string;
+    status?: "new" | "reviewed" | "contacted" | "closed";
+    full_name?: string;
+    email: string;
+    mobile_number: string;
+    tower: string; // A1 or A2
+    floor: string;
+    unit_type: string; // Type B, Type C, Others
+    units_owned: string; // 1, 2, 3-or-more
+    rental_plan: string[]; // room-rental, whole-unit, airbnb, not-sure, own-stay
+    concerns: string[]; // stable-rental, no-self-manage, not-sure-what-to-do, maximize-appreciation, just-exploring
+    support_needed: string[]; // belive-services, renovation-quotation, feasibility-check, rental-strategy, property-consultant
+    preferred_contact: string; // whatsapp, call, email
+    preferred_time: string; // weekday-morning, weekday-afternoon, weekday-evening, weekend
+    additional_info?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface DefectInspectionForm {
     id?: string;
     reno_progress_id?: string;

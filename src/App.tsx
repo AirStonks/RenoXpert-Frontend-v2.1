@@ -108,6 +108,7 @@ import { PropertyEdit } from './pages/Property/PropertyEdit';
 import InvestorInterestForm from './pages/InvestorInterestForm';
 import IIFMain from './pages/InvestorInterestForm/IIFMain';
 import IIFDetail from './pages/InvestorInterestForm/IIFDetail';
+import KayaHeigForm from './pages/KayaHeigForm';
 import OrderConfirmSuccess from './pages/OwnerPages/OrderConfirmSuccess';
 import RenoSalesMain from './pages/RenoSales/RenoSaleMain';
 import RenoSaleDetail from './pages/RenoSales/RenoSaleDetail';
@@ -118,6 +119,8 @@ import AddCampaign from './pages/Campaign/AddCampaign';
 import EditCampaign from './pages/Campaign/EditCampaign';
 import CampaignDetail from './pages/Campaign/CampaignDetail';
 import CampaignDetailPage from './pages/CampaignPages/CampaignDetailPage';
+import KayaHeigIIFMain from './pages/InvestorInterestForm/KayaHeigIIFMain';
+import KayaHeigIIFDetail from './pages/InvestorInterestForm/KayaHeigIIFDetail';
 
 interface ProtectedLayoutProps {
     children: React.ReactNode;
@@ -178,6 +181,8 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
         { path: '/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
         { path: '/investor-interest-forms', element: <IIFMain />, layout: ProtectedLayout },
+        { path: '/kayana-heights-interest-forms', element: <KayaHeigIIFMain />, layout: ProtectedLayout },
+        { path: '/kayana-heights-interest-forms/:id', element: <KayaHeigIIFDetail />, layout: ProtectedLayout },
         { path: '/investor-interest-forms/:id', element: <IIFDetail />, layout: ProtectedLayout },
         { path: '/orders', element: <OrderMain />, layout: ProtectedLayout },
         { path: '/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
@@ -272,6 +277,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
     // Form
     [
         { path: '/investor-interest-form', element: <InvestorInterestForm />, layout: null },
+        { path: '/kayana-heights-interest-form', element: <KayaHeigForm />, layout: null },
     ],
     // Campaign
     [
@@ -285,6 +291,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/themakeover/test', element: <MakeoverLanding />, layout: null },
         { path: '/di-form/report', element: <PublicDIReport />, layout: null },
         { path: '/investor-interest-form', element: <InvestorInterestForm />, layout: null },
+        { path: '/kayana-heights-interest-form', element: <KayaHeigForm />, layout: null },
     ],
 ];
 
@@ -318,6 +325,8 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/registration-forms/edit/:id', element: <EditRegistrationForm />, layout: ProtectedLayout },
         { path: '/staff/registration-forms/:id', element: <RegistrationFormDetail />, layout: ProtectedLayout },
         { path: '/staff/investor-interest-forms', element: <IIFMain />, layout: ProtectedLayout },
+        { path: '/staff/kayana-heights-interest-forms', element: <KayaHeigIIFMain />, layout: ProtectedLayout },
+        { path: '/staff/kayana-heights-interest-forms/:id', element: <KayaHeigIIFDetail />, layout: ProtectedLayout },
         { path: '/staff/investor-interest-forms/:id', element: <IIFDetail />, layout: ProtectedLayout },
         { path: '/staff/orders', element: <OrderMain />, layout: ProtectedLayout },
         { path: '/staff/orders/:id', element: <OrderDetail />, layout: ProtectedLayout },
@@ -412,6 +421,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
     // Form
     [
         { path: '/form/investor-interest-form', element: <InvestorInterestForm />, layout: null },
+        { path: '/form/kayana-heights-interest-form', element: <KayaHeigForm />, layout: null },
     ],
     // Campaign
     [
@@ -426,6 +436,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/public/themakeover/test', element: <MakeoverLanding />, layout: null },
         { path: '/public/di-form/report', element: <PublicDIReport />, layout: null },
         { path: '/public/investor-interest-form', element: <InvestorInterestForm />, layout: null },
+        { path: '/public/kayana-heights-interest-form', element: <KayaHeigForm />, layout: null },
     ],
 ]
 

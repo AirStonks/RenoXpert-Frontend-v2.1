@@ -1579,6 +1579,25 @@ export const investorInterestIndex = async (size: number = 5, page: number = 1, 
     }
 }
 
+export const kayanaHeigInterestIndex = async (size: number = 5, page: number = 1, searchTerm?: string, order?: string, field?: string, signal?: AbortSignal) => {
+    try {
+        const response = await axios.get(API_URL + 'kaya-heig-forms', {
+            headers: getAuthHeaders(),
+            signal,
+            params: {
+                size: size,
+                page: page,
+                search: searchTerm,
+                sortOrder: order,
+                sortField: field
+            }
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+    }
+}
+
 export const fetchInvestorInterest = async (formId: number, signal?: AbortSignal) => {
     try {
         const response = await axios.get(API_URL + `investor-interest-forms/${formId}`, {
@@ -1589,6 +1608,19 @@ export const fetchInvestorInterest = async (formId: number, signal?: AbortSignal
     } catch (error) {
         handle401Error(error as AxiosError);
         throw error; // Ensure to throw the error if needed
+    }
+}
+
+export const fetchKayaHeigInterest = async (formId: number, signal?: AbortSignal) => {
+    try {
+        const response = await axios.get(API_URL + `kaya-heig-forms/${formId}`, {
+            headers: getAuthHeaders(),
+            signal
+        });
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
     }
 }
 

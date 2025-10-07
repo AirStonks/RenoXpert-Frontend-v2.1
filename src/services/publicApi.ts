@@ -62,6 +62,16 @@ export const submitInvestorInterestForm = async (data: any) => {
     }
 }
 
+export const submitKayaHeigForm = async (data: any) => {
+    try {
+        const response = await axios.post(API_URL + `kaya-heig-form`, data);
+        return response.data; // Return product data
+    } catch (error) {
+        console.log(error);
+        throw error; // Ensure to throw the error if needed
+    }
+}
+
 export const getCampaign = async (campaignId: string) => {
     try {
         const response = await axios.get(API_URL + `public/campaigns/${campaignId}`);
