@@ -14,6 +14,8 @@ import {
     Squares2X2Icon,
     ListBulletIcon,
 } from '@heroicons/react/24/solid';
+import { canSeeDetailedPricing } from '../../utils/userPermissions';
+import { useUser } from '../../context/UserContext';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -38,6 +40,7 @@ const categoryOptions = [
 function PackageMain() {
     const navigate = useNavigate();
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+    const { currentUser } = useUser();
 
     interface StoredConfig {
         page: number;
@@ -285,18 +288,22 @@ function PackageMain() {
                                 <Squares2X2Icon className="h-5 w-5" />
                             )}
                         </button>
-                        <Link
-                            to={LOCAL_PATH_PREFIX + "packages/create"}
-                            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-                        >
-                            Add New Package
-                        </Link>
-                        <Link
-                            to={LOCAL_PATH_PREFIX + "packages/archives"}
-                            className="p-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
-                        >
-                            Archived Zone
-                        </Link>
+                        {canSeeDetailedPricing(currentUser) && (
+                            <>
+                                <Link
+                                    to={LOCAL_PATH_PREFIX + "packages/create"}
+                                    className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                                >
+                                    Add New Package
+                                </Link>
+                                <Link
+                                    to={LOCAL_PATH_PREFIX + "packages/archives"}
+                                    className="p-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+                                >
+                                    Archived Zone
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

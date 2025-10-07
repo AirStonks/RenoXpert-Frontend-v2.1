@@ -168,13 +168,15 @@ function PackageDetail() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Link
-                            to={LOCAL_PATH_PREFIX + 'packages/edit/' + packageId}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
-                        >
-                            <Edit className="w-4 h-4" />
-                            Edit
-                        </Link>
+                        {canSeeDetailedPricing(currentUser) && (
+                            <Link
+                                to={LOCAL_PATH_PREFIX + 'packages/edit/' + packageId}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
+                            >
+                                <Edit className="w-4 h-4" />
+                                Edit
+                            </Link>
+                        )}
                         {packageDetail.status === 'archived' && (
                             <button
                                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200"
@@ -197,38 +199,42 @@ function PackageDetail() {
                                     ref={dropdownRef}
                                     className="absolute right-0 top-12 bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-2xl shadow-xl py-2 min-w-[200px] transition-all duration-200"
                                 >
-                                    <Link
-                                        to={LOCAL_PATH_PREFIX + `packages/create`}
-                                        state={{ dupPackId: packageId, fromUrl: LOCAL_PATH_PREFIX + `packages/${packageId}` }}
-                                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200"
-                                        onClick={() => setIsDropdownOpen(false)}
-                                    >
-                                        <Copy className="w-4 h-4 text-gray-600" />
-                                        <span className="text-gray-700">Duplicate Package</span>
-                                    </Link>
-                                    {packageDetail.status !== 'archived' && (
-                                        <button
-                                            className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200 w-full text-left"
-                                            onClick={() => {
-                                                setIsDropdownOpen(false);
-                                                setSelectedArchivePackage({ id: packageId, name: packageDetail?.name || '' });
-                                            }}
-                                        >
-                                            <Archive className="w-4 h-4 text-red-500" />
-                                            <span className="text-red-500">Archive Package</span>
-                                        </button>
-                                    )}
-                                    {packageDetail.status === 'archived' && (
-                                        <button
-                                            className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200 w-full text-left"
-                                            onClick={() => {
-                                                setIsDropdownOpen(false);
-                                                setSelectedPackage({ id: packageId, name: packageDetail?.name || '' });
-                                            }}
-                                        >
-                                            <Trash2 className="w-4 h-4 text-red-500" />
-                                            <span className="text-red-500">Remove Package</span>
-                                        </button>
+                                    {canSeeDetailedPricing(currentUser) && (
+                                        <>
+                                            <Link
+                                                to={LOCAL_PATH_PREFIX + `packages/create`}
+                                                state={{ dupPackId: packageId, fromUrl: LOCAL_PATH_PREFIX + `packages/${packageId}` }}
+                                                className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200"
+                                                onClick={() => setIsDropdownOpen(false)}
+                                            >
+                                                <Copy className="w-4 h-4 text-gray-600" />
+                                                <span className="text-gray-700">Duplicate Package</span>
+                                            </Link>
+                                            {packageDetail.status !== 'archived' && (
+                                                <button
+                                                    className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200 w-full text-left"
+                                                    onClick={() => {
+                                                        setIsDropdownOpen(false);
+                                                        setSelectedArchivePackage({ id: packageId, name: packageDetail?.name || '' });
+                                                    }}
+                                                >
+                                                    <Archive className="w-4 h-4 text-red-500" />
+                                                    <span className="text-red-500">Archive Package</span>
+                                                </button>
+                                            )}
+                                            {packageDetail.status === 'archived' && (
+                                                <button
+                                                    className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50/80 transition-colors duration-200 w-full text-left"
+                                                    onClick={() => {
+                                                        setIsDropdownOpen(false);
+                                                        setSelectedPackage({ id: packageId, name: packageDetail?.name || '' });
+                                                    }}
+                                                >
+                                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                                    <span className="text-red-500">Remove Package</span>
+                                                </button>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             )}
