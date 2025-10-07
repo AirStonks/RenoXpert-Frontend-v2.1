@@ -4,6 +4,8 @@ import { SortablePackageItem } from "../SortablePackageItem";
 import { Package, Product } from "../../../../types";
 import { useEffect, useState } from "react";
 import { PackageIcon, Plus } from "lucide-react";
+import { useUser } from "../../../../context/UserContext";
+import { canSeeDetailedPricing } from "../../../../utils/userPermissions";
 
 interface FormData {
     unitType: string;
@@ -61,6 +63,7 @@ export default function PackagesStep({
     onRnplToggle,
     onRnplMethodChange,
 }: PackagesStepProps) {
+    const { currentUser } = useUser();
     const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; cogs: number; quantity: number }[]>([]);
 
     const categoryOptions = [
@@ -265,9 +268,13 @@ export default function PackagesStep({
                                         <tr>
                                             <th className="text-sm text-gray-600 pb-3 text-left">Category</th>
                                             <th className="text-sm text-gray-600 pb-3 text-right">Total Price</th>
-                                            <th className="text-sm text-gray-600 pb-3 text-right">COGS</th>
-                                            <th className="text-sm text-gray-600 pb-3 text-right">Nett Margin</th>
-                                            <th className="text-sm text-gray-600 pb-3 text-right">Margin %</th>
+                                            {canSeeDetailedPricing(currentUser) && (
+                                                <>
+                                                    <th className="text-sm text-gray-600 pb-3 text-right">COGS</th>
+                                                    <th className="text-sm text-gray-600 pb-3 text-right">Gross Margin</th>
+                                                    <th className="text-sm text-gray-600 pb-3 text-right">Margin %</th>
+                                                </>
+                                            )}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -283,15 +290,19 @@ export default function PackagesStep({
                                                     <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
                                                         RM {category.total_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </td>
-                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
-                                                        RM {category.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </td>
-                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
-                                                        RM {categoryMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </td>
-                                                    <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
-                                                        {categoryMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                                    </td>
+                                                    {canSeeDetailedPricing(currentUser) && (
+                                                        <>
+                                                            <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
+                                                                RM {category.cogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                            <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
+                                                                RM {categoryMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </td>
+                                                            <td className="text-sm text-gray-700 font-medium pb-3 text-right whitespace-nowrap">
+                                                                {categoryMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                                            </td>
+                                                        </>
+                                                    )}
                                                 </tr>
                                             );
                                         })}
@@ -303,15 +314,19 @@ export default function PackagesStep({
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 RM {calculatedTotalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {summaryTotals.totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {summaryTotals.marginInAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                {summaryTotals.marginInPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                            </td>
+                                            {canSeeDetailedPricing(currentUser) && (
+                                                <>
+                                                    <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                        RM {summaryTotals.totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                    <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                        RM {summaryTotals.marginInAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                    <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                        {summaryTotals.marginInPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                                    </td>
+                                                </>
+                                            )}
                                         </tr>
 
                                         {summaryTotals.discount > 0 && (
@@ -320,13 +335,17 @@ export default function PackagesStep({
                                                 <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
                                                     - RM {summaryTotals.discount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </td>
-                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">-</td>
-                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
-                                                    - RM {summaryTotals.discount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </td>
-                                                <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
-                                                    - {(summaryTotals.marginInPercentage - summaryTotals.nettMarginPercentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                                </td>
+                                                {canSeeDetailedPricing(currentUser) && (
+                                                    <>
+                                                        <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">-</td>
+                                                        <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
+                                                            - RM {summaryTotals.discount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                        <td className="text-sm text-gray-900 pt-3 text-right whitespace-nowrap">
+                                                            - {(summaryTotals.marginInPercentage - summaryTotals.nettMarginPercentage).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                                        </td>
+                                                    </>
+                                                )}
                                             </tr>
                                         )}
 
@@ -335,15 +354,19 @@ export default function PackagesStep({
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 RM {summaryTotals.nettAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {summaryTotals.totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                RM {summaryTotals.nettMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
-                                                {summaryTotals.nettMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
-                                            </td>
+                                            {canSeeDetailedPricing(currentUser) && (
+                                                <>
+                                                    <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                        RM {summaryTotals.totalCogs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                    <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                        RM {summaryTotals.nettMargin.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                    <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
+                                                        {summaryTotals.nettMarginPercentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                                    </td>
+                                                </>
+                                            )}
                                         </tr>
                                     </tbody>
                                 </table>

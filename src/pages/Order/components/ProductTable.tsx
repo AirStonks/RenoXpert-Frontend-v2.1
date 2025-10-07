@@ -3,6 +3,8 @@ import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { Product } from '../../../types';
 import { SortableProductRow } from './SortableProductRow';
+import { useUser } from '../../../context/UserContext';
+import { canSeeDetailedPricing } from '../../../utils/userPermissions';
 
 interface ProductTableProps {
     products: Product[];
@@ -25,6 +27,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
     onRemoveProduct,
     onToggleVisibility,
 }) => {
+    const { currentUser } = useUser();
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
@@ -160,14 +163,18 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                                 <th className="text-left py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[180px]">Product</th>
                                 <th className="text-left py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Supplier</th>
                                 <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Qty</th>
-                                <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Supply RRP</th>
-                                <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Install RRP</th>
                                 <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Total RRP</th>
-                                <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Supply COGS</th>
-                                <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Install COGS</th>
-                                <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Total COGS</th>
-                                <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Margin %</th>
-                                <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Margin Amount</th>
+                                {canSeeDetailedPricing(currentUser) && (
+                                    <>
+                                        <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Supply RRP</th>
+                                        <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Install RRP</th>
+                                        <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Supply COGS</th>
+                                        <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Install COGS</th>
+                                        <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Total COGS</th>
+                                        <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Margin %</th>
+                                        <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24 whitespace-nowrap">Margin Amount</th>
+                                    </>
+                                )}
                                 <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Discount</th>
                                 <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Total</th>
                                 <th className="text-center py-3 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider w-12">Vis</th>
@@ -204,53 +211,57 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                                     <span className="text-lg font-bold">
                                         Total
                                     </span>
-                                </td> {/* Added padding for better spacing */}
-                                <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                                    <span className="text-sm text-gray-600">
-                                        {calculatePackageTotal() >= 0 &&
-                                            `RM ${calculatePackageTotal().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                    </span>
                                 </td>
                                 <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                                    <span className="text-sm text-gray-600">
-                                        {totals.installRRP >= 0 &&
-                                            `RM ${totals.installRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                    </span>
-                                </td>
-                                <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap"> {/* Added font-extrabold for emphasis */}
                                     <span className="text-sm font-bold text-green-600">
                                         {totals.totalRRP >= 0 &&
                                             `RM ${totals.totalRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                     </span>
                                 </td>
-                                <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                                    <span className="text-sm text-gray-600">
-                                        {totals.supplyCOGS >= 0 &&
-                                            `RM ${totals.supplyCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                    </span>
-                                </td>
-                                <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                                    <span className="text-sm text-gray-600">
-                                        {totals.installCOGS >= 0 &&
-                                            `RM ${totals.installCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                    </span>
-                                </td>
-                                <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap"> {/* Added font-extrabold for emphasis */}
-                                    <span className="text-sm font-bold text-red-600">
-                                        {totals.totalCOGS >= 0 &&
-                                            `RM ${totals.totalCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                                    </span>
-                                </td>
-                                <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                                    <span className="text-sm font-bold">
-                                        {marginPercent}
-                                    </span>
-                                </td>
-                                <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                                    <span className="text-sm font-bold">
-                                        {`RM ${marginAmount}`}
-                                    </span>
-                                </td>
+                                {canSeeDetailedPricing(currentUser) && (
+                                    <>
+                                        <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                                            <span className="text-sm text-gray-600">
+                                                {calculatePackageTotal() >= 0 &&
+                                                    `RM ${calculatePackageTotal().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                                            <span className="text-sm text-gray-600">
+                                                {totals.installRRP >= 0 &&
+                                                    `RM ${totals.installRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                                            <span className="text-sm text-gray-600">
+                                                {totals.supplyCOGS >= 0 &&
+                                                    `RM ${totals.supplyCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                                            <span className="text-sm text-gray-600">
+                                                {totals.installCOGS >= 0 &&
+                                                    `RM ${totals.installCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                                            <span className="text-sm font-bold text-red-600">
+                                                {totals.totalCOGS >= 0 &&
+                                                    `RM ${totals.totalCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                                            <span className="text-sm font-bold">
+                                                {marginPercent}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                                            <span className="text-sm font-bold">
+                                                {`RM ${marginAmount}`}
+                                            </span>
+                                        </td>
+                                    </>
+                                )}
                                 <td></td>
                                 <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
                                     {`RM ${totals.totalRRP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}

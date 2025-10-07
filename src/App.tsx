@@ -17,6 +17,7 @@ import QuotationMain from './pages/Quotation/QuotationMain';
 import CreateQuotation from './pages/Quotation/CreateQuotation';
 import EditQuotation from './pages/Quotation/EditQuotation';
 import Loading from './components/Loading';
+import StaffRestrictedRoute from './components/StaffRestrictedRoute';
 import PropertyMain from './pages/Property/PropertyMain';
 import OrderMain from './pages/Order/OrderMain';
 import CreateOrder from './pages/Order/CreateOrder';
@@ -158,12 +159,12 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/', element: <Dashboard />, layout: ProtectedLayout },
         { path: '/dashboard', element: <Dashboard />, layout: ProtectedLayout },
         { path: '/profile/change-password', element: <ChangePassword />, layout: ProtectedLayout },
-        { path: '/products', element: <ProductMain />, layout: ProtectedLayout },
-        { path: '/products/create', element: <CreateProduct />, layout: ProtectedLayout },
-        { path: '/products/:id', element: <ProductDetail />, layout: ProtectedLayout },
-        { path: '/products/edit/:id', element: <EditProduct />, layout: ProtectedLayout },
-        { path: '/products/category', element: <ProductCategory />, layout: ProtectedLayout },
-        { path: '/products/archives', element: <ProductArchive />, layout: ProtectedLayout },
+        { path: '/products', element: <StaffRestrictedRoute><ProductMain /></StaffRestrictedRoute>, layout: ProtectedLayout },
+        { path: '/products/create', element: <StaffRestrictedRoute><CreateProduct /></StaffRestrictedRoute>, layout: ProtectedLayout },
+        { path: '/products/:id', element: <StaffRestrictedRoute><ProductDetail /></StaffRestrictedRoute>, layout: ProtectedLayout },
+        { path: '/products/edit/:id', element: <StaffRestrictedRoute><EditProduct /></StaffRestrictedRoute>, layout: ProtectedLayout },
+        { path: '/products/category', element: <StaffRestrictedRoute><ProductCategory /></StaffRestrictedRoute>, layout: ProtectedLayout },
+        { path: '/products/archives', element: <StaffRestrictedRoute><ProductArchive /></StaffRestrictedRoute>, layout: ProtectedLayout },
         { path: '/packages', element: <PackageMain />, layout: ProtectedLayout },
         { path: '/packages/create', element: <CreatePackage />, layout: ProtectedLayout },
         { path: '/packages/:id', element: <PackageDetail />, layout: ProtectedLayout },
@@ -302,12 +303,12 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff', element: <Dashboard />, layout: ProtectedLayout },
         { path: '/staff/dashboard', element: <Dashboard />, layout: ProtectedLayout },
         { path: '/staff/profile/change-password', element: <ChangePassword />, layout: ProtectedLayout },
-        { path: '/staff/products', element: <ProductMain />, layout: ProtectedLayout },
-        { path: '/staff/products/create', element: <CreateProduct />, layout: ProtectedLayout },
-        { path: '/staff/products/:id', element: <ProductDetail />, layout: ProtectedLayout },
-        { path: '/staff/products/edit/:id', element: <EditProduct />, layout: ProtectedLayout },
-        { path: '/staff/products/category', element: <ProductCategory />, layout: ProtectedLayout },
-        { path: '/staff/products/archives', element: <ProductArchive />, layout: ProtectedLayout },
+        { path: '/staff/products', element: <StaffRestrictedRoute><ProductMain /></StaffRestrictedRoute>, layout: ProtectedLayout },
+        { path: '/staff/products/create', element: <StaffRestrictedRoute><CreateProduct /></StaffRestrictedRoute>, layout: ProtectedLayout },
+        { path: '/staff/products/:id', element: <StaffRestrictedRoute><ProductDetail /></StaffRestrictedRoute>, layout: ProtectedLayout },
+        { path: '/staff/products/edit/:id', element: <StaffRestrictedRoute><EditProduct /></StaffRestrictedRoute>, layout: ProtectedLayout },
+        { path: '/staff/products/category', element: <StaffRestrictedRoute><ProductCategory /></StaffRestrictedRoute>, layout: ProtectedLayout },
+        { path: '/staff/products/archives', element: <StaffRestrictedRoute><ProductArchive /></StaffRestrictedRoute>, layout: ProtectedLayout },
         { path: '/staff/packages', element: <PackageMain />, layout: ProtectedLayout },
         { path: '/staff/packages/create', element: <CreatePackage />, layout: ProtectedLayout },
         { path: '/staff/packages/:id', element: <PackageDetail />, layout: ProtectedLayout },
@@ -335,7 +336,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },
         { path: '/staff/preview/owner/order/overview/id/:id', element: <OrderPreview />, layout: null },
         { path: '/staff/orders/print/:id', element: <QuotationOrderPrint />, layout: null },
-        { path: '/staff/orders/print/:id/internal', element: <DetailedOrderPrint />, layout: null },
+        { path: '/staff/orders/print/:id/internal', element: <DetailedOrderPrint />, layout: ProtectedLayout },
         { path: '/staff/sales', element: <SalesMain />, layout: ProtectedLayout },
         { path: '/staff/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
         { path: '/staff/reno-sales', element: <RenoSalesMain />, layout: ProtectedLayout },

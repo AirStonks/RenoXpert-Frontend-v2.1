@@ -3,6 +3,8 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Product } from '../../../types';
 import { GripVertical, Eye, EyeOff, Trash2, Minus, Plus } from 'lucide-react';
+import { useUser } from '../../../context/UserContext';
+import { canSeeDetailedPricing } from '../../../utils/userPermissions';
 
 interface SortableProductRowProps {
     number: number;
@@ -21,6 +23,7 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
     onRemoveProduct,
     onToggleVisibility,
 }) => {
+    const { currentUser } = useUser();
     const {
         attributes,
         listeners,
@@ -146,30 +149,6 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
             </td>
 
             <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                <span className="text-gray-500">
-                    {
-                        `RM ${product.provisioning.supply.retail_price.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                        })}`
-                    }
-                </span>
-            </td>
-
-
-            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                <span className="text-gray-500">
-                    {
-                        `RM ${product.provisioning.install.retail_price.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                        })}`
-                    }
-                </span>
-            </td>
-
-
-            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
                 <span className="text-gray-900 text-green-600">
                     {
                         `RM ${(
@@ -183,104 +162,131 @@ export const SortableProductRow: React.FC<SortableProductRowProps> = ({
                 </span>
             </td>
 
-
-            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                <span className="text-gray-500">
-                    {
-                        `RM ${product.provisioning.supply.cogs.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                        })}`
-                    }
-                </span>
-            </td>
-
-
-            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                <span className="text-gray-500">
-                    {
-                        `RM ${product.provisioning.install.cogs.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                        })}`
-                    }
-                </span>
-            </td>
-
-
-            <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
-                <span className="text-gray-900 text-red-600">
-                    {
-                        `RM ${(
-                            (product.pivot.includeSupply
-                                ? product.provisioning.supply.cogs * product.pivot.quantity
-                                : 0) +
-                            (product.pivot.includeInstall
-                                ? product.provisioning.install.cogs * product.pivot.quantity
-                                : 0)
-                        ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                </span>
-            </td>
-
-            {/* Margin % */}
-            <td className="py-3 px-2 text-center text-sm whitespace-nowrap">
-                {product.pivot.included
-                    ? (() => {
-                        const totalRRP =
-                            (product.pivot.includeSupply
-                                ? product.provisioning.supply.retail_price * product.pivot.quantity
-                                : 0) +
-                            (product.pivot.includeInstall
-                                ? product.provisioning.install.retail_price * product.pivot.quantity
-                                : 0);
-                        const totalCOGS =
-                            (product.pivot.includeSupply
-                                ? product.provisioning.supply.cogs * product.pivot.quantity
-                                : 0) +
-                            (product.pivot.includeInstall
-                                ? product.provisioning.install.cogs * product.pivot.quantity
-                                : 0);
-                        return product.pivot.includeSupply || product.pivot.includeInstall
-                            ? totalRRP !== 0
-                                ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(undefined, {
+            {canSeeDetailedPricing(currentUser) && (
+                <>
+                    <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                        <span className="text-gray-500">
+                            {
+                                `RM ${product.provisioning.supply.retail_price.toLocaleString(undefined, {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2,
-                                })}%`
-                                : totalCOGS > 0
-                                    ? "-100.00%"
-                                    : "0.00%"
-                            : "";
-                    })()
-                    : ""}
-            </td>
+                                })}`
+                            }
+                        </span>
+                    </td>
 
-            <td className="py-3 px-2 text-center text-sm whitespace-nowrap">
-                {product.pivot.included
-                    ? (() => {
-                        const totalRRP =
-                            (product.pivot.includeSupply
-                                ? product.provisioning.supply.retail_price * product.pivot.quantity
-                                : 0) +
-                            (product.pivot.includeInstall
-                                ? product.provisioning.install.retail_price * product.pivot.quantity
-                                : 0);
-                        const totalCOGS =
-                            (product.pivot.includeSupply
-                                ? product.provisioning.supply.cogs * product.pivot.quantity
-                                : 0) +
-                            (product.pivot.includeInstall
-                                ? product.provisioning.install.cogs * product.pivot.quantity
-                                : 0);
-                        const marginAmount = totalRRP - totalCOGS;
-                        return product.pivot.includeSupply || product.pivot.includeInstall
-                            ? `RM ${marginAmount.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                            })}`
-                            : "";
-                    })()
-                    : ""}
-            </td>
+                    <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                        <span className="text-gray-500">
+                            {
+                                `RM ${product.provisioning.install.retail_price.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                })}`
+                            }
+                        </span>
+                    </td>
+
+                    <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                        <span className="text-gray-500">
+                            {
+                                `RM ${product.provisioning.supply.cogs.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                })}`
+                            }
+                        </span>
+                    </td>
+
+                    <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                        <span className="text-gray-500">
+                            {
+                                `RM ${product.provisioning.install.cogs.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                })}`
+                            }
+                        </span>
+                    </td>
+
+                    <td className="py-3 px-2 text-center text-sm font-medium whitespace-nowrap">
+                        <span className="text-gray-900 text-red-600">
+                            {
+                                `RM ${(
+                                    (product.pivot.includeSupply
+                                        ? product.provisioning.supply.cogs * product.pivot.quantity
+                                        : 0) +
+                                    (product.pivot.includeInstall
+                                        ? product.provisioning.install.cogs * product.pivot.quantity
+                                        : 0)
+                                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        </span>
+                    </td>
+                </>
+            )}
+
+            {canSeeDetailedPricing(currentUser) && (
+                <>
+                    {/* Margin % */}
+                    <td className="py-3 px-2 text-center text-sm whitespace-nowrap">
+                        {product.pivot.included
+                            ? (() => {
+                                const totalRRP =
+                                    (product.pivot.includeSupply
+                                        ? product.provisioning.supply.retail_price * product.pivot.quantity
+                                        : 0) +
+                                    (product.pivot.includeInstall
+                                        ? product.provisioning.install.retail_price * product.pivot.quantity
+                                        : 0);
+                                const totalCOGS =
+                                    (product.pivot.includeSupply
+                                        ? product.provisioning.supply.cogs * product.pivot.quantity
+                                        : 0) +
+                                    (product.pivot.includeInstall
+                                        ? product.provisioning.install.cogs * product.pivot.quantity
+                                        : 0);
+                                return product.pivot.includeSupply || product.pivot.includeInstall
+                                    ? totalRRP !== 0
+                                        ? `${(((totalRRP - totalCOGS) / totalRRP) * 100).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })}%`
+                                        : totalCOGS > 0
+                                            ? "-100.00%"
+                                            : "0.00%"
+                                    : "";
+                            })()
+                            : ""}
+                    </td>
+
+                    <td className="py-3 px-2 text-center text-sm whitespace-nowrap">
+                        {product.pivot.included
+                            ? (() => {
+                                const totalRRP =
+                                    (product.pivot.includeSupply
+                                        ? product.provisioning.supply.retail_price * product.pivot.quantity
+                                        : 0) +
+                                    (product.pivot.includeInstall
+                                        ? product.provisioning.install.retail_price * product.pivot.quantity
+                                        : 0);
+                                const totalCOGS =
+                                    (product.pivot.includeSupply
+                                        ? product.provisioning.supply.cogs * product.pivot.quantity
+                                        : 0) +
+                                    (product.pivot.includeInstall
+                                        ? product.provisioning.install.cogs * product.pivot.quantity
+                                        : 0);
+                                const marginAmount = totalRRP - totalCOGS;
+                                return product.pivot.includeSupply || product.pivot.includeInstall
+                                    ? `RM ${marginAmount.toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}`
+                                    : "";
+                            })()
+                            : ""}
+                    </td>
+                </>
+            )}
 
             {/* Discount */}
             <td className="py-3 px-2 text-center text-sm whitespace-nowrap">
