@@ -15,7 +15,8 @@ import {
     XCircle,
     Hammer,
     Store,
-    DollarSign
+    DollarSign,
+    ArrowDown
 } from 'lucide-react';
 import { Attachment, Campaign, CampaignPackage } from '../../types';
 import { bookingPaymentIntent, getCampaign } from '../../services/publicApi';
@@ -101,7 +102,7 @@ const CampaignDetailPage = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        
+
         // For phone field, only allow numeric characters
         if (name === 'phone') {
             const numericValue = value.replace(/[^0-9]/g, '');
@@ -143,7 +144,7 @@ const CampaignDetailPage = () => {
             // Create payment intent for new booking
             const packageId = selectedPackage?.id || null;
             console.log(selectedPackage);
-            
+
             const response = await bookingPaymentIntent(campaignSlug, formData.name, formData.phone, formData.email, packageId);
 
 
@@ -234,7 +235,7 @@ const CampaignDetailPage = () => {
 
     return (
         <div className='w-full h-max'>
-            <div className="w-full h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+            <div className="w-full h-full bg-gradient-to-br from-white via-gray-50 to-blue-50">
                 {/* Header with Logo */}
                 <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
@@ -249,14 +250,6 @@ const CampaignDetailPage = () => {
                                     <h1 className="text-base sm:text-lg font-semibold text-gray-900">Campaign</h1>
                                 </div>
                             </div>
-                            {/* Mobile menu button placeholder */}
-                            <div className="sm:hidden">
-                                <button className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
-                                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                    </svg>
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -264,21 +257,13 @@ const CampaignDetailPage = () => {
                 {/* Hero Section */}
                 <div className="relative overflow-hidden">
                     {/* Background Pattern */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/5 to-indigo-600/10"></div>
-                    <div className="absolute inset-0 opacity-40"></div>
+                    <div className="absolute inset-0"></div>
+                    <div className="absolute inset-0 opacity-20"></div>
 
                     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                             {/* Mobile Title - Only visible on mobile */}
                             <div className="space-y-3 sm:space-y-4 lg:hidden order-1">
-                                {/* Badge */}
-                                <div className="inline-flex items-center px-3 sm:px-4 py-2 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                        <span className="text-xs sm:text-sm font-medium text-green-700">Limited Time Offer</span>
-                                    </div>
-                                </div>
-
                                 {/* Title */}
                                 <div className="space-y-3 sm:space-y-4">
                                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
@@ -290,12 +275,12 @@ const CampaignDetailPage = () => {
                             {/* Thumbnail */}
                             <div className="relative order-2 lg:order-2">
                                 <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
-                                    <div className="aspect-[4/3] bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 flex items-center justify-center">
+                                    <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 flex items-center justify-center">
                                         {campaign.thumbnail ? (
                                             <img
                                                 src={(campaign.thumbnail as Attachment).file_url}
                                                 alt={campaign.title}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-contain"
                                             />
                                         ) : (
                                             <div className="text-center text-white p-4 sm:p-8">
@@ -401,7 +386,7 @@ const CampaignDetailPage = () => {
                                         >
                                             <CreditCard className="h-5 w-5" />
                                             Book Now
-                                            <ArrowRight className="h-5 w-5" />
+                                            <ArrowDown className="h-5 w-5" />
                                         </button>
                                     )}
                                 </div>
@@ -411,21 +396,21 @@ const CampaignDetailPage = () => {
                             <div className="space-y-6 sm:space-y-8 order-4 lg:hidden">
                                 {/* Key Benefits */}
                                 <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                                    <div className="flex flex-col items-center space-y-1 sm:space-y-2 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
-                                            <Hammer className="h-4 w-4 sm:h-4 sm:w-4 text-red-600" />
+                                    <div className="flex flex-col items-center space-y-2 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm">
+                                        <div className="p-2 bg-red-200 rounded-lg">
+                                            <Hammer className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
                                         </div>
                                         <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">Renovate Smart</span>
                                     </div>
-                                    <div className="flex flex-col items-center space-y-1 sm:space-y-2 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
-                                            <Store className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+                                    <div className="flex flex-col items-center space-y-2 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm">
+                                        <div className="p-2 bg-red-200 rounded-lg">
+                                            <Store className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
                                         </div>
                                         <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">Rent Out Fast</span>
                                     </div>
-                                    <div className="flex flex-col items-center space-y-1 sm:space-y-2 p-2 sm:p-3 bg-white/70 rounded-lg sm:rounded-xl backdrop-blur-sm">
-                                        <div className="p-1.5 sm:p-2 bg-red-100 rounded-lg">
-                                            <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+                                    <div className="flex flex-col items-center space-y-2 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm">
+                                        <div className="p-2 bg-red-200 rounded-lg">
+                                            <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
                                         </div>
                                         <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">Enjoy Passive Income</span>
                                     </div>
@@ -453,7 +438,7 @@ const CampaignDetailPage = () => {
                                         >
                                             <CreditCard className="h-5 w-5" />
                                             Book Now
-                                            <ArrowRight className="h-5 w-5" />
+                                            <ArrowDown className="h-5 w-5" />
                                         </button>
                                     )}
                                 </div>
@@ -515,28 +500,44 @@ const CampaignDetailPage = () => {
                                                     />
                                                     <label
                                                         htmlFor={`package-${pkg.id || index}`}
-                                                        className={`block relative bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-2 ${String(selectedPackage?.id) === String(pkg.id)
-                                                            ? 'ring-2 sm:ring-4 ring-blue-500/20 shadow-2xl scale-102 sm:scale-105'
-                                                            : 'shadow-lg hover:shadow-xl'
+                                                        className={`block relative rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 cursor-pointer transition-all duration-300 ${String(selectedPackage?.id) === String(pkg.id)
+                                                            ? 'bg-gradient-to-br from-blue-50 via-white to-purple-50 ring-4 ring-blue-500 shadow-2xl scale-102 sm:scale-105 border-2 border-blue-400'
+                                                            : index === 0
+                                                                ? 'bg-gradient-to-br from-amber-50 via-white to-orange-50 ring-2 ring-amber-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-2 border-2 border-amber-200'
+                                                                : 'bg-white shadow-lg hover:shadow-xl hover:-translate-y-1 sm:hover:-translate-y-2'
                                                             } ${pkg.slot_remaining === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     >
                                                         {/* Popular Badge */}
                                                         {index === 0 && (
-                                                            <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2">
-                                                                <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
-                                                                    Most Popular
+                                                            <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2 z-10">
+                                                                <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white px-4 sm:px-5 py-1.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-lg animate-pulse">
+                                                                    ⭐ Most Popular
                                                                 </div>
                                                             </div>
                                                         )}
 
-                                                        {/* Slot Status */}
-                                                        {pkg.slot_remaining === 0 && (
-                                                            <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
-                                                                <div className="bg-red-100 text-red-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
-                                                                    Fully Booked
+                                                        {/* Selected Badge */}
+                                                        {String(selectedPackage?.id) === String(pkg.id) && (
+                                                            <div className="absolute -top-3 sm:-top-4 left-4 z-10">
+                                                                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold shadow-lg flex items-center gap-1">
+                                                                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                                                                    Selected
                                                                 </div>
                                                             </div>
                                                         )}
+
+                                                        {/* Slot Status - Top Right */}
+                                                        <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
+                                                            {pkg.slot_remaining === 0 ? (
+                                                                <div className="bg-red-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-md">
+                                                                    Fully Booked
+                                                                </div>
+                                                            ) : (
+                                                                <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-md">
+                                                                    {pkg.slot_remaining > 7 ? '7' : pkg.slot_remaining} {pkg.slot_remaining === 1 ? 'Slot' : 'Slots'} Left
+                                                                </div>
+                                                            )}
+                                                        </div>
 
                                                         {/* Package Content */}
                                                         <div className="space-y-4 sm:space-y-6">
@@ -548,50 +549,33 @@ const CampaignDetailPage = () => {
                                                                 <h3 className="text-lg sm:text-2xl font-bold text-gray-900 mb-2">
                                                                     {pkg.name || `Package ${index + 1}`}
                                                                 </h3>
-                                                                {pkg.description && (
-                                                                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                                                                        {pkg.description}
-                                                                    </p>
-                                                                )}
                                                             </div>
 
-                                                            {/* Features */}
-                                                            <div className="space-y-2 sm:space-y-3">
-                                                                <div className="flex items-center space-x-2 sm:space-x-3">
-                                                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
-                                                                    <span className="text-sm sm:text-base text-gray-700">Professional Service</span>
-                                                                </div>
-                                                                <div className="flex items-center space-x-2 sm:space-x-3">
-                                                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
-                                                                    <span className="text-sm sm:text-base text-gray-700">24/7 Support</span>
-                                                                </div>
-                                                                <div className="flex items-center space-x-2 sm:space-x-3">
-                                                                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
-                                                                    <span className="text-sm sm:text-base text-gray-700">Quality Guarantee</span>
-                                                                </div>
-                                                            </div>
+                                                            {/* Package Description */}
+                                                            {pkg.description && (
+                                                                <p className="p-2 text-sm sm:text-base text-gray-700 leading-relaxed">
+                                                                    {pkg.description
+                                                                        .split('\n')
+                                                                        .map((line, idx) => (
+                                                                            <span key={idx}>
+                                                                                {line}
+                                                                                <br />
+                                                                            </span>
+                                                                        ))
+                                                                    }
+                                                                </p>
+                                                            )}
 
                                                             {/* Pricing */}
                                                             <div className="text-center pt-3 sm:pt-4 border-t border-gray-100">
                                                                 <div className="text-2xl sm:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
-                                                                    RM {pkg.base_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                                                                    RM {pkg.booking_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </div>
                                                                 {pkg.booking_amount && pkg.booking_amount > 0 && (
-                                                                    <div className="text-sm sm:text-base text-blue-600 font-medium mb-1">
-                                                                        Booking: RM {pkg.booking_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    <div className="text-sm sm:text-base text-blue-600 font-medium">
+                                                                        Booking Fee
                                                                     </div>
                                                                 )}
-                                                                <div className="text-xs sm:text-sm text-gray-500">
-                                                                    {pkg.slot_remaining > 0 ? (
-                                                                        <span className="text-green-600 font-medium">
-                                                                            {pkg.slot_used}/{pkg.slot_total} available slots
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="text-red-600 font-medium">
-                                                                            Fully Booked
-                                                                        </span>
-                                                                    )}
-                                                                </div>
                                                             </div>
 
                                                             {/* Selection Indicator */}
@@ -665,7 +649,6 @@ const CampaignDetailPage = () => {
                                                                 Booking: RM {campaign.booking_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </div>
                                                         )}
-                                                        <p className="text-xs sm:text-sm text-gray-600">{campaign.slot_used}/{campaign.slot_total} available slots</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -694,12 +677,6 @@ const CampaignDetailPage = () => {
                                                     <div className="flex items-center justify-between">
                                                         <div>
                                                             <h3 className="text-sm sm:text-base font-semibold text-gray-900">{selectedPackage.name}</h3>
-                                                            <p className="text-xs sm:text-sm text-gray-600">{selectedPackage.slot_used}/{selectedPackage.slot_total} available slots</p>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <div className="text-lg sm:text-xl font-bold text-blue-600">
-                                                                RM {selectedPackage.base_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
-                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -709,12 +686,6 @@ const CampaignDetailPage = () => {
                                                     <div className="flex items-center justify-between">
                                                         <div>
                                                             <h3 className="text-sm sm:text-base font-semibold text-gray-900">{campaign.title}</h3>
-                                                            <p className="text-xs sm:text-sm text-gray-600">{campaign.slot_used}/{campaign.slot_total} available slots</p>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <div className="text-lg sm:text-xl font-bold text-blue-600">
-                                                                RM {campaign.base_amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
-                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -786,27 +757,27 @@ const CampaignDetailPage = () => {
                                             </div>
 
                                             {/* Booking Amount Display */}
-                                            {((selectedPackage && selectedPackage.booking_amount && selectedPackage.booking_amount > 0) || 
-                                              (!selectedPackage && campaign.booking_amount && campaign.booking_amount > 0)) && (
-                                                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-green-200">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center space-x-2">
-                                                            <div className="p-2 bg-green-100 rounded-lg">
-                                                                <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                                            {((selectedPackage && selectedPackage.booking_amount && selectedPackage.booking_amount > 0) ||
+                                                (!selectedPackage && campaign.booking_amount && campaign.booking_amount > 0)) && (
+                                                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-green-200">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center space-x-2">
+                                                                <div className="p-2 bg-green-100 rounded-lg">
+                                                                    <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                                                                </div>
+                                                                <div>
+                                                                    <h4 className="text-sm sm:text-base font-semibold text-gray-900">Booking Amount</h4>
+                                                                    <p className="text-xs sm:text-sm text-gray-600">Amount to pay now</p>
+                                                                </div>
                                                             </div>
-                                                            <div>
-                                                                <h4 className="text-sm sm:text-base font-semibold text-gray-900">Booking Amount</h4>
-                                                                <p className="text-xs sm:text-sm text-gray-600">Amount to pay now</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <div className="text-lg sm:text-xl font-bold text-green-600">
-                                                                RM {(selectedPackage?.booking_amount || campaign.booking_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            <div className="text-right">
+                                                                <div className="text-lg sm:text-xl font-bold text-green-600">
+                                                                    RM {(selectedPackage?.booking_amount || campaign.booking_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
 
                                             {/* Security Badge */}
                                             <div className="flex items-center justify-center space-x-2 p-2 sm:p-3 bg-green-50 rounded-lg sm:rounded-xl border border-green-200">

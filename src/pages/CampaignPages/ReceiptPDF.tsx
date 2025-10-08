@@ -138,6 +138,7 @@ interface ReceiptPDFProps {
   paymentData: {
     ref: string;
     amount: string;
+    txnId: string;
     name: string;
     bookingNumber: string;
     paymentDate: string;
@@ -188,6 +189,11 @@ const ReceiptPDF: React.FC<ReceiptPDFProps> = ({ paymentData }) => {
           <View style={styles.row}>
             <Text style={styles.label}>Booking Number:</Text>
             <Text style={styles.value}>{paymentData.bookingNumber || 'N/A'}</Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>TXN ID:</Text>
+            <Text style={styles.value}>{paymentData.txnId || 'N/A'}</Text>
           </View>
 
           <View style={styles.row}>

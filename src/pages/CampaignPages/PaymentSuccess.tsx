@@ -26,15 +26,17 @@ function PaymentSuccess() {
         // /campaign/{campaignId}/booking/payment/success?ref={bookingHash}&amount={amount}&originateUrl={originateUrl}&name={name}&bookingNumber={bookingNumber}&paymentDate={paymentDate}
         const ref = queryParams.get('ref');
         const amount = queryParams.get('amount');
+        const txnId = queryParams.get('txnId');
         const originateUrl = queryParams.get('originateUrl');
         const name = queryParams.get('name');
         const bookingNumber = queryParams.get('bookingNumber');
         const paymentDate = queryParams.get('paymentDate');
 
-        if (ref || amount || originateUrl || name || bookingNumber || paymentDate) {
+        if (ref || amount || originateUrl || name || bookingNumber || paymentDate || txnId) {
             setPaymentData({
                 ref: ref,
                 amount: amount,
+                txnId: txnId,
                 originateUrl: originateUrl,
                 name: name,
                 bookingNumber: bookingNumber,
@@ -93,6 +95,7 @@ RENOXPERT - PAYMENT RECEIPT
 ============================
 
 Booking Number: ${paymentData.bookingNumber || 'N/A'}
+TXN ID: ${paymentData.txnId || 'N/A'}
 Customer Name: ${paymentData.name || 'N/A'}
 Amount Paid: RM ${paymentData.amount ? Number(paymentData.amount).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
@@ -174,6 +177,11 @@ Generated on: ${new Date().toLocaleString()}
                         <div className="flex justify-between items-center py-1 border-b border-gray-100">
                             <span className="text-xs text-gray-600 font-medium">Booking Number</span>
                             <span className="text-2xs text-gray-900 font-semibold">{paymentData.bookingNumber || 'N/A'}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center py-1 border-b border-gray-100">
+                            <span className="text-xs text-gray-600 font-medium">TXN ID</span>
+                            <span className="text-2xs text-gray-900 font-semibold">{paymentData.txnId || 'N/A'}</span>
                         </div>
 
                         <div className="flex justify-between items-center py-1 border-b border-gray-100">
