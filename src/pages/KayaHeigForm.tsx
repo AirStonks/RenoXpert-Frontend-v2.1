@@ -278,7 +278,7 @@ function KayaHeigForm() {
                 {/* Header */}
                 <div className="text-center mb-12">
                     <div className="flex items-center justify-center mb-6">
-                        <img className="default-logo min-h-[22px] h-[110px] max-w-none" src="/app/RenoExpert_logo-01.svg"></img>
+                        <img className="default-logo min-h-[22px] h-[110px] max-w-none" src="/app/BeLive_logo-01.svg"></img>
                     </div>
                     <h2 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
                         🏠 Kayana Heights Owner Interest Form
