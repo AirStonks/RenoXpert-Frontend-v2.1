@@ -1667,7 +1667,7 @@ function OrderDetail() {
                                                                                         minimumFractionDigits: 0,
                                                                                         maximumFractionDigits: 0,
                                                                                     })}{" "}
-                                                                                    (Markup Price)
+                                                                                    (Override Price)
                                                                                 </span>
                                                                             ) : (
                                                                                 <span>

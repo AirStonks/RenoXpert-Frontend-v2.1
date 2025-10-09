@@ -309,7 +309,7 @@ export default function PackagesStep({
 
                                         <tr className="border-t border-gray-200">
                                             <td className="text-sm text-gray-600 font-bold pt-3 pe-4">
-                                                {formData.isBePowered ? 'Markup Amount' : 'Total'}
+                                                {formData.isBePowered ? 'Override Amount' : 'Total'}
                                             </td>
                                             <td className="text-sm text-gray-900 font-bold pt-3 text-right whitespace-nowrap">
                                                 RM {calculatedTotalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

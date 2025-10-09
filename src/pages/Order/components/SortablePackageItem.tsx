@@ -44,9 +44,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
 }) => {
     const [isExpanded, setIsExpanded] = useState(false)
     const [markupAmount, setMarkupAmount] = useState<number>(pkg.markup_amount || 0)
-    const [markupPercentage, setMarkupPercentage] = useState<number>(
-        pkg.markup_percentage ? pkg.markup_percentage * 100 : 0,
-    )
+    const [markupPercentage, setMarkupPercentage] = useState<number>(0)
     const [customMonthlyAmount, setCustomMonthlyAmount] = useState<number>(pkg.monthly_amount || 0)
     const [isMarkupAmountManuallyChanged, setIsMarkupAmountManuallyChanged] = useState(false)
 
@@ -163,21 +161,14 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
     const handleMarkupAmountChange = (value: number) => {
         setMarkupAmount(value)
         setIsMarkupAmountManuallyChanged(true)
-        setMarkupPercentage(0) // Reset percentage when amount changes
-        if (onMarkupUpdate) {
-            onMarkupUpdate(pkg.id!, value, 0) // Update selectedPackages
-        }
-    }
-
-    // Handle markup percentage changes
-    const handleMarkupPercentageChange = (percentage: number) => {
-        setMarkupPercentage(percentage)
-        setIsMarkupAmountManuallyChanged(false) // Allow useEffect to update markupAmount
+        
+        // Calculate markup percentage based on profit from original price
         const originalAmount = calculatePackagePrice()
-        const newMarkupAmount = percentage > 0 ? Math.round(originalAmount * (1 + percentage / 100)) : originalAmount
-        setMarkupAmount(newMarkupAmount)
+        const calculatedPercentage = originalAmount > 0 ? ((value - originalAmount) / originalAmount) * 100 : 0
+        setMarkupPercentage(calculatedPercentage)
+        
         if (onMarkupUpdate) {
-            onMarkupUpdate(pkg.id!, newMarkupAmount, percentage) // Update selectedPackages
+            onMarkupUpdate(pkg.id!, value, calculatedPercentage) // Update selectedPackages
         }
     }
 
@@ -187,8 +178,14 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
     useEffect(() => {
         // Only update markupAmount if it hasn't been manually changed and the package's markup_amount has changed
         if (!isMarkupAmountManuallyChanged && pkg.markup_amount !== markupAmount) {
-            setMarkupAmount(pkg.markup_amount || packageOriginalAmount)
-            setMarkupPercentage(pkg.markup_percentage ? pkg.markup_percentage * 100 : 0)
+            const newMarkupAmount = pkg.markup_amount || packageOriginalAmount
+            setMarkupAmount(newMarkupAmount)
+            
+            // Calculate markup percentage based on profit from original price
+            const calculatedPercentage = packageOriginalAmount > 0 
+                ? ((newMarkupAmount - packageOriginalAmount) / packageOriginalAmount) * 100 
+                : 0
+            setMarkupPercentage(calculatedPercentage)
         }
     }, [pkg.markup_amount, pkg.markup_percentage, packageOriginalAmount, isMarkupAmountManuallyChanged, markupAmount])
 
@@ -409,7 +406,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                                         minimumFractionDigits: 2,
                                                         maximumFractionDigits: 2,
                                                     })}{" "}
-                                                    (Markup Price)
+                                                    (Override Price)
                                                 </span>
                                                 <span>x</span>
                                                 <span>{pkg.quantity || 1} (Qty)</span>
@@ -593,7 +590,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                                             <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                                                             </svg>
-                                                            <span className="text-xs font-semibold text-gray-700">Markup Amount</span>
+                                                            <span className="text-xs font-semibold text-gray-700">Override Amount</span>
                                                         </div>
                                                         <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
                                                             <span className="text-sm font-bold text-orange-700 mr-1">RM</span>
@@ -612,17 +609,21 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                                             <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                                                             </svg>
-                                                            <span className="text-xs font-semibold text-gray-700">Markup %</span>
+                                                            <span className="text-xs font-semibold text-gray-700">Profit %</span>
                                                         </div>
-                                                        <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
-                                                            <input
-                                                                type="number"
-                                                                value={markupPercentage}
-                                                                onChange={(e) => handleMarkupPercentageChange(Number(e.target.value))}
-                                                                className="w-full text-sm font-bold text-purple-700 bg-transparent border-none outline-none"
-                                                                placeholder="0"
-                                                                step="0.01"
-                                                            />
+                                                        <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300 gap-1">
+                                                            {markupPercentage >= 0 ? (
+                                                                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                                                                </svg>
+                                                            ) : (
+                                                                <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                                                                </svg>
+                                                            )}
+                                                            <span className={`text-sm font-bold ${markupPercentage >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                                                                {markupPercentage.toFixed(2)}%
+                                                            </span>
                                                         </div>
                                                     </div>
 
@@ -783,7 +784,7 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                                     <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                                                     </svg>
-                                                    <span className="text-xs font-semibold text-gray-700">Markup Amount</span>
+                                                    <span className="text-xs font-semibold text-gray-700">Override Amount</span>
                                                 </div>
                                                 <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
                                                     <span className="text-sm font-bold text-orange-700 mr-1">RM</span>
@@ -802,17 +803,21 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                                     <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                                                     </svg>
-                                                    <span className="text-xs font-semibold text-gray-700">Markup %</span>
+                                                    <span className="text-xs font-semibold text-gray-700">Profit %</span>
                                                 </div>
-                                                <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300">
-                                                    <input
-                                                        type="number"
-                                                        value={markupPercentage}
-                                                        onChange={(e) => handleMarkupPercentageChange(Number(e.target.value))}
-                                                        className="w-full text-sm font-bold text-purple-700 bg-transparent border-none outline-none"
-                                                        placeholder="0"
-                                                        step="0.01"
-                                                    />
+                                                <div className="flex items-center bg-white rounded-lg p-2 border border-gray-300 gap-1">
+                                                    {markupPercentage >= 0 ? (
+                                                        <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                                                        </svg>
+                                                    ) : (
+                                                        <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                                                        </svg>
+                                                    )}
+                                                    <span className={`text-sm font-bold ${markupPercentage >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                                                        {markupPercentage.toFixed(2)}%
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>

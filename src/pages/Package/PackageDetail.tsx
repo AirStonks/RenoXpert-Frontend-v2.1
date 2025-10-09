@@ -270,7 +270,7 @@ function PackageDetail() {
                                 <div className="bg-gray-50/80 rounded-xl p-4">
                                     <div className="flex items-center gap-2 mb-1">
                                         <TrendingUp className="w-5 h-5 text-orange-500" />
-                                        <span className="text-sm font-semibold text-gray-700">Markup Amount</span>
+                                        <span className="text-sm font-semibold text-gray-700">Override Amount</span>
                                     </div>
                                     <span className="text-lg font-bold text-orange-700">
                                         RM {markupAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -282,7 +282,7 @@ function PackageDetail() {
                                 <div className="bg-gray-50/80 rounded-xl p-4">
                                     <div className="flex items-center gap-2 mb-1">
                                         <TrendingUp className="w-5 h-5 text-purple-500" />
-                                        <span className="text-sm font-semibold text-gray-700">Markup %</span>
+                                        <span className="text-sm font-semibold text-gray-700">Profit %</span>
                                     </div>
                                     <span className="text-lg font-bold text-purple-700">
                                         {markupPercentage.toFixed(2)}%
