@@ -250,6 +250,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/form/reno-registration-forms/:id', element: <RenoRegistrationFormDetail />, layout: OwnerProtectedLayout },
         { path: '/order/overview/id/:id', element: <OrderOverview />, layout: OwnerProtectedLayout },
         { path: '/confirm/order/otp/verify', element: <OTPConfirmOrder />, layout: null },
+        { path: '/confirm/order', element: <OrderConfirmSuccess />, layout: null },
         { path: '/quotation-request-form', element: <OwnerRenoRegistrationForm />, layout: null },
         { path: '/quotation-request-form/success', element: <OwnerFormSubmitSuccess />, layout: null },
         { path: '/reno/progress/:id', element: <RenoProgressDetail />, layout: OwnerProtectedLayout },
