@@ -192,7 +192,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/orders/edit/:id', element: <EditOrder />, layout: ProtectedLayout },
         { path: '/preview/owner/order/overview/id/:id', element: <OrderPreview />, layout: null },
         { path: '/orders/print/:id', element: <QuotationOrderPrint />, layout: null },
-        { path: '/orders/print/:id/internal', element: <DetailedOrderPrint />, layout: null },
+        { path: '/orders/print/:id/internal', element: <DetailedOrderPrint />, layout: ProtectedLayout },
         { path: '/sales', element: <SalesMain />, layout: ProtectedLayout },
         { path: '/sales/:id', element: <SaleDetail />, layout: ProtectedLayout },
         { path: '/reno-sales', element: <RenoSalesMain />, layout: ProtectedLayout },
