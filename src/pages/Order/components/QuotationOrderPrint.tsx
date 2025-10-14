@@ -4,7 +4,7 @@ import useFetchOrder from '../../../hook/useFetchOrder';
 import { styles } from '../styles/quotationPrintStyle';
 import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { Order } from '../../../types';
+import { Order, Package } from '../../../types';
 
 const LOCAL_PATH_PREFIX = window.location.hostname === 'localhost' ? '/staff/' : '/';
 
@@ -52,69 +52,101 @@ const categoryOptions = [
 ];
 
 const QuotationOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
-    const [packageCategories, setPackageCategories] = useState<{ category: string; total_price: number; quantity: number }[]>([]);
+    const [packageCategories, setPackageCategories] = useState<
+        { category: string; total_price: number; cogs: number; quantity: number }[]
+    >([])
     const [totalExcludedAddonAmount, setTotalExcludedAddonAmount] = useState<number>(0);
+
+
+    const selectedQuotation = orderDetail.latest_quotation
 
     useEffect(() => {
         if (!orderDetail?.latest_quotation?.packages) return;
 
-        let addonCounter = 0; // To number each add-on uniquely
+        let addonCounter = 0
 
-        const categoryTotals = orderDetail.latest_quotation.packages.reduce((acc, quotationPackage) => {
+        const packages: Package[] = orderDetail.latest_quotation.packages
+
+        const categoryTotals = packages.reduce((acc, pkg) => {
+            if (pkg.is_addon === true && pkg.is_addon_included === false) {
+                return acc;
+            }
+
             let category;
-            if (quotationPackage.is_addon === true) {
+            if (pkg.is_addon === true) {
                 addonCounter += 1;
-                category = `Add-on Option ${addonCounter}(${quotationPackage.name})`;
+                category = `Add-on Option ${addonCounter} (${pkg.name})`;
             } else {
-                category = quotationPackage.category;
+                category = pkg.category || 'others';
             }
 
-            const categoryTotal = quotationPackage.products.reduce((total, product) => {
-                let supplyPrice = 0;
-                if (product.pivot.includeSupply) {
-                    supplyPrice = (product.provisioning.supply.retail_price * product.pivot.quantity) || 0;
-                } else {
-                    supplyPrice = (product.provisioning.supply.retail_price - product.provisioning.supply.excluded_price) || 0;
-                }
+            const categoryData = pkg.products?.reduce(
+                (data, product) => {
+                    let supplyPrice = 0;
+                    let installPrice = 0;
+                    let supplyCogs = 0;
+                    let installCogs = 0;
 
-                let installPrice = 0;
-                if (product.pivot.includeInstall) {
-                    installPrice = (product.provisioning.install.retail_price * product.pivot.quantity) || 0;
-                } else {
-                    installPrice = (product.provisioning.install.retail_price - product.provisioning.install.excluded_price) || 0;
-                }
+                    if (product.provisioning?.supply) {
+                        if (product.pivot?.includeSupply) {
+                            supplyPrice = (product.provisioning.supply.retail_price || 0) * (product.pivot.quantity || 1);
+                            supplyCogs = (product.provisioning.supply.cogs || 0) * (product.pivot.quantity || 1);
+                        } else {
+                            supplyPrice = Math.max(0,
+                                (product.provisioning.supply.retail_price || 0) -
+                                (product.provisioning.supply.excluded_price || 0)
+                            ) * (product.pivot?.quantity || 1);
+                        }
+                    }
 
-                return total + supplyPrice + installPrice;
-            }, 0) * (quotationPackage.quantity || 1);
+                    if (product.provisioning?.install) {
+                        if (product.pivot?.includeInstall) {
+                            installPrice = (product.provisioning.install.retail_price || 0) * (product.pivot?.quantity || 1);
+                            installCogs = (product.provisioning.install.cogs || 0) * (product.pivot?.quantity || 1);
+                        } else {
+                            installPrice = Math.max(0,
+                                (product.provisioning.install.retail_price || 0) -
+                                (product.provisioning.install.excluded_price || 0)
+                            ) * (product.pivot?.quantity || 1);
+                        }
+                    }
 
-            if (!(quotationPackage.is_addon === true && quotationPackage.is_addon_included === false)) {
-                if (!acc[category]) {
-                    acc[category] = { total_price: 0, quantity: 0 };
-                }
-                acc[category].total_price += categoryTotal;
-                acc[category].quantity += quotationPackage.quantity || 0; // Fix: Use quotationPackage instead of pkg
+                    return {
+                        total_price: data.total_price + supplyPrice + installPrice,
+                        cogs: data.cogs + supplyCogs + installCogs,
+                    };
+                },
+                { total_price: 0, cogs: 0 }
+            ) || { total_price: pkg.total_price || 0, cogs: 0 };
+
+            const categoryTotalPrice = (orderDetail.is_be_powered || orderDetail.is_rnpl) ? (pkg.markup_amount * (pkg.quantity || 1)) : (categoryData.total_price * (pkg.quantity || 1));
+            const categoryCogs = categoryData.cogs * (pkg.quantity || 1);
+
+            if (!acc[category]) {
+                acc[category] = { total_price: 0, cogs: 0, quantity: 0 };
             }
+            acc[category].total_price += categoryTotalPrice;
+            acc[category].cogs += categoryCogs;
+            acc[category].quantity += pkg.quantity || 1;
 
             return acc;
-        }, {} as Record<string, { total_price: number; quantity: number }>);
+        }, {} as Record<string, { total_price: number; cogs: number; quantity: number }>);
 
-        // Calculate filtered total_amount
-        const filteredTotalAmount = Object.values(categoryTotals).reduce((sum, { total_price }) => sum + total_price, 0);
-
-        const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, quantity }]) => ({
+        const categoriesArray = Object.entries(categoryTotals).map(([category, { total_price, cogs, quantity }]) => ({
             category: category.startsWith('Add-on Option')
                 ? category
                 : categoryOptions.find(option => option.value === category)?.label || category,
             total_price,
-            quantity
+            cogs,
+            quantity,
         }));
 
         const sortedCategories = [
             ...categoriesArray.filter(item => !item.category.startsWith('Add-on Option')),
-            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option'))
+            ...categoriesArray.filter(item => item.category.startsWith('Add-on Option')),
         ];
 
-        setPackageCategories(sortedCategories);
+        setPackageCategories(sortedCategories)
     }, [orderDetail?.latest_quotation?.packages]);
 
     useEffect(() => {
@@ -147,6 +179,31 @@ const QuotationOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
             setTotalExcludedAddonAmount(totalRetailPrice);
         }
     }, [orderDetail]);
+
+    const calculateSummaryTotals = (totalAmount: number) => {
+        const totalCogs = packageCategories.reduce((sum, cat) => sum + cat.cogs, 0);
+        const marginInAmount = totalAmount - totalCogs;
+        const marginInPercentage = totalAmount > 0 ? (marginInAmount / totalAmount) * 100 : 0;
+
+        const discount = selectedQuotation.bonus ? Number(selectedQuotation.bonus.value) : 0
+        const nettAmount = totalAmount - discount;
+        const nettMargin = nettAmount - totalCogs;
+        const nettMarginPercentage = nettAmount > 0 ? (nettMargin / nettAmount) * 100 : 0;
+
+        return {
+            totalCogs,
+            marginInAmount,
+            marginInPercentage,
+            discount,
+            nettAmount,
+            nettMargin,
+            nettMarginPercentage,
+        };
+    };
+
+
+    const calculatedTotalAmount = packageCategories.reduce((sum, cat) => sum + cat.total_price, 0);
+    const summaryTotals = calculateSummaryTotals(calculatedTotalAmount);
 
     const COMPANY_NAME = "RenoXpert Sdn Bhd";
     const COMPANY_REG = "202401032588 (1578437-W)";
@@ -601,7 +658,7 @@ const QuotationOrderPDF = ({ orderDetail }: { orderDetail: Order }) => {
                         <View wrap={false}>
                             <View style={styles.totalTable}>
                                 <Text style={styles.totalTitle}>Total Amount:</Text>
-                                <Text style={styles.totalValue}>RM {(totalExcludedAddonAmount - Number(orderDetail.latest_quotation?.bonus?.value || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                                <Text style={styles.totalValue}>RM {(summaryTotals.nettAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                                 {orderDetail.latest_quotation?.bonus && (
                                     <Text style={styles.originalPrice}>
                                         Original Price: RM {totalExcludedAddonAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
