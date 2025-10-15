@@ -1516,7 +1516,7 @@ function OrderOverview() {
                                                                     ) : orderDetail.is_rnpl ? (
                                                                         <option value="rnpl">RenoNow PayLater</option>
                                                                     ) : (
-                                                                        <option value="normal">Normal</option>
+                                                                        <option value="normal">Full Payment</option>
                                                                     )}
                                                                 </select>
                                                             </div>
@@ -1972,7 +1972,7 @@ function OrderOverview() {
                                                                     ) : orderDetail.is_rnpl ? (
                                                                         <option value="rnpl">RenoNow PayLater</option>
                                                                     ) : (
-                                                                        <option value="normal">Normal</option>
+                                                                        <option value="normal">Full Payment</option>
                                                                     )}
                                                                 </select>
                                                             </div>
@@ -3426,7 +3426,7 @@ function OrderOverview() {
                                         ) : orderDetail.is_rnpl ? (
                                             <option value="rnpl">RenoNow PayLater</option>
                                         ) : (
-                                            <option value="normal">Normal</option>
+                                            <option value="normal">Full Payment</option>
                                         )}
                                     </select>
                                 </div>
@@ -3878,7 +3878,7 @@ function OrderOverview() {
                                         ) : orderDetail.is_rnpl ? (
                                             <option value="rnpl">RenoNow PayLater</option>
                                         ) : (
-                                            <option value="normal">Normal</option>
+                                            <option value="normal">Full Payment</option>
                                         )}
                                     </select>
                                 </div>
