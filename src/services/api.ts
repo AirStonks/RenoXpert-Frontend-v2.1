@@ -2099,6 +2099,21 @@ export const renoProgressIndex = async (
     }
 };
 
+export const updateRenoProgressStatus = async (renoProgressId: number, status: string) => {
+    try {
+        const response = await axios.put(API_URL + `reno-progress/${renoProgressId}/status`, {
+            status: status
+        }, {
+            headers: getAuthHeaders()
+        });
+
+        return response.data;
+    } catch (error) {
+        handle401Error(error as AxiosError);
+        throw error;
+    }
+};
+
 export const renoProgressAdvanceTable = async (groubBy?: string, groupOp?: string, groupValue?: string, filterBy?: string, filterOp?: string, filterValue?: string) => {
     try {
         const response = await axios.get(API_URL + 'reno-progress/table/advance', {
