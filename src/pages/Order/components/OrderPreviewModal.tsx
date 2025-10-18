@@ -242,7 +242,9 @@ const OrderPreviewModal = ({
 
             <h2 className="text-lg font-bold mt-6 mb-3">3. Payment Terms</h2>
 
-            <h3 className="text-base font-bold mt-4 mb-2">3.A Full Payment (50–50 Method)</h3>
+            {selectedProgram === "normal" && (
+                <>
+                    <h3 className="text-base font-bold mt-4 mb-2">3.A Full Payment (50–50 Method)</h3>
             <p className="text-justify leading-relaxed mb-3">
                 <strong>3.A.1</strong> The Owner agrees to pay the total renovation contract sum in two (2) equal instalments of fifty percent (50%) each, in accordance with the following schedule:
             </p>
@@ -284,8 +286,12 @@ const OrderPreviewModal = ({
             <p className="text-justify leading-relaxed mb-3">
                 The Owner shall grant the Company or its authorised agents unrestricted access to the premises for the purposes of exercising its rights under this clause.
             </p>
+                </>
+            )}
 
-            <h3 className="text-base font-bold mt-4 mb-2">3.B RenoNow PayLater Method</h3>
+            {selectedProgram === "rnpl" && (
+                <>
+                    <h3 className="text-base font-bold mt-4 mb-2">3.B RenoNow PayLater Method</h3>
             <p className="text-justify leading-relaxed mb-3">
                 <strong>3.B1 Initial Down Payment</strong><br />
                 The Owner shall pay the upfront down payment as stated in the quotation ("Initial Down Payment") upon signing of this quotation. No renovation or procurement works shall commence until the Initial Down Payment has been received in full and all commencement conditions under Clause 2.2 are met.
@@ -330,8 +336,12 @@ const OrderPreviewModal = ({
                 <strong>3.B9 Performance Disclaimer</strong><br />
                 Company shall exercise its best commercial efforts to secure tenancy and optimize rental returns for the Property; however, the Owner acknowledges and accepts that occupancy rates and rental yields are subject to market forces, seasonal demand, and other external factors beyond Company's control. Accordingly, Company shall not be held liable for any periods of vacancy, rental fluctuations, or shortfalls in expected returns.
             </p>
+                </>
+            )}
 
-            <h3 className="text-base font-bold mt-4 mb-2">3.C Payment Terms – Reno Subscription Method (60-Month Tenure)</h3>
+            {selectedProgram === "bePowered" && (
+                <>
+                    <h3 className="text-base font-bold mt-4 mb-2">3.C Payment Terms – Reno Subscription Method (60-Month Tenure)</h3>
             <p className="text-justify leading-relaxed mb-3">
                 <strong>3.C1 Initial Down Payment</strong><br />
                 The Owner shall pay the agreed upfront down payment as stated in the quotation ("Initial Down Payment") upon signing of this quotation. No renovation, furnishing, or procurement works shall commence until full payment of the Initial Down Payment and fulfilment of all commencement conditions under Clause 2.2.
@@ -395,6 +405,8 @@ const OrderPreviewModal = ({
                 <strong>3.C13 Performance Disclaimer</strong><br />
                 Company shall exercise its best commercial efforts to optimise rental performance and maintain occupancy of the Property; however, the Owner acknowledges that Subscription Payments are independent of rental income or tenant occupancy, and shall remain payable in full regardless of any vacancy, rental fluctuations, or tenant defaults.
             </p>
+                </>
+            )}
 
             <h2 className="text-lg font-bold mt-6 mb-3">4. Scope Variation & Change Requests</h2>
             <p className="text-justify leading-relaxed mb-3">
