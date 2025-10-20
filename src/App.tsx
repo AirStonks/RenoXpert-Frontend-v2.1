@@ -103,6 +103,7 @@ import OwnerHandoverAgreementPage from './pages/OwnerPages/OwnerHandoverAgreemen
 import OTPVerifyHandover from './pages/OwnerPages/OTPVerifyHandover';
 import DetailedOrderPrint from './pages/Order/components/DetailedOrderPrint';
 import PMMainV3 from './pages/ProjectManagement/PMMainV3';
+import PMKanban from './pages/ProjectManagement/PMKanban';
 import DIReport from './pages/ProjectManagement/DIReport';
 import { PropertyDetail } from './pages/Property/PropertyDetail';
 import { PropertyEdit } from './pages/Property/PropertyEdit';
@@ -211,6 +212,7 @@ const routeCat: { path: string; element: JSX.Element; layout?: React.FC<Protecte
         { path: '/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
         { path: '/reno-progress/overview/v3', element: <PMMainV3 />, layout: ProtectedLayout },
         { path: '/reno-progress/progress-tracker', element: <PMProgressTrack />, layout: ProtectedLayout },
+        { path: '/reno-progress/kanban', element: <PMKanban />, layout: ProtectedLayout },
         { path: '/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/old-ver', element: <ProgressMgnt />, layout: ProtectedLayout },
         { path: '/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },
@@ -356,6 +358,7 @@ const routeCatLocal: { path: string; element: JSX.Element; layout?: React.FC<Pro
         { path: '/staff/reno-progress/overview', element: <PMMain />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/overview/v3', element: <PMMainV3 />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/progress-tracker', element: <PMProgressTrack />, layout: ProtectedLayout },
+        { path: '/staff/reno-progress/kanban', element: <PMKanban />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/:id', element: <ProgressMgnt />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/:id/old-ver', element: <ProgressMgnt />, layout: ProtectedLayout },
         { path: '/staff/reno-progress/:id/defect-inspection-report', element: <DefectInspectionReport />, layout: ProtectedLayout },

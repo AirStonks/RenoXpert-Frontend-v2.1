@@ -1643,3 +1643,52 @@ export interface Booking {
     created_by?: User;
     updated_by?: User;
 }
+
+export interface ProjectStatusHistory {
+    id?: string;
+    reno_progress_id?: string;
+    property_id?: string;
+    unit?: string;
+    status?: string;
+    payment_percentage?: number;
+    snapshot_year?: number;
+    snapshot_week?: number;
+    snapshot_date?: string;
+    snapshot_type?: 'weekly' | 'monthly' | 'yearly';
+    reno_progress?: RenoProgress;
+    property?: Property;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface ProjectStatusHistoryFilter {
+    reno_progress_id?: string;
+    property_id?: string;
+    status?: string;
+    snapshot_year?: number;
+    snapshot_week?: number;
+    snapshot_date_from?: string;
+    snapshot_date_to?: string;
+    snapshot_type?: 'weekly' | 'monthly' | 'yearly';
+}
+
+export interface ProjectStatusHistoryResponse {
+    success: boolean;
+    data: {
+        data: ProjectStatusHistory[];
+        pagination: {
+            current_page: number;
+            per_page: number;
+            total: number;
+            last_page: number;
+            from: number;
+            to: number;
+        };
+        filters: {
+            snapshot_date_from?: string;
+            snapshot_date_to?: string;
+            snapshot_type?: string;
+        };
+    };
+    message: string;
+}
