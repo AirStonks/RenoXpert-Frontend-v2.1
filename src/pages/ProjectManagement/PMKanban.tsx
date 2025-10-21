@@ -122,7 +122,11 @@ const PMKanban = () => {
             'Utropolis Utama Batu Kawan': 'UU',
             'Vertu Resort Condominium': 'VRC',
             'Vivo Executive Apartment': 'VIVO',
-            'Youth City Nilai': 'YC'
+            'Youth City Nilai': 'YC',
+
+            // Not caterogized in Spacify system
+            'Rubica Harbour Place': 'RHP',
+            'The Harmony @ Old Klang Road': 'HAR',
         };
         
         return propertyMap[propertyName] || propertyName;
