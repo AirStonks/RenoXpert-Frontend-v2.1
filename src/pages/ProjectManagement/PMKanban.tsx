@@ -126,6 +126,7 @@ const PMKanban = () => {
 
             // Not caterogized in Spacify system
             'Rubica Harbour Place': 'RBC',
+            'Residensi Riamas': 'RIA',
             'The Harmony @ Old Klang Road': 'HAR',
         };
         
