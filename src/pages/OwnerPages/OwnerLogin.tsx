@@ -84,6 +84,15 @@ const OwnerLogin: React.FC = () => {
         setCountryCode('60');
 
         const searchParams = new URLSearchParams(location.search);
+        const token = searchParams.get('token');
+        
+        // Check if token parameter exists
+        if (token) {
+            localStorage.setItem('o_token', token);
+            window.location.href = LOCAL_PATH_PREFIX;
+            return;
+        }
+
         const redirectUrl = location.state?.from || searchParams.get('redirect') || '/owner/home';
         console.log(redirectUrl);
     }, [location.search, location.state]);

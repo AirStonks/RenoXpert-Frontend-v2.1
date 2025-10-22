@@ -15,7 +15,7 @@ export const handle401Error = (error: AxiosError): void => {
 export const handleOwner401Error = (error: AxiosError): void => {
     if (error.response && error.response.status === 401) {
         // Redirect to login page if error status is 401
-        window.location.href = window.location.hostname === 'localhost' ? '/owner/' : '/' + 'login';
+        window.location.href = (window.location.hostname === 'localhost' ? '/owner/' : '/') + 'login';
     } else if (error.code === 'ERR_CANCELED') {
         // Do nothing
     } else {
