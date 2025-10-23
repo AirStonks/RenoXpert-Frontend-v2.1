@@ -1177,9 +1177,10 @@ function OrderOverview() {
                                                                     </p>
                                                                     <div className="flex w-full justify-between">
                                                                         <p className="text-sm text-[#d71e42] font-bold">
+                                                                            <span className="text-sm text-gray-600">pay </span>
                                                                             RM{" "}
                                                                             {orderDetail.is_be_powered
-                                                                                ? (orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(
+                                                                                ? (orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : (totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount)).toLocaleString(
                                                                                     undefined,
                                                                                     {
                                                                                         minimumFractionDigits: 0,
@@ -1193,8 +1194,7 @@ function OrderOverview() {
                                                                                     minimumFractionDigits: 0,
                                                                                     maximumFractionDigits: 0,
                                                                                 })}
-                                                                            <span className="text-sm text-gray-600">/month </span>
-                                                                            <span className="text-xs text-gray-600">for {selectedPlan === "60" ? "60" : "36"} months</span>
+                                                                            <span className="text-xs text-gray-600"> for {selectedPlan === "60" ? "60" : "36"} months</span>
                                                                         </p>
                                                                         <button
                                                                             className="md:hidden italic underline text-blue-600 text-xs"
@@ -1274,278 +1274,142 @@ function OrderOverview() {
                                                             : "max-h-0 md:max-h-screen md:border-t md:border-gray-200 md:pt-3"
                                                             }`}
                                                     >
-                                                        {selectedProgram === "bePowered" ? (
-                                                            <div className="mt-2 space-y-4">
-                                                                {/* <div className="flex flex-col">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm font-semibold text-gray-800">Original Nett Amount: </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(
-                                            (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                            (bonus?.value || 0)
-                                        ).toLocaleString(undefined, {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })}</span>
-                                    </div>
-                                </div> */}
-                                                                <div className="flex flex-col">
-                                                                    <div className="flex justify-between items-center">
-                                                                        <span className="text-sm font-semibold text-gray-800">Upfront Payment: </span>
-                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {upfrontAmount.toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 0,
-                                                                            maximumFractionDigits: 0,
-                                                                        })}</span>
+                                                        <div className="mt-2 space-y-4">
+                                                            <div className="flex flex-col space-y-2">
+                                                                {packageCategories.map((category, index) => (
+                                                                    <div key={index} className="flex justify-between">
+                                                                        <span className="text-xs text-gray-600">Total {category.category}</span>
+                                                                        <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                                            RM{" "}
+                                                                            {category.total_price.toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
+                                                                        </span>
                                                                     </div>
-                                                                    {/* <div className="flex justify-between items-center mt-1">
-                                        <span className="text-xs text-gray-600">Base Pricing: </span>
-                                        <span className="text-xs text-gray-600 whitespace-nowrap">RM 25,000</span>
-                                    </div>
-                                    {packages.filter(pkg =>
-                                        orderDetail.is_be_powered &&
-                                        pkg.payment_method === 'one-off' &&
-                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
-                                    ).map((pkg, index) => (
-                                        <div key={index} className="flex justify-between items-center mt-1">
-                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}</span>
-                                        </div>
-                                    ))} */}
-                                                                </div>
-                                                                <div className="flex flex-col">
-                                                                    <div className="flex justify-between items-center">
-                                                                        <span className="text-sm font-semibold text-gray-800">Installment ({orderDetail.tenure} months): </span>
-                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 0,
-                                                                            maximumFractionDigits: 0,
-                                                                        })}/mth</span>
-                                                                    </div>
-                                                                    {/* {orderDetail.installment_method === 'dynamic' && packages.filter(pkg =>
-                                        orderDetail.is_be_powered &&
-                                        pkg.payment_method !== 'one-off' &&
-                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
-                                    ).map((pkg, index) => (
-                                        <div key={index} className="flex justify-between items-center mt-1">
-                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.monthly_amount * pkg.quantity).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}/mth</span>
-                                        </div>
-                                    ))} */}
-                                                                </div>
-                                                                {bonus && (
-                                                                    <div className="">
-                                                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                                            {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                                                <p key={index} className="mb-1 last:mb-0">
-                                                                                    {item}
-                                                                                </p>
-                                                                            ))}
-                                                                        </div>
-                                                                        <div className="mt-2">
-                                                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                                            <p className="text-md text-teal-600 font-bold">
-                                                                                RM{" "}
-                                                                                {bonus.value.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                                <div className="">
-                                                                    <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
-                                                                    <p className="text-sm text-gray-900 font-semibold">
-                                                                        RM{" "}
-                                                                        {(upfrontAmount - (bonus ? bonus.value : 0)).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 0,
-                                                                            maximumFractionDigits: 0
-                                                                        })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 0,
-                                                                            maximumFractionDigits: 0
-                                                                        })} / month)
-                                                                    </p>
-                                                                </div>
+                                                                ))}
                                                             </div>
-                                                        ) : selectedProgram === "rnpl" ? (
-                                                            <div className="mt-2 space-y-4">
-                                                                <div className="flex flex-col">
-                                                                    {packageCategories.map((category, index) => (
-                                                                        <div key={index} className="flex justify-between space-y-2">
-                                                                            <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                                                RM{" "}
-                                                                                {category.total_price.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </span>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                                {bonus && (
-                                                                    <div className="">
-                                                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                                            {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                                                <p key={index} className="mb-1 last:mb-0">
-                                                                                    {item}
-                                                                                </p>
-                                                                            ))}
-                                                                        </div>
-                                                                        <div className="mt-2">
-                                                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                                            <p className="text-md text-teal-600 font-bold">
-                                                                                RM{" "}
-                                                                                {bonus.value.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                                <div className="flex justify-between">
-                                                                    <h3 className="text-sm text-blue-600 font-bold">Package Subtotal:</h3>
-                                                                    <p className="text-sm text-gray-900 font-semibold">
-                                                                        RM{" "}
-                                                                        {(
-                                                                            (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                                                            (bonus?.value || 0)
-                                                                        ).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 2,
-                                                                            maximumFractionDigits: 2,
-                                                                        })}
-                                                                    </p>
-                                                                </div>
 
-                                                                {(() => {
-                                                                    // Find all packages with rnpl_method === 'reno-now'
-                                                                    const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(orderDetail?.latest_quotation?.metadata)))
-                                                                    const renoNowPackages: Package[] = packages.filter((pkg: Package) => pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true));
-
-                                                                    return (
-                                                                        <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
-                                                                            <div className="flex justify-between items-center text-sm font-bold text-gray-900">
-                                                                                <span>Initial Down Payment</span>
-                                                                                <span>
-                                                                                    RM {totalRenoNowPrice.toLocaleString(undefined, {
-                                                                                        minimumFractionDigits: 0,
-                                                                                        maximumFractionDigits: 0
-                                                                                    })}
-                                                                                </span>
-                                                                            </div>
-
-                                                                            {renoNowPackages &&
-                                                                                <div className="flex justify-between items-center text-gray-600 mt-2 text-xs">
-                                                                                    <div className="flex items-center">
-                                                                                        <span>Base Price</span>
-                                                                                    </div>
-                                                                                    <span>
-                                                                                        RM {((orderDetail.rnpl_base_price || 0)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                                                    </span>
-                                                                                </div>
-                                                                            }
-
-                                                                            {renoNowPackages.map((pkg: Package, index: number) => (
-                                                                                <div
-                                                                                    key={index}
-                                                                                    className="flex justify-between items-center text-gray-600 mt-2 text-xs"
-                                                                                >
-                                                                                    <div className="flex items-center">
-                                                                                        <span>{pkg.name} x{(pkg.quantity || 1)}</span>
-                                                                                        {/* {pkg.is_addon && (
-                                                                <span className="ml-2 px-2 py-1 text-2xs bg-blue-100 text-blue-700 rounded-full text-nowrap">
-                                                                    Add-On
-                                                                </span>
-                                                            )} */}
-                                                                                    </div>
-                                                                                    <span>
-                                                                                        RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                                                    </span>
-                                                                                </div>
-                                                                            ))}
-
-                                                                            <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
-                                                                                <span>Deferred Balance</span>
-                                                                                <span>
-                                                                                    RM {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
-                                                                                        minimumFractionDigits: 0,
-                                                                                        maximumFractionDigits: 0
-                                                                                    })}
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })()}
-                                                            </div>
-                                                        ) : (
-                                                            <div className="mt-2 space-y-4">
-                                                                <div className="flex flex-col">
-                                                                    {packageCategories.map((category, index) => (
-                                                                        <div key={index} className="flex justify-between space-y-2">
-                                                                            <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                                                RM{" "}
-                                                                                {category.total_price.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </span>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                                {bonus && (
-                                                                    <div className="">
-                                                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                                            {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                                                <p key={index} className="mb-1 last:mb-0">
-                                                                                    {item}
-                                                                                </p>
-                                                                            ))}
-                                                                        </div>
-                                                                        <div className="mt-2">
-                                                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                                            <p className="text-md text-teal-600 font-bold">
-                                                                                RM{" "}
-                                                                                {bonus.value.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
+                                                            {bonus && (
                                                                 <div className="">
-                                                                    <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
-                                                                    <p className="text-sm text-gray-900 font-semibold">
-                                                                        RM{" "}
-                                                                        {(
-                                                                            (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                                                            (bonus?.value || 0)
-                                                                        ).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 2,
-                                                                            maximumFractionDigits: 2,
-                                                                        })}
-                                                                    </p>
-                                                                    {bonus && (
-                                                                        <p className="text-xs text-gray-900">
-                                                                            Original Price: RM{" "}
-                                                                            {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                                    <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
+                                                                    <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
+                                                                        {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
+                                                                            <p key={index} className="mb-1 last:mb-0">
+                                                                                {item}
+                                                                            </p>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center mt-2">
+                                                                        <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
+                                                                        <p className="text-md text-teal-600 font-bold">
+                                                                            RM{" "}
+                                                                            {bonus.value.toLocaleString(undefined, {
                                                                                 minimumFractionDigits: 2,
                                                                                 maximumFractionDigits: 2,
                                                                             })}
                                                                         </p>
-                                                                    )}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            <hr className="my-2" />
+
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
+                                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 0,
+                                                                    maximumFractionDigits: 2,
+                                                                })}</span>
+                                                            </div>
+
+                                                            <div className="flex flex-col space-y-1">
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-sm font-semibold text-gray-800">Payment Terms: </span>
+                                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">
+                                                                        {selectedProgram === "bePowered" ?
+                                                                            "Reno Subscription" : selectedProgram === "rnpl" ?
+                                                                                "RenoNow PayLater" : "Full Payment"}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex">
+                                                                    <span className="text-2xs text-gray-600 italic">(Terms & Conditions)</span>
+                                                                    <button className="mx-1" data-modal-toggle="#payment_info_modal">
+                                                                        <InformationCircleIcon className="w-4 h-4 text-yellow-500" aria-label="Payment Info" />
+                                                                    </button>
                                                                 </div>
                                                             </div>
-                                                        )}
+
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-sm font-semibold text-gray-800">Initial Down Payment: </span>
+                                                                {selectedProgram === 'bePowered' && (
+                                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(upfrontAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                    </span>
+                                                                )}
+                                                                {selectedProgram === 'rnpl' && (
+                                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalRenoNowPrice.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                    </span>
+                                                                )}
+                                                                {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
+                                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex flex-col space-y-1">
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
+                                                                    {selectedProgram === 'bePowered' && (
+                                                                        orderDetail.installment_method === 'fixed' ? (
+                                                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {orderDetail.installment_amount.toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 0,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}/mth
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount).toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 0,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
+                                                                            </span>
+                                                                        )
+                                                                    )}
+                                                                    {selectedProgram === 'rnpl' && (
+                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - totalRenoNowPrice).toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 2,
+                                                                        })}
+                                                                        </span>
+                                                                    )}
+                                                                    {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
+                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 2,
+                                                                        })}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                {selectedProgram === 'bePowered' && (
+                                                                    <div className="flex justify-end">
+                                                                        <span className="text-2xs text-gray-600 italic">Pay in 60 mths</span>
+                                                                    </div>
+                                                                )}
+                                                                {selectedProgram === 'rnpl' && (
+                                                                    <div className="flex justify-end">
+                                                                        <span className="text-2xs text-gray-600 italic">Pay through RPM</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1633,9 +1497,10 @@ function OrderOverview() {
                                                                     </p>
                                                                     <div className="flex w-full justify-between">
                                                                         <p className="text-sm text-[#d71e42] font-bold">
+                                                                            <span className="text-sm text-gray-600">pay </span>
                                                                             RM{" "}
                                                                             {orderDetail.is_be_powered
-                                                                                ? (orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(
+                                                                                ? (orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : (totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount)).toLocaleString(
                                                                                     undefined,
                                                                                     {
                                                                                         minimumFractionDigits: 0,
@@ -1649,8 +1514,7 @@ function OrderOverview() {
                                                                                     minimumFractionDigits: 0,
                                                                                     maximumFractionDigits: 0,
                                                                                 })}
-                                                                            <span className="text-sm text-gray-600">/month </span>
-                                                                            <span className="text-xs text-gray-600">for {selectedPlan === "60" ? "60" : "36"} months</span>
+                                                                            <span className="text-xs text-gray-600"> for {selectedPlan === "60" ? "60" : "36"} months</span>
                                                                         </p>
                                                                         <button
                                                                             className="md:hidden italic underline text-blue-600 text-xs"
@@ -1730,278 +1594,142 @@ function OrderOverview() {
                                                             : "max-h-0 md:max-h-screen md:border-t md:border-gray-200 md:pt-3"
                                                             }`}
                                                     >
-                                                        {selectedProgram === "bePowered" ? (
-                                                            <div className="mt-2 space-y-4">
-                                                                {/* <div className="flex flex-col">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm font-semibold text-gray-800">Original Nett Amount: </span>
-                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(
-                                            (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                            (bonus?.value || 0)
-                                        ).toLocaleString(undefined, {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })}</span>
-                                    </div>
-                                </div> */}
-                                                                <div className="flex flex-col">
-                                                                    <div className="flex justify-between items-center">
-                                                                        <span className="text-sm font-semibold text-gray-800">Upfront Payment: </span>
-                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {upfrontAmount.toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 0,
-                                                                            maximumFractionDigits: 0,
-                                                                        })}</span>
+                                                        <div className="mt-2 space-y-4">
+                                                            <div className="flex flex-col space-y-2">
+                                                                {packageCategories.map((category, index) => (
+                                                                    <div key={index} className="flex justify-between">
+                                                                        <span className="text-xs text-gray-600">Total {category.category}</span>
+                                                                        <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
+                                                                            RM{" "}
+                                                                            {category.total_price.toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 2,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
+                                                                        </span>
                                                                     </div>
-                                                                    {/* <div className="flex justify-between items-center mt-1">
-                                        <span className="text-xs text-gray-600">Base Pricing: </span>
-                                        <span className="text-xs text-gray-600 whitespace-nowrap">RM 25,000</span>
-                                    </div>
-                                    {packages.filter(pkg =>
-                                        orderDetail.is_be_powered &&
-                                        pkg.payment_method === 'one-off' &&
-                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
-                                    ).map((pkg, index) => (
-                                        <div key={index} className="flex justify-between items-center mt-1">
-                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.markup_amount * (pkg.quantity || 1)).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}</span>
-                                        </div>
-                                    ))} */}
-                                                                </div>
-                                                                <div className="flex flex-col">
-                                                                    <div className="flex justify-between items-center">
-                                                                        <span className="text-sm font-semibold text-gray-800">Installment ({orderDetail.tenure} months): </span>
-                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 0,
-                                                                            maximumFractionDigits: 0,
-                                                                        })}/mth</span>
-                                                                    </div>
-                                                                    {/* {orderDetail.installment_method === 'dynamic' && packages.filter(pkg =>
-                                        orderDetail.is_be_powered &&
-                                        pkg.payment_method !== 'one-off' &&
-                                        (pkg.is_addon ? pkg.is_addon_included === true : true)
-                                    ).map((pkg, index) => (
-                                        <div key={index} className="flex justify-between items-center mt-1">
-                                            <span className="text-xs text-gray-600">{pkg.name} x{pkg.quantity}</span>
-                                            <span className="text-xs text-gray-600 whitespace-nowrap">RM {(pkg.monthly_amount * pkg.quantity).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 0,
-                                            })}/mth</span>
-                                        </div>
-                                    ))} */}
-                                                                </div>
-                                                                {bonus && (
-                                                                    <div className="">
-                                                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                                            {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                                                <p key={index} className="mb-1 last:mb-0">
-                                                                                    {item}
-                                                                                </p>
-                                                                            ))}
-                                                                        </div>
-                                                                        <div className="mt-2">
-                                                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                                            <p className="text-md text-teal-600 font-bold">
-                                                                                RM{" "}
-                                                                                {bonus.value.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                                <div className="">
-                                                                    <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
-                                                                    <p className="text-sm text-gray-900 font-semibold">
-                                                                        RM{" "}
-                                                                        {(upfrontAmount - (bonus ? bonus.value : 0)).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 0,
-                                                                            maximumFractionDigits: 0
-                                                                        })} + (RM {(orderDetail.installment_method === 'fixed' ? orderDetail.installment_amount : monthlySum).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 0,
-                                                                            maximumFractionDigits: 0
-                                                                        })} / month)
-                                                                    </p>
-                                                                </div>
+                                                                ))}
                                                             </div>
-                                                        ) : selectedProgram === "rnpl" ? (
-                                                            <div className="mt-2 space-y-4">
-                                                                <div className="flex flex-col">
-                                                                    {packageCategories.map((category, index) => (
-                                                                        <div key={index} className="flex justify-between space-y-2">
-                                                                            <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                                                RM{" "}
-                                                                                {category.total_price.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </span>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                                {bonus && (
-                                                                    <div className="">
-                                                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                                            {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                                                <p key={index} className="mb-1 last:mb-0">
-                                                                                    {item}
-                                                                                </p>
-                                                                            ))}
-                                                                        </div>
-                                                                        <div className="mt-2">
-                                                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                                            <p className="text-md text-teal-600 font-bold">
-                                                                                RM{" "}
-                                                                                {bonus.value.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                                <div className="flex justify-between">
-                                                                    <h3 className="text-sm text-blue-600 font-bold">Package Subtotal:</h3>
-                                                                    <p className="text-sm text-gray-900 font-semibold">
-                                                                        RM{" "}
-                                                                        {(
-                                                                            (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                                                            (bonus?.value || 0)
-                                                                        ).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 2,
-                                                                            maximumFractionDigits: 2,
-                                                                        })}
-                                                                    </p>
-                                                                </div>
 
-                                                                {(() => {
-                                                                    // Find all packages with rnpl_method === 'reno-now'
-                                                                    const packages: Package[] = JSON.parse(JSON.parse(JSON.stringify(orderDetail?.latest_quotation?.metadata)))
-                                                                    const renoNowPackages: Package[] = packages.filter((pkg: Package) => pkg.rnpl_method === 'reno-now' && (pkg.is_addon === true && pkg.is_addon_included === true));
-
-                                                                    return (
-                                                                        <div className="flex flex-col mt-4 pt-4 border-t border-gray-200">
-                                                                            <div className="flex justify-between items-center text-sm font-bold text-gray-900">
-                                                                                <span>Initial Down Payment</span>
-                                                                                <span>
-                                                                                    RM {totalRenoNowPrice.toLocaleString(undefined, {
-                                                                                        minimumFractionDigits: 0,
-                                                                                        maximumFractionDigits: 0
-                                                                                    })}
-                                                                                </span>
-                                                                            </div>
-
-                                                                            {renoNowPackages &&
-                                                                                <div className="flex justify-between items-center text-gray-600 mt-2 text-xs">
-                                                                                    <div className="flex items-center">
-                                                                                        <span>Base Price</span>
-                                                                                    </div>
-                                                                                    <span>
-                                                                                        RM {((orderDetail.rnpl_base_price || 0)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                                                    </span>
-                                                                                </div>
-                                                                            }
-
-                                                                            {renoNowPackages.map((pkg: Package, index: number) => (
-                                                                                <div
-                                                                                    key={index}
-                                                                                    className="flex justify-between items-center text-gray-600 mt-2 text-xs"
-                                                                                >
-                                                                                    <div className="flex items-center">
-                                                                                        <span>{pkg.name} x{(pkg.quantity || 1)}</span>
-                                                                                        {/* {pkg.is_addon && (
-                                                                <span className="ml-2 px-2 py-1 text-2xs bg-blue-100 text-blue-700 rounded-full text-nowrap">
-                                                                    Add-On
-                                                                </span>
-                                                            )} */}
-                                                                                    </div>
-                                                                                    <span>
-                                                                                        RM {((pkg.markup_amount || 0) * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                                                    </span>
-                                                                                </div>
-                                                                            ))}
-
-                                                                            <div className="flex justify-between items-center text-sm font-bold text-gray-900 mt-4">
-                                                                                <span>Deferred Balance</span>
-                                                                                <span>
-                                                                                    RM {((totalExcludedAddonAmount - totalRenoNowPrice) - (bonus?.value || 0)).toLocaleString(undefined, {
-                                                                                        minimumFractionDigits: 0,
-                                                                                        maximumFractionDigits: 0
-                                                                                    })}
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })()}
-                                                            </div>
-                                                        ) : (
-                                                            <div className="mt-2 space-y-4">
-                                                                <div className="flex flex-col">
-                                                                    {packageCategories.map((category, index) => (
-                                                                        <div key={index} className="flex justify-between space-y-2">
-                                                                            <span className="text-xs text-gray-600">Total {category.category}</span>
-                                                                            <span className="text-xs text-gray-700 font-semibold whitespace-nowrap">
-                                                                                RM{" "}
-                                                                                {category.total_price.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </span>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                                {bonus && (
-                                                                    <div className="">
-                                                                        <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
-                                                                        <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
-                                                                            {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
-                                                                                <p key={index} className="mb-1 last:mb-0">
-                                                                                    {item}
-                                                                                </p>
-                                                                            ))}
-                                                                        </div>
-                                                                        <div className="mt-2">
-                                                                            <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
-                                                                            <p className="text-md text-teal-600 font-bold">
-                                                                                RM{" "}
-                                                                                {bonus.value.toLocaleString(undefined, {
-                                                                                    minimumFractionDigits: 2,
-                                                                                    maximumFractionDigits: 2,
-                                                                                })}
-                                                                            </p>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
+                                                            {bonus && (
                                                                 <div className="">
-                                                                    <h3 className="text-sm text-blue-600 font-bold">Total Amount:</h3>
-                                                                    <p className="text-sm text-gray-900 font-semibold">
-                                                                        RM{" "}
-                                                                        {(
-                                                                            (orderDetail.final_amount > 0 ? orderDetail.final_amount : totalExcludedAddonAmount) -
-                                                                            (bonus?.value || 0)
-                                                                        ).toLocaleString(undefined, {
-                                                                            minimumFractionDigits: 2,
-                                                                            maximumFractionDigits: 2,
-                                                                        })}
-                                                                    </p>
-                                                                    {bonus && (
-                                                                        <p className="text-xs text-gray-900">
-                                                                            Original Price: RM{" "}
-                                                                            {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                                    <h3 className="text-sm text-teal-600 font-bold">Discount:</h3>
+                                                                    <div className="text-2xs text-gray-600 font-semibold space-y-2 mt-1">
+                                                                        {(bonus.description?.split("\n") || ["No Details"]).map((item: string, index: number) => (
+                                                                            <p key={index} className="mb-1 last:mb-0">
+                                                                                {item}
+                                                                            </p>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center mt-2">
+                                                                        <span className="text-xs text-gray-600 font-semibold">Total Discount:</span>
+                                                                        <p className="text-md text-teal-600 font-bold">
+                                                                            RM{" "}
+                                                                            {bonus.value.toLocaleString(undefined, {
                                                                                 minimumFractionDigits: 2,
                                                                                 maximumFractionDigits: 2,
                                                                             })}
                                                                         </p>
-                                                                    )}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            <hr className="my-2" />
+
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-sm font-semibold text-gray-800">Total Quotation Amount: </span>
+                                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalExcludedAddonAmount.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 0,
+                                                                    maximumFractionDigits: 2,
+                                                                })}</span>
+                                                            </div>
+
+                                                            <div className="flex flex-col space-y-1">
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-sm font-semibold text-gray-800">Payment Terms: </span>
+                                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">
+                                                                        {selectedProgram === "bePowered" ?
+                                                                            "Reno Subscription" : selectedProgram === "rnpl" ?
+                                                                                "RenoNow PayLater" : "Full Payment"}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex">
+                                                                    <span className="text-2xs text-gray-600 italic">(Terms & Conditions)</span>
+                                                                    <button className="mx-1" data-modal-toggle="#payment_info_modal">
+                                                                        <InformationCircleIcon className="w-4 h-4 text-yellow-500" aria-label="Payment Info" />
+                                                                    </button>
                                                                 </div>
                                                             </div>
-                                                        )}
+
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-sm font-semibold text-gray-800">Initial Down Payment: </span>
+                                                                {selectedProgram === 'bePowered' && (
+                                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(upfrontAmount - (bonus?.value || 0)).toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                    </span>
+                                                                )}
+                                                                {selectedProgram === 'rnpl' && (
+                                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {totalRenoNowPrice.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                    </span>
+                                                                )}
+                                                                {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
+                                                                    <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 2,
+                                                                    })}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex flex-col space-y-1">
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
+                                                                    {selectedProgram === 'bePowered' && (
+                                                                        orderDetail.installment_method === 'fixed' ? (
+                                                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {orderDetail.installment_amount.toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 0,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}/mth
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount).toLocaleString(undefined, {
+                                                                                minimumFractionDigits: 0,
+                                                                                maximumFractionDigits: 2,
+                                                                            })}
+                                                                            </span>
+                                                                        )
+                                                                    )}
+                                                                    {selectedProgram === 'rnpl' && (
+                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - totalRenoNowPrice).toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 2,
+                                                                        })}
+                                                                        </span>
+                                                                    )}
+                                                                    {selectedProgram !== 'rnpl' && selectedProgram !== 'bePowered' && (
+                                                                        <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount / 2).toLocaleString(undefined, {
+                                                                            minimumFractionDigits: 0,
+                                                                            maximumFractionDigits: 2,
+                                                                        })}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                {selectedProgram === 'bePowered' && (
+                                                                    <div className="flex justify-end">
+                                                                        <span className="text-2xs text-gray-600 italic">Pay in 60 mths</span>
+                                                                    </div>
+                                                                )}
+                                                                {selectedProgram === 'rnpl' && (
+                                                                    <div className="flex justify-end">
+                                                                        <span className="text-2xs text-gray-600 italic">Pay through RPM</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2811,11 +2539,19 @@ function OrderOverview() {
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
                                         {selectedProgram === 'bePowered' && (
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                            </span>
+                                            orderDetail.installment_method === 'fixed' ? (
+                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {orderDetail.installment_amount.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                                </span>
+                                            ) : (
+                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                                </span>
+                                            )
                                         )}
                                         {selectedProgram === 'rnpl' && (
                                             <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - totalRenoNowPrice).toLocaleString(undefined, {
@@ -3119,11 +2855,19 @@ function OrderOverview() {
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold text-gray-800">Balance Payment: </span>
                                         {selectedProgram === 'bePowered' && (
-                                            <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount).toLocaleString(undefined, {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                            </span>
+                                            orderDetail.installment_method === 'fixed' ? (
+                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {orderDetail.installment_amount.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 2,
+                                                })}/mth
+                                                </span>
+                                            ) : (
+                                                <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - upfrontAmount).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                                </span>
+                                            )
                                         )}
                                         {selectedProgram === 'rnpl' && (
                                             <span className="text-sm text-gray-800 font-semibold whitespace-nowrap">RM {(totalExcludedAddonAmount - (bonus?.value || 0) - totalRenoNowPrice).toLocaleString(undefined, {
@@ -3330,7 +3074,7 @@ function OrderOverview() {
 
             < ConfirmUnincludeAddon pkg={selectedConfirmPkg} onSubmit={handleToggleAddonPackage} />
 
-            <PaymentInfoModal />
+            <PaymentInfoModal paymentMethod={selectedProgram} />
 
             <AgreePartitionRiskModal onChange={setAgreePartitionRisk} />
 

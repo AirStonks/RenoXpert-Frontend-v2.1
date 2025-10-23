@@ -161,12 +161,12 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
     const handleMarkupAmountChange = (value: number) => {
         setMarkupAmount(value)
         setIsMarkupAmountManuallyChanged(true)
-        
+
         // Calculate markup percentage based on profit from original price
         const originalAmount = calculatePackagePrice()
         const calculatedPercentage = originalAmount > 0 ? ((value - originalAmount) / originalAmount) * 100 : 0
         setMarkupPercentage(calculatedPercentage)
-        
+
         if (onMarkupUpdate) {
             onMarkupUpdate(pkg.id!, value, calculatedPercentage) // Update selectedPackages
         }
@@ -180,10 +180,10 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
         if (!isMarkupAmountManuallyChanged && pkg.markup_amount !== markupAmount) {
             const newMarkupAmount = pkg.markup_amount || packageOriginalAmount
             setMarkupAmount(newMarkupAmount)
-            
+
             // Calculate markup percentage based on profit from original price
-            const calculatedPercentage = packageOriginalAmount > 0 
-                ? ((newMarkupAmount - packageOriginalAmount) / packageOriginalAmount) * 100 
+            const calculatedPercentage = packageOriginalAmount > 0
+                ? ((newMarkupAmount - packageOriginalAmount) / packageOriginalAmount) * 100
                 : 0
             setMarkupPercentage(calculatedPercentage)
         }
@@ -732,8 +732,6 @@ export const SortablePackageItem: React.FC<SortablePackageItemProps> = ({
                                                 >
                                                     <option value="one-off">One-off</option>
                                                     <option value="base-price">Base Price</option>
-                                                    <option value="fixed-installation">Fixed Installment</option>
-                                                    <option value="dynamic-installation">Dynamic Installment</option>
                                                 </select>
                                             </div>
                                         </div>

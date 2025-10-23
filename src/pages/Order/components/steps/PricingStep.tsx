@@ -352,14 +352,19 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
 
                         <div>
                             <div className="flex justify-between items-center">
-                                <span className="font-medium text-gray-900">Installment ({formData.tenure} months)</span>
+                                {/* <span className="font-medium text-gray-900">Installment ({formData.tenure} months)</span>
                                 <span className="font-medium">RM {formData.installment_method === 'fixed' ? formData.installment_amount : monthlySum.toLocaleString(undefined, {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 0
-                                })}/mth</span>
+                                })}/mth</span> */}
+                                <span className="font-medium text-gray-900">Balance Amount</span>
+                                <span className="font-medium">RM {formData.installment_method === 'fixed' ? `${formData.installment_amount}/mth` : (netAmount - (formData.be_powered_base_price || 25000)).toLocaleString(undefined, {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                })}</span>
                             </div>
 
-                            {formData.installment_method === 'fixed'
+                            {/* {formData.installment_method === 'fixed'
                                 ? (
                                     <div className="flex justify-between items-center text-gray-600 mt-1">
                                         <div className="flex items-center">
@@ -386,7 +391,7 @@ export default function PricingStep({ formData, setFormData, totalAmount, netAmo
                                         </div>
                                         <span>RM {(pkg.monthly_amount * (pkg.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mth</span>
                                     </div>
-                                ))}
+                                ))} */}
                         </div>
 
                         {formData.bonusValue > 0 &&
